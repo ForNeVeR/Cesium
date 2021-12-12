@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Compiler", "Cesium.Compiler\Cesium.Compiler.csproj", "{B85C397C-1F36-4A27-AB36-D03F55AE1A89}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9B1FABA-2209-4B3D-8EA0-284B0E24DEB6}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
