@@ -1,28 +1,36 @@
+using System.Collections.Generic;
+using System.Linq;
 using Cesium.Lexer;
 using Xunit;
-using Xunit.Abstractions;
 using Yoakke.Lexer;
 
 namespace Cesium.Parser.Tests;
 
 public class LexerTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public LexerTests(ITestOutputHelper testOutputHelper)
+    private static IEnumerable<Token<TokenType>> GetTokens(string source)
     {
-        _testOutputHelper = testOutputHelper;
+        var lexer = new CLexer(source);
+        var stream = lexer.ToStream();
+        while (stream.TryConsume(out var token) && token.Kind != TokenType.End)
+        {
+            yield return token;
+        }
     }
 
     [Fact]
     public void SimpleTest()
     {
-        var source = "int main() {}";
-        var lexer = new CLexer(source);
-        var stream = lexer.ToStream();
-        while (stream.TryConsume(out var token) && token.Kind != TokenType.End)
+        const string source = "int main() {}";
+        var tokens = GetTokens(source).Select(t => $"{t.Kind}: {t.Text}");
+        Assert.Equal(new[]
         {
-            _testOutputHelper.WriteLine(token.ToString());
-        }
+            "Keyword: int",
+            "Identifier: main",
+            "Punctuator: (",
+            "Punctuator: )",
+            "Punctuator: {",
+            "Punctuator: }"
+        }, tokens);
     }
 }

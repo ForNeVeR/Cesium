@@ -70,7 +70,17 @@ public enum TokenType
     StringLiteral,
 
     [Regex(@"\[|\]|\(|\)|\{|\}|.|->|\+\+|--|&|\*|\+|-|~|!|/|%|<<|>>|<|>|<=|>=|==|!=|^|\||&&|\|\||\?|:|;|...|=|\*=|/=|%=|\+=|-=|<<=|>>=|&=|^=|\|=|,|#|##|<:|:>|<%|%>|%:|%:%:")]
-    Punctuator
+    Punctuator,
+
+    /// <remarks>6.4.9 Comments</remarks>
+    [Ignore]
+    [Regex(Regexes.LineComment)] // TODO: Support block comments, too.
+    Comment,
+
+    /// <remarks>6.4 Lexical elements: Semantics, paragraph 3</remarks>
+    [Ignore]
+    [Regex("[ \t\n\v\r]")] // TODO: Support Unicode whitespace
+    WhiteSpace
 }
 
 /// <remarks>(6.4) preprocessing-token</remarks>
