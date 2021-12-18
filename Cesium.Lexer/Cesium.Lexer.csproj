@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Yoakke.Lexer" Version="2021.12.18-2.37.17-nightly" />
+      <PackageReference Include="Yoakke.Lexer.Generator" Version="2021.12.18-2.37.17-nightly" />
+    </ItemGroup>
+
+</Project>
