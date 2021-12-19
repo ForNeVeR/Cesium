@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 using Yoakke.Parser.Attributes;
@@ -16,6 +17,7 @@ using TypeQualifierList = ImmutableArray<TypeQualifier>;
 
 /// <remarks>See the section 6 of the C17 standard.</remarks>
 [Parser(typeof(CTokenType))]
+[SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
 public partial class CParser
 {
     // TODO: 6.5 Expressions
@@ -43,7 +45,7 @@ public partial class CParser
     [Rule("declaration: declaration_specifiers init_declarator_list?")]
     private static Declaration MakeDeclaration(
         DeclarationSpecifiers specifiers,
-        InitDeclaratorList? initDeclarators) => new Declaration(specifiers, initDeclarators);
+        InitDeclaratorList? initDeclarators) => new(specifiers, initDeclarators);
 
     // TODO: [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
     [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
