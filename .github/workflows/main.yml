@@ -35,3 +35,5 @@ jobs:
           key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
       - name: Build
         run: dotnet build
+      - name: Test
+        run: dotnet test
