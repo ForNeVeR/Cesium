@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Parser", "Cesium.Par
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Parser.Tests", "Cesium.Parser.Tests\Cesium.Parser.Tests.csproj", "{A18AF76C-28D0-4175-8A34-E0B90A2FD4A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Lexer", "Cesium.Lexer\Cesium.Lexer.csproj", "{2FBC8810-8E6C-4280-ADFF-C96896586FAD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +36,6 @@ Global
 		{A18AF76C-28D0-4175-8A34-E0B90A2FD4A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A18AF76C-28D0-4175-8A34-E0B90A2FD4A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A18AF76C-28D0-4175-8A34-E0B90A2FD4A7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FBC8810-8E6C-4280-ADFF-C96896586FAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FBC8810-8E6C-4280-ADFF-C96896586FAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FBC8810-8E6C-4280-ADFF-C96896586FAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FBC8810-8E6C-4280-ADFF-C96896586FAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C08E4851-DE2E-490E-970D-4F6A0A902A98} = {720F6830-E724-4B3A-BFDC-3FA1301A59D0}

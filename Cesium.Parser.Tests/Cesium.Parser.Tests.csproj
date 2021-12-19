@@ -21,7 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Lexer\Cesium.Lexer.csproj" />
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
     </ItemGroup>
 

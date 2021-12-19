@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
-using Cesium.Lexer;
 using Xunit;
+using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 
 namespace Cesium.Parser.Tests;
 
 public class LexerTests
 {
-    private static IEnumerable<Token<TokenType>> GetTokens(string source)
+    private static IEnumerable<CToken> GetTokens(string source)
     {
         var lexer = new CLexer(source);
         var stream = lexer.ToStream();
-        while (stream.TryConsume(out var token) && token.Kind != TokenType.End)
+        while (stream.TryConsume(out var token) && token.Kind != CTokenType.End)
         {
             yield return token;
         }
@@ -25,12 +25,12 @@ public class LexerTests
         var tokens = GetTokens(source).Select(t => $"{t.Kind}: {t.Text}");
         Assert.Equal(new[]
         {
-            "Keyword: int",
+            "KeywordInt: int",
             "Identifier: main",
-            "Punctuator: (",
-            "Punctuator: )",
-            "Punctuator: {",
-            "Punctuator: }"
+            "OpenParen: (",
+            "CloseParen: )",
+            "OpenBrace: {",
+            "CloseBrace: }"
         }, tokens);
     }
 }
