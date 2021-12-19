@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Cesium.Ast;
 using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 using Yoakke.Parser.Attributes;

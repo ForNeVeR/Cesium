@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Cesium.Parser;
+namespace Cesium.Ast;
 
 // 6.7 Declarations
 public record Declaration(
