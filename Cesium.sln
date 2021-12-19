@@ -26,6 +26,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.CodeGen", "Cesium.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.CodeGen.Tests", "Cesium.CodeGen.Tests\Cesium.CodeGen.Tests.csproj", "{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cesium.Samples", "Cesium.Samples", "{5BF9DD98-42E8-4903-86EB-516A10C86642}"
+	ProjectSection(SolutionItems) = preProject
+		Cesium.Samples\minimal.c = Cesium.Samples\minimal.c
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

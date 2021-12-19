@@ -1,5 +1,6 @@
 ﻿using Cesium.Ast;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen;
 
@@ -18,6 +19,14 @@ public class Generator
         {
             var method = GenerateMethod(module, (FunctionDefinition)declaration);
             moduleType.Methods.Add(method);
+            if (method.Name == "main")
+            {
+                var currentEntryPoint = assembly.EntryPoint;
+                if (currentEntryPoint != null)
+                    throw new Exception($"Cannot override entrypoint for assembly {assembly} by method {method}.");
+
+                assembly.EntryPoint = method;
+            }
         }
 
         return assembly;
@@ -29,6 +38,12 @@ public class Generator
             definition.Declarator.DirectDeclarator.Name,
             MethodAttributes.Public | MethodAttributes.Static,
             GetReturnType(module, definition));
+
+        if (!definition.Statement.Block.IsEmpty)
+            throw new Exception("Non-empty function bodies aren't supported, yet.");
+
+        def.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+        def.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
 
         return def;
     }

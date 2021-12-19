@@ -11,10 +11,24 @@ Implementation Status
 ---------------------
 
 - [ ] C17 parser: _just started_
-- [ ] CIL code generator: _none_
+- [ ] CIL code generator: _just started_
 - [ ] C preprocessor: _none_
 - [ ] .NET SDK: _none_
 - [ ] Standard library: _none_
+
+Usage
+-----
+
+```console
+$ dotnet run --project Cesium.Compiler -- <path to the input .c file> <path to the output assembly>
+```
+
+For example, this will generate an assembly executable by .NET Framework:
+
+```console
+$ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c out.exe
+$ ./out.exe
+```
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-umbra-
 [status-umbra]: https://img.shields.io/badge/status-umbra-red.svg
