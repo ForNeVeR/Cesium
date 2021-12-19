@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Parser.Tests", "Cesi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Ast", "Cesium.Ast\Cesium.Ast.csproj", "{C71FEF8C-8770-4790-8087-A5F8413D7561}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.CodeGen", "Cesium.CodeGen\Cesium.CodeGen.csproj", "{C05BC656-CE2B-4A3F-9301-DADB433F3EBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.CodeGen.Tests", "Cesium.CodeGen.Tests\Cesium.CodeGen.Tests.csproj", "{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +48,14 @@ Global
 		{C71FEF8C-8770-4790-8087-A5F8413D7561}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C71FEF8C-8770-4790-8087-A5F8413D7561}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C71FEF8C-8770-4790-8087-A5F8413D7561}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C05BC656-CE2B-4A3F-9301-DADB433F3EBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05BC656-CE2B-4A3F-9301-DADB433F3EBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C05BC656-CE2B-4A3F-9301-DADB433F3EBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C05BC656-CE2B-4A3F-9301-DADB433F3EBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C08E4851-DE2E-490E-970D-4F6A0A902A98} = {720F6830-E724-4B3A-BFDC-3FA1301A59D0}
