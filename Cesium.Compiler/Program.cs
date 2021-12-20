@@ -6,6 +6,7 @@ using Cesium.Parser;
 using CommandLine;
 using Mono.Cecil;
 using Yoakke.C.Syntax;
+using Yoakke.Streams;
 
 Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
 
@@ -18,9 +19,9 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
         var lexer = new CLexer(reader);
         var parser = new CParser(lexer);
         var translationUnit = parser.ParseTranslationUnit().Ok.Value;
-        // TODO: Assert for the file end:
-        // if (!parser.TokenStream.IsEnd)
-        //     throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
+
+        if (parser.TokenStream.Peek().Kind != CTokenType.End)
+            throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
         var assemblyName = Path.GetFileNameWithoutExtension(args.OutputFilePath);
         var moduleKind = Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
