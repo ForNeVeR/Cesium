@@ -1,0 +1,17 @@
+﻿{
+  Declarations: [
+    {
+      Specifiers: [
+        {
+          TypeName: int
+        }
+      ],
+      Declarator: {
+        DirectDeclarator: {
+          Name: main
+        }
+      },
+      Statement: {}
+    }
+  ]
+}
