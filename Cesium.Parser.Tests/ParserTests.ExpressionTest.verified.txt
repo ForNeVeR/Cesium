@@ -1,0 +1,37 @@
+﻿{
+  Declarations: [
+    {
+      Specifiers: [
+        {
+          TypeName: int
+        }
+      ],
+      Declarator: {
+        DirectDeclarator: {
+          Name: main
+        }
+      },
+      Statement: {
+        Block: [
+          {
+            Expression: {
+              Left: {
+                Constant: 2
+              },
+              Operator: +,
+              Right: {
+                Left: {
+                  Constant: 2
+                },
+                Operator: *,
+                Right: {
+                  Constant: 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -48,4 +48,10 @@ public class ParserTests
 
     [Fact]
     public Task MinimalProgramTest() => DoTest("int main() {}");
+
+    [Fact]
+    public Task ReturnTest() => DoTest("int main() { return 0; }");
+
+    [Fact]
+    public Task ExpressionTest() => DoTest("int main() { return 2 + 2 * 2; }");
 }

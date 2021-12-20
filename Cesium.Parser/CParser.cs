@@ -21,13 +21,66 @@ using TypeQualifierList = ImmutableArray<TypeQualifier>;
 [SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
 public partial class CParser
 {
-    // TODO: 6.5 Expressions
-    // TODO: 6.5.1 Primary expressions
+    // 6.4.4 Constants
+    [Rule("constant: IntLiteral")]
+    [Rule("constant: FloatLiteral")]
+    [Rule("constant: enumeration_constant")]
+    [Rule("constant: CharLiteral")]
+    private static ICToken MakeConstant(ICToken constant) => constant;
+
+    // 6.4.4.3 Enumeration constants
+    [Rule("enumeration_constant: Identifier")]
+    private static ICToken MakeEnumerationConstant(ICToken identifier) => identifier;
+
+    // 6.5 Expressions
+
+    [Rule("postfix_expression: primary_expression")] // 6.5.2 Postfix operators
+    [Rule("unary_expression: postfix_expression")] // 6.5.3 Unary operators
+    [Rule("cast_expression: unary_expression")] // 6.5.4 Cast operators
+    [Rule("multiplicative_expression: cast_expression")] // 6.5.5 Multiplicative operators
+    [Rule("additive_expression: multiplicative_expression")] // 6.5.6 Additive operators
+    [Rule("shift_expression: additive_expression")] // 6.5.7 Bitwise shift operators
+    [Rule("relational_expression: shift_expression")] // 6.5.8 Relational operators
+    [Rule("equality_expression: relational_expression")] // 6.5.9 Equality operators
+    [Rule("AND_expression: equality_expression")] // 6.5.10 Bitwise AND operator
+    [Rule("exclusive_OR_expression: AND_expression")] // 6.5.11 Bitwise exclusive OR operator
+    [Rule("inclusive_OR_expression: exclusive_OR_expression")] // 6.5.12 Bitwise inclusive OR operator
+    [Rule("logical_AND_expression: inclusive_OR_expression")] // 6.5.13 Logical AND operator
+    [Rule("logical_OR_expression: logical_AND_expression")] // 6.5.14 Logical OR operator
+    [Rule("conditional_expression: logical_OR_expression")] // 6.5.15 Conditional operator
+    [Rule("assignment_expression: conditional_expression")] // 6.5.16 Assignment operators
+    [Rule("expression: assignment_expression")] // 6.5.17 Comma operator
+    private static Expression CreateExpressionIdentity(Expression expression) => expression;
+
+    // 6.5.1 Primary expressions
+    [Rule("primary_expression: constant")]
+    private static ConstantExpression MakeConstantExpression(ICToken constant) => new(constant.Text);
+
+    // TODO:
+    // primary-expression:
+    //     identifier
+    //     constant
+    //     string-literal
+    //     ( expression )
+    //     generic-selection
+
     // TODO: 6.5.2 Postfix operators
     // TODO: 6.5.3 Unary operators
     // TODO: 6.5.4 Cast operators
-    // TODO: 6.5.5 Multiplicative operators
-    // TODO: 6.5.6 Additive operators
+
+    // 6.5.5 Multiplicative operators
+    [Rule("multiplicative_expression: multiplicative_expression '*' cast_expression")]
+    [Rule("multiplicative_expression: multiplicative_expression '/' cast_expression")]
+    [Rule("multiplicative_expression: multiplicative_expression '%' cast_expression")]
+    private static Expression MakeMultiplicativeExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.6 Additive operators
+    [Rule("additive_expression: additive_expression '+' multiplicative_expression")]
+    [Rule("additive_expression: additive_expression '-' multiplicative_expression")]
+    private static Expression MakeAdditiveExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.7 Bitwise shift operators
     // TODO: 6.5.8 Relational operators
     // TODO: 6.5.9 Equality operators
@@ -37,8 +90,16 @@ public partial class CParser
     // TODO: 6.5.13 Logical AND operator
     // TODO: 6.5.14 Logical OR operator
     // TODO: 6.5.15 Conditional operator
-    // TODO: 6.5.16 Assignment operators
-    // TODO: 6.5.17 Comma operator
+
+    // 6.5.16 Assignment operators
+    // TODO:
+    // assignment-expression:
+    //     unary-expression assignment-operator assignment-expression
+    //     assignment-operator: one of
+    //         = *= /= %= += -= <<= >>= &= ^= |=
+
+    // 6.5.17 Comma operator
+    // TODO: [Rule("expression: expression ',' assignment_expression")]
 
     // TODO: 6.6 Constant expressions
 
@@ -202,8 +263,8 @@ public partial class CParser
     // TODO: [Rule("statement: expression_statement")]
     // TODO: [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
-    // TODO: [Rule("statement: jump_statement")]
-    private static Statement MakeStatement(CompoundStatement statement) => statement;
+    [Rule("statement: jump_statement")]
+    private static Statement MakeStatement(Statement statement) => statement;
 
     // TODO: 6.8.1 Labeled statements
     // 6.8.2 Compound statement
@@ -218,15 +279,23 @@ public partial class CParser
     private static BlockItemList MakeBlockItemList(BlockItemList prev, IBlockItem item) => prev.Add(item);
 
     [Rule("block_item: declaration")]
-    private static IBlockItem MakeBlockItem(Declaration declaration) => declaration;
-
-    // TODO: [Rule("block_item: statement")]
-    // private static IBlockItem MakeBlockItem(Statement statement) => statement;
+    [Rule("block_item: statement")]
+    private static IBlockItem MakeBlockItem(IBlockItem declaration) => declaration;
 
     // TODO: 6.8.3 Expression and null statements
     // TODO: 6.8.4 Selection statements
     // TODO: 6.8.5 Iteration statements
-    // TODO: 6.8.6 Jump statements
+
+    // 6.8.6 Jump statements
+    [Rule("jump_statement: 'goto' Identifier ';'")]
+    private static Statement MakeGoToStatement(ICToken _, ICToken identifier, ICToken __) =>
+        new GoToStatement(identifier.Text);
+
+    // [Rule("jump_statement: 'continue' ';'")]
+    // [Rule("jump_statement: 'break' ';'")]
+    [Rule("jump_statement: 'return' expression? ';'")]
+    private static Statement MakeReturnStatement(ICToken _, Expression expression, ICToken __) =>
+        new ReturnStatement(expression);
 
     /// 6.9 External definitions
     [Rule("translation_unit: external_declaration")]
