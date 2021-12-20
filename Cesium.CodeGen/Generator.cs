@@ -1,6 +1,6 @@
 ﻿using Cesium.Ast;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
+using static Cesium.CodeGen.Functions;
 
 namespace Cesium.CodeGen;
 
@@ -34,18 +34,17 @@ public class Generator
 
     private static MethodDefinition GenerateMethod(ModuleDefinition module, FunctionDefinition definition)
     {
-        var def = new MethodDefinition(
+        var method = new MethodDefinition(
             definition.Declarator.DirectDeclarator.Name,
             MethodAttributes.Public | MethodAttributes.Static,
             GetReturnType(module, definition));
 
-        if (!definition.Statement.Block.IsEmpty)
-            throw new Exception("Non-empty function bodies aren't supported, yet.");
+        if (definition.Declarator.DirectDeclarator.Name == "main")
+            EmitMainFunction(method, definition);
+        else
+            EmitFunction(method, definition);
 
-        def.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-        def.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-
-        return def;
+        return method;
     }
 
     private static TypeReference GetReturnType(ModuleDefinition module, FunctionDefinition definition)

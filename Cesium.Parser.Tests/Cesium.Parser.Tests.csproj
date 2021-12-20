@@ -3,9 +3,9 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
 
         <IsPackable>false</IsPackable>
-        <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+      <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
     </ItemGroup>
 
 </Project>

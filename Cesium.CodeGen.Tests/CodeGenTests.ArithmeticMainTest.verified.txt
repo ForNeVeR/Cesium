@@ -1,0 +1,7 @@
+﻿System.Int32 <Module>::main()
+  IL_0000: ldc.i4 2
+  IL_0005: ldc.i4 2
+  IL_000a: ldc.i4 2
+  IL_000f: mul
+  IL_0010: add
+  IL_0011: ret

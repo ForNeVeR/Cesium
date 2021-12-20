@@ -1,19 +1,13 @@
 using System.Text;
+using Cesium.Test.Framework;
 using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 using Yoakke.Parser;
 
 namespace Cesium.Parser.Tests;
 
-[UsesVerify]
-public class ParserTests
+public class ParserTests : VerifyTestBase
 {
-    static ParserTests()
-    {
-        // To disable Visual Studio popping up on every test execution.
-        Environment.SetEnvironmentVariable("DiffEngine_Disabled", "true");
-    }
-
     private static string? GetErrorString<T>(ParseResult<T> result)
     {
         if (!result.IsError) return null;
@@ -43,7 +37,8 @@ public class ParserTests
         var result = parser.ParseTranslationUnit();
         Assert.True(result.IsOk, GetErrorString(result));
 
-        return Verify(result.Ok.Value);
+        var serialized = JsonSerialize(result.Ok.Value);
+        return Verify(serialized);
     }
 
     [Fact]

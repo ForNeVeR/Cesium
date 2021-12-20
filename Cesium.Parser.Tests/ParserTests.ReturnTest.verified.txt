@@ -1,21 +1,28 @@
 ﻿{
-  Declarations: [
+  "Declarations": [
     {
-      Specifiers: [
+      "Specifiers": [
         {
-          TypeName: int
+          "TypeName": "int"
         }
       ],
-      Declarator: {
-        DirectDeclarator: {
-          Name: main
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "main",
+          "ParameterList": null,
+          "IdentifierList": null
         }
       },
-      Statement: {
-        Block: [
+      "Declarations": null,
+      "Statement": {
+        "Block": [
           {
-            Expression: {
-              Constant: 0
+            "Expression": {
+              "Constant": {
+                "Kind": "IntLiteral",
+                "Text": "0"
+              }
             }
           }
         ]

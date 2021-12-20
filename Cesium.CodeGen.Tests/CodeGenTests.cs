@@ -1,27 +1,45 @@
-using System;
-using System.Linq;
+using System.Text;
 using Cesium.Parser;
+using Cesium.Test.Framework;
 using Mono.Cecil;
-using Mono.Cecil.Rocks;
-using Xunit;
 using Yoakke.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
 
-public class CodeGenTests
+public class CodeGenTests : VerifyTestBase
 {
-    [Fact]
-    public void EmptyMainTest()
+    private static Task VerifyMethods(TypeDefinition type)
     {
-        const string source = "int main() {}";
+        var result = new StringBuilder();
+        foreach (var method in type.Methods)
+        {
+            result.AppendLine(method.ToString());
+            foreach (var instruction in method.Body.Instructions)
+                result.AppendLine($"  {instruction}");
+        }
+
+        return Verify(result);
+    }
+
+    private static Task DoTest(string source)
+    {
         var translationUnit = new CParser(new CLexer(source)).ParseTranslationUnit().Ok.Value;
         var assembly = Generator.GenerateAssembly(
             translationUnit,
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console);
 
+        // To resolve IL labels:
+        using (var stream = new MemoryStream())
+            assembly.Write(stream);
+
         var moduleType = assembly.Modules.Single().GetType("<Module>");
-        var method = moduleType.GetMethods().Single();
-        Assert.Equal("main", method.Name);
+        return VerifyMethods(moduleType);
     }
+
+    [Fact]
+    public Task EmptyMainTest() => DoTest("int main() {}");
+
+    [Fact]
+    public Task ArithmeticMainTest() => DoTest("int main() { return 2 + 2 * 2; }");
 }

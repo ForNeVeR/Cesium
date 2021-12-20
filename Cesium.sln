@@ -29,6 +29,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cesium.Samples", "Cesium.Samples", "{5BF9DD98-42E8-4903-86EB-516A10C86642}"
 	ProjectSection(SolutionItems) = preProject
 		Cesium.Samples\minimal.c = Cesium.Samples\minimal.c
+		Cesium.Samples\arithmetics.c = Cesium.Samples\arithmetics.c
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Test.Framework", "Cesium.Test.Framework\Cesium.Test.Framework.csproj", "{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB714E-12F8-46E2-98D8-494723EA92E1}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\approve-all.ps1 = scripts\approve-all.ps1
 	EndProjectSection
 EndProject
 Global
@@ -61,6 +69,10 @@ Global
 		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{634B2D69-BE31-44BF-8C5D-2DD86E66DC53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C08E4851-DE2E-490E-970D-4F6A0A902A98} = {720F6830-E724-4B3A-BFDC-3FA1301A59D0}

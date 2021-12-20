@@ -1,17 +1,23 @@
 ﻿{
-  Declarations: [
+  "Declarations": [
     {
-      Specifiers: [
+      "Specifiers": [
         {
-          TypeName: int
+          "TypeName": "int"
         }
       ],
-      Declarator: {
-        DirectDeclarator: {
-          Name: main
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "main",
+          "ParameterList": null,
+          "IdentifierList": null
         }
       },
-      Statement: {}
+      "Declarations": null,
+      "Statement": {
+        "Block": []
+      }
     }
   ]
 }

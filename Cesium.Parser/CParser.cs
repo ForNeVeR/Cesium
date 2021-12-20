@@ -54,7 +54,7 @@ public partial class CParser
 
     // 6.5.1 Primary expressions
     [Rule("primary_expression: constant")]
-    private static ConstantExpression MakeConstantExpression(ICToken constant) => new(constant.Text);
+    private static ConstantExpression MakeConstantExpression(ICToken constant) => new(constant);
 
     // TODO:
     // primary-expression:
