@@ -8,7 +8,7 @@ using Yoakke.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
 
-public class UnitTest1
+public class CodeGenTests
 {
     [Fact]
     public void EmptyMainTest()
