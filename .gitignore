@@ -1,8 +1,9 @@
 /.idea/
-.vs/
+/.vs/
 
 bin/
 obj/
 
-*.user
 *.exe
+*.runtimeconfig.json
+*.user
