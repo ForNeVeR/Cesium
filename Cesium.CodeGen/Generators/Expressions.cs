@@ -1,5 +1,4 @@
 using Cesium.Ast;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
 
@@ -7,22 +6,22 @@ namespace Cesium.CodeGen.Generators;
 
 internal static class Expressions
 {
-    public static void EmitExpression(MethodDefinition method, Expression expression)
+    public static void EmitExpression(FunctionScope scope, Expression expression)
     {
         switch (expression)
         {
             case ConstantExpression c:
-                EmitConstantExpression(method, c);
+                EmitConstantExpression(scope, c);
                 break;
             case BinaryOperatorExpression b:
-                EmitBinaryOperatorExpression(method, b);
+                EmitBinaryOperatorExpression(scope, b);
                 break;
             default:
                 throw new Exception($"Expression not supported: {expression}.");
         }
     }
 
-    private static void EmitConstantExpression(MethodDefinition method, ConstantExpression expression)
+    private static void EmitConstantExpression(FunctionScope scope, ConstantExpression expression)
     {
         var token = expression.Constant;
         var instruction = token switch
@@ -32,14 +31,14 @@ internal static class Expressions
             _ => throw new Exception($"Constant token not supported: {token}.")
         };
 
-        method.Body.Instructions.Add(instruction);
+        scope.Method.Body.Instructions.Add(instruction);
     }
 
-    private static void EmitBinaryOperatorExpression(MethodDefinition method, BinaryOperatorExpression expression)
+    private static void EmitBinaryOperatorExpression(FunctionScope scope, BinaryOperatorExpression expression)
     {
-        EmitExpression(method, expression.Left);
-        EmitExpression(method, expression.Right);
-        method.Body.Instructions.Add(Instruction.Create(GetOpCode()));
+        EmitExpression(scope, expression.Left);
+        EmitExpression(scope, expression.Right);
+        scope.Method.Body.Instructions.Add(Instruction.Create(GetOpCode()));
 
         OpCode GetOpCode() => expression.Operator switch
         {

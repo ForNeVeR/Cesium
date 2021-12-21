@@ -25,9 +25,10 @@ internal static class Functions
 
     public static void EmitFunction(MethodDefinition method, FunctionDefinition function)
     {
+        var scope = new FunctionScope(method);
         foreach (var statement in function.Statement.Block)
         {
-            EmitStatement(method, (Statement)statement);
+            EmitStatement(scope, (Statement)statement);
         }
     }
 }
