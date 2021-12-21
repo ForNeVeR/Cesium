@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.Compiler;
@@ -12,8 +12,23 @@ Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}"
 
 return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
     {
-        if (args.InputFilePath == null) throw new Exception("Input file path should be set.");
-        if (args.OutputFilePath == null) throw new Exception("Input file path should be set.");
+        if (args.InputFilePath == null)
+        {
+            Console.Error.WriteLine($"Input file path should be set.");
+            return 2;
+        }
+
+        if (args.OutputFilePath == null)
+        {
+            Console.Error.WriteLine($"Output file path should be set.");
+            return 2;
+        }
+
+        if (!File.Exists(args.InputFilePath))
+        {
+            Console.Error.WriteLine($"File {args.InputFilePath} not found.");
+            return 2;
+        }
 
         using var input = new FileStream(args.InputFilePath, FileMode.Open);
         using var reader = new StreamReader(input, Encoding.UTF8);
