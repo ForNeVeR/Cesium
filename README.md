@@ -24,11 +24,13 @@ Usage
 $ dotnet run --project Cesium.Compiler -- <path to the input .c file> <path to the output assembly>
 ```
 
-For example, this will generate an assembly executable by .NET Framework:
+For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
 
 ```console
 $ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c out.exe
-$ ./out.exe
+$ dotnet ./out.exe # run with .NET 6
+$ ./out.exe # only on Windows, run with .NET Framework
+$ mono ./out.exe # run with Mono
 ```
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-umbra-

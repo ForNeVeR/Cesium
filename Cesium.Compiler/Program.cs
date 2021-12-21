@@ -12,6 +12,9 @@ Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}"
 
 return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
     {
+        if (args.InputFilePath == null) throw new Exception("Input file path should be set.");
+        if (args.OutputFilePath == null) throw new Exception("Input file path should be set.");
+
         using var input = new FileStream(args.InputFilePath, FileMode.Open);
         using var reader = new StreamReader(input, Encoding.UTF8);
 
@@ -37,6 +40,13 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
             new AssemblyNameDefinition(assemblyName, new Version()),
             moduleKind);
         assembly.Write(args.OutputFilePath);
+
+        if (moduleKind == ModuleKind.Console)
+        {
+            var runtimeConfigFilePath = Path.ChangeExtension(args.OutputFilePath, "runtimeconfig.json");
+            Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
+            File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet6());
+        }
 
         return 0;
     },
