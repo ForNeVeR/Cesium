@@ -10,12 +10,21 @@ internal static class Statements
     {
         switch (statement)
         {
+            case ExpressionStatement e:
+                EmitExpressionStatement(scope, e);
+                break;
             case ReturnStatement r:
                 EmitReturnStatement(scope, r);
                 break;
             default:
                 throw new Exception($"Statement not supported: {statement}.");
         }
+    }
+
+    private static void EmitExpressionStatement(FunctionScope scope, ExpressionStatement statement)
+    {
+        if (statement.Expression != null)
+            EmitExpression(scope, statement.Expression);
     }
 
     private static void EmitReturnStatement(FunctionScope scope, ReturnStatement statement)
