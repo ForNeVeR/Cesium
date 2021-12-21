@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using Cesium.CodeGen;
+using Cesium.CodeGen.Generators;
 using Cesium.Compiler;
 using Cesium.Parser;
 using CommandLine;
@@ -57,7 +58,7 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
         };
 
         Console.WriteLine($"Generating assembly {args.OutputFilePath}.");
-        var assembly = Generator.GenerateAssembly(
+        var assembly = Assemblies.Generate(
             translationUnit,
             new AssemblyNameDefinition(assemblyName, new Version()),
             moduleKind,

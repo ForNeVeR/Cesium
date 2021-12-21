@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Generators;
 using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;
@@ -10,7 +11,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     protected static AssemblyDefinition GenerateAssembly(string source, TargetRuntimeDescriptor? targetRuntime)
     {
         var translationUnit = new CParser(new CLexer(source)).ParseTranslationUnit().Ok.Value;
-        var assembly = Generator.GenerateAssembly(
+        var assembly = Assemblies.Generate(
             translationUnit,
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console,
