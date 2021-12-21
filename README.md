@@ -12,6 +12,7 @@ Implementation Status
 
 - [ ] C17 parser: _just started_
 - [ ] CIL code generator: _just started_
+- [ ] PDB support: _none_
 - [ ] C preprocessor: _none_
 - [ ] .NET SDK: _none_
 - [ ] Standard library: _none_
