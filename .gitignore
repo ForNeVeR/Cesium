@@ -1,6 +1,8 @@
 /.idea/
+.vs/
 
 bin/
 obj/
 
 *.user
+*.exe
