@@ -49,14 +49,22 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
             var o => throw new Exception($"Unknown file extension: {o}.")
         };
 
+        var targetRuntime = args.Framework switch
+        {
+            TargetFrameworkKind.NetFramework => TargetRuntimeDescriptor.Net48,
+            TargetFrameworkKind.NetStandard => TargetRuntimeDescriptor.NetStandard20,
+            _ => TargetRuntimeDescriptor.Net60
+        };
+
         Console.WriteLine($"Generating assembly {args.OutputFilePath}.");
         var assembly = Generator.GenerateAssembly(
             translationUnit,
             new AssemblyNameDefinition(assemblyName, new Version()),
-            moduleKind);
+            moduleKind,
+            targetRuntime);
         assembly.Write(args.OutputFilePath);
 
-        if (moduleKind == ModuleKind.Console)
+        if (moduleKind == ModuleKind.Console && args.Framework == TargetFrameworkKind.Net)
         {
             var runtimeConfigFilePath = Path.ChangeExtension(args.OutputFilePath, "runtimeconfig.json");
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
