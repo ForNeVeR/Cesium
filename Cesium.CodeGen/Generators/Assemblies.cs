@@ -1,12 +1,12 @@
 ﻿using Cesium.Ast;
 using Mono.Cecil;
-using static Cesium.CodeGen.Functions;
+using static Cesium.CodeGen.Generators.Functions;
 
-namespace Cesium.CodeGen;
+namespace Cesium.CodeGen.Generators;
 
-public static class Generator
+public static class Assemblies
 {
-    public static AssemblyDefinition GenerateAssembly(
+    public static AssemblyDefinition Generate(
         TranslationUnit translationUnit,
         AssemblyNameDefinition name,
         ModuleKind kind,

@@ -1,9 +1,9 @@
 using Cesium.Ast;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using static Cesium.CodeGen.Statements;
+using static Cesium.CodeGen.Generators.Statements;
 
-namespace Cesium.CodeGen;
+namespace Cesium.CodeGen.Generators;
 
 internal static class Functions
 {

@@ -3,7 +3,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
 
-namespace Cesium.CodeGen;
+namespace Cesium.CodeGen.Generators;
 
 internal static class Expressions
 {
