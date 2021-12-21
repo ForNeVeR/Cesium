@@ -8,24 +8,10 @@ namespace Cesium.CodeGen.Tests;
 
 public class CodeGenTests : VerifyTestBase
 {
-    private static Task DoDefaultedTargetRuntimeTest()
+    private static AssemblyDefinition GenerateAssembly(
+        string source, Generator.TargetRuntimeIdentifier? targetRuntime)
     {
-        var translationUnit = new CParser(new CLexer("int main() {}")).ParseTranslationUnit().Ok.Value;
-        var assembly = Generator.GenerateAssembly(
-            translationUnit,
-            new AssemblyNameDefinition("test", new Version()),
-            ModuleKind.Console);
-
-        // To resolve IL labels:
-        using (var stream = new MemoryStream())
-            assembly.Write(stream);
-
-        return Verify(assembly.MainModule.TypeSystem.CoreLibrary.ToString());
-    }
-
-    private static Task DoTargetRuntimeTest(Generator.TargetRuntimeIdentifier targetRuntime)
-    {
-        var translationUnit = new CParser(new CLexer("int main() {}")).ParseTranslationUnit().Ok.Value;
+        var translationUnit = new CParser(new CLexer(source)).ParseTranslationUnit().Ok.Value;
         var assembly = Generator.GenerateAssembly(
             translationUnit,
             new AssemblyNameDefinition("test", new Version()),
@@ -36,8 +22,15 @@ public class CodeGenTests : VerifyTestBase
         using (var stream = new MemoryStream())
             assembly.Write(stream);
 
-        return Verify(assembly.MainModule.TypeSystem.CoreLibrary.ToString()).
-            UseParameters(targetRuntime.targetFramework, targetRuntime.version);
+        return assembly;
+    }
+
+    private static Task DoTargetRuntimeTest(Generator.TargetRuntimeIdentifier? targetRuntime)
+    {
+        var assembly = GenerateAssembly("int main() {}", targetRuntime);
+        var verify = Verify(assembly.MainModule.TypeSystem.CoreLibrary.ToString());
+        return targetRuntime != null ?
+            verify.UseParameters(targetRuntime.targetFramework, targetRuntime.version) : verify;
     }
 
     private static Task VerifyMethods(TypeDefinition type)
@@ -55,15 +48,7 @@ public class CodeGenTests : VerifyTestBase
 
     private static Task DoTest(string source)
     {
-        var translationUnit = new CParser(new CLexer(source)).ParseTranslationUnit().Ok.Value;
-        var assembly = Generator.GenerateAssembly(
-            translationUnit,
-            new AssemblyNameDefinition("test", new Version()),
-            ModuleKind.Console);
-
-        // To resolve IL labels:
-        using (var stream = new MemoryStream())
-            assembly.Write(stream);
+        var assembly = GenerateAssembly(source, default);
 
         var moduleType = assembly.Modules.Single().GetType("<Module>");
         return VerifyMethods(moduleType);
@@ -71,7 +56,7 @@ public class CodeGenTests : VerifyTestBase
 
     [Fact]
     public Task DefaultedFrameworkTest() =>
-        DoDefaultedTargetRuntimeTest();
+        DoTargetRuntimeTest(default);
 
     [Theory]
     [InlineData(Generator.TargetFrameworks.mscorlib, "4.0.0.0")]
