@@ -294,7 +294,7 @@ public partial class CParser
     // 6.8 Statements and blocks
     // TODO: [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
-    // TODO: [Rule("statement: expression_statement")]
+    [Rule("statement: expression_statement")]
     // TODO: [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
@@ -316,7 +316,10 @@ public partial class CParser
     [Rule("block_item: statement")]
     private static IBlockItem MakeBlockItem(IBlockItem declaration) => declaration;
 
-    // TODO: 6.8.3 Expression and null statements
+    // 6.8.3 Expression and null statements
+    [Rule("expression_statement: expression? ';'")]
+    private static ExpressionStatement MakeExpressionStatement(Expression expression, IToken _) => new(expression);
+
     // TODO: 6.8.4 Selection statements
     // TODO: 6.8.5 Iteration statements
 

@@ -30,4 +30,12 @@ public class FullParserTests : ParserTestBase
 
     [Fact]
     public Task VariableTest() => DoTest("int main() { int x = 0; return x + 1; }");
+
+    [Fact]
+    public Task VariableArithmeticTest() => DoTest(@"int main()
+{
+    int x = 0;
+    x = x + 1;
+    return x + 1;
+ }");
 }
