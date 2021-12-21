@@ -36,29 +36,4 @@ public static class Assemblies
 
         return assembly;
     }
-
-    private static MethodDefinition GenerateMethod(ModuleDefinition module, FunctionDefinition definition)
-    {
-        var method = new MethodDefinition(
-            definition.Declarator.DirectDeclarator.Name,
-            MethodAttributes.Public | MethodAttributes.Static,
-            GetReturnType(module, definition));
-
-        if (definition.Declarator.DirectDeclarator.Name == "main")
-            EmitMainFunction(method, definition);
-        else
-            EmitFunction(method, definition);
-
-        return method;
-    }
-
-    private static TypeReference GetReturnType(ModuleDefinition module, FunctionDefinition definition)
-    {
-        var typeSpecifier = definition.Specifiers.OfType<TypeSpecifier>().Single();
-        return typeSpecifier.TypeName switch
-        {
-            "int" => module.TypeSystem.Int32,
-            var unknown => throw new Exception($"Unknown type specifier: {unknown}")
-        };
-    }
 }

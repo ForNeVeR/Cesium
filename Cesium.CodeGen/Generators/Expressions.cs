@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
 
@@ -13,6 +14,9 @@ internal static class Expressions
             case ConstantExpression c:
                 EmitConstantExpression(scope, c);
                 break;
+            case AssignmentExpression a:
+                EmitAssignmentExpression(scope, a);
+                break;
             case BinaryOperatorExpression b:
                 EmitBinaryOperatorExpression(scope, b);
                 break;
@@ -26,9 +30,11 @@ internal static class Expressions
         var token = expression.Constant;
         var instruction = token switch
         {
-            { Kind: CTokenType.IntLiteral } => Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text)),
             // TODO: Optimizations like Ldc_I4_0 for selected constants
-            _ => throw new Exception($"Constant token not supported: {token}.")
+            { Kind: CTokenType.IntLiteral } => Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text)),
+            { Kind: CTokenType.Identifier, Text: var name } =>
+                Instruction.Create(OpCodes.Ldloc, scope.Variables[name]),
+            _ => throw new Exception($"Constant token not supported: {token.Kind} {token.Text}.")
         };
 
         scope.Method.Body.Instructions.Add(instruction);
@@ -38,13 +44,31 @@ internal static class Expressions
     {
         EmitExpression(scope, expression.Left);
         EmitExpression(scope, expression.Right);
-        scope.Method.Body.Instructions.Add(Instruction.Create(GetOpCode()));
+        scope.Method.Body.Instructions.Add(GetInstruction());
 
-        OpCode GetOpCode() => expression.Operator switch
+        Instruction GetInstruction() => expression.Operator switch
         {
-            "+" => OpCodes.Add,
-            "*" => OpCodes.Mul,
+            "+" => Instruction.Create(OpCodes.Add),
+            "*" => Instruction.Create(OpCodes.Mul),
             _ => throw new Exception($"Operator not supported: {expression.Operator}.")
         };
+    }
+
+    private static void EmitAssignmentExpression(FunctionScope scope, AssignmentExpression expression)
+    {
+        EmitExpression(scope, expression.Right);
+
+        switch (expression.Operator)
+        {
+            case "=":
+                var nameToken = ((ConstantExpression)expression.Left).Constant;
+                if (nameToken.Kind != CTokenType.Identifier)
+                    throw new Exception($"Not an lvalue: {nameToken.Kind} {nameToken.Text}");
+
+                scope.StLoc(scope.Variables[nameToken.Text]);
+                break;
+            default:
+                throw new Exception($"Assignment expression not supported: {expression.Operator}.");
+        }
     }
 }
