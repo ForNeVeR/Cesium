@@ -54,12 +54,13 @@ public partial class CParser
 
     // 6.5.1 Primary expressions
     [Rule("primary_expression: constant")]
-    private static ConstantExpression MakeConstantExpression(ICToken constant) => new(constant);
+    private static Expression MakeConstantExpression(ICToken constant) => new ConstantExpression(constant);
+
+    [Rule("primary_expression: Identifier")]
+    private static Expression MakeIdentifierExpression(IToken identifier) => new IdentifierExpression(identifier.Text);
 
     // TODO:
     // primary-expression:
-    //     identifier
-    //     constant
     //     string-literal
     //     ( expression )
     //     generic-selection
@@ -92,11 +93,24 @@ public partial class CParser
     // TODO: 6.5.15 Conditional operator
 
     // 6.5.16 Assignment operators
-    // TODO:
-    // assignment-expression:
-    //     unary-expression assignment-operator assignment-expression
-    //     assignment-operator: one of
-    //         = *= /= %= += -= <<= >>= &= ^= |=
+    [Rule("assignment_expression: unary_expression assignment_operator assignment_expression")]
+    private static Expression MakeAssignmentExpression(
+        Expression storage,
+        IToken @operator,
+        Expression value) => new AssignmentExpression(storage, @operator.Text, value);
+
+    [Rule("assignment_operator: '='")]
+    [Rule("assignment_operator: '*='")]
+    [Rule("assignment_operator: '/='")]
+    [Rule("assignment_operator: '%='")]
+    [Rule("assignment_operator: '+='")]
+    [Rule("assignment_operator: '-='")]
+    [Rule("assignment_operator: '<<='")]
+    [Rule("assignment_operator: '>>='")]
+    [Rule("assignment_operator: '&='")]
+    [Rule("assignment_operator: '^='")]
+    [Rule("assignment_operator: '|='")]
+    private static IToken MakeAssignmentOperator(IToken token) => token;
 
     // 6.5.17 Comma operator
     // TODO: [Rule("expression: expression ',' assignment_expression")]
@@ -104,10 +118,11 @@ public partial class CParser
     // TODO: 6.6 Constant expressions
 
     // 6.7 Declarations
-    [Rule("declaration: declaration_specifiers init_declarator_list?")]
+    [Rule("declaration: declaration_specifiers init_declarator_list? ';'")]
     private static Declaration MakeDeclaration(
         DeclarationSpecifiers specifiers,
-        InitDeclaratorList? initDeclarators) => new(specifiers, initDeclarators);
+        InitDeclaratorList? initDeclarators,
+        IToken _) => new(specifiers, initDeclarators);
 
     // TODO: [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
     [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
@@ -116,11 +131,8 @@ public partial class CParser
     // TODO: [Rule("declaration_specifiers: alignment_specifier declaration_specifiers?")]
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(
         TypeSpecifier typeSpecifier,
-        DeclarationSpecifiers? rest)
-    {
-        var specifiers = ImmutableArray.Create((DeclarationSpecifier)typeSpecifier);
-        return rest == null ? specifiers : specifiers.Concat(rest.Value).ToImmutableArray();
-    }
+        DeclarationSpecifiers? rest) =>
+        rest?.Insert(0, typeSpecifier) ?? ImmutableArray.Create((DeclarationSpecifier)typeSpecifier);
 
     [Rule("init_declarator_list: init_declarator")]
     private static InitDeclaratorList MakeInitDeclaratorList(InitDeclarator declarator) =>
@@ -133,9 +145,9 @@ public partial class CParser
     [Rule("init_declarator: declarator")]
     private static InitDeclarator MakeInitDeclarator(Declarator declarator) => new(declarator);
 
-    // TODO: [Rule("init_declarator: declarator = initializer")]
-    // private static InitDeclarationList MakeInitDeclarator(Declarator declarator, Initializer initializer) =>
-        // new InitDeclarator(declarator, initializer);
+    [Rule("init_declarator: declarator '=' initializer")]
+    private static InitDeclarator MakeInitDeclarator(Declarator declarator, IToken _, Initializer initializer) =>
+        new(declarator, initializer);
 
     // TODO: 6.7.1 Storage_class specifiers
 
@@ -254,7 +266,29 @@ public partial class CParser
 
     // TODO: 6.7.7 Type names
     // TODO: 6.7.8 Type definitions
-    // TODO: 6.7.9 Initialization
+
+    // 6.7.9 Initialization
+
+    [Rule("initializer: assignment_expression")]
+    private static AssignmentInitializer MakeInitializer(Expression assignmentExpression) =>
+        new(assignmentExpression);
+
+    // TODO:
+    // initializer:
+    //     { initializer-list }
+    //     { initializer-list , }
+    // initializer-list:
+    //     designation? initializer
+    //     initializer-list , designation? initializer
+    // designation:
+    //     designator-list =
+    // designator-list:
+    //     designator
+    //     designator-list designator
+    // designator:
+    //     [ constant-expression ]
+    //     . identifier
+
     // TODO: 6.7.10 Static assertions
 
     // 6.8 Statements and blocks
@@ -264,7 +298,7 @@ public partial class CParser
     // TODO: [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
-    private static Statement MakeStatement(Statement statement) => statement;
+    private static Statement MakeStatementIdentity(Statement statement) => statement;
 
     // TODO: 6.8.1 Labeled statements
     // 6.8.2 Compound statement

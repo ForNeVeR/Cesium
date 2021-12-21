@@ -1,0 +1,51 @@
+﻿{
+  "Declarations": [
+    {
+      "Specifiers": [
+        {
+          "TypeName": "void"
+        }
+      ],
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "foo",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "Block": [
+          {
+            "Specifiers": [
+              {
+                "TypeName": "int"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "Declarator": {
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "Name": "x",
+                    "ParameterList": null,
+                    "IdentifierList": null
+                  }
+                },
+                "Initializer": {
+                  "Expression": {
+                    "Constant": {
+                      "Kind": "IntLiteral",
+                      "Text": "0"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

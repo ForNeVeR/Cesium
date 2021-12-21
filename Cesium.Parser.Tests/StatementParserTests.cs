@@ -1,0 +1,28 @@
+using Cesium.Test.Framework;
+using Yoakke.C.Syntax;
+
+namespace Cesium.Parser.Tests;
+
+public class StatementParserTests : ParserTestBase
+{
+    private static Task DoTest(string source)
+    {
+        var lexer = new CLexer(source);
+        var parser = new CParser(lexer);
+
+        var result = parser.ParseStatement();
+        Assert.True(result.IsOk, GetErrorString(result));
+
+        var serialized = JsonSerialize(result.Ok.Value);
+        return Verify(serialized);
+    }
+
+    [Fact]
+    public Task ReturnArithmetic() => DoTest("return 2 + 2 * 2;");
+
+    [Fact]
+    public Task ReturnVariableArithmetic() => DoTest("return x + 2 * 2;");
+
+    [Fact]
+    public Task CompoundStatementWithVariable() => DoTest("{ int x = 0; }");
+}

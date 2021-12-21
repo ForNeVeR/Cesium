@@ -1,0 +1,26 @@
+﻿{
+  "Expression": {
+    "Left": {
+      "Constant": {
+        "Kind": "Identifier",
+        "Text": "x"
+      }
+    },
+    "Operator": "+",
+    "Right": {
+      "Left": {
+        "Constant": {
+          "Kind": "IntLiteral",
+          "Text": "2"
+        }
+      },
+      "Operator": "*",
+      "Right": {
+        "Constant": {
+          "Kind": "IntLiteral",
+          "Text": "2"
+        }
+      }
+    }
+  }
+}

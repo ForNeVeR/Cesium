@@ -1,0 +1,27 @@
+﻿{
+  "Specifiers": [
+    {
+      "TypeName": "int"
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "x",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Initializer": {
+        "Expression": {
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "0"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -10,6 +10,7 @@
       <PackageReference Include="Verify.Xunit" Version="14.11.2" />
       <PackageReference Include="Yoakke.C.Syntax" Version="2021.12.19-2.34.31-nightly" />
       <PackageReference Include="Yoakke.Lexer" Version="2021.12.19-2.34.31-nightly" />
+      <PackageReference Include="Yoakke.Parser" Version="2021.12.19-2.34.31-nightly" />
     </ItemGroup>
 
 </Project>
