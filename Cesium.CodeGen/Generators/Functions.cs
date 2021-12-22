@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -9,15 +10,18 @@ namespace Cesium.CodeGen.Generators;
 
 internal static class Functions
 {
-    public static MethodDefinition GenerateMethod(ModuleDefinition module, FunctionDefinition definition)
+    public static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition definition)
     {
+        var functionName = definition.Declarator.DirectDeclarator.Name;
         var method = new MethodDefinition(
-            definition.Declarator.DirectDeclarator.Name,
+            functionName,
             MethodAttributes.Public | MethodAttributes.Static,
-            GetReturnType(module, definition));
-        var scope = new FunctionScope(module, method);
+            GetReturnType(context.Module, definition));
 
-        if (definition.Declarator.DirectDeclarator.Name == "main")
+        context.Functions.Add(functionName, method);
+        var scope = new FunctionScope(context, method);
+
+        if (functionName == "main")
             EmitMainFunction(scope, definition);
         else
             EmitFunction(scope, definition);

@@ -1,4 +1,5 @@
 ﻿using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 using static Cesium.CodeGen.Generators.Functions;
 
@@ -20,9 +21,10 @@ public static class Assemblies
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
+        var context = new TranslationUnitContext(module);
         foreach (var declaration in translationUnit.Declarations)
         {
-            var method = GenerateMethod(module, (FunctionDefinition)declaration);
+            var method = GenerateMethod(context, (FunctionDefinition)declaration);
             moduleType.Methods.Add(method);
             if (method.Name == "main")
             {

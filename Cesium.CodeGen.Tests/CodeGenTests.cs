@@ -52,5 +52,16 @@ public class CodeGenTests : CodeGenTestBase
     int x = 0;
     x = x + 1;
     return x + 1;
- }");
+}");
+
+    [Fact]
+    public Task FunctionCallTest() => DoTest(@"int foo()
+{
+    return 42;
+}
+
+int main()
+{
+    return foo();
+}");
 }

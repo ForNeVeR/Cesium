@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
 using static Cesium.CodeGen.Generators.Expressions;

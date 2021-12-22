@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
@@ -19,6 +20,9 @@ internal static class Expressions
                 break;
             case BinaryOperatorExpression b:
                 EmitBinaryOperatorExpression(scope, b);
+                break;
+            case FunctionCallExpression f:
+                EmitFunctionCallExpression(scope, f);
                 break;
             default:
                 throw new Exception($"Expression not supported: {expression}.");
@@ -70,5 +74,21 @@ internal static class Expressions
             default:
                 throw new Exception($"Assignment expression not supported: {expression.Operator}.");
         }
+    }
+
+    private static void EmitFunctionCallExpression(FunctionScope scope, FunctionCallExpression expression)
+    {
+        foreach (var argument in expression.Arguments ?? Enumerable.Empty<Expression>())
+            EmitExpression(scope, argument);
+
+        var functionNameToken = ((ConstantExpression)expression.Function).Constant;
+        if (functionNameToken.Kind != CTokenType.Identifier)
+            throw new NotSupportedException(
+                $"Function call {functionNameToken.Kind} {functionNameToken.Text} is not supported.");
+
+        var functionName = functionNameToken.Text;
+        var callee = scope.Functions[functionName];
+
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee));
     }
 }

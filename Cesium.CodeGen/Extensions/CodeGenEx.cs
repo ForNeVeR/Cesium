@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Extensions;
