@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 
@@ -80,11 +77,9 @@ public class LexerTests
         yield return new object[] { "main#" };
         yield return new object[] { "main+" };
         yield return new object[] { "main&" };
-        yield return new object[] { "main&" };
-        yield return new object[] { "main&" };
         yield return new object[] { "9G" };
 
-        // This is valid tests which cannot be expressed in Yoakke
+        // TODO: This is valid tests which cannot be expressed in Yoakke
         //yield return new object[] { "extremely_long_identifier_of_more_then_31_character" };
     }
 
