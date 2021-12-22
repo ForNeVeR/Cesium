@@ -11,3 +11,4 @@ public record FunctionDefinition(
     Declarator Declarator,
     ImmutableArray<Declaration>? Declarations,
     CompoundStatement Statement) : ExternalDeclaration;
+public record SymbolDeclaration(Declaration Declaration) : ExternalDeclaration;

@@ -376,8 +376,11 @@ public partial class CParser
         new(init.Declarations.Add(newDeclaration));
 
     [Rule("external_declaration: function_definition")]
-    // TODO: [Rule("external_declaration: declaration")]
     private static ExternalDeclaration MakeExternalDeclaration(FunctionDefinition function) => function;
+
+    [Rule("external_declaration: declaration")]
+    private static ExternalDeclaration MakeExternalDeclaration(Declaration declaration) =>
+        new SymbolDeclaration(declaration);
 
     // 6.9.1 Function definitions
     [Rule("function_definition: declaration_specifiers declarator declaration_list? compound_statement")]

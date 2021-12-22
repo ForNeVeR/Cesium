@@ -1,0 +1,125 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.SymbolDeclaration, Cesium.Ast",
+      "Declaration": {
+        "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+        "Specifiers": [
+          {
+            "$type": "Cesium.Ast.CliImportSpecifier, Cesium.Ast",
+            "MemberName": "\"Foo.Bar::Baz\""
+          },
+          {
+            "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+            "TypeName": "int"
+          }
+        ],
+        "InitDeclarators": [
+          {
+            "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+            "Declarator": {
+              "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+              "Pointer": null,
+              "DirectDeclarator": {
+                "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
+                "Name": "foo",
+                "ParameterList": null,
+                "IdentifierList": null
+              }
+            },
+            "Initializer": null
+          }
+        ]
+      }
+    },
+    {
+      "$type": "Cesium.Ast.FunctionDefinition, Cesium.Ast",
+      "Specifiers": [
+        {
+          "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+          "TypeName": "int"
+        }
+      ],
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
+          "Name": "main",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
+        "Block": [
+          {
+            "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+            "Specifiers": [
+              {
+                "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+                "TypeName": "int"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+                "Declarator": {
+                  "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
+                    "Name": "f",
+                    "ParameterList": null,
+                    "IdentifierList": null
+                  }
+                },
+                "Initializer": {
+                  "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+                  "Expression": {
+                    "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
+                    "Function": {
+                      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                      "Constant": {
+                        "Kind": "Identifier",
+                        "Text": "foo"
+                      }
+                    },
+                    "Arguments": null
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
+            "Expression": {
+              "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+              "Left": {
+                "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
+                "Function": {
+                  "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                  "Constant": {
+                    "Kind": "Identifier",
+                    "Text": "foo"
+                  }
+                },
+                "Arguments": null
+              },
+              "Operator": "+",
+              "Right": {
+                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "Constant": {
+                  "Kind": "IntLiteral",
+                  "Text": "1"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

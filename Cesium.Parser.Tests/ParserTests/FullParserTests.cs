@@ -57,4 +57,14 @@ int main()
     int f = foo();
     return foo() + 1;
 }");
+
+    [Fact]
+    public Task CliImport() => DoTest(@"__cli_import(""Foo.Bar::Baz"")
+int foo();
+
+int main()
+{
+    int f = foo();
+    return foo() + 1;
+}");
 }
