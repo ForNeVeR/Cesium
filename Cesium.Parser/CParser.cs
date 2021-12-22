@@ -398,7 +398,59 @@ public partial class CParser
 
     // TODO: 6.9.2 External object definitions
 
-    // TODO: 6.10 Preprocessing directives
+    // 6.10 Preprocessing directives
+
+    // TODO:
+    // preprocessing-file:
+    //     group?
+    // group:
+    //     group-part
+    //     group group-part
+    // group-part:
+    //     if-section
+    //     control-line
+    //     text-line
+    //     # non-directive
+    // if-section:
+    //     if-group elif-groups? else-group? endif-line
+    // if-group:
+    //     # if constant-expression new-line group?
+    //     # ifdef identifier new-line group?
+    //     # ifndef identifier new-line group?
+    // elif-groups:
+    //     elif-group
+    //     elif-groups elif-group
+    // elif-group:
+    //     # elif constant-expression new-line group?
+    // else-group:
+    //     # else new-line group?
+    // endif-line:
+    //     # endif new-line
+    // control-line:
+    //     # include pp-tokens new-line
+    //     # define identifier replacement-list new-line
+    //     # define identifier lparen identifier-list? ) replacement-list new-line
+    //     # define identifier lparen ... ) replacement-list new-line
+    //     # define identifier lparen identifier-list , ... ) replacement-list new-line
+    //     # undef identifier new-line
+    //     # line pp-tokens new-line
+    //     # error pp-tokens? new-line
+    //     # pragma pp-tokens? new-line
+    //     # new-line
+    // text-line:
+    //     pp-tokens? new-line
+    // non-directive:
+    //     pp-tokens new-line
+    // lparen:
+    //     a ( character not immediately preceded by white space
+    // replacement-list:
+    //     pp-tokens?
+    // pp-tokens:
+    //     preprocessing-token
+    //     pp-tokens preprocessing-token
+    // new-line:
+    //     the new-line character
+
     // TODO: 6.10.1 Conditional inclusion
     // TODO: 6.10.2 Source file inclusion
     // TODO: 6.10.3 Macro replacement
