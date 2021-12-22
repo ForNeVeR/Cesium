@@ -1,0 +1,11 @@
+﻿Identifier: __cli_import
+OpenParen: (
+StringLiteral: "System.Runtime.InteropServices.Marshal::AllocHGlobal"
+CloseParen: )
+KeywordVoid: void
+Multiply: *
+Identifier: malloc
+OpenParen: (
+Identifier: size_t
+CloseParen: )
+Semicolon: ;

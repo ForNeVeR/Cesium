@@ -5,10 +5,8 @@ namespace Cesium.Parser.Tests.ParserTests;
 
 public class DeclarationParserTests : ParserTestBase
 {
-    [Fact]
-    public Task InitializerDeclarationTest()
+    private static Task DoDeclarationParserTest(string source)
     {
-        const string source = "int x = 0;";
         var lexer = new CLexer(source);
         var parser = new CParser(lexer);
 
@@ -18,4 +16,11 @@ public class DeclarationParserTests : ParserTestBase
         var serialized = JsonSerialize(result.Ok.Value);
         return Verify(serialized);
     }
+
+    [Fact]
+    public Task InitializerDeclarationTest() => DoDeclarationParserTest("int x = 0;");
+
+    [Fact]
+    public Task CliImport() => DoDeclarationParserTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
+void *malloc(size_t);");
 }

@@ -40,6 +40,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB
 		scripts\approve-all.ps1 = scripts\approve-all.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
+	ProjectSection(SolutionItems) = preProject
+		docs\language-extensions.md = docs\language-extensions.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

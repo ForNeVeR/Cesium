@@ -1,0 +1,35 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.CliImportSpecifier, Cesium.Ast",
+      "MemberName": "\"System.Runtime.InteropServices.Marshal::AllocHGlobal\""
+    },
+    {
+      "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+      "TypeName": "void"
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": {
+          "$type": "Cesium.Ast.Pointer, Cesium.Ast",
+          "TypeQualifiers": null,
+          "ChildPointer": null
+        },
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
+          "Name": "malloc",
+          "ParameterList": null,
+          "IdentifierList": [
+            "size_t"
+          ]
+        }
+      },
+      "Initializer": null
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+﻿Identifier: __clr_import
+OpenParen: (
+Identifier: System
+Dot: .
+Identifier: Marshal
+CloseParen: )
+Semicolon: ;
+KeywordInt: int
+Identifier: main
+OpenParen: (
+CloseParen: )
+OpenBrace: {
+CloseBrace: }

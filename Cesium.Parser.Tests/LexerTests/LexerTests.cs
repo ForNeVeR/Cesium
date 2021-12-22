@@ -13,4 +13,8 @@ public class LexerTests : LexerTestBase
 
     [Fact]
     public Task ParametersTest() => DoLexerTest("int main(int argc, char  *argv [ ]) {}");
+
+    [Fact]
+    public Task CliImportTest() => DoLexerTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
+void *malloc(size_t);");
 }

@@ -21,6 +21,7 @@ Documentation
 -------------
 
 - [C17 Language Standard Draft][c17-draft]
+- [CLI-Related Language Extensions][docs.language-extensions]
 
 Usage
 -----
@@ -41,3 +42,4 @@ $ mono ./out.exe # run with Mono
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-umbra-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [status-umbra]: https://img.shields.io/badge/status-umbra-red.svg
+[docs.language-extensions]: docs/language-extensions.md
