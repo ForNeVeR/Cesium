@@ -35,3 +35,8 @@ $ mono ./out.exe # run with Mono
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-umbra-
 [status-umbra]: https://img.shields.io/badge/status-umbra-red.svg
+
+References
+-----
+
+- http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf
