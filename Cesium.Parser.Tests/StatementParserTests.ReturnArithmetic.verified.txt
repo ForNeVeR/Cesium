@@ -1,6 +1,9 @@
 ﻿{
+  "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
   "Expression": {
+    "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
     "Left": {
+      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
       "Constant": {
         "Kind": "IntLiteral",
         "Text": "2"
@@ -8,7 +11,9 @@
     },
     "Operator": "+",
     "Right": {
+      "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
       "Left": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
         "Constant": {
           "Kind": "IntLiteral",
           "Text": "2"
@@ -16,6 +21,7 @@
       },
       "Operator": "*",
       "Right": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
         "Constant": {
           "Kind": "IntLiteral",
           "Text": "2"

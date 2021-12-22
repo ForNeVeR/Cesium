@@ -33,7 +33,8 @@ public abstract class ParserTestBase : VerifyTestBase
     private static readonly JsonSerializerSettings SerializerOptions = new()
     {
         Formatting = Formatting.Indented,
-        Converters = { new TokenConverter<CTokenType>() }
+        Converters = { new TokenConverter<CTokenType>() },
+        TypeNameHandling = TypeNameHandling.Objects
     };
 
     protected static string JsonSerialize(object value) => JsonConvert.SerializeObject(value, SerializerOptions);
