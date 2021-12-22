@@ -1,4 +1,4 @@
-Cesium [![Status Umbra][status-umbra]][andivionian-status-classifier]
+Cesium [![Status Enfer][status-enfer]][andivionian-status-classifier]
 ======
 
 Cesium is a fully managed C compiler for CLI platform (.NET).
@@ -39,7 +39,7 @@ $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
 
-[andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-umbra-
+[andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
-[status-umbra]: https://img.shields.io/badge/status-umbra-red.svg
 [docs.language-extensions]: docs/language-extensions.md
+[status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
