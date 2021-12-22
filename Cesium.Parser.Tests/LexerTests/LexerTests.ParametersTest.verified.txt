@@ -1,0 +1,14 @@
+﻿KeywordInt: int
+Identifier: main
+OpenParen: (
+KeywordInt: int
+Identifier: argc
+Comma: ,
+KeywordChar: char
+Multiply: *
+Identifier: argv
+OpenBracket: [
+CloseBracket: ]
+CloseParen: )
+OpenBrace: {
+CloseBrace: }
