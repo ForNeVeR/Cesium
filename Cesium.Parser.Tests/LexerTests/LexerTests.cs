@@ -1,7 +1,7 @@
 using Yoakke.C.Syntax;
 using Yoakke.Lexer;
 
-namespace Cesium.Parser.Tests;
+namespace Cesium.Parser.Tests.LexerTests;
 
 public class LexerTests
 {

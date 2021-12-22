@@ -1,7 +1,7 @@
 using Cesium.Test.Framework;
 using Yoakke.C.Syntax;
 
-namespace Cesium.Parser.Tests;
+namespace Cesium.Parser.Tests.ParserTests;
 
 public class StatementParserTests : ParserTestBase
 {

@@ -3,7 +3,7 @@ using Xunit.Sdk;
 using Yoakke.C.Syntax;
 using Yoakke.Streams;
 
-namespace Cesium.Parser.Tests;
+namespace Cesium.Parser.Tests.ParserTests;
 
 public class FullParserTests : ParserTestBase
 {
