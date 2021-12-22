@@ -9,6 +9,7 @@ namespace Cesium.Parser;
 
 using ICToken = IToken<CTokenType>;
 
+using ArgumentExpressionList = ImmutableArray<Expression>;
 using BlockItemList = ImmutableArray<IBlockItem>;
 using DeclarationSpecifiers = ImmutableArray<DeclarationSpecifier>;
 using IdentifierList = ImmutableArray<string>;
@@ -65,7 +66,38 @@ public partial class CParser
     //     ( expression )
     //     generic-selection
 
-    // TODO: 6.5.2 Postfix operators
+    // 6.5.2 Postfix operators
+
+    [Rule("postfix_expression: postfix_expression '[' expression ']'")]
+    private static Expression MakeSubscriptingExpression(Expression @base, IToken _, Expression index, IToken __) =>
+        new SubscriptingExpression(@base, index);
+
+    [Rule("postfix_expression: postfix_expression '(' argument_expression_list? ')'")]
+    private static Expression MakeFunctionCallExpression(
+        Expression function,
+        IToken _,
+        ArgumentExpressionList? arguments,
+        IToken __) => new FunctionCallExpression(function, arguments);
+
+    // TODO:
+    // postfix-expression:
+    //     postfix-expression . identifier
+    //     postfix-expression -> identifier
+    //     postfix-expression ++
+    //     postfix-expression -
+    //     ( type-name ) { initializer-list }
+    //     ( type-name ) { initializer-list , }
+
+    [Rule("argument_expression_list: assignment_expression")]
+    private static ArgumentExpressionList MakeArgumentExpressionList(Expression expression) =>
+        ImmutableArray.Create(expression);
+
+    [Rule("argument_expression_list: argument_expression_list ',' assignment_expression")]
+    private static ArgumentExpressionList MakeArgumentExpressionList(
+        ArgumentExpressionList prev,
+        IToken _,
+        Expression expression) => prev.Add(expression);
+
     // TODO: 6.5.3 Unary operators
     // TODO: 6.5.4 Cast operators
 

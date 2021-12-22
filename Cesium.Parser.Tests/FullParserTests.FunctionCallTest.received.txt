@@ -1,0 +1,102 @@
+﻿{
+  "Declarations": [
+    {
+      "Specifiers": [
+        {
+          "TypeName": "int"
+        }
+      ],
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "foo",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "Block": [
+          {
+            "Expression": {
+              "Constant": {
+                "Kind": "IntLiteral",
+                "Text": "42"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Specifiers": [
+        {
+          "TypeName": "int"
+        }
+      ],
+      "Declarator": {
+        "Pointer": null,
+        "DirectDeclarator": {
+          "Name": "main",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "Block": [
+          {
+            "Specifiers": [
+              {
+                "TypeName": "int"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "Declarator": {
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "Name": "f",
+                    "ParameterList": null,
+                    "IdentifierList": null
+                  }
+                },
+                "Initializer": {
+                  "Expression": {
+                    "Function": {
+                      "Constant": {
+                        "Kind": "Identifier",
+                        "Text": "foo"
+                      }
+                    },
+                    "Arguments": null
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "Expression": {
+              "Left": {
+                "Function": {
+                  "Constant": {
+                    "Kind": "Identifier",
+                    "Text": "foo"
+                  }
+                },
+                "Arguments": null
+              },
+              "Operator": "+",
+              "Right": {
+                "Constant": {
+                  "Kind": "IntLiteral",
+                  "Text": "1"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
