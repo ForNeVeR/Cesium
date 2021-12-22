@@ -8,7 +8,7 @@
         "Specifiers": [
           {
             "$type": "Cesium.Ast.CliImportSpecifier, Cesium.Ast",
-            "MemberName": "\"Foo.Bar::Baz\""
+            "MemberName": "Foo.Bar::Baz"
           },
           {
             "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",

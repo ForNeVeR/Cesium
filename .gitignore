@@ -4,6 +4,7 @@
 bin/
 obj/
 
+*.dll
 *.exe
 *.runtimeconfig.json
 *.user

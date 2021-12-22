@@ -3,7 +3,7 @@
   "Specifiers": [
     {
       "$type": "Cesium.Ast.CliImportSpecifier, Cesium.Ast",
-      "MemberName": "\"System.Runtime.InteropServices.Marshal::AllocHGlobal\""
+      "MemberName": "System.Runtime.InteropServices.Marshal::AllocHGlobal"
     },
     {
       "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",

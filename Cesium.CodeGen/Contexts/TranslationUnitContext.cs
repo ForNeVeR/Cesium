@@ -4,5 +4,7 @@ namespace Cesium.CodeGen.Contexts;
 
 public record TranslationUnitContext(ModuleDefinition Module)
 {
-    public Dictionary<string, MethodDefinition> Functions { get; } = new();
+    public AssemblyDefinition Assembly => Module.Assembly;
+    public TypeDefinition ModuleType => Module.GetType("<Module>");
+    public Dictionary<string, MethodReference> Functions { get; } = new();
 }

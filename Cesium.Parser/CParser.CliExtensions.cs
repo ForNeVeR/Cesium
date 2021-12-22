@@ -15,5 +15,5 @@ public partial class CParser
 
     [Rule("cli_import_specifier: '__cli_import' '(' StringLiteral ')'")]
     private static CliImportSpecifier MakeClrImport(IToken _, IToken __, IToken<CTokenType> symbolName, IToken ___) =>
-        new(symbolName.Text);
+        new(symbolName.UnwrapStringLiteral());
 }

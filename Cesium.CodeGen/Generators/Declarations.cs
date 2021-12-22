@@ -8,7 +8,25 @@ namespace Cesium.CodeGen.Generators;
 
 public static class Declarations
 {
-    public static void EmitDeclaration(FunctionScope scope, Declaration declaration)
+    public static void EmitSymbol(TranslationUnitContext context, SymbolDeclaration symbolDeclaration)
+    {
+        var declaration = symbolDeclaration.Declaration;
+        var cliImportSpecifier = declaration.Specifiers.OfType<CliImportSpecifier>().Single();
+        if (declaration.InitDeclarators == null)
+            throw new Exception($"Declaration without init declarations: {declaration}.");
+
+        var method = context.MethodLookup(cliImportSpecifier);
+        if (method == null) throw new Exception($"Cannot find CLI import member {cliImportSpecifier.MemberName}.");
+
+        var declarator = declaration.InitDeclarators.Value.Single().Declarator;
+        if (declarator.Pointer != null)
+            throw new NotImplementedException($"Pointer at {declarator} not supported yet.");
+
+        // TODO: Verify correct signature.
+        context.Functions.Add(declarator.DirectDeclarator.Name, method);
+    }
+
+    public static void EmitLocalDeclaration(FunctionScope scope, Declaration declaration)
     {
         var method = scope.Method;
 

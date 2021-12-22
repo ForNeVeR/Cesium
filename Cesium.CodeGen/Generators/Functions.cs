@@ -10,7 +10,22 @@ namespace Cesium.CodeGen.Generators;
 
 internal static class Functions
 {
-    public static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition definition)
+    public static void EmitFunction(TranslationUnitContext context, FunctionDefinition definition)
+    {
+        var method = GenerateMethod(context, definition);
+        context.ModuleType.Methods.Add(method);
+        if (method.Name == "main")
+        {
+            var assembly = context.Assembly;
+            var currentEntryPoint = assembly.EntryPoint;
+            if (currentEntryPoint != null)
+                throw new Exception($"Cannot override entrypoint for assembly {assembly} by method {method}.");
+
+            assembly.EntryPoint = method;
+        }
+    }
+
+    private static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition definition)
     {
         var functionName = definition.Declarator.DirectDeclarator.Name;
         var method = new MethodDefinition(
@@ -58,7 +73,7 @@ internal static class Functions
             switch (blockItem)
             {
                 case Declaration d:
-                    EmitDeclaration(scope, d);
+                    EmitLocalDeclaration(scope, d);
                     break;
                 case Statement s:
                     EmitStatement(scope, s);
