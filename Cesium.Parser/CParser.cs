@@ -463,15 +463,4 @@ public partial class CParser
     // TODO: 6.10.7 Null directive
     // TODO: 6.10.8 Predefined macro names
     // TODO: 6.10.9 Pragma operator
-
-    // TODO: 6.11 Future language directions
-    // TODO: 6.11.1 Floating types
-    // TODO: 6.11.2 Linkages of identifiers
-    // TODO: 6.11.3 External names
-    // TODO: 6.11.4 Character escape sequences
-    // TODO: 6.11.5 Storage-class specifiers
-    // TODO: 6.11.6 Function declarators
-    // TODO: 6.11.7 Function definitions
-    // TODO: 6.11.8 Pragma directives
-    // TODO: 6.11.9 Predefined macro names
 }
