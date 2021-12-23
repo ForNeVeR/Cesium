@@ -1,0 +1,5 @@
+﻿PreprocessingToken: "int"
+WhiteSpace: " "
+PreprocessingToken: "main()"
+WhiteSpace: " "
+PreprocessingToken: "{}"

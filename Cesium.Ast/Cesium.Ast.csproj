@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.C.Syntax" Version="2021.12.19-2.34.31-nightly" />
-      <PackageReference Include="Yoakke.Lexer" Version="2021.12.19-2.34.31-nightly" />
+      <PackageReference Include="Yoakke.C.Syntax" Version="2021.12.23-2.33.11-nightly" />
+      <PackageReference Include="Yoakke.Lexer" Version="2021.12.23-2.33.11-nightly" />
     </ItemGroup>
 
 </Project>

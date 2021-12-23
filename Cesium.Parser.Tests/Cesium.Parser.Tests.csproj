@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+      <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
       <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
     </ItemGroup>
 
