@@ -1,15 +1,17 @@
+using System.Globalization;
 using System.Text;
 using Yoakke.Lexer;
 using Yoakke.Streams;
+using Yoakke.Text;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer)
+public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext)
 {
-    public string ProcessSource()
+    public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
-        foreach (var t in GetPreprocessingResults())
+        await foreach (var t in GetPreprocessingResults())
         {
             buffer.Append(t.Text);
         }
@@ -17,7 +19,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer)
         return buffer.ToString();
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
     {
         var newLine = true;
 
@@ -44,7 +46,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer)
                     if (newLine)
                     {
                         // TODO: Recursive processing
-                        foreach (var t in ProcessDirective(ReadDirectiveLine(token, stream)))
+                        foreach (var t in await ProcessDirective(ReadDirectiveLine(token, stream)))
                             yield return t;
                     }
 
@@ -65,12 +67,6 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer)
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ProcessDirective(
-        IEnumerable<IToken<CPreprocessorTokenType>> directiveTokens)
-    {
-        return directiveTokens;
-    }
-
     private IEnumerable<IToken<CPreprocessorTokenType>> ReadDirectiveLine(
         IToken<CPreprocessorTokenType> firstToken,
         IStream<IToken<CPreprocessorTokenType>> stream)
@@ -83,11 +79,86 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer)
             {
                 case CPreprocessorTokenType.NewLine:
                 case CPreprocessorTokenType.End:
-                    yield return token;
                     yield break;
                 default:
                     yield return token;
+                    break;
             }
         }
+    }
+
+    private async ValueTask<IEnumerable<IToken<CPreprocessorTokenType>>> ProcessDirective(
+        IEnumerable<IToken<CPreprocessorTokenType>> directiveTokens)
+    {
+        using var enumerator = directiveTokens.GetEnumerator();
+
+        int? line = null;
+        IToken<CPreprocessorTokenType> ConsumeNext(params CPreprocessorTokenType[] allowedTypes)
+        {
+            bool moved;
+            while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: CPreprocessorTokenType.WhiteSpace })
+            {
+                // Skip any whitespace in between tokens.
+            }
+
+            if (!moved)
+                throw new NotSupportedException(
+                    "Preprocessing directive too short at line " +
+                    $"{line?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+
+            var token = enumerator.Current;
+            if (allowedTypes.Contains(token.Kind)) return enumerator.Current;
+
+            var expectedTypeString = string.Join(" or ", allowedTypes);
+            throw new NotSupportedException(
+                $"Cannot process preprocessor directive: expected {expectedTypeString}, " +
+                $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
+        }
+
+        var hash = ConsumeNext(CPreprocessorTokenType.Hash);
+        line = hash.Range.Start.Line;
+
+        var keyword = ConsumeNext(CPreprocessorTokenType.PreprocessingToken);
+        switch (keyword.Text)
+        {
+            case "include":
+            {
+                var filePath = ConsumeNext(CPreprocessorTokenType.HeaderName).Text;
+                using var reader = await LookUpIncludeFile(filePath);
+                var tokens = ProcessInclude(reader);
+
+                bool hasRemaining;
+                while ((hasRemaining = enumerator.MoveNext())
+                       && enumerator.Current is { Kind: CPreprocessorTokenType.WhiteSpace })
+                {
+                    // eat remaining whitespace
+                }
+
+                if (hasRemaining && enumerator.Current is var t and not { Kind: CPreprocessorTokenType.WhiteSpace })
+                    throw new NotSupportedException($"Invalid token after include path: {t.Kind} {t.Text}");
+
+                return tokens.ToList();
+            }
+            default:
+                throw new NotSupportedException(
+                    $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
+        }
+    }
+
+    private ValueTask<TextReader> LookUpIncludeFile(string filePath) => filePath[0] switch
+    {
+        '<' => IncludeContext.LookUpAngleBracedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
+        '"' => IncludeContext.LookUpQuotedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
+        _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
+    };
+
+    private IEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
+    {
+        var lexer = new CPreprocessorLexer(fileReader);
+        var stream = lexer.ToStream();
+        while (!stream.IsEnd)
+            yield return stream.Consume();
+
+        yield return new Token<CPreprocessorTokenType>(new Yoakke.Text.Range(), "\n", CPreprocessorTokenType.NewLine);
     }
 }

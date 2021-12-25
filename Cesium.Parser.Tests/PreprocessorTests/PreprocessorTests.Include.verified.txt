@@ -1,0 +1,5 @@
+﻿void foo() {}
+int test()
+{
+    int bar = 0;
+}

@@ -13,4 +13,8 @@
       <PackageReference Include="Yoakke.Parser" Version="2021.12.23-2.33.11-nightly" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+    </ItemGroup>
+
 </Project>

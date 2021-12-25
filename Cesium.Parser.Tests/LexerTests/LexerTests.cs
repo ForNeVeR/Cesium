@@ -1,3 +1,5 @@
+using Cesium.Test.Framework;
+
 namespace Cesium.Parser.Tests.LexerTests;
 
 public class LexerTests : LexerTestBase

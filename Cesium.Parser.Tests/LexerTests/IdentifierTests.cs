@@ -1,3 +1,4 @@
+using Cesium.Test.Framework;
 using Yoakke.C.Syntax;
 
 namespace Cesium.Parser.Tests.LexerTests;

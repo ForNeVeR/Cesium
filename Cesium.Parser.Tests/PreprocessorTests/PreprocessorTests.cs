@@ -5,11 +5,13 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private static Task DoTest(string source)
+    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null)
     {
         var lexer = new CPreprocessorLexer(source);
-        var preprocessor = new CPreprocessor(lexer);
-        return Verify(preprocessor.ProcessSource());
+        var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
+        var preprocessor = new CPreprocessor(lexer, includeContext);
+        var result = await preprocessor.ProcessSource();
+        await Verify(result);
     }
 
     [Fact]
@@ -17,4 +19,11 @@ public class PreprocessorTests : VerifyTestBase
 {
     return 2 + 2;
 }");
+
+    [Fact]
+    public Task Include() => DoTest(@"#include <foo.h>
+int test()
+{
+    #include <bar.h>
+}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 }
