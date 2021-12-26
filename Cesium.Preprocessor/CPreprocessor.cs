@@ -2,7 +2,8 @@ using System.Globalization;
 using System.Text;
 using Yoakke.Lexer;
 using Yoakke.Streams;
-using Yoakke.Text;
+using static Cesium.Preprocessor.CPreprocessorTokenType;
+using Range = Yoakke.Text.Range;
 
 namespace Cesium.Preprocessor;
 
@@ -29,20 +30,20 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             var token = stream.Consume();
             switch (token.Kind)
             {
-                case CPreprocessorTokenType.End:
+                case End:
                     yield break;
 
-                case CPreprocessorTokenType.WhiteSpace:
-                case CPreprocessorTokenType.Comment:
+                case WhiteSpace:
+                case Comment:
                     yield return token;
                     break;
 
-                case CPreprocessorTokenType.NewLine:
+                case NewLine:
                     newLine = true;
                     yield return token;
                     break;
 
-                case CPreprocessorTokenType.Hash:
+                case Hash:
                     if (newLine)
                     {
                         // TODO: Recursive processing
@@ -53,10 +54,10 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     newLine = false;
                     break;
 
-                case CPreprocessorTokenType.Error:
-                case CPreprocessorTokenType.DoubleHash:
-                case CPreprocessorTokenType.HeaderName:
-                case CPreprocessorTokenType.PreprocessingToken:
+                case Error:
+                case DoubleHash:
+                case HeaderName:
+                case PreprocessingToken:
                     newLine = false;
                     yield return token;
                     break;
@@ -77,8 +78,8 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             var token = stream.Consume();
             switch (token.Kind)
             {
-                case CPreprocessorTokenType.NewLine:
-                case CPreprocessorTokenType.End:
+                case NewLine:
+                case End:
                     yield break;
                 default:
                     yield return token;
@@ -96,7 +97,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         IToken<CPreprocessorTokenType> ConsumeNext(params CPreprocessorTokenType[] allowedTypes)
         {
             bool moved;
-            while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: CPreprocessorTokenType.WhiteSpace })
+            while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: WhiteSpace })
             {
                 // Skip any whitespace in between tokens.
             }
@@ -115,26 +116,26 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
         }
 
-        var hash = ConsumeNext(CPreprocessorTokenType.Hash);
+        var hash = ConsumeNext(Hash);
         line = hash.Range.Start.Line;
 
-        var keyword = ConsumeNext(CPreprocessorTokenType.PreprocessingToken);
+        var keyword = ConsumeNext(PreprocessingToken);
         switch (keyword.Text)
         {
             case "include":
             {
-                var filePath = ConsumeNext(CPreprocessorTokenType.HeaderName).Text;
+                var filePath = ConsumeNext(HeaderName).Text;
                 using var reader = await LookUpIncludeFile(filePath);
                 var tokens = ProcessInclude(reader);
 
                 bool hasRemaining;
                 while ((hasRemaining = enumerator.MoveNext())
-                       && enumerator.Current is { Kind: CPreprocessorTokenType.WhiteSpace })
+                       && enumerator.Current is { Kind: WhiteSpace })
                 {
                     // eat remaining whitespace
                 }
 
-                if (hasRemaining && enumerator.Current is var t and not { Kind: CPreprocessorTokenType.WhiteSpace })
+                if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
                     throw new NotSupportedException($"Invalid token after include path: {t.Kind} {t.Text}");
 
                 return tokens.ToList();
@@ -159,6 +160,6 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         while (!stream.IsEnd)
             yield return stream.Consume();
 
-        yield return new Token<CPreprocessorTokenType>(new Yoakke.Text.Range(), "\n", CPreprocessorTokenType.NewLine);
+        yield return new Token<CPreprocessorTokenType>(new Range(), "\n", NewLine);
     }
 }
