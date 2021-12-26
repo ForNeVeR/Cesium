@@ -4,6 +4,7 @@ using Cesium.CodeGen;
 using Cesium.CodeGen.Generators;
 using Cesium.Compiler;
 using Cesium.Parser;
+using Cesium.Preprocessor;
 using CommandLine;
 using Mono.Cecil;
 using Yoakke.C.Syntax;
@@ -11,7 +12,19 @@ using Yoakke.Streams;
 
 Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
 
-return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
+static Task<string> Preprocess(TextReader reader)
+{
+    var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
+                             ?? throw new Exception("Cannot determine path to the compiler executable.");
+
+    var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
+    var includeContext = new FileSystemIncludeContext(stdLibDirectory, Environment.CurrentDirectory);
+    var preprocessorLexer = new CPreprocessorLexer(reader);
+    var preprocessor = new CPreprocessor(preprocessorLexer, includeContext);
+    return preprocessor.ProcessSource();
+}
+
+return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args =>
     {
         if (args.InputFilePath == null)
         {
@@ -31,11 +44,12 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
             return 2;
         }
 
-        using var input = new FileStream(args.InputFilePath, FileMode.Open);
+        await using var input = new FileStream(args.InputFilePath, FileMode.Open);
         using var reader = new StreamReader(input, Encoding.UTF8);
 
         Console.WriteLine($"Processing input file {args.InputFilePath}.");
-        var lexer = new CLexer(reader);
+        var content = await Preprocess(reader);
+        var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnit = parser.ParseTranslationUnit().Ok.Value;
 
@@ -74,4 +88,4 @@ return Parser.Default.ParseArguments<Arguments>(args).MapResult(args =>
 
         return 0;
     },
-    _ => -1);
+    _ => Task.FromResult(-1));

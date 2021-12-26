@@ -6,19 +6,24 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <Version>0.0.0</Version>
     </PropertyGroup>
-    
+
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.8.0" />
-      <PackageReference Include="Yoakke.C.Syntax" Version="2021.12.23-2.33.11-nightly" />
+        <PackageReference Include="CommandLineParser" Version="2.8.0" />
+        <PackageReference Include="Yoakke.C.Syntax" Version="2021.12.23-2.33.11-nightly" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
-      <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+        <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
+        <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+        <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="stdlib/*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
