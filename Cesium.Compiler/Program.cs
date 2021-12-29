@@ -10,8 +10,6 @@ using Mono.Cecil;
 using Yoakke.C.Syntax;
 using Yoakke.Streams;
 
-Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
-
 static Task<string> Preprocess(TextReader reader)
 {
     var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
@@ -26,6 +24,11 @@ static Task<string> Preprocess(TextReader reader)
 
 return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args =>
     {
+        if (!args.NoLogo)
+        {
+            Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
+        }
+
         if (args.InputFilePath == null)
         {
             Console.Error.WriteLine($"Input file path should be set.");

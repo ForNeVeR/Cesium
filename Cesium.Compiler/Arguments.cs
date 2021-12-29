@@ -21,4 +21,7 @@ public class Arguments
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
     public TargetFrameworkKind Framework { get; init; }
+
+    [Option("nologo", HelpText = "Suppress compiler banner message")]
+    public bool NoLogo { get; set; }
 }
