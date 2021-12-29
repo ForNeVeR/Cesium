@@ -1,12 +1,14 @@
 namespace Cesium.Runtime;
 
+using System.Runtime.InteropServices;
+
 /// <summary>
 /// Functions declared in the string.h
 /// </summary>
 public unsafe static class StringFunctions
 {
-    public static uint StrLen(char* str)
+    public static uint StrLen(byte* str)
     {
-        return (uint)new string(str).Length;
+        return (uint)(Marshal.PtrToStringUTF8((nint)str)?.Length ?? 0);
     }
 }
