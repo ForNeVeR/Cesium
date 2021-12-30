@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Generators;
@@ -54,7 +54,14 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
         var content = await Preprocess(reader);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
-        var translationUnit = parser.ParseTranslationUnit().Ok.Value;
+        var translationUnitParseError = parser.ParseTranslationUnit();
+        if (translationUnitParseError.IsError)
+        {
+            var token = (CToken)translationUnitParseError.Error.Got;
+            throw new Exception($"Error during parsing {args.InputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
+        }
+
+        var translationUnit = translationUnitParseError.Ok.Value;
 
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
             throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
