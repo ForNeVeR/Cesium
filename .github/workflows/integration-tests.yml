@@ -31,4 +31,4 @@ jobs:
           key: integration.${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
       - name: Run tests
         shell: pwsh
-        run: ./Cesium.IntegrationTests/Run-Tests.ps1
+        run: ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild

@@ -1,4 +1,6 @@
 param (
+    [switch] $NoBuild,
+
     $SourceRoot = "$PSScriptRoot\..",
     $OutDir = "$PSScriptRoot\bin",
     $TestCaseDir = "$PSScriptRoot"
@@ -81,7 +83,9 @@ function validateTestCase($testCase) {
 $allTestCases = Get-ChildItem "$TestCaseDir\*.c"
 Write-Host "Running tests for $($allTestCases.Count) cases."
 
-buildCompiler
+if (!$NoBuild) {
+    buildCompiler
+}
 
 New-Item $OutDir -Type Directory -ErrorAction Ignore
 
