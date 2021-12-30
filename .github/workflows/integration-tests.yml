@@ -18,6 +18,8 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
     steps:
       - uses: actions/checkout@v2
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
