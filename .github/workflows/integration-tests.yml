@@ -1,0 +1,32 @@
+name: Integration Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  main:
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: NuGet Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: integration.${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
+      - name: Run tests
+        shell: pwsh
+        run: ./Cesium.IntegrationTests/Run-Tests.ps1
