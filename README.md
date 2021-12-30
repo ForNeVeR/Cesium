@@ -39,6 +39,17 @@ $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
 
+## Testing
+
+In order to test changes please run following for fast-cycle testing
+
+    dotnet test
+
+And if you want to run integration tests
+
+    pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
+
+
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [docs.language-extensions]: docs/language-extensions.md
