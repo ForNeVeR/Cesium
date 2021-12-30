@@ -30,14 +30,21 @@ function buildFileWithClExe($inputFile, $outputFile) {
 }
 
 function buildFileWithCesium($inputFile, $outputFile) {
-    Write-Host "Compiling $inputFile with Cesium."
-    dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- $inputFile $outputFile
-    if (!$?) {
-        Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
-        return $false
-    }
+    # $env:Platform will override the output directory for dotnet run, so let's remove it temporarily.
+    $oldPlatform = $env:Platform
+    $env:Platform = $null
+    try {
+        Write-Host "Compiling $inputFile with Cesium."
+        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- $inputFile $outputFile
+        if (!$?) {
+            Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
+            return $false
+        }
 
-    return $true
+        return $true
+    } finally {
+        $env:Platform = $oldPlatform
+    }
 }
 
 function validateTestCase($testCase) {
