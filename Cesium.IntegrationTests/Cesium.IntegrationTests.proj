@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+    <ItemGroup>
+        <Content Include="*.c" />
+        <Content Include="Run-Tests.ps1" />
+    </ItemGroup>
+</Project>
