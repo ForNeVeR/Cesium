@@ -1,9 +1,9 @@
 param (
     [switch] $NoBuild,
 
-    $SourceRoot = "$PSScriptRoot\..",
-    $OutDir = "$PSScriptRoot\bin",
-    $ObjDir = "$PSScriptRoot\obj",
+    $SourceRoot = "$PSScriptRoot/..",
+    $OutDir = "$PSScriptRoot/bin",
+    $ObjDir = "$PSScriptRoot/obj",
     $TestCaseDir = "$PSScriptRoot"
 )
 
@@ -19,8 +19,17 @@ function buildCompiler() {
 }
 
 function buildFileWithClExe($inputFile, $outputFile) {
-    Write-Host "Compiling $inputFile with cl.exe."
-    cl.exe /nologo $inputFile /Fo:$ObjDir\ /Fe:$outputFile
+    if ($IsWindows)
+    {
+        Write-Host "Compiling $inputFile with cl.exe."
+        cl.exe /nologo $inputFile /Fo:$ObjDir/ /Fe:$outputFile
+    }
+    else
+    {
+        Write-Host "Compiline $inputFile with gcc."
+        gcc $inputFile -o $outputFile
+    }
+
     if (!$?) {
         Write-Host "Error: cl.exe returned exit code $LASTEXITCODE."
         return $false
@@ -48,11 +57,11 @@ function buildFileWithCesium($inputFile, $outputFile) {
 }
 
 function validateTestCase($testCase) {
-    $clExeBinOutput = "$outDir\out_cl.exe"
-    $cesiumBinOutput = "$outDir\out_cs.exe"
+    $clExeBinOutput = "$outDir/out_cl.exe"
+    $cesiumBinOutput = "$outDir/out_cs.exe"
 
-    $clExeRunLog = "$outDir\out_cl.log"
-    $cesiumRunLog = "$outDir\out_cs.log"
+    $clExeRunLog = "$outDir/out_cl.log"
+    $cesiumRunLog = "$outDir/out_cs.log"
 
     $expectedExitCode = 42
 
@@ -70,7 +79,7 @@ function validateTestCase($testCase) {
         return $false
     }
 
-    & $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
+    & dotnet $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
     if ($LASTEXITCODE -ne $expectedExitCode) {
         Write-Host "Binary $cesiumBinOutput returned code $LASTEXITCODE, but $expectedExitCode was expected."
         return $false
@@ -88,7 +97,7 @@ function validateTestCase($testCase) {
     $true
 }
 
-$allTestCases = Get-ChildItem "$TestCaseDir\*.c"
+$allTestCases = Get-ChildItem "$TestCaseDir/*.c"
 Write-Host "Running tests for $($allTestCases.Count) cases."
 
 if (!$NoBuild) {
