@@ -32,5 +32,4 @@ jobs:
       - name: Setup MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
       - name: Run tests
-        shell: pwsh
-        run: ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
+        run: pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
