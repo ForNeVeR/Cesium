@@ -3,6 +3,7 @@ param (
 
     $SourceRoot = "$PSScriptRoot\..",
     $OutDir = "$PSScriptRoot\bin",
+    $ObjDir = "$PSScriptRoot\obj",
     $TestCaseDir = "$PSScriptRoot"
 )
 
@@ -19,7 +20,7 @@ function buildCompiler() {
 
 function buildFileWithClExe($inputFile, $outputFile) {
     Write-Host "Compiling $inputFile with cl.exe."
-    cl.exe /nologo $inputFile "/Fe$outputFile"
+    cl.exe /nologo $inputFile /Fo:$ObjDir\ /Fe:$outputFile
     if (!$?) {
         Write-Host "Error: cl.exe returned exit code $LASTEXITCODE."
         return $false
@@ -87,7 +88,8 @@ if (!$NoBuild) {
     buildCompiler
 }
 
-New-Item $OutDir -Type Directory -ErrorAction Ignore
+New-Item $ObjDir -Type Directory -ErrorAction Ignore | Out-Null
+New-Item $OutDir -Type Directory -ErrorAction Ignore | Out-Null
 
 $failedTests = @()
 foreach ($testCase in $allTestCases) {
