@@ -4,9 +4,4 @@
 bin/
 obj/
 
-*.dll
-*.exe
-*.obj
-*.log
-*.runtimeconfig.json
 *.user
