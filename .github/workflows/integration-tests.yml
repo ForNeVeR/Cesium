@@ -18,8 +18,6 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
     steps:
       - uses: actions/checkout@v2
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
@@ -29,6 +27,10 @@ jobs:
         with:
           path: ${{ env.NUGET_PACKAGES }}
           key: integration.${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
+      - name: Build compiler
+        run: dotnet build Cesium.Compiler
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Run tests
         shell: pwsh
         run: ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
