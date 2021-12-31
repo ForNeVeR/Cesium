@@ -18,20 +18,17 @@ function buildCompiler() {
     }
 }
 
-function buildFileWithClExe($inputFile, $outputFile) {
-    if ($IsWindows)
-    {
+function buildFileWithNativeCompiler($inputFile, $outputFile) {
+    if ($IsWindows) {
         Write-Host "Compiling $inputFile with cl.exe."
         cl.exe /nologo $inputFile /Fo:$ObjDir/ /Fe:$outputFile
-    }
-    else
-    {
-        Write-Host "Compiline $inputFile with gcc."
+    } else {
+        Write-Host "Compiling $inputFile with gcc."
         gcc $inputFile -o $outputFile
     }
 
     if (!$?) {
-        Write-Host "Error: cl.exe returned exit code $LASTEXITCODE."
+        Write-Host "Error: native compiler returned exit code $LASTEXITCODE."
         return $false
     }
 
@@ -57,21 +54,21 @@ function buildFileWithCesium($inputFile, $outputFile) {
 }
 
 function validateTestCase($testCase) {
-    $clExeBinOutput = "$outDir/out_cl.exe"
+    $nativeCompilerBinOutput = "$outDir/out_native.exe"
     $cesiumBinOutput = "$outDir/out_cs.exe"
 
-    $clExeRunLog = "$outDir/out_cl.log"
+    $nativeCompilerRunLog = "$outDir/out_native.log"
     $cesiumRunLog = "$outDir/out_cs.log"
 
     $expectedExitCode = 42
 
-    if (!(buildFileWithClExe $testCase $clExeBinOutput)) {
+    if (!(buildFileWithNativeCompiler $testCase $nativeCompilerBinOutput)) {
         return $false
     }
 
-    & $clExeBinOutput | Out-File -Encoding utf8 $clExeRunLog
+    & $nativeCompilerBinOutput | Out-File -Encoding utf8 $nativeCompilerRunLog
     if ($LASTEXITCODE -ne $expectedExitCode) {
-        Write-Host "Binary $clExeBinOutput returned code $LASTEXITCODE, but $expectedExitCode was expected."
+        Write-Host "Binary $nativeCompilerBinOutput returned code $LASTEXITCODE, but $expectedExitCode was expected."
         return $false
     }
 
@@ -79,17 +76,17 @@ function validateTestCase($testCase) {
         return $false
     }
 
-    & dotnet $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
+    dotnet $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
     if ($LASTEXITCODE -ne $expectedExitCode) {
         Write-Host "Binary $cesiumBinOutput returned code $LASTEXITCODE, but $expectedExitCode was expected."
         return $false
     }
 
-    $clExeOutput = Get-Content -LiteralPath $clExeRunLog -Raw
+    $nativeCompilerOutput = Get-Content -LiteralPath $nativeCompilerRunLog -Raw
     $cesiumOutput = Get-Content -LiteralPath $cesiumRunLog -Raw
-    if ($clExeOutput -ne $cesiumOutput) {
-        Write-Host "Output for $testCase differs between cl.exe- and Cesium-compiled programs."
-        Write-Host "cl.exe ($testCase):`n$clExeOutput`n"
+    if ($nativeCompilerOutput -ne $cesiumOutput) {
+        Write-Host "Output for $testCase differs between native- and Cesium-compiled programs."
+        Write-Host "cl.exe ($testCase):`n$nativeCompilerOutput`n"
         Write-Host "Cesium ($testCase):`n$cesiumOutput"
         return $false
     }
