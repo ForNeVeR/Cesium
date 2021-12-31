@@ -7,7 +7,7 @@ public record TranslationUnit(ImmutableArray<ExternalDeclaration> Declarations);
 
 public abstract record ExternalDeclaration;
 public record FunctionDefinition(
-    ImmutableArray<DeclarationSpecifier> Specifiers,
+    ImmutableArray<IDeclarationSpecifier> Specifiers,
     Declarator Declarator,
     ImmutableArray<Declaration>? Declarations,
     CompoundStatement Statement) : ExternalDeclaration;

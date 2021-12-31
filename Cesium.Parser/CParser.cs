@@ -11,7 +11,7 @@ using ICToken = IToken<CTokenType>;
 
 using ArgumentExpressionList = ImmutableArray<Expression>;
 using BlockItemList = ImmutableArray<IBlockItem>;
-using DeclarationSpecifiers = ImmutableArray<DeclarationSpecifier>;
+using DeclarationSpecifiers = ImmutableArray<IDeclarationSpecifier>;
 using IdentifierList = ImmutableArray<string>;
 using InitDeclaratorList = ImmutableArray<InitDeclarator>;
 using ParameterList = ImmutableArray<ParameterDeclaration>;
@@ -161,13 +161,19 @@ public partial class CParser
 
     // TODO: [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
     [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
-    // TODO: [Rule("declaration_specifiers: type_qualifier declaration_specifiers?")]
-    // TODO: [Rule("declaration_specifiers: function_specifier declaration_specifiers?")]
-    // TODO: [Rule("declaration_specifiers: alignment_specifier declaration_specifiers?")]
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(
         TypeSpecifier typeSpecifier,
         DeclarationSpecifiers? rest) =>
-        rest?.Insert(0, typeSpecifier) ?? ImmutableArray.Create((DeclarationSpecifier)typeSpecifier);
+        rest?.Insert(0, typeSpecifier) ?? ImmutableArray.Create<IDeclarationSpecifier>(typeSpecifier);
+
+    [Rule("declaration_specifiers: type_qualifier declaration_specifiers?")]
+    private static DeclarationSpecifiers MakeDeclarationSpecifiers(
+        TypeQualifier typeQualifier,
+        DeclarationSpecifiers? rest) =>
+        rest?.Insert(0, typeQualifier) ?? ImmutableArray.Create<IDeclarationSpecifier>(typeQualifier);
+
+    // TODO: [Rule("declaration_specifiers: function_specifier declaration_specifiers?")]
+    // TODO: [Rule("declaration_specifiers: alignment_specifier declaration_specifiers?")]
 
     [Rule("init_declarator_list: init_declarator")]
     private static InitDeclaratorList MakeInitDeclaratorList(InitDeclarator declarator) =>

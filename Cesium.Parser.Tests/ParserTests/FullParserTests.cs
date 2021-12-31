@@ -73,4 +73,10 @@ int main()
 {
     test(""hello world"");
 }");
+
+    [Fact]
+    public Task StringVariable() => DoTest(@"int main()
+{
+    const char *foo = ""hello world"";
+}");
 }
