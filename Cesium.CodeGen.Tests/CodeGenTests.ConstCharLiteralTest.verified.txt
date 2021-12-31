@@ -1,0 +1,5 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Char* V_0
+  IL_0000: ldflda <ConstantPoolItemType7> <ConstantPool>::ConstStringBuffer0
+  IL_0005: stloc V_0

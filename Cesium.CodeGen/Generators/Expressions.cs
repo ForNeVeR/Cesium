@@ -24,6 +24,9 @@ internal static class Expressions
             case FunctionCallExpression f:
                 EmitFunctionCallExpression(scope, f);
                 break;
+            case StringConstantExpression s:
+                EmitStringConstantExpression(scope, s);
+                break;
             default:
                 throw new Exception($"Expression not supported: {expression}.");
         }
@@ -90,5 +93,11 @@ internal static class Expressions
         var callee = scope.Functions[functionName];
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee));
+    }
+
+    private static void EmitStringConstantExpression(FunctionScope scope, StringConstantExpression expression)
+    {
+        var fieldReference = scope.AssemblyContext.GetConstantPoolReference(expression.ConstantContent);
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldflda, fieldReference));
     }
 }

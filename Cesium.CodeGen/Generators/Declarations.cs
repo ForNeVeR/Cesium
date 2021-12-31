@@ -36,12 +36,8 @@ public static class Declarations
         var initDeclarator = declaration.InitDeclarators.Value.Single();
         var declarator = initDeclarator.Declarator;
         var name = declarator.DirectDeclarator.Name;
-        if (declarator.Pointer != null)
-            throw new Exception($"Pointer types aren't supported, yet: {name}.");
 
-        var typeSpecifier = declaration.Specifiers.OfType<TypeSpecifier>().Single();
-        var typeReference = typeSpecifier.GetTypeReference(scope.Module);
-
+        var typeReference = declarator.CalculateType(name, declaration.Specifiers, scope.Module);
         var variable = new VariableDefinition(typeReference);
         method.Body.Variables.Add(variable);
         scope.Variables.Add(name, variable);

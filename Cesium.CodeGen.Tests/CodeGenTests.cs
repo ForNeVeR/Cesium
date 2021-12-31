@@ -73,4 +73,10 @@ int main()
 {
     return console_read();
 }");
+
+    [Fact]
+    public Task ConstCharLiteralTest() => DoTest(@"int main()
+{
+    const char *test = ""hellow"";
+}");
 }
