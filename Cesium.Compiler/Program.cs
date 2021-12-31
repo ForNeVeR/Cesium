@@ -57,8 +57,15 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
         var translationUnitParseError = parser.ParseTranslationUnit();
         if (translationUnitParseError.IsError)
         {
-            var token = (CToken)translationUnitParseError.Error.Got;
-            throw new Exception($"Error during parsing {args.InputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
+            switch (translationUnitParseError.Error.Got)
+            {
+                case CToken token:
+                    throw new Exception($"Error during parsing {args.InputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
+                case char ch:
+                    throw new Exception($"Error during parsing {args.InputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
+                default:
+                    throw new Exception($"Error during parsing {args.InputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
+            }
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;
