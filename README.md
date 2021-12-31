@@ -43,12 +43,17 @@ $ mono ./out.exe # run with Mono
 
 In order to test changes please run following for fast-cycle testing
 
-    dotnet test
+```console
+$ dotnet test
+```
 
 And if you want to run integration tests
 
-    pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
+```console
+$ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
+```
 
+(don't pass `-NoBuild` if you want to automatically rebuild the compiler before running the integration tests)
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
