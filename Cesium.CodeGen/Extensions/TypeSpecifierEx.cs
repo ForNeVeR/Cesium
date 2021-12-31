@@ -8,7 +8,7 @@ public static class TypeSpecifierEx
     public static TypeReference GetTypeReference(this TypeSpecifier specifier, ModuleDefinition module) =>
         specifier.TypeName switch
         {
-            "char" => module.TypeSystem.Char,
+            "char" => module.TypeSystem.Byte,
             "int" => module.TypeSystem.Int32,
             var unknown => throw new Exception($"Unknown type specifier: {unknown}")
         };

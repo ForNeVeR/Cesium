@@ -8,10 +8,11 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
 {
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<string, FieldReference> _fields = new();
+
     private readonly Lazy<TypeDefinition> _constantPool = new(
         () =>
         {
-            var type = new TypeDefinition("", "<ConstantPool>", TypeAttributes.Sealed);
+            var type = new TypeDefinition("", "<ConstantPool>", TypeAttributes.Sealed, Module.TypeSystem.Object);
             Module.Types.Add(type);
             return type;
         });
@@ -28,8 +29,10 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         Debug.Assert(writtenBytes == bufferSize - 1);
 
         var type = GetStubType(bufferSize);
+        field = GenerateFieldForStringConstant(type, data);
+        _fields.Add(stringConstant, field);
 
-        return GenerateFieldForStringConstant(type, data);
+        return field;
     }
 
     private TypeReference GetStubType(int size)
@@ -42,7 +45,7 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         var type = new TypeDefinition(
             "",
             stubStructTypeName,
-            TypeAttributes.Sealed,
+            TypeAttributes.Sealed | TypeAttributes.ExplicitLayout,
             Module.ImportReference(typeof(ValueType)))
         {
             PackingSize = 1,
@@ -54,15 +57,17 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         return type;
     }
 
-    private FieldReference GenerateFieldForStringConstant(TypeReference stubStructType, byte[] contentWithTerminatingZero)
+    private FieldReference GenerateFieldForStringConstant(
+        TypeReference stubStructType,
+        byte[] contentWithTerminatingZero)
     {
         var number = _fields.Count;
         var fieldName = $"ConstStringBuffer{number}";
 
         var field = new FieldDefinition(fieldName, FieldAttributes.Static | FieldAttributes.InitOnly, stubStructType)
-            {
-                InitialValue = contentWithTerminatingZero
-            };
+        {
+            InitialValue = contentWithTerminatingZero
+        };
 
         var constantPool = _constantPool.Value;
         constantPool.Fields.Add(field);
