@@ -1,0 +1,49 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.FunctionDefinition, Cesium.Ast",
+      "Specifiers": [
+        {
+          "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+          "TypeName": "int"
+        }
+      ],
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
+          "Name": "main",
+          "ParameterList": null,
+          "IdentifierList": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
+        "Block": [
+          {
+            "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
+            "Expression": {
+              "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
+              "Function": {
+                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "Constant": {
+                  "Kind": "Identifier",
+                  "Text": "test"
+                }
+              },
+              "Arguments": [
+                {
+                  "$type": "Cesium.Ast.StringConstantExpression, Cesium.Ast",
+                  "ConstantContent": "hello world"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

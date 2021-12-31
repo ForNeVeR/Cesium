@@ -67,4 +67,10 @@ int main()
     int f = foo();
     return foo() + 1;
 }");
+
+    [Fact]
+    public Task StringLiteral() => DoTest(@"int main()
+{
+    test(""hello world"");
+}");
 }
