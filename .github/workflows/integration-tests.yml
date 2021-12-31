@@ -11,7 +11,12 @@ on:
 
 jobs:
   main:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.environment }}
+    strategy:
+      matrix:
+        environment:
+          - ubuntu-latest
+          - windows-latest
     env:
       DOTNET_NOLOGO: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -31,5 +36,6 @@ jobs:
         run: dotnet build Cesium.Compiler
       - name: Setup MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
+        if: startsWith(runner.os, 'windows')
       - name: Run tests
         run: pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
