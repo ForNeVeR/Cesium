@@ -60,9 +60,12 @@ public partial class CParser
     [Rule("primary_expression: Identifier")]
     private static Expression MakeIdentifierExpression(IToken identifier) => new IdentifierExpression(identifier.Text);
 
+    [Rule("primary_expression: StringLiteral")]
+    private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
+        new StringConstantExpression(stringLiteral.UnwrapStringLiteral());
+
     // TODO:
     // primary-expression:
-    //     string-literal
     //     ( expression )
     //     generic-selection
 

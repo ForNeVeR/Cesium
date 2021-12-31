@@ -9,6 +9,7 @@ public abstract record Expression;
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
 public record ConstantExpression(IToken<CTokenType> Constant) : Expression;
+public record StringConstantExpression(string ConstantContent) : Expression;
 
 // 6.5.2 Postfix operators
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
