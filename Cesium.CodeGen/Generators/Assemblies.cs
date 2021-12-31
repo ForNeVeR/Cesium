@@ -16,12 +16,13 @@ public static class Assemblies
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
+        var assemblyContext = new AssemblyContext(assembly, module);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
-        var context = new TranslationUnitContext(module);
+        var context = new TranslationUnitContext(assemblyContext);
         foreach (var declaration in translationUnit.Declarations)
         {
             switch (declaration)

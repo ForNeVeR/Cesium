@@ -5,6 +5,7 @@ namespace Cesium.CodeGen.Contexts;
 
 public record FunctionScope(TranslationUnitContext Context, MethodDefinition Method)
 {
+    public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
     public IReadOnlyDictionary<string, MethodReference> Functions => Context.Functions;
 
