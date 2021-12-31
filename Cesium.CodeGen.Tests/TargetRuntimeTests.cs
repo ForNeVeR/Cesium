@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Cesium.CodeGen.Tests;
 
-public class TargetRuntimeTest : CodeGenTestBase
+public class TargetRuntimeTests : CodeGenTestBase
 {
     private static Task DoTargetRuntimeTest(TargetRuntimeDescriptor? targetRuntime)
     {
