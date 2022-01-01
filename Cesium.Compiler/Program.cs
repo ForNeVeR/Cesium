@@ -10,13 +10,13 @@ using Mono.Cecil;
 using Yoakke.C.Syntax;
 using Yoakke.Streams;
 
-static Task<string> Preprocess(TextReader reader)
+static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
 {
     var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
                              ?? throw new Exception("Cannot determine path to the compiler executable.");
 
     var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
-    var includeContext = new FileSystemIncludeContext(stdLibDirectory, Environment.CurrentDirectory);
+    var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
     var preprocessorLexer = new CPreprocessorLexer(reader);
     var preprocessor = new CPreprocessor(preprocessorLexer, includeContext);
     return preprocessor.ProcessSource();
@@ -51,7 +51,8 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
         using var reader = new StreamReader(input, Encoding.UTF8);
 
         Console.WriteLine($"Processing input file {args.InputFilePath}.");
-        var content = await Preprocess(reader);
+        var compilationFileDirectory = Path.GetDirectoryName(args.InputFilePath);
+        var content = await Preprocess(string.IsNullOrEmpty(compilationFileDirectory) ? Environment.CurrentDirectory : compilationFileDirectory, reader);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
