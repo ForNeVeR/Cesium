@@ -15,6 +15,9 @@ internal static class Expressions
             case ConstantExpression c:
                 EmitConstantExpression(scope, c);
                 break;
+            case NegationExpression negationExpression:
+                EmitNegationExpression(scope, negationExpression);
+                break;
             case AssignmentExpression a:
                 EmitAssignmentExpression(scope, a);
                 break;
@@ -45,6 +48,12 @@ internal static class Expressions
         };
 
         scope.Method.Body.Instructions.Add(instruction);
+    }
+
+    private static void EmitNegationExpression(FunctionScope scope, NegationExpression expression)
+    {
+        EmitExpression(scope, expression.Target);
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Neg));
     }
 
     private static void EmitBinaryOperatorExpression(FunctionScope scope, BinaryOperatorExpression expression)
