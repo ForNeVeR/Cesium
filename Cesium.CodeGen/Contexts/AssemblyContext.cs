@@ -1,10 +1,11 @@
 using System.Diagnostics;
 using System.Text;
 using Mono.Cecil;
+using Assembly = System.Reflection.Assembly;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Module)
+public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Module, Assembly[] ImportAssemblies)
 {
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
