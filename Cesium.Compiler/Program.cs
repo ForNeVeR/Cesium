@@ -104,6 +104,13 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
             defaultImportAssemblies);
         assembly.Write(args.OutputFilePath);
 
+        // This part should go to Cesium.SDK eventually together with 
+        // runtimeconfig.json generation
+        var compilerRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
+        var outputExecutablePath = Path.GetDirectoryName(args.OutputFilePath) ?? Environment.CurrentDirectory;
+        var applicationRuntime = Path.Combine(outputExecutablePath, "Cesium.Runtime.dll");
+        File.Copy(compilerRuntime, applicationRuntime, true);
+
         if (moduleKind == ModuleKind.Console && args.Framework == TargetFrameworkKind.Net)
         {
             var runtimeConfigFilePath = Path.ChangeExtension(args.OutputFilePath, "runtimeconfig.json");

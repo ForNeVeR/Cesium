@@ -2,6 +2,7 @@
 
 int main()
 {
-    exit(42);
+    int exitCode = abs(-42);
+    exit(exitCode);
     return 0;
 }
