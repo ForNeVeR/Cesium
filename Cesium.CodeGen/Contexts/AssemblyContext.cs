@@ -47,13 +47,14 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         var type = new TypeDefinition(
             "",
             stubStructTypeName,
-            TypeAttributes.Sealed | TypeAttributes.ExplicitLayout,
+            TypeAttributes.Sealed | TypeAttributes.ExplicitLayout | TypeAttributes.NestedPrivate,
             Module.ImportReference(typeof(ValueType)))
         {
             PackingSize = 1,
             ClassSize = size
         };
-        Module.Types.Add(type);
+
+        _constantPool.Value.NestedTypes.Add(type);
         _stubTypesPerSize.Add(size, type);
 
         return type;

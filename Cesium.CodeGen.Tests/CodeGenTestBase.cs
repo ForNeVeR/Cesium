@@ -32,7 +32,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         foreach (var module in assembly.Modules)
         {
             result.AppendLine($"Module: {module}");
-            DumpTypes(module, result);
+            DumpTypes(module.Types, result, 1);
         }
 
         return Verify(result);
@@ -46,37 +46,43 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return Verify(result);
     }
 
-    private static void DumpTypes(ModuleDefinition module, StringBuilder result)
+    private static void DumpTypes(IEnumerable<TypeDefinition> types, StringBuilder result, int indent)
     {
         var first = true;
-        foreach (var type in module.Types)
+        foreach (var type in types)
         {
             if (!first)
                 result.AppendLine();
             first = false;
 
-            result.AppendLine($"{Indent()}Type: {type}");
+            result.AppendLine($"{Indent(indent)}Type: {type}");
             if (type.PackingSize != -1)
-                result.AppendLine($"{Indent()}Pack: {type.PackingSize}");
+                result.AppendLine($"{Indent(indent)}Pack: {type.PackingSize}");
             if (type.ClassSize != -1)
-                result.AppendLine($"{Indent()}Size: {type.ClassSize}");
+                result.AppendLine($"{Indent(indent)}Size: {type.ClassSize}");
+
+            if (type.HasNestedTypes)
+            {
+                result.AppendLine($"{Indent(indent)}Types:");
+                DumpTypes(type.NestedTypes, result, indent + 1);
+            }
 
             if (type.HasFields)
             {
-                result.AppendLine($"{Indent()}Fields:");
+                result.AppendLine($"{Indent(indent)}Fields:");
                 foreach (var field in type.Fields)
                 {
-                    result.AppendLine($"{Indent(2)}{field}");
+                    result.AppendLine($"{Indent(indent + 1)}{field}");
                     if (field.InitialValue != null)
                     {
                         if (type.Name == AssemblyContext.ConstantPoolTypeName)
                         {
                             var value = Encoding.UTF8.GetString(field.InitialValue);
-                            result.AppendLine($"{Indent(3)}Init with (UTF-8 x {field.InitialValue.Length}): \"{value}\"");
+                            result.AppendLine($"{Indent(indent + 2)}Init with (UTF-8 x {field.InitialValue.Length}): \"{value}\"");
                         }
                         else
                         {
-                            result.AppendLine($"{Indent(3)} Init with: [{string.Join(", ", field.InitialValue)}]");
+                            result.AppendLine($"{Indent(indent + 2)} Init with: [{string.Join(", ", field.InitialValue)}]");
                         }
                     }
                 }
@@ -84,7 +90,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
 
             if (type.HasMethods)
             {
-                result.AppendLine($"{Indent()}Methods:");
+                result.AppendLine($"{Indent(indent)}Methods:");
                 DumpMethods(type, result, 2);
             }
         }
