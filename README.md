@@ -55,6 +55,14 @@ $ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
 
 (don't pass `-NoBuild` if you want to automatically rebuild the compiler before running the integration tests)
 
+If you debug integration tests and want to run just single test
+
+```console
+pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fallback.c
+```
+
+where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folder.
+
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [docs.language-extensions]: docs/language-extensions.md

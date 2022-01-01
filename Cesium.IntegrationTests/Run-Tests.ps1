@@ -4,7 +4,8 @@ param (
     $SourceRoot = "$PSScriptRoot/..",
     $OutDir = "$PSScriptRoot/bin",
     $ObjDir = "$PSScriptRoot/obj",
-    $TestCaseDir = "$PSScriptRoot"
+    $TestCaseDir = "$PSScriptRoot",
+    $TestCaseName = $null
 )
 
 Set-StrictMode -Version Latest
@@ -106,19 +107,30 @@ New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
 
 $allTestCases = Get-ChildItem "$TestCaseDir/*.c"
-Write-Host "Running tests for $($allTestCases.Count) cases."
 
 if (!$NoBuild) {
     buildCompiler
 }
 
 $failedTests = @()
-foreach ($testCase in $allTestCases) {
+if ($TestCaseName) {
+    Write-Host "Running tests for single case $TestCaseName."
+    $testCase = "$TestCaseDir/$TestCaseName"
     if (validateTestCase $testCase) {
         Write-Host "$($testCase): ok."
     } else {
         Write-Host "$($testCase): failed."
         $failedTests += $testCase
+    }
+} else {
+    Write-Host "Running tests for $($allTestCases.Count) cases."
+    foreach ($testCase in $allTestCases) {
+        if (validateTestCase $testCase) {
+            Write-Host "$($testCase): ok."
+        } else {
+            Write-Host "$($testCase): failed."
+            $failedTests += $testCase
+        }
     }
 }
 
