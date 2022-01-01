@@ -73,16 +73,21 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 foreach (var field in type.Fields)
                 {
                     result.AppendLine($"{Indent(indent + 1)}{field}");
-                    if (field.InitialValue != null)
+                    var initialValue = field.InitialValue;
+                    if (initialValue != null)
                     {
                         if (type.Name == AssemblyContext.ConstantPoolTypeName)
                         {
-                            var value = Encoding.UTF8.GetString(field.InitialValue);
-                            result.AppendLine($"{Indent(indent + 2)}Init with (UTF-8 x {field.InitialValue.Length}): \"{value}\"");
+                            var length = initialValue.Length > 0 && initialValue.Last() == '\0'
+                                ? initialValue.Length - 1
+                                : initialValue.Length;
+                            var value = Encoding.UTF8.GetString(initialValue, 0, length);
+                            result.AppendLine(
+                                $"{Indent(indent + 2)}Init with (UTF-8 x {initialValue.Length} bytes): \"{value}\"");
                         }
                         else
                         {
-                            result.AppendLine($"{Indent(indent + 2)} Init with: [{string.Join(", ", field.InitialValue)}]");
+                            result.AppendLine($"{Indent(indent + 2)} Init with: [{string.Join(", ", initialValue)}]");
                         }
                     }
                 }
