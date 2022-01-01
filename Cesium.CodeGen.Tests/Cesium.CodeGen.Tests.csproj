@@ -27,4 +27,10 @@
       <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="CodeGenTests.ConstCharLiteralTest.verified.txt">
+        <DependentUpon>CodeGenMethodTests.cs</DependentUpon>
+      </None>
+    </ItemGroup>
+
 </Project>
