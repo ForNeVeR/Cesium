@@ -6,13 +6,15 @@ namespace Cesium.CodeGen.Contexts;
 
 public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Module)
 {
+    public const string ConstantPoolTypeName = "<ConstantPool>";
+
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<string, FieldReference> _fields = new();
 
     private readonly Lazy<TypeDefinition> _constantPool = new(
         () =>
         {
-            var type = new TypeDefinition("", "<ConstantPool>", TypeAttributes.Sealed, Module.TypeSystem.Object);
+            var type = new TypeDefinition("", ConstantPoolTypeName, TypeAttributes.Sealed, Module.TypeSystem.Object);
             Module.Types.Add(type);
             return type;
         });
