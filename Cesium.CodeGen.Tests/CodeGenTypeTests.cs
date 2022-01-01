@@ -13,4 +13,12 @@ public class CodeGenTypeTests : CodeGenTestBase
 {
     const char *test = ""hellow"";
 }");
+
+    [Fact]
+    public Task ConstCharLiteralDeduplication() => DoTest(@"int main()
+{
+    const char *test1 = ""hellow"";
+    const char *test2 = ""hellow1"";
+    const char *test3 = ""hellow"";
+}");
 }
