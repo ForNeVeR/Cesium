@@ -7,8 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Compiler", "Cesium.C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9B1FABA-2209-4B3D-8EA0-284B0E24DEB6}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		.editorconfig = .editorconfig
 		README.md = README.md
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
