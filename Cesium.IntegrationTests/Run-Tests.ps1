@@ -54,11 +54,13 @@ function buildFileWithCesium($inputFile, $outputFile) {
 }
 
 function validateTestCase($testCase) {
-    $nativeCompilerBinOutput = "$outDir/out_native.exe"
-    $cesiumBinOutput = "$outDir/out_cs.exe"
+    $testName = [IO.Path]::GetFileNameWithoutExtension($testCase)
 
-    $nativeCompilerRunLog = "$outDir/out_native.log"
-    $cesiumRunLog = "$outDir/out_cs.log"
+    $nativeCompilerBinOutput = "$outDir/$testName_native.exe"
+    $cesiumBinOutput = "$outDir/$testName_cs.exe"
+
+    $nativeCompilerRunLog = "$outDir/$testName_native.log"
+    $cesiumRunLog = "$outDir/$testName_cs.log"
 
     $expectedExitCode = 42
 
