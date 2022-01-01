@@ -24,6 +24,10 @@ public class FileSystemIncludeContext : IIncludeContext
         () =>
         {
             var path = Path.Combine(_currentDirectory, filePath);
+            if (File.Exists(path))
+                return (TextReader)new StreamReader(path);
+
+            path = Path.Combine(_stdLibDirectory, filePath);
             return (TextReader)new StreamReader(path);
         }));
 }
