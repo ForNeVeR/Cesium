@@ -90,12 +90,18 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
         };
 
         Console.WriteLine($"Generating assembly {args.OutputFilePath}.");
+        var defaultImportAssemblies = new []
+        { 
+            typeof(Math).Assembly, // System.Runtime.dll
+            typeof(Console).Assembly, // System.Console.dll
+            typeof(Cesium.Runtime.StdLibFunctions).Assembly
+        };
         var assembly = Assemblies.Generate(
             translationUnit,
             new AssemblyNameDefinition(assemblyName, new Version()),
             moduleKind,
             targetRuntime,
-            new [] { typeof(Console).Assembly });
+            defaultImportAssemblies);
         assembly.Write(args.OutputFilePath);
 
         if (moduleKind == ModuleKind.Console && args.Framework == TargetFrameworkKind.Net)

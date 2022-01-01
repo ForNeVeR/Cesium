@@ -2,5 +2,6 @@
 
 int main()
 {
-    return abs(-42);
+    exit(42);
+    return 0;
 }
