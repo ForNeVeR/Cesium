@@ -79,4 +79,7 @@ int main()
 {
     const char *foo = ""hello world"";
 }");
+
+    [Fact]
+    public Task NegationTest() => DoTest("void foo() { int x = -42; }");
 }
