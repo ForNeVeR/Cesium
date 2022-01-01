@@ -41,7 +41,7 @@ function buildFileWithCesium($inputFile, $outputFile) {
     $env:Platform = $null
     try {
         Write-Host "Compiling $inputFile with Cesium."
-        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- $inputFile $outputFile | Out-Host
+        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile $outputFile | Out-Host
         if (!$?) {
             Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
             return $false
