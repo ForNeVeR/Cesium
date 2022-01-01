@@ -21,10 +21,10 @@ function buildCompiler() {
 function buildFileWithNativeCompiler($inputFile, $outputFile) {
     if ($IsWindows) {
         Write-Host "Compiling $inputFile with cl.exe."
-        cl.exe /nologo $inputFile /Fo:$ObjDir/ /Fe:$outputFile
+        cl.exe /nologo $inputFile /Fo:$ObjDir/ /Fe:$outputFile | Out-Host
     } else {
         Write-Host "Compiling $inputFile with gcc."
-        gcc $inputFile -o $outputFile
+        gcc $inputFile -o $outputFile | Out-Host
     }
 
     if (!$?) {
@@ -41,7 +41,7 @@ function buildFileWithCesium($inputFile, $outputFile) {
     $env:Platform = $null
     try {
         Write-Host "Compiling $inputFile with Cesium."
-        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- $inputFile $outputFile
+        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- $inputFile $outputFile | Out-Host
         if (!$?) {
             Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
             return $false
@@ -54,13 +54,11 @@ function buildFileWithCesium($inputFile, $outputFile) {
 }
 
 function validateTestCase($testCase) {
-    $testName = [IO.Path]::GetFileNameWithoutExtension($testCase)
+    $nativeCompilerBinOutput = "$outDir/out_native.exe"
+    $cesiumBinOutput = "$outDir/out_cs.exe"
 
-    $nativeCompilerBinOutput = "$outDir/$testName_native.exe"
-    $cesiumBinOutput = "$outDir/$testName_cs.exe"
-
-    $nativeCompilerRunLog = "$outDir/$testName_native.log"
-    $cesiumRunLog = "$outDir/$testName_cs.log"
+    $nativeCompilerRunLog = "$outDir/out_native.log"
+    $cesiumRunLog = "$outDir/out_cs.log"
 
     $expectedExitCode = 42
 
@@ -96,15 +94,23 @@ function validateTestCase($testCase) {
     $true
 }
 
+Write-Host "Cleaning up $ObjDir and $OutDir."
+if (Test-Path $ObjDir) {
+    Remove-Item -Recurse $ObjDir
+}
+if (Test-Path $OutDir) {
+    Remove-Item -Recurse $OutDir
+}
+
+New-Item $ObjDir -Type Directory | Out-Null
+New-Item $OutDir -Type Directory | Out-Null
+
 $allTestCases = Get-ChildItem "$TestCaseDir/*.c"
 Write-Host "Running tests for $($allTestCases.Count) cases."
 
 if (!$NoBuild) {
     buildCompiler
 }
-
-New-Item $ObjDir -Type Directory -ErrorAction Ignore | Out-Null
-New-Item $OutDir -Type Directory -ErrorAction Ignore | Out-Null
 
 $failedTests = @()
 foreach ($testCase in $allTestCases) {
