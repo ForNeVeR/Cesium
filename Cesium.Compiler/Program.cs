@@ -94,7 +94,8 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
             translationUnit,
             new AssemblyNameDefinition(assemblyName, new Version()),
             moduleKind,
-            targetRuntime);
+            targetRuntime,
+            new [] { typeof(Console).Assembly });
         assembly.Write(args.OutputFilePath);
 
         if (moduleKind == ModuleKind.Console && args.Framework == TargetFrameworkKind.Net)

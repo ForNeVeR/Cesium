@@ -17,7 +17,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
             translationUnit,
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console,
-            targetRuntime);
+            targetRuntime,
+            new [] { typeof(Console).Assembly });
 
         // To resolve IL labels:
         using var stream = new MemoryStream();
