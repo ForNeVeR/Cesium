@@ -43,4 +43,7 @@ int main()
 {
     return console_read();
 }");
+
+    [Fact]
+    public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 }
