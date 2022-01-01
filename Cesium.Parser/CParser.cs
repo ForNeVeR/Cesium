@@ -102,6 +102,19 @@ public partial class CParser
         Expression expression) => prev.Add(expression);
 
     // TODO: 6.5.3 Unary operators
+    // unary-expression:
+    //    postfix-expression
+    //    ++ unary-expression
+    //    unary-operator cast-expression
+    //    sizeof unary-expression
+    //    sizeof ( type-name )
+    //    _Alignof ( type-name )
+    // unary-operator: one of
+    //    & * + - ˜ !
+    [Rule("unary_expression: '-' unary_expression")]
+    private static Expression MakeNegationExpression(ICToken _, Expression target) =>
+        new NegationExpression(target);
+
     // TODO: 6.5.4 Cast operators
 
     // 6.5.5 Multiplicative operators
