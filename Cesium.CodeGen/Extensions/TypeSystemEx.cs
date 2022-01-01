@@ -1,3 +1,4 @@
+using System.Reflection;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
@@ -16,13 +17,30 @@ public static class TypeSystemEx
         var typeName = components[0];
         var methodName = components[1];
 
-        // TODO: Lookup in referenced assemblies.
-        var runtimeAssembly = typeof(Console).Assembly;
-        var type = runtimeAssembly.GetType(typeName);
-        if (type == null) return null;
-        var method = type.GetMethod(methodName);
+        var method = FindType(context.ImportAssemblies, typeName, methodName);
         if (method == null) return null;
 
         return context.Module.ImportReference(method);
+    }
+
+    private static MethodInfo? FindType(Assembly[] assemblies, string typeName, string methodName)
+    {
+        foreach (var assembly in assemblies)
+        {
+            var method = FindType(assembly, typeName, methodName);
+            if (method != null)
+                return method;
+        }
+
+        return null;
+    }
+
+    private static MethodInfo? FindType(Assembly assembly, string typeName, string methodName)
+    {
+        var type = assembly.GetType(typeName);
+        if (type == null) return null;
+
+        var method = type.GetMethod(methodName);
+        return method;
     }
 }

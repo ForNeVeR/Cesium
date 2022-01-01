@@ -1,4 +1,5 @@
-﻿using Cesium.Ast;
+﻿using System.Reflection;
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 using static Cesium.CodeGen.Generators.Declarations;
@@ -12,7 +13,8 @@ public static class Assemblies
         TranslationUnit translationUnit,
         AssemblyNameDefinition name,
         ModuleKind kind,
-        TargetRuntimeDescriptor? targetRuntime)
+        TargetRuntimeDescriptor? targetRuntime,
+        Assembly[] importAssemblies)
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
@@ -22,7 +24,7 @@ public static class Assemblies
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
-        var context = new TranslationUnitContext(assemblyContext);
+        var context = new TranslationUnitContext(assemblyContext, importAssemblies);
         foreach (var declaration in translationUnit.Declarations)
         {
             switch (declaration)
