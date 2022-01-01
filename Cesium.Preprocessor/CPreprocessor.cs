@@ -49,9 +49,14 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                         // TODO: Recursive processing
                         foreach (var t in await ProcessDirective(ReadDirectiveLine(token, stream)))
                             yield return t;
-                    }
 
-                    newLine = false;
+                        // Leave newLine as true, since we've processed the directive at the previous line, so now we're
+                        // now necessarily at the start of a new one.
+                    }
+                    else
+                    {
+                        yield return token;
+                    }
                     break;
 
                 case Error:
