@@ -3,7 +3,7 @@ namespace Cesium.Runtime;
 /// <summary>
 /// Functions declared in the stdlib.h
 /// </summary>
-public unsafe static class StdlibFunctions
+public unsafe static class StdLibFunctions
 {
     public static int Abs(int value)
     {
