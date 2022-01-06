@@ -106,7 +106,8 @@ if (Test-Path $OutDir) {
 New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
 
-$allTestCases = Get-ChildItem "$TestCaseDir/*.c"
+$allTestCases = Get-ChildItem "$TestCaseDir/*.c" -Exclude "*.ignore.c"
+Write-Host "Running tests for $($allTestCases.Count) cases."
 
 if (!$NoBuild) {
     buildCompiler
