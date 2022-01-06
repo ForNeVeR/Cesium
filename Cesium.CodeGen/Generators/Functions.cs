@@ -46,6 +46,7 @@ internal static class Functions
                 scope.Parameters.Add(parameter.Name, parameter);
         }
 
+        function = new FunctionDefinition(function.Specifiers, function.Declarator, function.Declarations, Lowering.LowerStatement(function.Statement));
         if (functionName == "main")
             return (EmitMainFunction(scope, function), true);
 
