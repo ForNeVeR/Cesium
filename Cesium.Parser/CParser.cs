@@ -335,9 +335,24 @@ public partial class CParser
         AbstractDeclarator abstractDeclarator,
         IToken __) => new SimpleDirectAbstractDeclarator(abstractDeclarator);
 
-    [Rule("direct_abstract_declarator: direct_abstract_declarator? '[' type_qualifier_list? assignment_expression? ']'")]
+    // HACK:
+    // The original rule in the C11 standard says the following:
+    //     direct_abstract_declarator: direct_abstract_declarator? '[' type_qualifier_list? assignment_expression? ']'
+    //
+    // But here, it's impossible to apply it as-is due to, seemingly, an issue with the Yoakke parser library
+    // (https://github.com/LanguageDev/Yoakke/issues/121). Thus, I has to split it in two:
+    //    direct_abstract_declarator: '[' type_qualifier_list? assignment_expression? ']'
+    //    direct_abstract_declarator: direct_abstract_declarator '[' type_qualifier_list? assignment_expression? ']'
+    [Rule("direct_abstract_declarator: '[' type_qualifier_list? assignment_expression? ']'")]
     private static IDirectAbstractDeclarator MakeDirectAbstractDeclarator(
-        IDirectAbstractDeclarator? @base,
+        IToken _,
+        TypeQualifierList? typeQualifierList,
+        Expression? assignmentExpression,
+        IToken __) => new ArrayDirectAbstractDeclarator(null, typeQualifierList, assignmentExpression);
+
+    [Rule("direct_abstract_declarator: direct_abstract_declarator '[' type_qualifier_list? assignment_expression? ']'")]
+    private static IDirectAbstractDeclarator MakeDirectAbstractDeclarator(
+        IDirectAbstractDeclarator @base,
         IToken _,
         TypeQualifierList? typeQualifierList,
         Expression? assignmentExpression,

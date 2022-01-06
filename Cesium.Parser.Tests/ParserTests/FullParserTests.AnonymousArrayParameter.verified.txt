@@ -1,0 +1,57 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.FunctionDefinition, Cesium.Ast",
+      "Specifiers": [
+        {
+          "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+          "TypeName": "void"
+        }
+      ],
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.ParameterListDirectDeclarator, Cesium.Ast",
+          "Base": {
+            "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+            "Identifier": "foo",
+            "Base": null
+          },
+          "Parameters": {
+            "$type": "Cesium.Ast.ParameterTypeList, Cesium.Ast",
+            "Parameters": [
+              {
+                "$type": "Cesium.Ast.ParameterDeclaration, Cesium.Ast",
+                "Specifiers": [
+                  {
+                    "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+                    "TypeName": "char"
+                  }
+                ],
+                "Declarator": null,
+                "AbstractDeclarator": {
+                  "$type": "Cesium.Ast.AbstractDeclarator, Cesium.Ast",
+                  "Pointer": null,
+                  "DirectAbstractDeclarator": {
+                    "$type": "Cesium.Ast.ArrayDirectAbstractDeclarator, Cesium.Ast",
+                    "Base": null,
+                    "TypeQualifiers": null,
+                    "Size": null
+                  }
+                }
+              }
+            ],
+            "IsVararg": false
+          }
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
+        "Block": []
+      }
+    }
+  ]
+}
