@@ -149,7 +149,20 @@ internal static class Expressions
             'r' => '\r',
             't' => '\t',
             'v' => '\v',
+            'x' => (char)int.Parse(text.AsSpan(2), System.Globalization.NumberStyles.AllowHexSpecifier),
+            > '0'  and < '9' => (char)ParseOctal(text.AsSpan(2)),
             _ => throw new InvalidOperationException($"Unknown escape sequence '{text}'"),
         };
+    }
+
+    private static int ParseOctal(ReadOnlySpan<char> value)
+    {
+        int result = 0;
+        for (var i = 0; i < value.Length; i++)
+        {
+            result = result * 8 + (value[i] - '0');
+        }
+
+        return result;
     }
 }

@@ -8,5 +8,7 @@ int main(int argc, char *argv[])
     exit(exitCode);
     char x = 'c';
     char y = '\t';
+    char z = '\x32';
+    char w = '\22';
     return 0;
 }
