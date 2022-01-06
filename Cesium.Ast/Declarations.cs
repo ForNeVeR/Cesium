@@ -29,14 +29,26 @@ public record SimpleDirectAbstractDeclarator(AbstractDeclarator Declarator) : ID
 public record ArrayDirectAbstractDeclarator(
     IDirectAbstractDeclarator? Base,
     ImmutableArray<TypeQualifier>? TypeQualifiers,
-    Expression? SizeExpression) : IDirectAbstractDeclarator;
+    Expression? Size) : IDirectAbstractDeclarator;
 
 // 6.7.6 Declarators
-public record Declarator(Pointer? Pointer, DirectDeclarator DirectDeclarator);
-public record DirectDeclarator(
-    string Name,
-    ParameterTypeList? ParameterList = null,
-    ImmutableArray<string>? IdentifierList = null);
+public record Declarator(Pointer? Pointer, IDirectDeclarator DirectDeclarator);
+public interface IDirectDeclarator
+{
+    IDirectDeclarator? Base { get; }
+}
+public record IdentifierDirectDeclarator(string Identifier) : IDirectDeclarator
+{
+    public IDirectDeclarator? Base => null;
+}
+public record ArrayDirectDeclarator(
+    IDirectDeclarator Base,
+    ImmutableArray<TypeQualifier>? TypeQualifiers,
+    Expression? Size) : IDirectDeclarator;
+public record ParameterListDirectDeclarator(IDirectDeclarator Base, ParameterTypeList Parameters) : IDirectDeclarator;
+public record IdentifierListDirectDeclarator(
+    IDirectDeclarator Base,
+    ImmutableArray<string>? Identifiers) : IDirectDeclarator;
 
 public record Pointer(ImmutableArray<TypeQualifier>? TypeQualifiers = null, Pointer? ChildPointer = null);
 

@@ -235,45 +235,39 @@ public partial class CParser
 
     // 6.7.6 Declarators
     [Rule("declarator: pointer? direct_declarator")]
-    private static Declarator MakeDeclarator(Pointer? pointer, DirectDeclarator directDeclarator) =>
+    private static Declarator MakeDeclarator(Pointer? pointer, IDirectDeclarator directDeclarator) =>
         new(pointer, directDeclarator);
 
     [Rule("direct_declarator: Identifier")]
-    private static DirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
-        new(identifier.Text);
+    private static IDirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
+        new IdentifierDirectDeclarator(identifier.Text);
 
     // TODO: direct_declarator: ( declarator )
-    // TODO: direct_declarator: direct_declarator [ type_qualifier_list? assignment_expression? ]
+
+    [Rule("direct_declarator: direct_declarator '[' type_qualifier_list? assignment_expression? ']'")]
+    private static IDirectDeclarator MakeDirectDeclarator(
+        IDirectDeclarator @base,
+        IToken _,
+        TypeQualifierList? typeQualifiers,
+        Expression? expression,
+        IToken __) => new ArrayDirectDeclarator(@base, typeQualifiers, expression);
     // TODO: direct_declarator: direct_declarator [ static type_qualifier_list? assignment_expression ]
     // TODO: direct_declarator: direct_declarator [ type_qualifier_list static assignment_expression ]
     // TODO: direct_declarator: direct_declarator [ type_qualifier_list? * ]
 
     [Rule("direct_declarator: direct_declarator '(' parameter_type_list ')'")]
-    private static DirectDeclarator MakeDirectDeclarator(
-        DirectDeclarator declarator,
+    private static IDirectDeclarator MakeDirectDeclarator(
+        IDirectDeclarator @base,
         ICToken _,
-        ParameterTypeList parameterList,
-        ICToken __)
-    {
-        if (declarator.ParameterList != null)
-            throw new Exception(
-                $"Cannot add a parameter list {parameterList} to a declarator {declarator} which already has a parameter list.");
-        return declarator with { ParameterList = parameterList };
-    }
+        ParameterTypeList parameters,
+        ICToken __) => new ParameterListDirectDeclarator(@base, parameters);
 
     [Rule("direct_declarator: direct_declarator '(' identifier_list? ')'")]
-    private static DirectDeclarator MakeDirectDeclarator(
-        DirectDeclarator declarator,
+    private static IDirectDeclarator MakeDirectDeclarator(
+        IDirectDeclarator @base,
         ICToken _,
         IdentifierList? identifierList,
-        ICToken __)
-    {
-        if (declarator.IdentifierList != null)
-            throw new Exception(
-                $"Cannot add an identifier list {identifierList} to a declarator {declarator} which already has an identifier list.");
-
-        return declarator with { IdentifierList = identifierList };
-    }
+        ICToken __) => new IdentifierListDirectDeclarator(@base, identifierList);
 
     [Rule("pointer: '*' type_qualifier_list?")]
     private static Pointer MakePointer(ICToken _, TypeQualifierList? typeQualifiers) => new(typeQualifiers);

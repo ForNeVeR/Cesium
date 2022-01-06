@@ -17,7 +17,7 @@ internal static class FunctionDefinitionEx
         if (declarator.Pointer != null)
             throw new NotImplementedException("Unsupported construction: function declarator with pointer.");
 
-        var parameters = declarator.DirectDeclarator.ParameterList;
+        var parameters = declarator.DirectDeclarator.GetParameterTypeList();
         if (parameters == null)
         {
             // Empty parameter list; let's consider it the same as void for now.

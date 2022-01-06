@@ -9,7 +9,7 @@ internal static class ParameterDeclarationEx
     {
         // Verify that the declarator only has name defined and nothing else:
         if (parameter.Declarator is not
-            { Pointer: null, DirectDeclarator: { IdentifierList: null, ParameterList: null } })
+            { Pointer: null, DirectDeclarator: IdentifierDirectDeclarator })
             throw new NotImplementedException($"Parameter declarator shape not supported: {parameter}.");
 
         var typeSpecifier = (TypeSpecifier)parameter.Specifiers.Single();

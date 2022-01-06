@@ -21,10 +21,13 @@
           "ChildPointer": null
         },
         "DirectDeclarator": {
-          "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
-          "Name": "malloc",
-          "ParameterList": null,
-          "IdentifierList": [
+          "$type": "Cesium.Ast.IdentifierListDirectDeclarator, Cesium.Ast",
+          "Base": {
+            "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+            "Identifier": "malloc",
+            "Base": null
+          },
+          "Identifiers": [
             "size_t"
           ]
         }

@@ -28,7 +28,7 @@ internal static class Functions
 
     private static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition function)
     {
-        var functionName = function.Declarator.DirectDeclarator.Name;
+        var functionName = function.Declarator.DirectDeclarator.GetIdentifier();
         var method = new MethodDefinition(
             functionName,
             MethodAttributes.Public | MethodAttributes.Static,
@@ -49,12 +49,12 @@ internal static class Functions
     {
         var module = scope.Module;
         var typeSystem = module.TypeSystem;
-        var functionName = function.Declarator.DirectDeclarator.Name;
+        var functionName = function.Declarator.DirectDeclarator.GetIdentifier();
 
         var returnType = function.GetReturnType(typeSystem);
         if (returnType != typeSystem.Int32)
             throw new NotSupportedException(
-                $"Invalid return type for the {function.Declarator.DirectDeclarator.Name} function: " +
+                $"Invalid return type for the {functionName} function: " +
                 $"int expected, got {returnType}.");
 
         var parameterTypes = function.GetParameterTypes(typeSystem).ToList();

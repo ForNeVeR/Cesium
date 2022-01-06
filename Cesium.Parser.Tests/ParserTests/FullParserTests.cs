@@ -93,6 +93,12 @@ int main()
     public Task ArrayParameter() => DoTest("void foo(char x[]){}");
 
     [Fact]
+    public Task ArrayOfArrayParameter() => DoTest("void foo(char x[][]){}");
+
+    [Fact]
+    public Task AnonymousArrayParameter() => DoTest("void foo(char[]){}");
+
+    [Fact]
     public Task PointerArrayParameter() => DoTest("void foo(char *x[]){}");
 
     [Fact]

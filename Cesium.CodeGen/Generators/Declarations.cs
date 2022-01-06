@@ -23,7 +23,7 @@ public static class Declarations
             throw new NotImplementedException($"Pointer at {declarator} not supported yet.");
 
         // TODO: Verify correct signature.
-        context.Functions.Add(declarator.DirectDeclarator.Name, method);
+        context.Functions.Add(declarator.DirectDeclarator.GetIdentifier(), method);
     }
 
     public static void EmitLocalDeclaration(FunctionScope scope, Declaration declaration)
@@ -35,7 +35,7 @@ public static class Declarations
 
         var initDeclarator = declaration.InitDeclarators.Value.Single();
         var declarator = initDeclarator.Declarator;
-        var name = declarator.DirectDeclarator.Name;
+        var name = declarator.DirectDeclarator.GetIdentifier();
 
         var typeReference = declarator.CalculateType(name, declaration.Specifiers, scope.Module);
         var variable = new VariableDefinition(typeReference);

@@ -13,10 +13,9 @@
         "$type": "Cesium.Ast.Declarator, Cesium.Ast",
         "Pointer": null,
         "DirectDeclarator": {
-          "$type": "Cesium.Ast.DirectDeclarator, Cesium.Ast",
-          "Name": "x",
-          "ParameterList": null,
-          "IdentifierList": null
+          "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+          "Identifier": "x",
+          "Base": null
         }
       },
       "Initializer": {

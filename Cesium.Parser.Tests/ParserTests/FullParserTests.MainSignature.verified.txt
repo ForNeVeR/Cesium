@@ -6,7 +6,7 @@
       "Specifiers": [
         {
           "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
-          "TypeName": "void"
+          "TypeName": "int"
         }
       ],
       "Declarator": {
@@ -16,7 +16,7 @@
           "$type": "Cesium.Ast.ParameterListDirectDeclarator, Cesium.Ast",
           "Base": {
             "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
-            "Identifier": "foo",
+            "Identifier": "main",
             "Base": null
           },
           "Parameters": {
@@ -35,8 +35,36 @@
                   "Pointer": null,
                   "DirectDeclarator": {
                     "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
-                    "Identifier": "x",
+                    "Identifier": "argc",
                     "Base": null
+                  }
+                },
+                "AbstractDeclarator": null
+              },
+              {
+                "$type": "Cesium.Ast.ParameterDeclaration, Cesium.Ast",
+                "Specifiers": [
+                  {
+                    "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+                    "TypeName": "char"
+                  }
+                ],
+                "Declarator": {
+                  "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                  "Pointer": {
+                    "$type": "Cesium.Ast.Pointer, Cesium.Ast",
+                    "TypeQualifiers": null,
+                    "ChildPointer": null
+                  },
+                  "DirectDeclarator": {
+                    "$type": "Cesium.Ast.ArrayDirectDeclarator, Cesium.Ast",
+                    "Base": {
+                      "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                      "Identifier": "argv",
+                      "Base": null
+                    },
+                    "TypeQualifiers": null,
+                    "Size": null
                   }
                 },
                 "AbstractDeclarator": null
