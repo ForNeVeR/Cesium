@@ -16,6 +16,21 @@ public record TypeSpecifier(string TypeName) : IDeclarationSpecifier;
 // 6.7.3 Type qualifiers
 public record TypeQualifier(string Name) : IDeclarationSpecifier;
 
+// 6.7.7 Type names
+public record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);
+public interface IDirectAbstractDeclarator
+{
+    IDirectAbstractDeclarator? Base { get; }
+}
+public record SimpleDirectAbstractDeclarator(AbstractDeclarator Declarator) : IDirectAbstractDeclarator
+{
+    public IDirectAbstractDeclarator? Base => null;
+};
+public record ArrayDirectAbstractDeclarator(
+    IDirectAbstractDeclarator? Base,
+    ImmutableArray<TypeQualifier>? TypeQualifiers,
+    Expression? SizeExpression) : IDirectAbstractDeclarator;
+
 // 6.7.6 Declarators
 public record Declarator(Pointer? Pointer, DirectDeclarator DirectDeclarator);
 public record DirectDeclarator(
@@ -27,7 +42,10 @@ public record Pointer(ImmutableArray<TypeQualifier>? TypeQualifiers = null, Poin
 
 public record ParameterTypeList(ImmutableArray<ParameterDeclaration> Parameters, bool IsVararg = false);
 
-public record ParameterDeclaration(ImmutableArray<IDeclarationSpecifier> Specifiers, Declarator? Declarator = null);
+public record ParameterDeclaration(
+    ImmutableArray<IDeclarationSpecifier> Specifiers,
+    Declarator? Declarator = null,
+    AbstractDeclarator? AbstractDeclarator = null);
 
 // 6.7.9 Initialization
 public abstract record Initializer;

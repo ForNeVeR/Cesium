@@ -309,7 +309,10 @@ public partial class CParser
         DeclarationSpecifiers specifiers,
         Declarator declarator) => new(specifiers, declarator);
 
-    // TODO: parameter_declaration: declaration_specifiers abstract_declarator?
+    [Rule("parameter_declaration: declaration_specifiers abstract_declarator?")]
+    private static ParameterDeclaration MakeParameterTypeList(
+        DeclarationSpecifiers specifiers,
+        AbstractDeclarator? declarator) => new(specifiers, AbstractDeclarator: declarator);
 
     [Rule("identifier_list: Identifier")]
     private static IdentifierList MakeIdentifierList(ICToken identifier) => ImmutableArray.Create(identifier.Text);
@@ -318,7 +321,41 @@ public partial class CParser
     private static IdentifierList MakeIdentifierList(IdentifierList prev, ICToken _, ICToken identifier) =>
         prev.Add(identifier.Text);
 
-    // TODO: 6.7.7 Type names
+    // 6.7.7 Type names
+
+    // TODO:
+    // type-name:
+    //     specifier-qualifier-list abstract-declarator?
+
+    [Rule("abstract_declarator: pointer")]
+    private static AbstractDeclarator MakeAbstractDeclarator(Pointer pointer) => new(pointer);
+
+    [Rule("abstract_declarator: pointer? direct_abstract_declarator")]
+    private static AbstractDeclarator MakeAbstractDeclarator(
+        Pointer? pointer,
+        IDirectAbstractDeclarator directAbstractDeclarator) => new(pointer, directAbstractDeclarator);
+
+    [Rule("direct_abstract_declarator: '(' abstract_declarator ')'")]
+    private static IDirectAbstractDeclarator MakeDirectAbstractDeclarator(
+        IToken _,
+        AbstractDeclarator abstractDeclarator,
+        IToken __) => new SimpleDirectAbstractDeclarator(abstractDeclarator);
+
+    [Rule("direct_abstract_declarator: direct_abstract_declarator? '[' type_qualifier_list? assignment_expression? ']'")]
+    private static IDirectAbstractDeclarator MakeDirectAbstractDeclarator(
+        IDirectAbstractDeclarator? @base,
+        IToken _,
+        TypeQualifierList? typeQualifierList,
+        Expression? assignmentExpression,
+        IToken __) => new ArrayDirectAbstractDeclarator(@base, typeQualifierList, assignmentExpression);
+
+    // TODO:
+    // direct-abstract-declarator:
+    //     direct-abstract-declarator? [ static type-qualifier-list? assignment-expression ]
+    //     direct-abstract-declarator? [ type-qualifier-list static assignment-expression ]
+    //     direct-abstract-declarator? [ * ]
+    //     direct-abstract-declarator? ( parameter-type-list? )
+
     // TODO: 6.7.8 Type definitions
 
     // 6.7.9 Initialization

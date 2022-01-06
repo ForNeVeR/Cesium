@@ -82,4 +82,19 @@ int main()
 
     [Fact]
     public Task NegationTest() => DoTest("void foo() { int x = -42; }");
+
+    [Fact]
+    public Task IntParameter() => DoTest("void foo(int x){}");
+
+    [Fact]
+    public Task PointerParameter() => DoTest("void foo(char *x){}");
+
+    [Fact]
+    public Task ArrayParameter() => DoTest("void foo(char x[]){}");
+
+    [Fact]
+    public Task PointerArrayParameter() => DoTest("void foo(char *x[]){}");
+
+    [Fact]
+    public Task MainSignature() => DoTest("int main(int argc, char *argv[]){}");
 }
