@@ -32,7 +32,7 @@ public static class DeclaratorEx
                             $"because declaration {name} already has type {typeReference} (double type specifiers?).");
                     }
 
-                    typeReference = ts.GetTypeReference(module);
+                    typeReference = ts.GetTypeReference(module.TypeSystem);
                     break;
                 case TypeQualifier { Name: "const" }:
                     if (isConst)

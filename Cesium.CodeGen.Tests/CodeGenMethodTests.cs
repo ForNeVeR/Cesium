@@ -10,6 +10,12 @@ public class CodeGenMethodTests : CodeGenTestBase
         return VerifyMethods(moduleType);
     }
 
+    protected static void DoesNotCompile(string source, string expectedMessage)
+    {
+        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(source, default));
+        Assert.Contains(expectedMessage, ex.Message);
+    }
+
     [Fact]
     public Task EmptyMainTest() => DoTest("int main() {}");
 
@@ -46,4 +52,10 @@ int main()
 
     [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
+
+    [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
+    [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
+    [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
+    [Fact] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
+    [Fact] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
 }

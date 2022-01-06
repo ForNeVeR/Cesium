@@ -3,6 +3,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using static Cesium.CodeGen.Generators.Declarations;
 using static Cesium.CodeGen.Generators.Statements;
 
@@ -25,34 +26,58 @@ internal static class Functions
         }
     }
 
-    private static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition definition)
+    private static MethodDefinition GenerateMethod(TranslationUnitContext context, FunctionDefinition function)
     {
-        var functionName = definition.Declarator.DirectDeclarator.Name;
+        var functionName = function.Declarator.DirectDeclarator.Name;
         var method = new MethodDefinition(
             functionName,
             MethodAttributes.Public | MethodAttributes.Static,
-            GetReturnType(context.Module, definition));
+            function.GetReturnType(context.Module.TypeSystem));
 
         context.Functions.Add(functionName, method);
         var scope = new FunctionScope(context, method);
 
         if (functionName == "main")
-            EmitMainFunction(scope, definition);
+            EmitMainFunction(scope, function);
         else
-            EmitFunction(scope, definition);
+            EmitFunction(scope, function);
 
         return method;
     }
 
-    private static TypeReference GetReturnType(ModuleDefinition module, FunctionDefinition definition)
-    {
-        var typeSpecifier = definition.Specifiers.OfType<TypeSpecifier>().Single();
-        return typeSpecifier.GetTypeReference(module);
-    }
-
     private static void EmitMainFunction(FunctionScope scope, FunctionDefinition function)
     {
-        // TODO: Alternate signature support.
+        var module = scope.Module;
+        var typeSystem = module.TypeSystem;
+        var functionName = function.Declarator.DirectDeclarator.Name;
+
+        var returnType = function.GetReturnType(typeSystem);
+        if (returnType != typeSystem.Int32)
+            throw new NotSupportedException(
+                $"Invalid return type for the {function.Declarator.DirectDeclarator.Name} function: " +
+                $"int expected, got {returnType}.");
+
+        var parameterTypes = function.GetParameterTypes(typeSystem).ToList();
+        switch (parameterTypes.Count)
+        {
+            case 0:
+                // It's okay to have no parameters for the main function.
+                break;
+            case 2:
+                if (!parameterTypes[0].Equals(typeSystem.Int32)
+                    || !parameterTypes[1].Equals(typeSystem.Byte.MakePointerType().MakeArrayType()))
+                    throw new NotSupportedException(
+                        $"Invalid parameter types for the {functionName} function: " +
+                        "int, char*[] expected.");
+                // TODO: Prepare 2-argument main call spot.
+                break;
+            default:
+                throw new NotSupportedException(
+                    $"Invalid parameter count for the {functionName} function: " +
+                    $"2 expected, got {parameterTypes.Count}.");
+        }
+
+
         if (function.Statement.Block.IsEmpty)
         {
             // TODO: Better definite return analysis.
