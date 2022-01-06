@@ -37,7 +37,7 @@ public static class Declarations
         var declarator = initDeclarator.Declarator;
         var name = declarator.DirectDeclarator.GetIdentifier();
 
-        var typeReference = declarator.CalculateType(name, declaration.Specifiers, scope.Module);
+        var typeReference = declaration.Specifiers.GetTypeReference(declarator, scope.Module.TypeSystem);
         var variable = new VariableDefinition(typeReference);
         method.Body.Variables.Add(variable);
         scope.Variables.Add(name, variable);

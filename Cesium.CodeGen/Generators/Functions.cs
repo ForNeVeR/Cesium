@@ -3,7 +3,6 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using static Cesium.CodeGen.Generators.Declarations;
 using static Cesium.CodeGen.Generators.Statements;
 
@@ -64,19 +63,23 @@ internal static class Functions
                 // It's okay to have no parameters for the main function.
                 break;
             case 2:
-                if (!parameterTypes[0].Equals(typeSystem.Int32)
-                    || !parameterTypes[1].Equals(typeSystem.Byte.MakePointerType().MakeArrayType()))
-                    throw new NotSupportedException(
-                        $"Invalid parameter types for the {functionName} function: " +
-                        "int, char*[] expected.");
-                // TODO: Prepare 2-argument main call spot.
+                switch (parameterTypes[0], parameterTypes[1])
+                {
+                    case (var @int, PointerType { ElementType: PointerType { ElementType: var @char } })
+                        when @int.Equals(typeSystem.Int32) && @char.Equals(typeSystem.Byte):
+                        // TODO: Prepare 2-argument main call spot.
+                        break;
+                    default:
+                        throw new NotSupportedException(
+                            $"Invalid parameter types for the {functionName} function: " +
+                            "int, char*[] expected.");
+                }
                 break;
             default:
                 throw new NotSupportedException(
                     $"Invalid parameter count for the {functionName} function: " +
                     $"2 expected, got {parameterTypes.Count}.");
         }
-
 
         if (function.Statement.Block.IsEmpty)
         {

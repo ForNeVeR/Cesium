@@ -5,11 +5,8 @@ namespace Cesium.CodeGen.Extensions;
 
 internal static class FunctionDefinitionEx
 {
-    public static TypeReference GetReturnType(this FunctionDefinition function, TypeSystem typeSystem)
-    {
-        var typeSpecifier = function.Specifiers.OfType<TypeSpecifier>().Single();
-        return typeSpecifier.GetTypeReference(typeSystem);
-    }
+    public static TypeReference GetReturnType(this FunctionDefinition function, TypeSystem typeSystem) =>
+        function.Specifiers.GetTypeReference(function.Declarator, typeSystem);
 
     public static IEnumerable<TypeReference> GetParameterTypes(this FunctionDefinition function, TypeSystem typeSystem)
     {
@@ -27,6 +24,10 @@ internal static class FunctionDefinitionEx
         if (parameters.IsVararg)
             throw new NotImplementedException("Vararg parameters aren't supported, yet.");
 
-        return parameters.Parameters.Select(p => p.GetTypeReference(typeSystem));
+        var types = parameters.Parameters.Select(p => p.GetTypeReference(typeSystem)).ToList();
+        if (types.Count == 1 && types[0].Equals(typeSystem.Void))
+            return Enumerable.Empty<TypeReference>();
+
+        return types;
     }
 }
