@@ -53,6 +53,7 @@ internal static class Lowering
         switch (assignmentExpression.Operator)
         {
             case "+=":
+            case "*=":
                 var loweredOperator = LowerOperator(assignmentExpression.Operator); 
                 var binaryExpression = new BinaryOperatorExpression(assignmentExpression.Left, loweredOperator, assignmentExpression.Right);
                 return new AssignmentExpression(assignmentExpression.Left, "=", binaryExpression);
@@ -67,6 +68,7 @@ internal static class Lowering
         return operatorToken switch 
         {
             "+=" => "+",
+            "*=" => "*",
             _ => throw new NotImplementedException($"Lowering for operator token {operatorToken} is not implemented"),
         };
     }
