@@ -75,6 +75,13 @@ int main()
 }");
 
     [Fact]
+    public Task CharLiteral() => DoTest(@"int main()
+{
+    char x = 'c';
+    char y = '\t';
+}");
+
+    [Fact]
     public Task StringVariable() => DoTest(@"int main()
 {
     const char *foo = ""hello world"";

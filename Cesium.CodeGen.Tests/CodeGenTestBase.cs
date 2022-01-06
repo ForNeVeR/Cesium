@@ -13,7 +13,13 @@ public abstract class CodeGenTestBase : VerifyTestBase
 {
     protected static AssemblyDefinition GenerateAssembly(string source, TargetRuntimeDescriptor? targetRuntime)
     {
-        var translationUnit = new CParser(new CLexer(source)).ParseTranslationUnit().Ok.Value;
+        var translationUnitParseResult = new CParser(new CLexer(source)).ParseTranslationUnit();
+        if (translationUnitParseResult.IsError)
+        {
+            
+        }
+
+        var translationUnit = translationUnitParseResult.Ok.Value;
         var assembly = Assemblies.Generate(
             translationUnit,
             new AssemblyNameDefinition("test", new Version()),

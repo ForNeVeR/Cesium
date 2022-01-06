@@ -38,18 +38,38 @@ internal static class Expressions
     private static void EmitConstantExpression(FunctionScope scope, ConstantExpression expression)
     {
         var token = expression.Constant;
-        var instruction = token switch
+        var instructions = scope.Method.Body.Instructions;
+        switch (token)
         {
             // TODO: Optimizations like Ldc_I4_0 for selected constants
-            { Kind: CTokenType.IntLiteral } => Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text)),
-            { Kind: CTokenType.Identifier, Text: var name } when scope.Variables.TryGetValue(name, out var var) =>
-                Instruction.Create(OpCodes.Ldloc, var),
-            { Kind: CTokenType.Identifier, Text: var name } when scope.Parameters.TryGetValue(name, out var par) =>
-                Instruction.Create(OpCodes.Ldarg, par),
-            _ => throw new Exception($"Constant token not supported: {token.Kind} {token.Text}.")
+            case { Kind: CTokenType.IntLiteral }: 
+                {
+                    var instruction = Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text));
+                    instructions.Add(instruction);
+                    break;
+                }
+            case { Kind: CTokenType.CharLiteral }:
+                {
+                    var charValue = UnescapeCharacter(token.Text);
+                    instructions.Add(Instruction.Create(OpCodes.Ldc_I4, (int)charValue));
+                    instructions.Add(Instruction.Create(OpCodes.Conv_U1));
+                    break;
+                }
+            case { Kind: CTokenType.Identifier, Text: var name } when scope.Variables.TryGetValue(name, out var var):
+                {
+                    var instruction = Instruction.Create(OpCodes.Ldloc, var);
+                    instructions.Add(instruction);
+                    break;
+                }
+            case { Kind: CTokenType.Identifier, Text: var name } when scope.Parameters.TryGetValue(name, out var par):
+                {
+                    var instruction = Instruction.Create(OpCodes.Ldarg, par);
+                    instructions.Add(instruction);
+                    break;
+                }
+            default:
+                throw new Exception($"Constant token not supported: {token.Kind} {token.Text}.");
         };
-
-        scope.Method.Body.Instructions.Add(instruction);
     }
 
     private static void EmitNegationExpression(FunctionScope scope, NegationExpression expression)
@@ -110,5 +130,26 @@ internal static class Expressions
     {
         var fieldReference = scope.AssemblyContext.GetConstantPoolReference(expression.ConstantContent);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
+    }
+    
+    private static char UnescapeCharacter(string text)
+    {
+        text = text.Replace("'", string.Empty);
+        if (text.Length == 1) return text[0];
+        return text[1] switch
+        {
+            '\'' => '\'',
+            '"' => '"',
+            //'?' => '\?',
+            '\\' => '\\',
+            'a' => '\a',
+            'b' => '\b',
+            'f' => '\f',
+            'n' => '\n',
+            'r' => '\r',
+            't' => '\t',
+            'v' => '\v',
+            _ => throw new InvalidOperationException($"Unknown escape sequence '{text}'"),
+        };
     }
 }
