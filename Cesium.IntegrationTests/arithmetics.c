@@ -1,4 +1,4 @@
-int main()
+int main(void)
 {
     int y = -42;
     int x = 40;

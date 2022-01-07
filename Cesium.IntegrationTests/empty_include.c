@@ -1,6 +1,6 @@
 #include "empty_include.h"
 
-int main()
+int main(void)
 {
     return 42;
 }
