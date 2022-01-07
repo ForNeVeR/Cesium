@@ -4,6 +4,7 @@ using Cesium.CodeGen.Generators;
 using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
@@ -122,9 +123,21 @@ public abstract class CodeGenTestBase : VerifyTestBase
                     result.AppendLine($"{Indent(indent + 2)}{local.VariableType} {local}");
             }
 
-
             foreach (var instruction in method.Body.Instructions)
                 result.AppendLine($"{Indent(indent + 1)}{instruction}");
+
+            if (method.Body.HasExceptionHandlers)
+                result.AppendLine($"{Indent(indent + 1)}Exception handlers:");
+
+            foreach (var handler in method.Body.ExceptionHandlers)
+            {
+                static string Label(Instruction i) => $"IL_{i.Offset:x4}";
+
+                result.AppendLine($"{Indent(indent + 2)}{handler.HandlerType}:");
+                result.AppendLine($"{Indent(indent + 3)}try: {Label(handler.TryStart)}..{Label(handler.TryEnd)}");
+                result.AppendLine(
+                    $"{Indent(indent + 3)}handler: {Label(handler.HandlerStart)}..{Label(handler.HandlerEnd)}");
+            }
         }
     }
 }

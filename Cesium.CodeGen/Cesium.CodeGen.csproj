@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +12,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
+      <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
     </ItemGroup>
 
 </Project>

@@ -59,4 +59,5 @@ int main()
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
     [Fact] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
     [Fact] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
+    [Fact] public Task ParameterGet() => DoTest("int foo(int x){ return x + 1; }");
 }

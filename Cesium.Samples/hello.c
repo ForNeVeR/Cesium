@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int main()
+int main(int argc, char *argv[])
 {
     const char *foo = "Hello, world!";
     puts(foo);

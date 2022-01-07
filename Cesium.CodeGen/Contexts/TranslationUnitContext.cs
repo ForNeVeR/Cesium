@@ -6,6 +6,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
 {
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
+    public TypeSystem TypeSystem => Module.TypeSystem;
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public Dictionary<string, MethodReference> Functions { get; } = new();
 }

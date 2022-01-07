@@ -10,4 +10,5 @@ public record FunctionScope(TranslationUnitContext Context, MethodDefinition Met
     public IReadOnlyDictionary<string, MethodReference> Functions => Context.Functions;
 
     public Dictionary<string, VariableDefinition> Variables { get; } = new();
+    public Dictionary<string, ParameterDefinition> Parameters { get; } = new();
 }

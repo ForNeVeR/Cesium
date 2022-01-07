@@ -42,8 +42,10 @@ internal static class Expressions
         {
             // TODO: Optimizations like Ldc_I4_0 for selected constants
             { Kind: CTokenType.IntLiteral } => Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text)),
-            { Kind: CTokenType.Identifier, Text: var name } =>
-                Instruction.Create(OpCodes.Ldloc, scope.Variables[name]),
+            { Kind: CTokenType.Identifier, Text: var name } when scope.Variables.TryGetValue(name, out var var) =>
+                Instruction.Create(OpCodes.Ldloc, var),
+            { Kind: CTokenType.Identifier, Text: var name } when scope.Parameters.TryGetValue(name, out var par) =>
+                Instruction.Create(OpCodes.Ldarg, par),
             _ => throw new Exception($"Constant token not supported: {token.Kind} {token.Text}.")
         };
 
