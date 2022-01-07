@@ -166,16 +166,17 @@ internal static class Functions
         var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
         syntheticEntrypoint.Body.Variables.Add(argVCopy);
 
-        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
+        var argVPtr = new VariableDefinition(bytePtrType.MakePointerType()); // 3
+        syntheticEntrypoint.Body.Variables.Add(argVPtr);
+
+        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 4
         syntheticEntrypoint.Body.Variables.Add(argVPinned);
 
-        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 5
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
-        // syntheticEntrypoint.
-
         var instructions = syntheticEntrypoint.Body.Instructions;
-        var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc, exitCode);
+        var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc_S, exitCode);
 
         // argc = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
@@ -206,23 +207,27 @@ internal static class Functions
             //     return main(argc, argvPtr);
             // pin
             {
-        //     instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
-        //         instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_2));
-        //         instructions.Add(Instruction.Create(OpCodes.Stloc_3));
-        //         instructions.Add(Instruction.Create(OpCodes.Ldloc_3));
-        //         instructions.Add(Instruction.Create(OpCodes.Ldelema, bytePtrType));
-                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldc_I4_0));
+                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_2)); // 2 = argVCopy.Index
+                instructions.Add(Instruction.Create(OpCodes.Stloc_S, argVPinned));
+                instructions.Add(Instruction.Create(OpCodes.Ldloc_S, argVPinned));
                 instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                instructions.Add(Instruction.Create(OpCodes.Ldelema, bytePtrType));
                 instructions.Add(Instruction.Create(OpCodes.Conv_U));
+                instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPtr.Index
+                // instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                // instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                // instructions.Add(Instruction.Create(OpCodes.Conv_U));
+                instructions.Add(Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
+                instructions.Add(Instruction.Create(OpCodes.Ldloc_3)); // 3 = argVPtr.Index
                 instructions.Add(Instruction.Create(OpCodes.Call, userEntrypoint));
-                instructions.Add(Instruction.Create(OpCodes.Stloc, exitCode));
+                instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
                 instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
             // finally: unpin
             {
                 // Cesium.Runtime.RuntimeHelpers.FreeArgv(argv);
                 instructions.Add(pinEnd = unpinStart = Instruction.Create(OpCodes.Ldnull));
-                instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
+                instructions.Add(Instruction.Create(OpCodes.Stloc_S, argVPinned));
                 instructions.Add(Instruction.Create(OpCodes.Endfinally));
             }
         }
