@@ -120,7 +120,14 @@ public abstract class CodeGenTestBase : VerifyTestBase
             {
                 result.AppendLine($"{Indent(indent + 1)}Locals:");
                 foreach (var local in variables)
-                    result.AppendLine($"{Indent(indent + 2)}{local.VariableType} {local}");
+                {
+                    var variableDescription = new StringBuilder();
+                    variableDescription.Append(local.VariableType);
+                    if (local.IsPinned)
+                        variableDescription.Append(" (pinned)");
+                    variableDescription.Append($" {local}");
+                    result.AppendLine($"{Indent(indent + 2)}{variableDescription}");
+                }
             }
 
             foreach (var instruction in method.Body.Instructions)
