@@ -156,34 +156,47 @@ internal static class Functions
         var arrayCopyTo = module.ImportReference(typeof(byte*[])
             .GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
 
-        var argc = new VariableDefinition(context.TypeSystem.Int32); // 0
-        syntheticEntrypoint.Body.Variables.Add(argc);
-        var argv = new VariableDefinition(bytePtrArrayType); // 1
-        syntheticEntrypoint.Body.Variables.Add(argv);
+        var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
+        syntheticEntrypoint.Body.Variables.Add(argC);
+
+        var argV = new VariableDefinition(bytePtrArrayType); // 1
+        syntheticEntrypoint.Body.Variables.Add(argV);
+
         // to free the initial array and not a potentially changed one at the end:
-        var argvCopy = new VariableDefinition(bytePtrArrayType); // 2
-        syntheticEntrypoint.Body.Variables.Add(argvCopy);
-        var argvPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
-        syntheticEntrypoint.Body.Variables.Add(argvPinned);
+        var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
+        syntheticEntrypoint.Body.Variables.Add(argVCopy);
+
+        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
+        syntheticEntrypoint.Body.Variables.Add(argVPinned);
+
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
+        syntheticEntrypoint.Body.Variables.Add(exitCode);
+
+        // syntheticEntrypoint.
 
         var instructions = syntheticEntrypoint.Body.Instructions;
+        var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc, exitCode);
 
         // argc = args.Length;
-        instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+        instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
         instructions.Add(Instruction.Create(OpCodes.Ldlen));
-        instructions.Add(Instruction.Create(OpCodes.Stloc_0));
+        instructions.Add(Instruction.Create(OpCodes.Stloc_0)); // 0 = argC.Index
         // argv = Cesium.Runtime.RuntimeHelpers.ArgsToArgv(args);
-        instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+        instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // 0 = argC.Index
         instructions.Add(Instruction.Create(OpCodes.Call, argsToArgv));
-        instructions.Add(Instruction.Create(OpCodes.Stloc_1));
+        instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
 
         // try
         Instruction tryStart, tryEnd;
+        Instruction pinStart, pinEnd;
+        Instruction unpinStart, unpinEnd;
         {
-            // argvCopy = new byte*[argc];
-            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_0));
+            // argvCopy = new byte*[argc + 1];
+            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            instructions.Add(Instruction.Create(OpCodes.Add));
             instructions.Add(Instruction.Create(OpCodes.Newarr, bytePtrType));
-            instructions.Add(Instruction.Create(OpCodes.Stloc_2));
+            instructions.Add(Instruction.Create(OpCodes.Stloc_2)); // 2 = argVCopy.Index
             // argv.CopyTo(argvCopy, 0);
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1));
             instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
@@ -191,54 +204,57 @@ internal static class Functions
             instructions.Add(Instruction.Create(OpCodes.Call, arrayCopyTo));
             // fixed (byte** argvPtr = argvCopy)
             //     return main(argc, argvPtr);
-            instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
-            Instruction pinStart, pinEnd;
-            // pins
+            // pin
             {
-                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_2));
-                instructions.Add(Instruction.Create(OpCodes.Stloc_3));
-                instructions.Add(Instruction.Create(OpCodes.Ldloc_3));
-                instructions.Add(Instruction.Create(OpCodes.Ldelema, bytePtrType));
+        //     instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
+        //         instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_2));
+        //         instructions.Add(Instruction.Create(OpCodes.Stloc_3));
+        //         instructions.Add(Instruction.Create(OpCodes.Ldloc_3));
+        //         instructions.Add(Instruction.Create(OpCodes.Ldelema, bytePtrType));
+                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldc_I4_0));
+                instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                instructions.Add(Instruction.Create(OpCodes.Conv_U));
                 instructions.Add(Instruction.Create(OpCodes.Call, userEntrypoint));
-                instructions.Add(Instruction.Create(OpCodes.Ret));
+                instructions.Add(Instruction.Create(OpCodes.Stloc, exitCode));
+                instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
             // finally: unpin
             {
-                Instruction unpinStart, unpinEnd;
-
                 // Cesium.Runtime.RuntimeHelpers.FreeArgv(argv);
                 instructions.Add(pinEnd = unpinStart = Instruction.Create(OpCodes.Ldnull));
-                instructions.Add(Instruction.Create(OpCodes.Stloc_3));
-                instructions.Add(unpinEnd = Instruction.Create(OpCodes.Endfinally));
-
-                var exceptionHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-                {
-                    TryStart = pinStart,
-                    TryEnd = pinEnd,
-                    HandlerStart = unpinStart,
-                    HandlerEnd = unpinEnd
-                };
-                syntheticEntrypoint.Body.ExceptionHandlers.Add(exceptionHandler);
+                instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
+                instructions.Add(Instruction.Create(OpCodes.Endfinally));
             }
         }
         // finally
+        Instruction finallyStart, finallyEnd;
         {
-            Instruction finallyStart, finallyEnd;
-
             // Cesium.Runtime.RuntimeHelpers.FreeArgv(argv);
-            instructions.Add(tryEnd = finallyStart = Instruction.Create(OpCodes.Ldloc_1));
+            instructions.Add(unpinEnd = tryEnd = finallyStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
-            instructions.Add(finallyEnd = Instruction.Create(OpCodes.Endfinally));
-
-            var exceptionHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-            {
-                TryStart = tryStart,
-                TryEnd = tryEnd,
-                HandlerStart = finallyStart,
-                HandlerEnd = finallyEnd
-            };
-            syntheticEntrypoint.Body.ExceptionHandlers.Add(exceptionHandler);
+            instructions.Add(Instruction.Create(OpCodes.Endfinally));
         }
+
+        instructions.Add(finallyEnd = atExitLdLocExitCode);
+        instructions.Add(Instruction.Create(OpCodes.Ret));
+
+        var unpinHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
+        {
+            TryStart = pinStart,
+            TryEnd = pinEnd,
+            HandlerStart = unpinStart,
+            HandlerEnd = unpinEnd
+        };
+        syntheticEntrypoint.Body.ExceptionHandlers.Add(unpinHandler);
+
+        var finallyHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
+        {
+            TryStart = tryStart,
+            TryEnd = tryEnd,
+            HandlerStart = finallyStart,
+            HandlerEnd = finallyEnd
+        };
+        syntheticEntrypoint.Body.ExceptionHandlers.Add(finallyHandler);
 
         return syntheticEntrypoint;
     }
