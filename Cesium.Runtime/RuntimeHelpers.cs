@@ -1,25 +1,32 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Cesium.Runtime;
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static unsafe class RuntimeHelpers
 {
     public static byte*[] ArgsToArgv(string[] strings)
     {
         var encoding = Encoding.UTF8;
-
-        var pointers = new byte*[strings.Length + 1]; // last item should be a null pointer
-        for (var i = 0; i < strings.Length; ++i)
+        byte* AllocateUtf8String(string s)
         {
-            var s = strings[i];
             var bytes = encoding.GetBytes(s);
-            var buffer = Marshal.AllocHGlobal(s.Length + 1);
-            Marshal.Copy(bytes, 0, buffer, bytes.Length);
-            var ptr = (byte*)buffer;
-            ptr![bytes.Length] = 0;
-            pointers[i] = ptr;
+            var buffer = (byte*)Marshal.AllocHGlobal(s.Length + 1);
+            Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
+            buffer[s.Length] = 0;
+            return buffer;
         }
+
+        // Last item should be a null pointer; the first one we'll allocate from the executable path, so + 2:
+        var pointers = new byte*[strings.Length + 2];
+
+        var executablePath = Assembly.GetEntryAssembly()?.Location ?? "";
+        pointers[0] = AllocateUtf8String(executablePath);
+        for (var i = 0; i < strings.Length; ++i)
+            pointers[i + 1] = AllocateUtf8String(strings[i]);
 
         return pointers;
     }

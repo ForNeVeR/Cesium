@@ -162,7 +162,9 @@ internal static class Functions
         var argV = new VariableDefinition(bytePtrArrayType); // 1
         syntheticEntrypoint.Body.Variables.Add(argV);
 
-        // to free the initial array and not a potentially changed one at the end:
+        // argVCopy is a copy for the user which could be changed during the program execution. Only original argV
+        // strings will be freed at the end of the execution, though, since we don't know how any other strings may have
+        // been allocated by the user.
         var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
         syntheticEntrypoint.Body.Variables.Add(argVCopy);
 
@@ -175,11 +177,11 @@ internal static class Functions
         var instructions = syntheticEntrypoint.Body.Instructions;
         var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc_S, exitCode);
 
-        // argc = args.Length;
+        // argC = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
         instructions.Add(Instruction.Create(OpCodes.Ldlen));
         instructions.Add(Instruction.Create(OpCodes.Stloc_0)); // 0 = argC.Index
-        // argv = Cesium.Runtime.RuntimeHelpers.ArgsToArgv(args);
+        // argV = Cesium.Runtime.RuntimeHelpers.ArgsToArgv(args);
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // 0 = argC.Index
         instructions.Add(Instruction.Create(OpCodes.Call, argsToArgv));
         instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
@@ -189,19 +191,18 @@ internal static class Functions
         Instruction pinStart, pinEnd;
         Instruction unpinStart, unpinEnd;
         {
-            // argvCopy = new byte*[argc + 1];
-            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
-            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            instructions.Add(Instruction.Create(OpCodes.Add));
+            // argVCopy = new byte*[argV.Length];
+            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_1)); // 0 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldlen));
             instructions.Add(Instruction.Create(OpCodes.Newarr, bytePtrType));
             instructions.Add(Instruction.Create(OpCodes.Stloc_2)); // 2 = argVCopy.Index
-            // argv.CopyTo(argvCopy, 0);
+            // argV.CopyTo(argVCopy, 0);
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1));
             instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
             instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
             instructions.Add(Instruction.Create(OpCodes.Call, arrayCopyTo));
-            // fixed (byte** argvPtr = argvCopy)
-            //     return main(argc, argvPtr);
+            // fixed (byte** argVPtr = argVCopy)
+            //     return main(argC, argVPtr);
             // pin
             {
                 instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
@@ -216,7 +217,6 @@ internal static class Functions
             }
             // finally: unpin
             {
-                // Cesium.Runtime.RuntimeHelpers.FreeArgv(argv);
                 instructions.Add(pinEnd = unpinStart = Instruction.Create(OpCodes.Ldnull));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
                 instructions.Add(Instruction.Create(OpCodes.Endfinally));
@@ -225,7 +225,7 @@ internal static class Functions
         // finally
         Instruction finallyStart, finallyEnd;
         {
-            // Cesium.Runtime.RuntimeHelpers.FreeArgv(argv);
+            // Cesium.Runtime.RuntimeHelpers.FreeArgv(argV);
             instructions.Add(unpinEnd = tryEnd = finallyStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
             instructions.Add(Instruction.Create(OpCodes.Endfinally));

@@ -15,36 +15,35 @@ System.Int32 <Module>::<SyntheticEntrypoint>(System.String[])
   IL_0003: ldarg.0
   IL_0004: call System.Byte*[] Cesium.Runtime.RuntimeHelpers::ArgsToArgv(System.String[])
   IL_0009: stloc.1
-  IL_000a: ldloc.0
-  IL_000b: ldc.i4.1
-  IL_000c: add
-  IL_000d: newarr System.Byte*
-  IL_0012: stloc.2
-  IL_0013: ldloc.1
-  IL_0014: ldloc.2
-  IL_0015: ldc.i4.0
-  IL_0016: call System.Void System.Array::CopyTo(System.Array,System.Int32)
-  IL_001b: ldloc.0
-  IL_001c: ldloc.2
-  IL_001d: stloc.3
-  IL_001e: ldloc.3
-  IL_001f: ldc.i4.0
-  IL_0020: ldelema System.Byte*
-  IL_0025: call System.Int32 <Module>::main(System.Int32,System.Byte**)
-  IL_002a: stloc.s V_4
-  IL_002c: leave.s IL_0038
-  IL_002e: ldnull
-  IL_002f: stloc.3
-  IL_0030: endfinally
-  IL_0031: ldloc.1
-  IL_0032: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
-  IL_0037: endfinally
-  IL_0038: ldloc.s V_4
-  IL_003a: ret
+  IL_000a: ldloc.1
+  IL_000b: ldlen
+  IL_000c: newarr System.Byte*
+  IL_0011: stloc.2
+  IL_0012: ldloc.1
+  IL_0013: ldloc.2
+  IL_0014: ldc.i4.0
+  IL_0015: call System.Void System.Array::CopyTo(System.Array,System.Int32)
+  IL_001a: ldloc.0
+  IL_001b: ldloc.2
+  IL_001c: stloc.3
+  IL_001d: ldloc.3
+  IL_001e: ldc.i4.0
+  IL_001f: ldelema System.Byte*
+  IL_0024: call System.Int32 <Module>::main(System.Int32,System.Byte**)
+  IL_0029: stloc.s V_4
+  IL_002b: leave.s IL_0037
+  IL_002d: ldnull
+  IL_002e: stloc.3
+  IL_002f: endfinally
+  IL_0030: ldloc.1
+  IL_0031: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
+  IL_0036: endfinally
+  IL_0037: ldloc.s V_4
+  IL_0039: ret
   Exception handlers:
     Finally:
-      try: IL_001b..IL_002e
-      handler: IL_002e..IL_0031
+      try: IL_001a..IL_002d
+      handler: IL_002d..IL_0030
     Finally:
-      try: IL_000a..IL_0031
-      handler: IL_0031..IL_0038
+      try: IL_000a..IL_0030
+      handler: IL_0030..IL_0037
