@@ -114,7 +114,19 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine();
             first = false;
 
-            result.AppendLine(Indent(indent) + method);
+            result.Append($"{Indent(indent)}{method.ReturnType} {method.DeclaringType}::{method.Name}(");
+            var firstParam = true;
+            foreach (var param in method.Parameters)
+            {
+                if (!firstParam)
+                    result.Append(", ");
+                firstParam = false;
+                result.Append($"{param.ParameterType}");
+                if (param.Name != null)
+                    result.Append($" {param.Name}");
+            }
+
+            result.AppendLine(")");
             var variables = method.Body.Variables;
             if (variables.Count > 0)
             {

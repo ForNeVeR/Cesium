@@ -1,1 +1,1 @@
-﻿System.Void <Module>::foo(System.Int32*)
+﻿System.Void <Module>::foo(System.Int32* ptr)
