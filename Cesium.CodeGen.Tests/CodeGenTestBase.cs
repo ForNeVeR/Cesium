@@ -133,12 +133,10 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine($"{Indent(indent + 1)}Locals:");
                 foreach (var local in variables)
                 {
-                    var variableDescription = new StringBuilder();
-                    variableDescription.Append(local.VariableType);
+                    result.Append($"{Indent(indent + 2)}{local.VariableType}");
                     if (local.IsPinned)
-                        variableDescription.Append(" (pinned)");
-                    variableDescription.Append($" {local}");
-                    result.AppendLine($"{Indent(indent + 2)}{variableDescription}");
+                        result.Append(" (pinned)");
+                    result.AppendLine($" {local}");
                 }
             }
 
