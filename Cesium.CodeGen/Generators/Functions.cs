@@ -78,7 +78,6 @@ internal static class Functions
                 {
                     case (var @int, PointerType { ElementType: PointerType { ElementType: var @char } })
                         when @int.Equals(typeSystem.Int32) && @char.Equals(typeSystem.Byte):
-                        // TODO: Prepare 2-argument main call spot.
                         scope.Context.ModuleType.Methods.Add(scope.Method);
                         entrypoint = EmitSyntheticEntrypoint(scope.Context, scope.Method);
                         break;
@@ -182,7 +181,7 @@ internal static class Functions
         instructions.Add(Instruction.Create(OpCodes.Ldlen));
         instructions.Add(Instruction.Create(OpCodes.Stloc_0)); // 0 = argC.Index
         // argV = Cesium.Runtime.RuntimeHelpers.ArgsToArgv(args);
-        instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // 0 = argC.Index
+        instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
         instructions.Add(Instruction.Create(OpCodes.Call, argsToArgv));
         instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
 
@@ -192,13 +191,13 @@ internal static class Functions
         Instruction unpinStart, unpinEnd;
         {
             // argVCopy = new byte*[argV.Length];
-            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_1)); // 0 = argV.Index
+            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Ldlen));
             instructions.Add(Instruction.Create(OpCodes.Newarr, bytePtrType));
             instructions.Add(Instruction.Create(OpCodes.Stloc_2)); // 2 = argVCopy.Index
             // argV.CopyTo(argVCopy, 0);
-            instructions.Add(Instruction.Create(OpCodes.Ldloc_1));
-            instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_2)); // 2 = argVCopy.Index
             instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
             instructions.Add(Instruction.Create(OpCodes.Call, arrayCopyTo));
             // fixed (byte** argVPtr = argVCopy)

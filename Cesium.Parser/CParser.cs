@@ -339,8 +339,8 @@ public partial class CParser
     // The original rule in the C11 standard says the following:
     //     direct_abstract_declarator: direct_abstract_declarator? '[' type_qualifier_list? assignment_expression? ']'
     //
-    // But here, it's impossible to apply it as-is due to, seemingly, an issue with the Yoakke parser library
-    // (https://github.com/LanguageDev/Yoakke/issues/121). Thus, I has to split it in two:
+    // But here, it's impossible to apply it as-is due to an issue with the Yoakke parser library
+    // (https://github.com/LanguageDev/Yoakke/issues/121). Thus, it has been split in two:
     //    direct_abstract_declarator: '[' type_qualifier_list? assignment_expression? ']'
     //    direct_abstract_declarator: direct_abstract_declarator '[' type_qualifier_list? assignment_expression? ']'
     [Rule("direct_abstract_declarator: '[' type_qualifier_list? assignment_expression? ']'")]

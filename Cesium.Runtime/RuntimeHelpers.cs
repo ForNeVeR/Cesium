@@ -8,7 +8,17 @@ namespace Cesium.Runtime;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public static unsafe class RuntimeHelpers
 {
-    public static byte*[] ArgsToArgv(string[] strings)
+    /// <summary>
+    /// <para>
+    ///     Converts args received from a command line to a C-compatible <code>argv</code> argument, by prepending it
+    ///     with the <code>Assembly.GetEntryAssembly()?.Location</code>, adding a terminating zero, and converting
+    ///     every argument to a byte pointer (bytes received using the UTF-8 encoding).
+    /// </para>
+    /// <para>
+    ///     The resulting array should be freed using the <see cref="FreeArgv"/> method.
+    /// </para>
+    /// </summary>
+    public static byte*[] ArgsToArgv(string[] args)
     {
         var encoding = Encoding.UTF8;
         byte* AllocateUtf8String(string s)
@@ -21,12 +31,12 @@ public static unsafe class RuntimeHelpers
         }
 
         // Last item should be a null pointer; the first one we'll allocate from the executable path, so + 2:
-        var pointers = new byte*[strings.Length + 2];
+        var pointers = new byte*[args.Length + 2];
 
         var executablePath = Assembly.GetEntryAssembly()?.Location ?? "";
         pointers[0] = AllocateUtf8String(executablePath);
-        for (var i = 0; i < strings.Length; ++i)
-            pointers[i + 1] = AllocateUtf8String(strings[i]);
+        for (var i = 0; i < args.Length; ++i)
+            pointers[i + 1] = AllocateUtf8String(args[i]);
 
         return pointers;
     }
