@@ -6,6 +6,8 @@ using Cesium.Test.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
+using Yoakke.Lexer;
+using Yoakke.Parser;
 
 namespace Cesium.CodeGen.Tests;
 
@@ -16,7 +18,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         var translationUnitParseResult = new CParser(new CLexer(source)).ParseTranslationUnit();
         if (translationUnitParseResult.IsError)
         {
-            
+            throw new InvalidOperationException(translationUnitParseResult.GetErrorString());
         }
 
         var translationUnit = translationUnitParseResult.Ok.Value;
