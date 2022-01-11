@@ -52,7 +52,7 @@ internal static class Expressions
                 {
                     var charValue = UnescapeCharacter(token.Text);
                     instructions.Add(Instruction.Create(OpCodes.Ldc_I4, (int)charValue));
-                    instructions.Add(Instruction.Create(OpCodes.Conv_U1));
+                    instructions.Add(Instruction.Create(OpCodes.Conv_U2));
                     break;
                 }
             case { Kind: CTokenType.Identifier, Text: var name } when scope.Variables.TryGetValue(name, out var var):
