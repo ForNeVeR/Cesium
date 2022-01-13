@@ -6,4 +6,5 @@
     </ItemGroup>
 
     <Target Name="Build" />
+    <Target Name="VSTest" />
 </Project>
