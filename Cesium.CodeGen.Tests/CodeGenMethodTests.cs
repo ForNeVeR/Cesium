@@ -39,6 +39,14 @@ public class CodeGenMethodTests : CodeGenTestBase
 }");
 
     [Fact]
+    public Task PostfixIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
     public Task FunctionCallTest() => DoTest(@"int foo()
 {
     return 42;

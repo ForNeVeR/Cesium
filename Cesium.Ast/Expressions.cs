@@ -9,6 +9,7 @@ public abstract record Expression;
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
 public record ConstantExpression(IToken<CTokenType> Constant) : Expression;
+public record IntConstantExpression(int Constant) : Expression;
 public record StringConstantExpression(string ConstantContent) : Expression;
 
 // 6.5.2 Postfix operators
@@ -17,6 +18,7 @@ public record FunctionCallExpression(Expression Function, ImmutableArray<Express
 
 // 6.5.3 Unary operators
 public record NegationExpression(Expression Target) : Expression;
+public record PrefixIncrementExpression(Expression Target) : Expression;
 
 // 6.5.5–6.5.15: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;

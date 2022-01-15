@@ -44,8 +44,16 @@ internal static class Lowering
         return expr switch 
         {
             AssignmentExpression assignmentExpression => LowerAssignmentExpression(assignmentExpression),
+            PrefixIncrementExpression prefixIncrementExpression => LowerPrefixIncrementExpression(prefixIncrementExpression),
             _ => expr
         };
+    }
+
+    private static Expression LowerPrefixIncrementExpression(PrefixIncrementExpression prefixIncrementExpression)
+    {
+        var constantOne = new IntConstantExpression(1);
+        var binaryExpression = new BinaryOperatorExpression(prefixIncrementExpression.Target, "+", constantOne);
+        return new AssignmentExpression(prefixIncrementExpression.Target, "=", binaryExpression);
     }
 
     private static Expression LowerAssignmentExpression(AssignmentExpression assignmentExpression)

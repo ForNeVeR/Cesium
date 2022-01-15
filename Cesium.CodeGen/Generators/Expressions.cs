@@ -15,6 +15,9 @@ internal static class Expressions
             case ConstantExpression c:
                 EmitConstantExpression(scope, c);
                 break;
+            case IntConstantExpression intConstant:
+                EmitIntConstantExpression(scope, intConstant);
+                break;
             case NegationExpression negationExpression:
                 EmitNegationExpression(scope, negationExpression);
                 break;
@@ -35,6 +38,12 @@ internal static class Expressions
         }
     }
 
+    private static void EmitIntConstantExpression(FunctionScope scope, IntConstantExpression expression)
+    {
+        var instructions = scope.Method.Body.Instructions;
+        var instruction = Instruction.Create(OpCodes.Ldc_I4, expression.Constant);
+        instructions.Add(instruction);
+    }
     private static void EmitConstantExpression(FunctionScope scope, ConstantExpression expression)
     {
         var token = expression.Constant;

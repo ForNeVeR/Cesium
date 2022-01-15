@@ -110,4 +110,12 @@ int main()
 
     [Fact]
     public Task MainSignature() => DoTest("int main(int argc, char *argv[]){}");
+
+    [Fact]
+    public Task PrefixIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    ++x;
+    return x;
+ }");
 }

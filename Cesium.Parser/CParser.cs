@@ -115,6 +115,10 @@ public partial class CParser
     private static Expression MakeNegationExpression(ICToken _, Expression target) =>
         new NegationExpression(target);
 
+    [Rule("unary_expression: '++' unary_expression")]
+    private static Expression MakePrefixIncrementExpression(ICToken _, Expression target) =>
+        new PrefixIncrementExpression(target);
+
     // TODO: 6.5.4 Cast operators
 
     // 6.5.5 Multiplicative operators
