@@ -11,7 +11,7 @@ public class DeclarationParserTests : ParserTestBase
         var parser = new CParser(lexer);
 
         var result = parser.ParseDeclaration();
-        Assert.True(result.IsOk, GetErrorString(result));
+        Assert.True(result.IsOk, result.GetErrorString());
 
         var serialized = JsonSerialize(result.Ok.Value);
         return Verify(serialized);

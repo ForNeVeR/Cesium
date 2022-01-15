@@ -13,7 +13,7 @@ public class FullParserTests : ParserTestBase
         var parser = new CParser(lexer);
 
         var result = parser.ParseTranslationUnit();
-        Assert.True(result.IsOk, GetErrorString(result));
+        Assert.True(result.IsOk, result.GetErrorString());
 
         var token = parser.TokenStream.Peek();
         if (token.Kind != CTokenType.End)

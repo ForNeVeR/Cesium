@@ -42,7 +42,7 @@ internal static class Expressions
         switch (token)
         {
             // TODO: Optimizations like Ldc_I4_0 for selected constants
-            case { Kind: CTokenType.IntLiteral }: 
+            case { Kind: CTokenType.IntLiteral }:
                 {
                     var instruction = Instruction.Create(OpCodes.Ldc_I4, int.Parse(token.Text));
                     instructions.Add(instruction);
@@ -131,7 +131,7 @@ internal static class Expressions
         var fieldReference = scope.AssemblyContext.GetConstantPoolReference(expression.ConstantContent);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
-    
+
     private static char UnescapeCharacter(string text)
     {
         text = text.Replace("'", string.Empty);
@@ -150,19 +150,8 @@ internal static class Expressions
             't' => '\t',
             'v' => '\v',
             'x' => (char)int.Parse(text.AsSpan(2), System.Globalization.NumberStyles.AllowHexSpecifier),
-            > '0'  and < '9' => (char)ParseOctal(text.AsSpan(2)),
+            > '0' and < '9' => (char)Convert.ToInt32(text.Substring(2), 8),
             _ => throw new InvalidOperationException($"Unknown escape sequence '{text}'"),
         };
-    }
-
-    private static int ParseOctal(ReadOnlySpan<char> value)
-    {
-        int result = 0;
-        for (var i = 0; i < value.Length; i++)
-        {
-            result = result * 8 + (value[i] - '0');
-        }
-
-        return result;
     }
 }
