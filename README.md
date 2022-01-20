@@ -57,7 +57,11 @@ Documentation
 -------------
 
 - [C17 Language Standard Draft][c17-draft]
+
+
+- [Cesium Type System][docs.type-system]
 - [CLI-Related Language Extensions][docs.language-extensions]
+
 
 - [License (MIT)][docs.license]
 
@@ -106,6 +110,7 @@ where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folde
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
+[docs.type-system]: docs/type-system.md
 [issue.c17-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61
