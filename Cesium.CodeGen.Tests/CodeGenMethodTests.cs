@@ -4,15 +4,15 @@ public class CodeGenMethodTests : CodeGenTestBase
 {
     private static Task DoTest(string source)
     {
-        var assembly = GenerateAssembly(source, default);
+        var assembly = GenerateAssembly(default, source);
 
         var moduleType = assembly.Modules.Single().GetType("<Module>");
         return VerifyMethods(moduleType);
     }
 
-    protected static void DoesNotCompile(string source, string expectedMessage)
+    private static void DoesNotCompile(string source, string expectedMessage)
     {
-        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(source, default));
+        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(default, source));
         Assert.Contains(expectedMessage, ex.Message);
     }
 

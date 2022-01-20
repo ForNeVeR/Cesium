@@ -7,7 +7,7 @@ public class TargetRuntimeTests : CodeGenTestBase
 {
     private static Task DoTargetRuntimeTest(TargetRuntimeDescriptor? targetRuntime)
     {
-        var assembly = GenerateAssembly("int main() {}", targetRuntime);
+        var assembly = GenerateAssembly(targetRuntime, "int main() {}");
 
         var targetFrameworkAttribute = assembly.CustomAttributes
             .Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);

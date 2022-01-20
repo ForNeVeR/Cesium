@@ -10,14 +10,13 @@ public enum TargetFrameworkKind
     NetStandard
 }
 
+[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class Arguments
 {
-    [Value(index: 0)]
-    public string? InputFilePath { get; init; }
+    [Value(0)] public IList<string> InputFilePaths { get; init; } = null!;
 
-    [Value(index: 1)]
-    public string? OutputFilePath { get; init; }
+    [Option('o', "out", Required = true)] public string OutputFilePath { get; init; } = null!;
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
     public TargetFrameworkKind Framework { get; init; }

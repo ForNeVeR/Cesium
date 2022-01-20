@@ -4,7 +4,7 @@ public class CodeGenTypeTests : CodeGenTestBase
 {
     private static Task DoTest(string source)
     {
-        var assembly = GenerateAssembly(source, default);
+        var assembly = GenerateAssembly(default, source);
         return VerifyTypes(assembly);
     }
 

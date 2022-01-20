@@ -9,8 +9,7 @@ namespace Cesium.CodeGen.Generators;
 
 public static class Assemblies
 {
-    public static AssemblyDefinition Generate(
-        TranslationUnit translationUnit,
+    public static AssemblyContext Create(
         AssemblyNameDefinition name,
         ModuleKind kind,
         TargetRuntimeDescriptor? targetRuntime,
@@ -24,6 +23,11 @@ public static class Assemblies
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
+        return assemblyContext;
+    }
+
+    public static void EmitTranslationUnit(AssemblyContext assemblyContext, TranslationUnit translationUnit)
+    {
         var context = new TranslationUnitContext(assemblyContext);
         foreach (var declaration in translationUnit.Declarations)
         {
@@ -37,7 +41,5 @@ public static class Assemblies
                     break;
             }
         }
-
-        return assembly;
     }
 }

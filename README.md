@@ -69,7 +69,7 @@ Usage
 -----
 
 ```console
-$ dotnet run --project Cesium.Compiler -- <path to the input .c file> <path to the output assembly>
+$ dotnet run --project Cesium.Compiler -- <path to the input .c file> --out <path to the output assembly>
 ```
 
 For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:

@@ -6,28 +6,48 @@ using Cesium.Test.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
-using Yoakke.Lexer;
-using Yoakke.Parser;
+using Yoakke.Streams;
 
 namespace Cesium.CodeGen.Tests;
 
 public abstract class CodeGenTestBase : VerifyTestBase
 {
-    protected static AssemblyDefinition GenerateAssembly(string source, TargetRuntimeDescriptor? targetRuntime)
+    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
     {
-        var translationUnitParseResult = new CParser(new CLexer(source)).ParseTranslationUnit();
-        if (translationUnitParseResult.IsError)
-        {
-            throw new InvalidOperationException(translationUnitParseResult.GetErrorString());
-        }
+        var context = CreateAssembly(runtime);
+        GenerateCode(context, sources);
+        return EmitAssembly(context);
+    }
 
-        var translationUnit = translationUnitParseResult.Ok.Value;
-        var assembly = Assemblies.Generate(
-            translationUnit,
+    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime) =>
+        Assemblies.Create(
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console,
             targetRuntime,
             new [] { typeof(Console).Assembly });
+
+    private static void GenerateCode(AssemblyContext context, IEnumerable<string> sources)
+    {
+        foreach (var source in sources)
+        {
+            var lexer = new CLexer(source);
+            var parser = new CParser(lexer);
+            var translationUnit = parser.ParseTranslationUnit();
+            if (translationUnit.IsError)
+            {
+                throw new InvalidOperationException(translationUnit.GetErrorString());
+            }
+
+            if (parser.TokenStream.Peek().Kind != CTokenType.End)
+                throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
+
+            Assemblies.EmitTranslationUnit(context, translationUnit.Ok.Value);
+        }
+    }
+
+    private static AssemblyDefinition EmitAssembly(AssemblyContext context)
+    {
+        var assembly = context.Assembly;
 
         // To resolve IL labels:
         using var stream = new MemoryStream();
