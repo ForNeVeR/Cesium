@@ -145,6 +145,16 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
 
                 return tokens.ToList();
             }
+            case "error":
+            {
+                bool hasRemaining;
+                var errorText = new StringBuilder();
+                while ((hasRemaining = enumerator.MoveNext()) && enumerator.Current is var t and not { Kind: NewLine })
+                {
+                    errorText.Append(t.Text);
+                }
+                throw new NotSupportedException($"Error: {errorText.ToString().Trim()}");
+            }
             default:
                 throw new NotSupportedException(
                     $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");

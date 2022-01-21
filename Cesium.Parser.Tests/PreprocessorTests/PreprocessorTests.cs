@@ -33,4 +33,17 @@ int test()
 int test()
 {
 }", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
+
+
+    [Fact]
+    public async Task ErrorMsg()
+    {
+        NotSupportedException err = await Assert.ThrowsAsync<NotSupportedException>(async () => await DoTest(@"
+#error ""Error message"" test
+int test()
+{}
+"));
+        Assert.Equal(@"Error: ""Error message"" test", err.Message);
+    }
+
 }
