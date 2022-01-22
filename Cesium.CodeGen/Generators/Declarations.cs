@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir;
 using Mono.Cecil.Cil;
 using static Cesium.CodeGen.Generators.Expressions;
 
@@ -37,7 +38,9 @@ public static class Declarations
         var declarator = initDeclarator.Declarator;
         var name = declarator.DirectDeclarator.GetIdentifier();
 
-        var typeReference = declaration.Specifiers.GetTypeReference(declarator, scope.Module.TypeSystem);
+        var typeReference = DeclarationInfo.Of(declaration.Specifiers, declarator.DirectDeclarator)
+            .Type
+            .Resolve(scope.Module.TypeSystem);
         var variable = new VariableDefinition(typeReference);
         method.Body.Variables.Add(variable);
         scope.Variables.Add(name, variable);

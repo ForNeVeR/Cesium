@@ -1,8 +1,8 @@
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Generators;
-using Cesium.CodeGen.Ir.TopLevel;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;

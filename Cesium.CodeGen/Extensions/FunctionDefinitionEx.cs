@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Ir;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Extensions;
@@ -6,7 +7,7 @@ namespace Cesium.CodeGen.Extensions;
 internal static class FunctionDefinitionEx
 {
     public static TypeReference GetReturnType(this FunctionDefinition function, TypeSystem typeSystem) =>
-        function.Specifiers.GetTypeReference(function.Declarator, typeSystem);
+        DeclarationInfo.Of(function.Specifiers, function.Declarator.DirectDeclarator).Type.Resolve(typeSystem);
 
     public static IEnumerable<ParameterDefinition> GetParameters(this FunctionDefinition function, TypeSystem typeSystem)
     {

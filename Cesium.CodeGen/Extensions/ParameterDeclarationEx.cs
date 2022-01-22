@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Ir;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Extensions;
@@ -27,5 +28,5 @@ internal static class ParameterDeclarationEx
     }
 
     private static TypeReference GetTypeReference(this ParameterDeclaration parameter, TypeSystem typeSystem) =>
-        parameter.Specifiers.GetTypeReference(parameter.Declarator, typeSystem);
+        DeclarationInfo.Of(parameter.Specifiers, parameter.Declarator!.DirectDeclarator).Type.Resolve(typeSystem);
 }

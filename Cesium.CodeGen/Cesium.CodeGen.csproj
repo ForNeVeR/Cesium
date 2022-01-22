@@ -15,4 +15,8 @@
       <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Ir\Statements" />
+    </ItemGroup>
+
 </Project>
