@@ -2,6 +2,7 @@ using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Generators;
+using Cesium.CodeGen.Ir.TopLevel;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
@@ -94,7 +95,7 @@ internal static class Compilation
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
             throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-        Assemblies.EmitTranslationUnit(context, translationUnit);
+        Assemblies.EmitTranslationUnit(context, translationUnit.ToIntermediate());
     }
 
     private static void SaveAssembly(

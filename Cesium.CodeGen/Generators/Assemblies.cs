@@ -1,9 +1,7 @@
 ﻿using System.Reflection;
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
-using static Cesium.CodeGen.Generators.Declarations;
-using static Cesium.CodeGen.Generators.Functions;
 
 namespace Cesium.CodeGen.Generators;
 
@@ -26,20 +24,10 @@ public static class Assemblies
         return assemblyContext;
     }
 
-    public static void EmitTranslationUnit(AssemblyContext assemblyContext, TranslationUnit translationUnit)
+    public static void EmitTranslationUnit(AssemblyContext assemblyContext, IEnumerable<ITopLevelNode> nodes)
     {
         var context = new TranslationUnitContext(assemblyContext);
-        foreach (var declaration in translationUnit.Declarations)
-        {
-            switch (declaration)
-            {
-                case FunctionDefinition f:
-                    EmitFunction(context, f);
-                    break;
-                case SymbolDeclaration s:
-                    EmitSymbol(context, s);
-                    break;
-            }
-        }
+        foreach (var node in nodes)
+            node.Emit(context);
     }
 }

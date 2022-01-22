@@ -1,6 +1,7 @@
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Generators;
+using Cesium.CodeGen.Ir.TopLevel;
 using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;
@@ -41,7 +42,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             if (parser.TokenStream.Peek().Kind != CTokenType.End)
                 throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-            Assemblies.EmitTranslationUnit(context, translationUnit.Ok.Value);
+            Assemblies.EmitTranslationUnit(context, translationUnit.Ok.Value.ToIntermediate());
         }
     }
 
