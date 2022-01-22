@@ -147,13 +147,12 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             }
             case "error":
             {
-                bool hasRemaining;
                 var errorText = new StringBuilder();
-                while ((hasRemaining = enumerator.MoveNext()) && enumerator.Current is var t and not { Kind: NewLine })
+                while (enumerator.MoveNext())
                 {
-                    errorText.Append(t.Text);
+                    errorText.Append(enumerator.Current.Text);
                 }
-                throw new NotSupportedException($"Error: {errorText.ToString().Trim()}");
+                throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
             }
             default:
                 throw new NotSupportedException(

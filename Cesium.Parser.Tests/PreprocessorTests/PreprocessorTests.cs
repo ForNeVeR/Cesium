@@ -38,11 +38,11 @@ int test()
     [Fact]
     public async Task ErrorMsg()
     {
-        NotSupportedException err = await Assert.ThrowsAsync<NotSupportedException>(async () => await DoTest(@"
-#error ""Error message"" test
+        PreprocessorException err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
+@"#error ""Error message"" test
 int test()
-{}
-"));
+{}"
+        ));
         Assert.Equal(@"Error: ""Error message"" test", err.Message);
     }
 
