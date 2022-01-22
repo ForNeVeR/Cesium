@@ -29,7 +29,7 @@ internal class FunctionDefinition : ITopLevelNode
         _statement = astStatement.ToIntermediate();
     }
 
-    public void Emit(TranslationUnitContext context)
+    public void EmitTo(TranslationUnitContext context)
     {
         throw new NotImplementedException();
         // Functions.EmitFunction(context, (Ast.FunctionDefinition) );

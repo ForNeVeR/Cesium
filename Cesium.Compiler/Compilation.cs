@@ -2,7 +2,6 @@ using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Generators;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
@@ -47,7 +46,7 @@ internal static class Compilation
             typeof(Console).Assembly, // System.Console.dll
             typeof(Runtime.StdLibFunctions).Assembly
         };
-        return Assemblies.Create(
+        return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
             moduleKind,
             targetRuntime,
@@ -95,7 +94,7 @@ internal static class Compilation
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
             throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-        Assemblies.EmitTranslationUnit(context, translationUnit.ToIntermediate());
+        context.EmitTranslationUnit(translationUnit.ToIntermediate());
     }
 
     private static void SaveAssembly(

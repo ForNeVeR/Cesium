@@ -1,12 +1,39 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
+using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
-using Assembly = System.Reflection.Assembly;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Cesium.CodeGen.Contexts;
 
 public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Module, Assembly[] ImportAssemblies)
 {
+    public static AssemblyContext Create(
+        AssemblyNameDefinition name,
+        ModuleKind kind,
+        TargetRuntimeDescriptor? targetRuntime,
+        Assembly[] importAssemblies)
+    {
+        var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
+        var module = assembly.MainModule;
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies);
+
+        targetRuntime ??= TargetRuntimeDescriptor.Net60;
+        assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
+        module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
+
+        return assemblyContext;
+    }
+
+    public void EmitTranslationUnit(IEnumerable<ITopLevelNode> nodes)
+    {
+        var context = new TranslationUnitContext(this);
+        foreach (var node in nodes)
+            node.EmitTo(context);
+    }
+
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();

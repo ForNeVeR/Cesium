@@ -12,5 +12,5 @@ internal class ObjectDeclaration : ITopLevelNode
         _ast = ast;
     }
 
-    public void Emit(TranslationUnitContext context) => Declarations.EmitSymbol(context, _ast);
+    public void EmitTo(TranslationUnitContext context) => Declarations.EmitSymbol(context, _ast);
 }
