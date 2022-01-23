@@ -1,9 +1,12 @@
-using Cesium.Ast;
+using Cesium.CodeGen.Ir.Statements;
 
 namespace Cesium.CodeGen.Extensions;
 
 internal static class StatementEx
 {
-    public static object ToIntermediate(this Statement statement) =>
-        throw new NotImplementedException($"Statement not yet supported: {statement}.");
+    public static IStatement ToIntermediate(this Ast.Statement statement) => statement switch
+    {
+        Ast.CompoundStatement s => new CompoundStatement(s),
+        _ => new AstStatement(statement)
+    };
 }

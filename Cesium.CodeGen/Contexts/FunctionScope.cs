@@ -7,6 +7,7 @@ public record FunctionScope(TranslationUnitContext Context, MethodDefinition Met
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
+    public TypeSystem TypeSystem => Context.TypeSystem;
     public IReadOnlyDictionary<string, MethodReference> Functions => Context.Functions;
 
     public Dictionary<string, VariableDefinition> Variables { get; } = new();

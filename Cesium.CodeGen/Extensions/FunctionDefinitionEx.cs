@@ -22,7 +22,7 @@ internal static class FunctionDefinitionEx
             return Enumerable.Empty<ParameterDefinition>();
         }
 
-        if (parameters.IsVararg)
+        if (parameters.HasEllipsis)
             throw new NotImplementedException("Vararg parameters aren't supported, yet.");
 
         var definitions = parameters.Parameters.Select(p => p.CreateParameterDefinition(typeSystem)).ToList();

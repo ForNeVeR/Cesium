@@ -10,50 +10,8 @@ using static Cesium.CodeGen.Generators.Statements;
 
 namespace Cesium.CodeGen.Generators;
 
-internal static class Functions
+internal static class Functions // TODO[F]: Remove this class
 {
-    public static void EmitFunction(TranslationUnitContext context, FunctionDefinition definition)
-    {
-        var (method, isMain) = GenerateMethod(context, definition);
-        context.ModuleType.Methods.Add(method);
-        if (isMain)
-        {
-            var assembly = context.Assembly;
-            var currentEntryPoint = assembly.EntryPoint;
-            if (currentEntryPoint != null)
-                throw new Exception($"Cannot override entrypoint for assembly {assembly} by method {method}.");
-
-            assembly.EntryPoint = method;
-        }
-    }
-
-    private static (MethodDefinition, bool isMain) GenerateMethod(TranslationUnitContext context, FunctionDefinition function)
-    {
-        var functionName = function.Declarator.DirectDeclarator.GetIdentifier();
-        var method = new MethodDefinition(
-            functionName,
-            MethodAttributes.Public | MethodAttributes.Static,
-            function.GetReturnType(context.Module.TypeSystem));
-
-        context.Functions.Add(functionName, method);
-        var scope = new FunctionScope(context, method);
-
-        var parameters = function.GetParameters(context.TypeSystem).ToList();
-        foreach (var parameter in parameters)
-        {
-            method.Parameters.Add(parameter);
-            if (parameter.Name != null)
-                scope.Parameters.Add(parameter.Name, parameter);
-        }
-
-        function = function with { Statement = Lowering.LowerStatement(function.Statement) };
-        if (functionName == "main")
-            return (EmitMainFunction(scope, function), true);
-
-        EmitFunction(scope, function);
-        return (method, false);
-    }
-
     private static MethodDefinition EmitMainFunction(FunctionScope scope, FunctionDefinition function)
     {
         var module = scope.Module;

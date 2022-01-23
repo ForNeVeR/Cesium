@@ -52,7 +52,7 @@ public record IdentifierListDirectDeclarator(
 
 public record Pointer(ImmutableArray<TypeQualifier>? TypeQualifiers = null, Pointer? ChildPointer = null);
 
-public record ParameterTypeList(ImmutableArray<ParameterDeclaration> Parameters, bool IsVararg = false);
+public record ParameterTypeList(ImmutableArray<ParameterDeclaration> Parameters, bool HasEllipsis = false);
 
 public record ParameterDeclaration(
     ImmutableArray<IDeclarationSpecifier> Specifiers,

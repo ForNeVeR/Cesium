@@ -3,14 +3,55 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir;
 
-internal record DeclarationInfo(IType Type, bool IsConst)
+internal record DeclarationInfo(IType Type, bool IsConst, string Identifier, ParametersInfo Parameters)
 {
     public static DeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, IDirectDeclarator directDeclarator)
     {
         var (type, isConst) = GetPrimitiveInfo(specifiers);
-        throw new NotImplementedException("TODO");
+        string? identifier = null;
+        ParametersInfo? parameters = null;
 
-        return new DeclarationInfo(type, isConst);
+        var declarator = directDeclarator;
+        while (declarator != null)
+        {
+            switch (declarator)
+            {
+                case IdentifierListDirectDeclarator list:
+                {
+                    var (_, identifiers) = list;
+                    if (identifiers != null)
+                        throw new NotImplementedException(
+                            "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
+                            $" {string.Join(", ", identifiers)}");
+                    break;
+                }
+
+                case IdentifierDirectDeclarator identifierD:
+                    if (identifier != null)
+                        throw new NotSupportedException(
+                            $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
+                    identifier = identifierD.Identifier;
+                    break;
+
+                case ParameterListDirectDeclarator parametersD:
+                    if (parameters != null)
+                        throw new NotSupportedException(
+                            $"Second parameters list declarator for an entity already having one: {parametersD}.");
+
+                    parameters = ParametersInfo.Of(parametersD.Parameters);
+                    break;
+
+                default: throw new NotImplementedException($"Direct declarator not supported, yet: {declarator}.");
+            }
+
+            declarator = declarator.Base;
+        }
+
+        if (identifier == null)
+            throw new NotImplementedException($"Declaration without name is not supported, yet: {directDeclarator}.");
+        parameters ??= new(Array.Empty<ParameterInfo>(), false, false);
+
+        return new DeclarationInfo(type, isConst, identifier, parameters);
     }
 
     private static (PrimitiveType, bool isConst) GetPrimitiveInfo(IList<IDeclarationSpecifier> specifiers)
