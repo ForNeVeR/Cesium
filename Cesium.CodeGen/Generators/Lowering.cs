@@ -3,7 +3,7 @@ using Cesium.Ast;
 
 namespace Cesium.CodeGen.Generators;
 
-internal static class Lowering
+internal static class Lowering // TODO[F]: Remove this class
 {
     public static CompoundStatement LowerStatement(CompoundStatement statement)
     {
@@ -41,7 +41,7 @@ internal static class Lowering
 
     private static Expression LowerExpression(Expression expr)
     {
-        return expr switch 
+        return expr switch
         {
             AssignmentExpression assignmentExpression => LowerAssignmentExpression(assignmentExpression),
             PrefixIncrementExpression prefixIncrementExpression => LowerPrefixIncrementExpression(prefixIncrementExpression),
@@ -62,7 +62,7 @@ internal static class Lowering
         {
             case "+=":
             case "*=":
-                var loweredOperator = LowerOperator(assignmentExpression.Operator); 
+                var loweredOperator = LowerOperator(assignmentExpression.Operator);
                 var binaryExpression = new BinaryOperatorExpression(assignmentExpression.Left, loweredOperator, assignmentExpression.Right);
                 return new AssignmentExpression(assignmentExpression.Left, "=", binaryExpression);
             case "=":
@@ -73,11 +73,11 @@ internal static class Lowering
 
     private static string LowerOperator(string operatorToken)
     {
-        return operatorToken switch 
+        return operatorToken switch
         {
             "+=" => "+",
             "*=" => "*",
             _ => throw new NotImplementedException($"Lowering for operator token {operatorToken} is not implemented"),
         };
     }
-} 
+}
