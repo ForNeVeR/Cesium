@@ -2,7 +2,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-public interface IType
+internal interface IType
 {
     TypeReference Resolve(TypeSystem typeSystem);
 }

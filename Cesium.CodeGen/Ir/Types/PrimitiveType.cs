@@ -2,7 +2,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-enum PrimitiveTypeKind
+internal enum PrimitiveTypeKind
 {
     Char,
     Int,
