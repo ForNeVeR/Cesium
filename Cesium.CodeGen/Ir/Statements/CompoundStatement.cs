@@ -14,6 +14,8 @@ internal class CompoundStatement : StatementBase
         _ast = ast;
     }
 
+    public bool HasDefiniteReturn => !_ast.Block.IsEmpty; // TODO: Better definite return analysis.
+
     protected override StatementBase Lower() => new CompoundStatement(Lowering.LowerStatement(_ast));
 
     protected override void DoEmitTo(FunctionScope scope)

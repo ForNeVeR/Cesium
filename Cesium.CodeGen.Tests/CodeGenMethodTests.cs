@@ -75,6 +75,11 @@ int main()
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
     [Fact] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
     [Fact] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
+    [Fact]
+    public void VarArgMainDoesNotCompile2() => DoesNotCompile(
+        "int main(int argc, char *argv[], ...){}",
+        "Variable arguments for the main function aren't supported.");
+
     [Fact] public Task ParameterGet() => DoTest("int foo(int x){ return x + 1; }");
     [Fact]
     public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");

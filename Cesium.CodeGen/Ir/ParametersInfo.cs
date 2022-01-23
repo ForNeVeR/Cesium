@@ -13,7 +13,19 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
     {
         var (parameterList, hasEllipsis) = parameters;
 
-        var isVoid = parameterList.Length == 1 && parameterList.Single() == VoidParameterDeclaration;
+        bool isVoid;
+        if (parameterList.Length == 1)
+        {
+            var parameter = parameterList[0];
+            var (specifiers, declarator, abstractDeclarator) = parameter;
+            if (specifiers.Length != 1 || declarator != null || abstractDeclarator != null) isVoid = false;
+            else
+            {
+                isVoid = specifiers.Single() is TypeSpecifier { TypeName: "void" };
+            }
+        }
+        else isVoid = false;
+
         if (isVoid && hasEllipsis)
             throw new NotSupportedException(
                 $"Cannot declare both void and ellipsis in the same parameter type list: {parameters}.");
@@ -28,11 +40,23 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
     }
 }
 
-internal record ParameterInfo(IType Type, string Name)
+internal record ParameterInfo(IType Type, string? Name)
 {
     public static ParameterInfo Of(ParameterDeclaration declaration)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
-        throw new NotSupportedException($"Specifiers are not supported, yet: {string.Join(", ", specifiers)}.");
+        if (abstractDeclarator != null)
+            throw new NotImplementedException(
+                $"Parameter with abstract declarator is not supported, yet: {declaration}.");
+
+        var (type, isConst, identifier, parameters) = DeclarationInfo.Of(specifiers, declarator);
+        if (isConst)
+            throw new NotImplementedException(
+                $"Const parameter isn't supported, yet: {identifier}.");
+
+        if (parameters != null)
+            throw new NotImplementedException($"Parameters with parameters are not supported, yet: {parameters}.");
+
+        return new ParameterInfo(type, identifier);
     }
 }

@@ -16,41 +16,17 @@ internal class FunctionDefinition : ITopLevelNode
 
     private readonly IType _returnType;
     private readonly string _name;
-    private readonly ParametersInfo _parameters;
-    private readonly IStatement _statement;
+    private readonly ParametersInfo? _parameters;
+    private readonly CompoundStatement _statement;
 
     private bool IsMain => _name == MainFunctionName;
 
-    /// <remarks><see cref="GenerateSyntheticEntryPoint"/></remarks>
-    private bool IsSyntheticEntryPointRequired
+
+    public FunctionDefinition(Ast.FunctionDefinition function)
     {
-        get
-        {
-            if (!IsMain) return false;
-
-            var (parameterList, isVoid, isVarArg) = _parameters;
-            if (isVoid || isVarArg || parameterList.Count != 2) return false;
-
-            var argc = parameterList[0];
-            if (argc.Type is not PrimitiveType { Kind: PrimitiveTypeKind.Int }) return false;
-
-            var argv = parameterList[1];
-            return argv.Type is PointerType
-            {
-                Base: PointerType { Base: PrimitiveType { Kind: PrimitiveTypeKind.Char } }
-            };
-        }
-    }
-
-    public FunctionDefinition(Ast.FunctionDefinition ast)
-    {
-        var (specifiers, declarator, declarations, astStatement) = ast;
-        var (pointer, directDeclarator) = declarator;
-        if (pointer != null)
-            throw new NotImplementedException(
-                $"Function with pointer in declaration not supported, yet: {declarator}.");
-
-        (_returnType, var isConstReturn, _name, _parameters) = DeclarationInfo.Of(specifiers, directDeclarator);
+        var (specifiers, declarator, declarations, astStatement) = function;
+        (_returnType, var isConstReturn, var name, _parameters) = DeclarationInfo.Of(specifiers, declarator);
+        _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
         if (isConstReturn)
             throw new NotImplementedException(
                 $"Functions with const return type aren't supported, yet: {string.Join(", ", specifiers)}.");
@@ -63,20 +39,25 @@ internal class FunctionDefinition : ITopLevelNode
 
     public void EmitTo(TranslationUnitContext context)
     {
+        var returnType = _returnType.Resolve(context.TypeSystem);
+        if (IsMain && returnType != context.TypeSystem.Int32)
+            throw new NotSupportedException(
+                $"Invalid return type for the {_name} function: " +
+                $"int expected, got {_returnType}.");
+
         var method = new MethodDefinition(
             _name,
             MethodAttributes.Public | MethodAttributes.Static,
-            _returnType.Resolve(context.TypeSystem));
+            returnType);
 
         context.ModuleType.Methods.Add(method);
         context.Functions.Add(_name, method);
 
         var scope = new FunctionScope(context, method);
-        AddParameters(scope);
-
         if (IsMain)
         {
-            var entryPoint = IsSyntheticEntryPointRequired ? GenerateSyntheticEntryPoint(context, method) : method;
+            var isSyntheticEntryPointRequired = ValidateMainParameters();
+            var entryPoint = isSyntheticEntryPointRequired ? GenerateSyntheticEntryPoint(context, method) : method;
 
             var assembly = context.Assembly;
             var currentEntryPoint = assembly.EntryPoint;
@@ -87,11 +68,50 @@ internal class FunctionDefinition : ITopLevelNode
             assembly.EntryPoint = entryPoint;
         }
 
-        _statement.EmitTo(scope);
+        AddParameters(scope);
+        EmitCode(scope);
+    }
+
+    /// <remarks><see cref="GenerateSyntheticEntryPoint"/></remarks>
+    /// <returns>Whether the synthetic entry point should be generated.</returns>
+    private bool ValidateMainParameters()
+    {
+        if (_parameters == null)
+            return false; // TODO[#87]: Decide whether this is normal or not.
+
+        var (parameterList, isVoid, isVarArg) = _parameters;
+        if (isVoid) return false; // supported, no synthetic entry point required
+
+        if (isVarArg)
+            throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
+
+        if (parameterList.Count != 2)
+            throw new NotSupportedException(
+                $"Invalid parameter count for the {_name} function: " +
+                $"2 expected, got {parameterList.Count}.");
+
+        bool isValid = true;
+
+        var argc = parameterList[0];
+        if (argc.Type is not PrimitiveType { Kind: PrimitiveTypeKind.Int }) isValid = false;
+
+        var argv = parameterList[1];
+        if (argv.Type is not PointerType
+            {
+                Base: PointerType { Base: PrimitiveType { Kind: PrimitiveTypeKind.Char } }
+            }) isValid = false;
+
+        if (!isValid)
+            throw new NotSupportedException(
+                $"Invalid parameter types for the {_name} function: " +
+                "int, char*[] expected.");
+
+        return true;
     }
 
     private void AddParameters(FunctionScope scope)
     {
+        if (_parameters == null) return;
         var (parameters, isVoid, isVarArg) = _parameters;
         if (isVoid) return;
         if (isVarArg)
@@ -107,7 +127,8 @@ internal class FunctionDefinition : ITopLevelNode
                 Name = name
             };
             scope.Method.Parameters.Add(parameterDefinition);
-            scope.Parameters.Add(parameter.Name, parameterDefinition);
+            if (parameter.Name != null)
+                scope.Parameters.Add(parameter.Name, parameterDefinition);
         }
     }
 
@@ -132,6 +153,7 @@ internal class FunctionDefinition : ITopLevelNode
                 new ParameterDefinition("args", ParameterAttributes.None, context.TypeSystem.String.MakeArrayType())
             }
         };
+        context.ModuleType.Methods.Add(syntheticEntrypoint);
 
         var bytePtrType = context.TypeSystem.Byte.MakePointerType();
         var bytePtrArrayType = bytePtrType.MakeArrayType();
@@ -237,5 +259,16 @@ internal class FunctionDefinition : ITopLevelNode
         syntheticEntrypoint.Body.ExceptionHandlers.Add(finallyHandler);
 
         return syntheticEntrypoint;
+    }
+
+    private void EmitCode(FunctionScope scope)
+    {
+        _statement.EmitTo(scope);
+        if (IsMain && !_statement.HasDefiniteReturn)
+        {
+            var instructions = scope.Method.Body.Instructions;
+            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
     }
 }

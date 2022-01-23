@@ -3,18 +3,31 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir;
 
-internal record DeclarationInfo(IType Type, bool IsConst, string Identifier, ParametersInfo Parameters)
+internal record DeclarationInfo(IType Type, bool IsConst, string? Identifier, ParametersInfo? Parameters)
 {
-    public static DeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, IDirectDeclarator directDeclarator)
+    public static DeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
-        var (type, isConst) = GetPrimitiveInfo(specifiers);
+        (IType type, var isConst) = GetPrimitiveInfo(specifiers);
+        if (declarator == null)
+            return new DeclarationInfo(type, isConst, null, null);
+
+        var (pointer, directDeclarator) = declarator;
+        if (pointer != null)
+        {
+            var (typeQualifiers, childPointer) = pointer;
+            if (typeQualifiers != null || childPointer != null)
+                throw new NotImplementedException($"Complex pointer type is not supported, yet: {pointer}.");
+
+            type = new PointerType(type);
+        }
+
         string? identifier = null;
         ParametersInfo? parameters = null;
 
-        var declarator = directDeclarator;
-        while (declarator != null)
+        var currentDirectDeclarator = directDeclarator;
+        while (currentDirectDeclarator != null)
         {
-            switch (declarator)
+            switch (currentDirectDeclarator)
             {
                 case IdentifierListDirectDeclarator list:
                 {
@@ -41,15 +54,23 @@ internal record DeclarationInfo(IType Type, bool IsConst, string Identifier, Par
                     parameters = ParametersInfo.Of(parametersD.Parameters);
                     break;
 
-                default: throw new NotImplementedException($"Direct declarator not supported, yet: {declarator}.");
+                case ArrayDirectDeclarator array:
+                    var (_, typeQualifiers, size) = array;
+                    if (typeQualifiers != null)
+                        throw new NotImplementedException(
+                            $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
+                    if (size != null)
+                        throw new NotImplementedException(
+                            $"Array with specified size isn't supported, yet: {array}.");
+
+                    type = new PointerType(type);
+                    break;
+
+                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
             }
 
-            declarator = declarator.Base;
+            currentDirectDeclarator = currentDirectDeclarator.Base;
         }
-
-        if (identifier == null)
-            throw new NotImplementedException($"Declaration without name is not supported, yet: {directDeclarator}.");
-        parameters ??= new(Array.Empty<ParameterInfo>(), false, false);
 
         return new DeclarationInfo(type, isConst, identifier, parameters);
     }
@@ -102,24 +123,5 @@ internal record DeclarationInfo(IType Type, bool IsConst, string Identifier, Par
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (type, isConst);
-    }
-
-    private static IType Apply(IType type, Pointer? pointer) => pointer switch
-    {
-        null => type,
-        _ when pointer == new Pointer() => new PointerType(type),
-        _ => throw new NotImplementedException($"Complex pointer type not supported, yet: {pointer}.")
-    };
-
-    private static IType Apply(IType type, IDirectDeclarator declarator)
-    {
-        type = declarator switch
-        {
-            ArrayDirectDeclarator { TypeQualifiers: null, Size: null } => new PointerType(type),
-            IdentifierDirectDeclarator or IdentifierListDirectDeclarator or ParameterListDirectDeclarator => type,
-            _ => throw new NotImplementedException($"Declarator {declarator} isn't supported, yet")
-        };
-
-        return declarator.Base == null ? type : Apply(type, declarator.Base);
     }
 }

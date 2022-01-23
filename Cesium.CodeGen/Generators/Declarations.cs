@@ -38,7 +38,7 @@ public static class Declarations
         var declarator = initDeclarator.Declarator;
         var name = declarator.DirectDeclarator.GetIdentifier();
 
-        var typeReference = DeclarationInfo.Of(declaration.Specifiers, declarator.DirectDeclarator)
+        var typeReference = DeclarationInfo.Of(declaration.Specifiers, declarator)
             .Type
             .Resolve(scope.Module.TypeSystem);
         var variable = new VariableDefinition(typeReference);

@@ -47,7 +47,7 @@
                 "AbstractDeclarator": null
               }
             ],
-            "IsVararg": false
+            "HasEllipsis": false
           }
         }
       },
