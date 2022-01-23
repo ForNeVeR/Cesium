@@ -17,7 +17,7 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
 ### Dashboard
 
 - [ ] [C17 standard compatibility][issue.c17-standard]: poor
-  - [ ] [Preprocessor][issue.preprocessor]: only `#include` is supported
+  - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
   - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
   - [ ] [Parser][issue.parser]: supports about 20% of the language syntax
 - [ ] **Compiler**

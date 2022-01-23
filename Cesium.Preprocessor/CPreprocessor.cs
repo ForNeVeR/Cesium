@@ -51,7 +51,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                             yield return t;
 
                         // Leave newLine as true, since we've processed the directive at the previous line, so now we're
-                        // now necessarily at the start of a new one.
+                        // necessarily at the start of a new one.
                     }
                     else
                     {
