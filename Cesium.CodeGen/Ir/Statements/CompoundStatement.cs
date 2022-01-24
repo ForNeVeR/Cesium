@@ -7,7 +7,7 @@ namespace Cesium.CodeGen.Ir.Statements;
 
 internal class CompoundStatement : StatementBase
 {
-    private readonly Ast.CompoundStatement _ast;
+    private readonly Ast.CompoundStatement _ast; // TODO[F]: Rewrite without AST
 
     public CompoundStatement(Ast.CompoundStatement ast)
     {

@@ -39,7 +39,7 @@ internal static class Lowering // TODO[F]: Remove this class
         };
     }
 
-    private static Expression LowerExpression(Expression expr)
+    internal static Expression LowerExpression(Expression expr)
     {
         return expr switch
         {

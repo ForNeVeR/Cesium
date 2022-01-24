@@ -2,7 +2,8 @@ using Cesium.CodeGen.Contexts;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-public interface IExpression
+internal interface IExpression
 {
+    IExpression Lower();
     void EmitTo(FunctionScope scope);
 }

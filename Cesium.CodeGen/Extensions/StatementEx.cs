@@ -8,9 +8,9 @@ internal static class StatementEx
 
     public static IStatement ToIntermediate(this Ast.Statement statement) => statement switch
     {
-        Ast.CompoundStatement s => new CompoundStatement(s),
-        Ast.ReturnStatement r => new ReturnStatement(r),
-        _ => new AstStatement(statement)
-        // _ => throw new NotImplementedException($"Statement not supported, yet: {statement}.")
+        Ast.CompoundStatement s => s.ToIntermediate(),
+        Ast.ReturnStatement s => new ReturnStatement(s),
+        Ast.ExpressionStatement s => new ExpressionStatement(s),
+        _ => throw new NotImplementedException($"Statement not supported, yet: {statement}.")
     };
 }
