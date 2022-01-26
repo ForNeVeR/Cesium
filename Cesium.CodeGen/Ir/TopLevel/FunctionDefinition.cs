@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Statements;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Runtime;
 using Mono.Cecil;

@@ -3,9 +3,9 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Mono.Cecil.Cil;
 
-namespace Cesium.CodeGen.Ir.Statements;
+namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ReturnStatement : StatementBase
+internal class ReturnStatement : IBlockItem
 {
     private readonly IExpression _expression;
 
@@ -14,9 +14,9 @@ internal class ReturnStatement : StatementBase
         _expression = statement.Expression.ToIntermediate();
     }
 
-    protected override StatementBase Lower() => this;
+    public IBlockItem Lower() => this;
 
-    protected override void DoEmitTo(FunctionScope scope)
+    public void EmitTo(FunctionScope scope)
     {
         _expression.EmitTo(scope);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));

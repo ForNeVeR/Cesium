@@ -2,9 +2,9 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
-namespace Cesium.CodeGen.Ir.Statements;
+namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ExpressionStatement : StatementBase
+internal class ExpressionStatement : IBlockItem
 {
     private readonly IExpression? _expression;
     private ExpressionStatement(IExpression? expression)
@@ -16,6 +16,6 @@ internal class ExpressionStatement : StatementBase
     {
     }
 
-    protected override StatementBase Lower() => new ExpressionStatement(_expression?.Lower());
-    protected override void DoEmitTo(FunctionScope scope) => _expression?.EmitTo(scope);
+    public IBlockItem Lower() => new ExpressionStatement(_expression?.Lower());
+    public void EmitTo(FunctionScope scope) => _expression?.EmitTo(scope);
 }
