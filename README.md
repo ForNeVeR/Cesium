@@ -75,7 +75,7 @@ $ dotnet run --project Cesium.Compiler -- <path to the input .c file> --out <pat
 For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
 
 ```console
-$ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c out.exe
+$ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c --out out.exe
 $ dotnet ./out.exe # run with .NET 6
 $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
