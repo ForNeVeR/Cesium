@@ -1,12 +1,11 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
 using Yoakke.C.Syntax;
 
 namespace Cesium.CodeGen.Generators;
 
-internal static class Expressions
+internal static class Expressions // TODO[F]: Remove this class
 {
     public static void EmitExpression(FunctionScope scope, Expression expression)
     {
@@ -20,12 +19,6 @@ internal static class Expressions
                 break;
             case NegationExpression negationExpression:
                 EmitNegationExpression(scope, negationExpression);
-                break;
-            case AssignmentExpression a:
-                EmitAssignmentExpression(scope, a);
-                break;
-            case BinaryOperatorExpression b:
-                EmitBinaryOperatorExpression(scope, b);
                 break;
             case FunctionCallExpression f:
                 EmitFunctionCallExpression(scope, f);
@@ -85,38 +78,6 @@ internal static class Expressions
     {
         EmitExpression(scope, expression.Target);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Neg));
-    }
-
-    private static void EmitBinaryOperatorExpression(FunctionScope scope, BinaryOperatorExpression expression)
-    {
-        EmitExpression(scope, expression.Left);
-        EmitExpression(scope, expression.Right);
-        scope.Method.Body.Instructions.Add(GetInstruction());
-
-        Instruction GetInstruction() => expression.Operator switch
-        {
-            "+" => Instruction.Create(OpCodes.Add),
-            "*" => Instruction.Create(OpCodes.Mul),
-            _ => throw new Exception($"Operator not supported: {expression.Operator}.")
-        };
-    }
-
-    private static void EmitAssignmentExpression(FunctionScope scope, AssignmentExpression expression)
-    {
-        EmitExpression(scope, expression.Right);
-
-        switch (expression.Operator)
-        {
-            case "=":
-                var nameToken = ((ConstantExpression)expression.Left).Constant;
-                if (nameToken.Kind != CTokenType.Identifier)
-                    throw new Exception($"Not an lvalue: {nameToken.Kind} {nameToken.Text}");
-
-                scope.StLoc(scope.Variables[nameToken.Text]);
-                break;
-            default:
-                throw new Exception($"Assignment expression not supported: {expression.Operator}.");
-        }
     }
 
     private static void EmitFunctionCallExpression(FunctionScope scope, FunctionCallExpression expression)
