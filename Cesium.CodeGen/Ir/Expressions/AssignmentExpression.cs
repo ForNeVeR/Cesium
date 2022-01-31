@@ -1,17 +1,20 @@
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class AssignmentExpression : BinaryOperatorExpression
 {
-    protected AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
+    private readonly ILValueExpression _target;
+
+    private AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
+        _target = left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {left}.");
     }
 
     public AssignmentExpression(Ast.AssignmentExpression expression) : base(expression)
     {
+        _target = Left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {Left}.");
     }
 
     public override IExpression Lower() => Operator switch
@@ -31,7 +34,6 @@ internal class AssignmentExpression : BinaryOperatorExpression
 
         Right.EmitTo(scope);
 
-        var variableName = ((AstExpression)Left).ConstantIdentifier;
-        scope.StLoc(scope.Variables[variableName]);
+        _target.Resolve(scope).EmitSetValue(scope);
     }
 }

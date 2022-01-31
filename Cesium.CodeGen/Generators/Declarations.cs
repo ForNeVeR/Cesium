@@ -3,11 +3,10 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
 using Mono.Cecil.Cil;
-using static Cesium.CodeGen.Generators.Expressions;
 
 namespace Cesium.CodeGen.Generators;
 
-public static class Declarations
+public static class Declarations // TODO[F]: Delete this class.
 {
     public static void EmitSymbol(TranslationUnitContext context, SymbolDeclaration symbolDeclaration)
     {
@@ -48,8 +47,8 @@ public static class Declarations
         var initializer = initDeclarator.Initializer;
         if (initializer == null) return;
 
-        var expression = ((AssignmentInitializer)initializer).Expression;
-        EmitExpression(scope, expression);
+        var expression = ((AssignmentInitializer)initializer).Expression.ToIntermediate().Lower();
+        expression.EmitTo(scope);
         scope.StLoc(variable);
     }
 }
