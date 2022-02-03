@@ -11,7 +11,8 @@ internal static class ExpressionEx
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
         Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierConstantExpression(e),
         Ast.ConstantExpression e => new ConstantExpression(e),
-        // _ => throw new NotImplementedException($"Expression not supported, yet: {e}."),
+        Ast.FunctionCallExpression e => new FunctionCallExpression(e),
+        // _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
         _ => new AstExpression(ex)
     };
 }

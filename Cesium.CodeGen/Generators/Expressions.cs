@@ -2,7 +2,6 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
-using Yoakke.C.Syntax;
 
 namespace Cesium.CodeGen.Generators;
 
@@ -17,9 +16,6 @@ internal static class Expressions // TODO[F]: Remove this class
                 break;
             case NegationExpression negationExpression:
                 EmitNegationExpression(scope, negationExpression);
-                break;
-            case FunctionCallExpression f:
-                EmitFunctionCallExpression(scope, f);
                 break;
             case StringConstantExpression s:
                 EmitStringConstantExpression(scope, s);
@@ -40,22 +36,6 @@ internal static class Expressions // TODO[F]: Remove this class
     {
         expression.Target.ToIntermediate().Lower().EmitTo(scope);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Neg));
-    }
-
-    private static void EmitFunctionCallExpression(FunctionScope scope, FunctionCallExpression expression)
-    {
-        foreach (var argument in expression.Arguments ?? Enumerable.Empty<Expression>())
-            EmitExpression(scope, argument);
-
-        var functionNameToken = ((ConstantExpression)expression.Function).Constant;
-        if (functionNameToken.Kind != CTokenType.Identifier)
-            throw new NotSupportedException(
-                $"Function call {functionNameToken.Kind} {functionNameToken.Text} is not supported.");
-
-        var functionName = functionNameToken.Text;
-        var callee = scope.Functions[functionName];
-
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee));
     }
 
     private static void EmitStringConstantExpression(FunctionScope scope, StringConstantExpression expression)
