@@ -1,8 +1,8 @@
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Extensions;
 using Mono.Cecil.Cil;
 
-namespace Cesium.CodeGen.Extensions;
+namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class FunctionCallExpression : IExpression
 {

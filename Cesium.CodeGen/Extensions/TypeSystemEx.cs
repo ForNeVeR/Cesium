@@ -18,12 +18,10 @@ public static class TypeSystemEx
         var methodName = components[1];
 
         var method = FindMethod(context.AssemblyContext.ImportAssemblies, typeName, methodName);
-        if (method == null) return null;
-
-        return context.Module.ImportReference(method);
+        return method == null ? null : context.Module.ImportReference(method);
     }
 
-    private static MethodInfo? FindMethod(Assembly[] assemblies, string typeName, string methodName)
+    private static MethodInfo? FindMethod(IEnumerable<Assembly> assemblies, string typeName, string methodName)
     {
         foreach (var assembly in assemblies)
         {
@@ -38,9 +36,8 @@ public static class TypeSystemEx
     private static MethodInfo? FindMethod(Assembly assembly, string typeName, string methodName)
     {
         var type = assembly.GetType(typeName);
-        if (type == null) return null;
 
-        var method = type.GetMethod(methodName);
+        var method = type?.GetMethod(methodName);
         return method;
     }
 }
