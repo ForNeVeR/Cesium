@@ -30,6 +30,8 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
 
 **Looking to contribute?** Check [open issues with the "help wanted" label][issues.help-wanted]. Cesium is a big project which lives thanks to its contributors.
 
+**Not sure where to contribute?** Check [open issues with the "good first issue" label][issues.good-first-issue].
+
 If you're interested in certain project area, check the per-area issue labels:
 - [`area:cil-interop`][issues.cil-interop]: issues related to CLI interop
 - [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
@@ -58,10 +60,8 @@ Documentation
 
 - [C17 Language Standard Draft][c17-draft]
 
-
 - [Cesium Type System][docs.type-system]
 - [CLI-Related Language Extensions][docs.language-extensions]
-
 
 - [License (MIT)][docs.license]
 
@@ -120,6 +120,7 @@ where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folde
 [issue.sdk]: https://github.com/ForNeVeR/Cesium/issues/80
 [issues.cil-interop]: https://github.com/ForNeVeR/Cesium/issues?q=is%3Aissue+is%3Aopen+label%3Aarea%3Acil-interop
 [issues.compiler]: https://github.com/ForNeVeR/Cesium/labels/area%3Acompiler
+[issues.good-first-issue]: https://github.com/ForNeVeR/Cesium/labels/good-first-issue
 [issues.help-wanted]: https://github.com/ForNeVeR/Cesium/labels/status%3Ahelp-wanted
 [issues.parser]: https://github.com/ForNeVeR/Cesium/labels/area%3Aparser
 [issues.preprocessor]: https://github.com/ForNeVeR/Cesium/labels/area%3Apreprocessor
