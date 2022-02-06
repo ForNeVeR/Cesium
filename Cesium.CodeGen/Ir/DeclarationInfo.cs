@@ -3,13 +3,18 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir;
 
-internal record DeclarationInfo(IType Type, bool IsConst, string? Identifier, ParametersInfo? Parameters)
+internal record DeclarationInfo(
+    IType Type,
+    bool IsConst,
+    string? Identifier,
+    ParametersInfo? Parameters,
+    string? CliImportMemberName)
 {
     public static DeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
-        (IType type, var isConst) = GetPrimitiveInfo(specifiers);
+        (IType type, var isConst, var cliImportMemberName) = GetPrimitiveInfo(specifiers);
         if (declarator == null)
-            return new DeclarationInfo(type, isConst, null, null);
+            return new DeclarationInfo(type, isConst, null, null, null);
 
         var (pointer, directDeclarator) = declarator;
         if (pointer != null)
@@ -72,13 +77,15 @@ internal record DeclarationInfo(IType Type, bool IsConst, string? Identifier, Pa
             currentDirectDeclarator = currentDirectDeclarator.Base;
         }
 
-        return new DeclarationInfo(type, isConst, identifier, parameters);
+        return new DeclarationInfo(type, isConst, identifier, parameters, cliImportMemberName);
     }
 
-    private static (PrimitiveType, bool isConst) GetPrimitiveInfo(IList<IDeclarationSpecifier> specifiers)
+    private static (PrimitiveType, bool isConst, string? cliImportMemberName) GetPrimitiveInfo(
+        IList<IDeclarationSpecifier> specifiers)
     {
         PrimitiveType? type = null;
-        bool isConst = false;
+        var isConst = false;
+        string? cliImportMemberName = null;
         foreach (var specifier in specifiers)
         {
             switch (specifier)
@@ -113,6 +120,14 @@ internal record DeclarationInfo(IType Type, bool IsConst, string? Identifier, Pa
 
                     break;
 
+                case CliImportSpecifier cis:
+                    if (cliImportMemberName != null)
+                        throw new NotSupportedException(
+                            $"Multiple CLI import specifiers on a declaration among {string.Join(", ", specifiers)}.");
+
+                    cliImportMemberName = cis.MemberName;
+                    break;
+
                 default:
                     throw new NotImplementedException($"Declaration specifier {specifier} isn't supported, yet.");
             }
@@ -122,6 +137,6 @@ internal record DeclarationInfo(IType Type, bool IsConst, string? Identifier, Pa
             throw new NotSupportedException(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
-        return (type, isConst);
+        return (type, isConst, cliImportMemberName);
     }
 }

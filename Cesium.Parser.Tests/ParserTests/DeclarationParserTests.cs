@@ -21,6 +21,9 @@ public class DeclarationParserTests : ParserTestBase
     public Task InitializerDeclarationTest() => DoDeclarationParserTest("int x = 0;");
 
     [Fact]
+    public Task MultiDeclaration() => DoDeclarationParserTest("int x = 0, y = 2 + 2;");
+
+    [Fact]
     public Task CliImport() => DoDeclarationParserTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
 void *malloc(size_t);");
 }

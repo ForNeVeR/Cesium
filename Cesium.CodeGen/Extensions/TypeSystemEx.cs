@@ -1,5 +1,4 @@
 using System.Reflection;
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 
@@ -7,9 +6,8 @@ namespace Cesium.CodeGen.Extensions;
 
 public static class TypeSystemEx
 {
-    public static MethodReference? MethodLookup(this TranslationUnitContext context, CliImportSpecifier specifier)
+    public static MethodReference? MethodLookup(this TranslationUnitContext context, string memberName)
     {
-        var memberName = specifier.MemberName;
         var components = memberName.Split("::", 2);
         if (components.Length != 2)
             throw new NotSupportedException($"Invalid CLI member name: {memberName}.");

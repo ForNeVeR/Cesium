@@ -49,13 +49,16 @@ internal record ParameterInfo(IType Type, string? Name)
             throw new NotImplementedException(
                 $"Parameter with abstract declarator is not supported, yet: {declaration}.");
 
-        var (type, isConst, identifier, parameters) = DeclarationInfo.Of(specifiers, declarator);
+        var (type, isConst, identifier, parameters, cliImportMemberName) = DeclarationInfo.Of(specifiers, declarator);
         if (isConst)
             throw new NotImplementedException(
                 $"Const parameter isn't supported, yet: {identifier}.");
 
         if (parameters != null)
             throw new NotImplementedException($"Parameters with parameters are not supported, yet: {parameters}.");
+
+        if (cliImportMemberName != null)
+            throw new NotSupportedException("CLI import specifier isn't supported for a parameter.");
 
         return new ParameterInfo(type, identifier);
     }

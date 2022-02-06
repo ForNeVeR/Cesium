@@ -25,7 +25,8 @@ internal class FunctionDefinition : ITopLevelNode
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
-        (_returnType, var isConstReturn, var name, _parameters) = DeclarationInfo.Of(specifiers, declarator);
+        (_returnType, var isConstReturn, var name, _parameters, var cliImportMemberName) =
+            DeclarationInfo.Of(specifiers, declarator);
         _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
         if (isConstReturn)
             throw new NotImplementedException(
@@ -34,6 +35,9 @@ internal class FunctionDefinition : ITopLevelNode
         if (declarations?.IsEmpty == false)
             throw new NotImplementedException(
                 $"Non-empty declaration list for a function is not yet supported: {string.Join(", ", declarations)}.");
+
+        if (cliImportMemberName != null)
+            throw new NotSupportedException($"CLI import specifier on a function declaration: {function}.");
         _statement = astStatement.ToIntermediate();
     }
 
