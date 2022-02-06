@@ -23,7 +23,11 @@ internal class AssignmentExpression : BinaryOperatorExpression
         BinaryOperator.AddAndAssign => new AssignmentExpression(
             Left,
             BinaryOperator.Assign,
-            new BinaryOperatorExpression(Left, BinaryOperator.Add, Right)),
+            new BinaryOperatorExpression(Left, BinaryOperator.Add, Right.Lower())),
+        BinaryOperator.MultiplyAndAssign => new AssignmentExpression(
+            Left,
+            BinaryOperator.Assign,
+            new BinaryOperatorExpression(Left, BinaryOperator.Multiply, Right.Lower())),
         _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
     };
 

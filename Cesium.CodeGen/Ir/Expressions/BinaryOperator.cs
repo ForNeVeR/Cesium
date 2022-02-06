@@ -6,5 +6,6 @@ public enum BinaryOperator
     Multiply, // *
 
     Assign, // =
-    AddAndAssign // +=
+    AddAndAssign, // +=
+    MultiplyAndAssign // *=
 }

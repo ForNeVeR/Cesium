@@ -85,4 +85,16 @@ int main()
     public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
+
+    [Fact]
+    public Task Arithmetic() => DoTest(@"int main(void)
+{
+    int y = -42;
+    int x = 18;
+    x += 1;
+    ++x;
+    x *= 2;
+    return x + 2;
+}
+");
 }

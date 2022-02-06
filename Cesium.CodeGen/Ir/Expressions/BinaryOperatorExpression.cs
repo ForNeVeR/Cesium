@@ -27,6 +27,7 @@ internal class BinaryOperatorExpression : IExpression
             "*" => BinaryOperator.Multiply,
             "=" => BinaryOperator.Assign,
             "+=" => BinaryOperator.AddAndAssign,
+            "*=" => BinaryOperator.MultiplyAndAssign,
             _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
         };
         Right = right.ToIntermediate();
