@@ -1,0 +1,10 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Int32 V_0
+    System.Int32 V_1
+  IL_0000: ldc.i4 0
+  IL_0005: stloc V_0
+  IL_0009: ldc.i4 2
+  IL_000e: ldc.i4 2
+  IL_0013: add
+  IL_0014: stloc V_1

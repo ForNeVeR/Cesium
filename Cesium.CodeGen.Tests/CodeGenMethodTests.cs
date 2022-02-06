@@ -83,4 +83,6 @@ int main()
     [Fact] public Task ParameterGet() => DoTest("int foo(int x){ return x + 1; }");
     [Fact]
     public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
+
+    [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
 }

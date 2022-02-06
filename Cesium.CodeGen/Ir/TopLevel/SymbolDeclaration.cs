@@ -5,10 +5,11 @@ namespace Cesium.CodeGen.Ir.TopLevel;
 
 internal class SymbolDeclaration : ITopLevelNode
 {
-    private readonly IList<SymbolDeclarationInfo> _declarations;
+    private readonly IList<InitializableDeclarationInfo> _declarations;
     public SymbolDeclaration(Ast.SymbolDeclaration ast)
     {
-        _declarations = SymbolDeclarationInfo.Of(ast).ToList();
+        ast.Deconstruct(out var declaration);
+        _declarations = InitializableDeclarationInfo.Of(declaration).ToList();
     }
 
     public void EmitTo(TranslationUnitContext context)
@@ -35,8 +36,11 @@ internal class SymbolDeclaration : ITopLevelNode
             }
 
             if (initializer != null)
+            {
                 throw new NotImplementedException(
                     $"Declaration {declaration} with initializer {initializer} not supported, yet.");
+                // TODO[F]: Don't forget to lower the initializer.
+            }
 
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");
         }

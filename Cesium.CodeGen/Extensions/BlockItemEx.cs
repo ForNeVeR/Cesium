@@ -1,9 +1,14 @@
 using Cesium.CodeGen.Ir.BlockItems;
+using Cesium.CodeGen.Ir.TopLevel;
 
 namespace Cesium.CodeGen.Extensions;
 
-internal static class StatementEx
+internal static class BlockItemEx
 {
+    /// <remarks>
+    /// This is a specialization for <see cref="FunctionDefinition"/> to be able to check for
+    /// <see cref="CompoundStatement.HasDefiniteReturn"/> without the necessity to cast.
+    /// </remarks>
     public static CompoundStatement ToIntermediate(this Ast.CompoundStatement statement) => new(statement);
 
     public static IBlockItem ToIntermediate(this Ast.IBlockItem blockItem) => blockItem switch

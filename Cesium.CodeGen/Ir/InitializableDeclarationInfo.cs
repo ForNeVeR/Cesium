@@ -4,19 +4,18 @@ using Cesium.CodeGen.Ir.Expressions;
 
 namespace Cesium.CodeGen.Ir;
 
-internal record SymbolDeclarationInfo(DeclarationInfo Declaration, IExpression? Initializer)
+internal record InitializableDeclarationInfo(DeclarationInfo Declaration, IExpression? Initializer)
 {
-    public static IEnumerable<SymbolDeclarationInfo> Of(SymbolDeclaration symbol)
+    public static IEnumerable<InitializableDeclarationInfo> Of(Declaration declaration)
     {
-        symbol.Deconstruct(out var declaration);
         var (specifiers, initDeclarators) = declaration;
         if (initDeclarators == null)
-            throw new NotSupportedException($"Symbol declaration has no init declarators: {symbol}.");
+            throw new NotSupportedException($"Symbol declaration has no init declarators: {declaration}.");
 
-        return initDeclarators.Select<InitDeclarator, SymbolDeclarationInfo>(id => Of(specifiers, id));
+        return initDeclarators.Select<InitDeclarator, InitializableDeclarationInfo>(id => Of(specifiers, id));
     }
 
-    private static SymbolDeclarationInfo Of(
+    private static InitializableDeclarationInfo Of(
         IList<IDeclarationSpecifier> specifiers,
         InitDeclarator initDeclarator)
     {
@@ -28,6 +27,6 @@ internal record SymbolDeclarationInfo(DeclarationInfo Declaration, IExpression? 
             AssignmentInitializer ai => ai.Expression.ToIntermediate(),
             _ => throw new NotImplementedException($"Object initializer not supported, yet: {initializer}.")
         };
-        return new SymbolDeclarationInfo(declarationInfo, expression);
+        return new InitializableDeclarationInfo(declarationInfo, expression);
     }
 }
