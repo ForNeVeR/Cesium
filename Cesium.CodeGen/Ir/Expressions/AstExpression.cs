@@ -5,7 +5,7 @@ using Cesium.CodeGen.Generators;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class AstExpression : IExpression
+internal class AstExpression : IExpression // TODO[#73]: Delete this class.
 {
     private readonly Expression _expression;
 

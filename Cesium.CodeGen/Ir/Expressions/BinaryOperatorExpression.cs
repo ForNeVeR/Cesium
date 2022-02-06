@@ -21,15 +21,7 @@ internal class BinaryOperatorExpression : IExpression
     {
         var (left, @operator, right) = expression;
         Left = left.ToIntermediate();
-        Operator = @operator switch
-        {
-            "+" => BinaryOperator.Add,
-            "*" => BinaryOperator.Multiply,
-            "=" => BinaryOperator.Assign,
-            "+=" => BinaryOperator.AddAndAssign,
-            "*=" => BinaryOperator.MultiplyAndAssign,
-            _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
-        };
+        Operator = GetOperatorKind(expression.Operator);
         Right = right.ToIntermediate();
     }
 
@@ -48,4 +40,14 @@ internal class BinaryOperatorExpression : IExpression
             _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
         };
     }
+
+    private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
+    {
+        "+" => BinaryOperator.Add,
+        "*" => BinaryOperator.Multiply,
+        "=" => BinaryOperator.Assign,
+        "+=" => BinaryOperator.AddAndAssign,
+        "*=" => BinaryOperator.MultiplyAndAssign,
+        _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
+    };
 }

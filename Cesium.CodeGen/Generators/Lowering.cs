@@ -2,7 +2,7 @@ using Cesium.Ast;
 
 namespace Cesium.CodeGen.Generators;
 
-internal static class Lowering // TODO[F]: Remove this class
+internal static class Lowering // TODO[#73]: Remove this class.
 {
     internal static Expression LowerExpression(Expression expr)
     {

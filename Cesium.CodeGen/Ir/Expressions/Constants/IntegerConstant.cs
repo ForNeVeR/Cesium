@@ -15,7 +15,7 @@ internal class IntegerConstant : IConstant
 
     public void EmitTo(FunctionScope scope)
     {
-        // TODO: Optimizations like Ldc_I4_0 for selected constants
+        // TODO[#92]: Optimizations like Ldc_I4_0 for selected constants
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4, _value));
     }
 

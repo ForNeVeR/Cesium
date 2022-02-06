@@ -29,7 +29,6 @@ public class CharConstant : IConstant
         {
             '\'' => '\'',
             '"' => '"',
-            //'?' => '\?',
             '\\' => '\\',
             'a' => '\a',
             'b' => '\b',

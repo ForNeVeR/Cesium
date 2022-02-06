@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Generators;
 
-internal static class Expressions // TODO[F]: Remove this class
+internal static class Expressions // TODO[#73]: Remove this class.
 {
     public static void EmitExpression(FunctionScope scope, Expression expression)
     {
@@ -43,6 +43,4 @@ internal static class Expressions // TODO[F]: Remove this class
         var fieldReference = scope.AssemblyContext.GetConstantPoolReference(expression.ConstantContent);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
-
-
 }

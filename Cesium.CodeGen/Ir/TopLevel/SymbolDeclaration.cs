@@ -20,7 +20,7 @@ internal class SymbolDeclaration : ITopLevelNode
             if (identifier == null)
                 throw new NotSupportedException($"Unnamed global symbol of type {type} is not supported.");
 
-            // TODO[F]: Generate a global variable of type {type, isConst}.
+            // TODO[#75]: Generate a global variable of type {type, isConst}.
             if (cliImportMemberName != null)
             {
                 if (initializer != null)
@@ -30,7 +30,7 @@ internal class SymbolDeclaration : ITopLevelNode
                 var method = context.MethodLookup(cliImportMemberName);
                 if (method == null) throw new NotSupportedException($"Cannot find CLI-imported member {cliImportMemberName}.");
 
-                // TODO[F]: Verify method signature: {parametersIInfo, type, isConst}.
+                // TODO[#93]: Verify method signature: {parametersIInfo, type, isConst}.
                 context.Functions.Add(identifier, method);
                 return;
             }
@@ -39,7 +39,7 @@ internal class SymbolDeclaration : ITopLevelNode
             {
                 throw new NotImplementedException(
                     $"Declaration {declaration} with initializer {initializer} not supported, yet.");
-                // TODO[F]: Don't forget to lower the initializer.
+                // TODO[#75]: Don't forget to lower the initializer.
             }
 
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");

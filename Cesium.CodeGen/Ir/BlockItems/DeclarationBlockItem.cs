@@ -13,7 +13,6 @@ internal class DeclarationBlockItem : IBlockItem
         _declarations = declarations;
     }
 
-
     public DeclarationBlockItem(Declaration declaration)
         : this(InitializableDeclarationInfo.Of(declaration).ToList())
     {
@@ -36,7 +35,7 @@ internal class DeclarationBlockItem : IBlockItem
             var method = scope.Method;
             var (type, isConst, identifier, parametersInfo, cliImportMemberName) = declaration;
 
-            // TODO[F]: A place to register {isConst}.
+            // TODO[#91]: A place to register {isConst}.
 
             if (identifier == null)
                 throw new NotSupportedException("An anonymous local declaration isn't supported.");

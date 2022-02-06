@@ -12,6 +12,7 @@ internal static class ExpressionEx
         Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierConstantExpression(e),
         Ast.ConstantExpression e => new ConstantExpression(e),
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
+        // TODO[#73]: Uncomment this.
         // _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
         _ => new AstExpression(ex)
     };

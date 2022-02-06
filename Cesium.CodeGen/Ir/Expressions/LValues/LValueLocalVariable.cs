@@ -14,7 +14,7 @@ internal class LValueLocalVariable : ILValue
 
     public void EmitGetValue(FunctionScope scope)
     {
-        // TODO: Special instructions to emit Ldloc_0 etc.
+        // TODO[#92]: Special instructions to emit Ldloc_0 etc.
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc, _definition));
     }
 
