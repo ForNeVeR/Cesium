@@ -1,7 +1,5 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Generators;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -14,7 +12,7 @@ internal class AstExpression : IExpression // TODO[#73]: Delete this class.
         _expression = expression;
     }
 
-    public IExpression Lower() => Lowering.LowerExpression(_expression).ToIntermediate();
+    public IExpression Lower() => this;
 
     public void EmitTo(FunctionScope scope) => Generators.Expressions.EmitExpression(scope, _expression);
 }

@@ -11,9 +11,6 @@ internal static class Expressions // TODO[#73]: Remove this class.
     {
         switch (expression)
         {
-            case IntConstantExpression intConstant:
-                EmitIntConstantExpression(scope, intConstant);
-                break;
             case NegationExpression negationExpression:
                 EmitNegationExpression(scope, negationExpression);
                 break;
@@ -23,13 +20,6 @@ internal static class Expressions // TODO[#73]: Remove this class.
             default:
                 throw new Exception($"Expression not supported: {expression}.");
         }
-    }
-
-    private static void EmitIntConstantExpression(FunctionScope scope, IntConstantExpression expression)
-    {
-        var instructions = scope.Method.Body.Instructions;
-        var instruction = Instruction.Create(OpCodes.Ldc_I4, expression.Constant);
-        instructions.Add(instruction);
     }
 
     private static void EmitNegationExpression(FunctionScope scope, NegationExpression expression)

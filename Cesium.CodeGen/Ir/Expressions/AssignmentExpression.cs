@@ -6,7 +6,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
 {
     private readonly ILValueExpression _target;
 
-    private AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
+    internal AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
         _target = left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {left}.");
