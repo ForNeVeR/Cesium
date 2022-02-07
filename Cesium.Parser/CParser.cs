@@ -62,7 +62,7 @@ public partial class CParser
 
     [Rule("primary_expression: StringLiteral")]
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
-        new StringConstantExpression(stringLiteral.UnwrapStringLiteral());
+        new ConstantExpression(stringLiteral);
 
     // TODO:
     // primary-expression:

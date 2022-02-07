@@ -30,6 +30,7 @@ internal class ConstantExpression : IExpression
         {
             CTokenType.IntLiteral => new IntegerConstant(constant.Text),
             CTokenType.CharLiteral => new CharConstant(constant.Text),
+            CTokenType.StringLiteral => new StringConstant(constant),
             _ => throw new NotSupportedException($"Constant of kind {constant.Kind} is not supported.")
         };
     }

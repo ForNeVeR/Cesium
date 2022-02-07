@@ -20,8 +20,6 @@ internal static class ExpressionEx
         Ast.AssignmentExpression e => new AssignmentExpression(e),
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
-        // TODO[#73]: Uncomment this.
-        // _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
-        _ => new AstExpression(ex)
+        _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
     };
 }

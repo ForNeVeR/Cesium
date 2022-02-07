@@ -39,8 +39,11 @@
               },
               "Arguments": [
                 {
-                  "$type": "Cesium.Ast.StringConstantExpression, Cesium.Ast",
-                  "ConstantContent": "hello world"
+                  "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                  "Constant": {
+                    "Kind": "StringLiteral",
+                    "Text": "\"hello world\""
+                  }
                 }
               ]
             }
