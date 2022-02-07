@@ -13,9 +13,8 @@ internal class NegationExpression : IExpression
     }
 
     public NegationExpression(Ast.NegationExpression expression)
+        : this(GetTarget(expression))
     {
-        expression.Deconstruct(out var target);
-        _target = target.ToIntermediate();
     }
 
     public IExpression Lower() => new NegationExpression(_target.Lower());
@@ -24,5 +23,11 @@ internal class NegationExpression : IExpression
     {
         _target.EmitTo(scope);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Neg));
+    }
+
+    private static IExpression GetTarget(Ast.NegationExpression expression)
+    {
+        expression.Deconstruct(out var target);
+        return target.ToIntermediate();
     }
 }
