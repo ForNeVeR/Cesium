@@ -6,25 +6,26 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class PrefixIncrementExpression : IExpression
 {
-    private IExpression _target;
+    private readonly IExpression _target;
     public PrefixIncrementExpression(Ast.PrefixIncrementExpression expression)
     {
         expression.Deconstruct(out var target);
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower() => new AssignmentExpression(
-        _target.Lower(),
-        BinaryOperator.Assign,
-        new BinaryOperatorExpression(
-            _target.Lower(),
-            BinaryOperator.Add,
-            new ConstantExpression(new IntegerConstant("1"))
-        )
-    );
-
-    public void EmitTo(FunctionScope scope)
+    public IExpression Lower()
     {
-        throw new NotImplementedException();
+        var target = _target.Lower();
+        return new AssignmentExpression(
+            target,
+            BinaryOperator.Assign,
+            new BinaryOperatorExpression(
+                target,
+                BinaryOperator.Add,
+                new ConstantExpression(new IntegerConstant("1"))
+            )
+        );
     }
+
+    public void EmitTo(FunctionScope scope) => throw new NotSupportedException("Should be lowered");
 }

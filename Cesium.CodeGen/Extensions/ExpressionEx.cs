@@ -12,8 +12,11 @@ internal static class ExpressionEx
 
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
+        // Unary operators:
         Ast.PrefixIncrementExpression e => new PrefixIncrementExpression(e),
+        Ast.NegationExpression e => new NegationExpression(e),
 
+        // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
