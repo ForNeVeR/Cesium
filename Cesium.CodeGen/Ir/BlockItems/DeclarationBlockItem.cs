@@ -33,9 +33,9 @@ internal class DeclarationBlockItem : IBlockItem
         foreach (var (declaration, initializer) in _declarations)
         {
             var method = scope.Method;
-            var (type, isConst, identifier, parametersInfo, cliImportMemberName) = declaration;
+            var (type, identifier, parametersInfo, cliImportMemberName) = declaration;
 
-            // TODO[#91]: A place to register {isConst}.
+            // TODO[#91]: A place to register whether {type} is const or not.
 
             if (identifier == null)
                 throw new NotSupportedException("An anonymous local declaration isn't supported.");

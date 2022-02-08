@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Types;
 
@@ -6,9 +5,6 @@ namespace Cesium.CodeGen.Ir;
 
 internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, bool IsVarArg)
 {
-    private static readonly ParameterDeclaration VoidParameterDeclaration = new(
-        ImmutableArray.Create<IDeclarationSpecifier>(new TypeSpecifier("void")));
-
     public static ParametersInfo Of(ParameterTypeList parameters)
     {
         var (parameterList, hasEllipsis) = parameters;
@@ -49,10 +45,7 @@ internal record ParameterInfo(IType Type, string? Name)
             throw new NotImplementedException(
                 $"Parameter with abstract declarator is not supported, yet: {declaration}.");
 
-        var (type, isConst, identifier, parameters, cliImportMemberName) = DeclarationInfo.Of(specifiers, declarator);
-        if (isConst)
-            throw new NotImplementedException(
-                $"Const parameter isn't supported, yet: {identifier}.");
+        var (type, identifier, parameters, cliImportMemberName) = DeclarationInfo.Of(specifiers, declarator);
 
         if (parameters != null)
             throw new NotImplementedException($"Parameters with parameters are not supported, yet: {parameters}.");

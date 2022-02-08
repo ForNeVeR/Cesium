@@ -3,7 +3,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Extensions;
 
-public static class CodeGenEx
+internal static class CodeGenEx
 {
     public static void StLoc(this FunctionScope scope, VariableDefinition variable)
     {

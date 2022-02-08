@@ -6,7 +6,7 @@ using Yoakke.Lexer;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-public class StringConstant : IConstant
+internal class StringConstant : IConstant
 {
     private readonly string _value;
     public StringConstant(IToken<CTokenType> token)

@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Types;
@@ -25,12 +26,9 @@ internal class FunctionDefinition : ITopLevelNode
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
-        (_returnType, var isConstReturn, var name, _parameters, var cliImportMemberName) =
+        (_returnType, var name, _parameters, var cliImportMemberName) =
             DeclarationInfo.Of(specifiers, declarator);
         _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
-        if (isConstReturn)
-            throw new NotImplementedException(
-                $"Functions with const return type aren't supported, yet: {string.Join(", ", specifiers)}.");
 
         if (declarations?.IsEmpty == false)
             throw new NotImplementedException(
@@ -49,13 +47,27 @@ internal class FunctionDefinition : ITopLevelNode
                 $"Invalid return type for the {_name} function: " +
                 $"int expected, got {_returnType}.");
 
-        var method = new MethodDefinition(
-            _name,
-            MethodAttributes.Public | MethodAttributes.Static,
-            returnType);
+        if (IsMain && _parameters?.IsVarArg == true)
+            throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
 
-        context.ModuleType.Methods.Add(method);
-        context.Functions.Add(_name, method);
+        var declaration = context.Functions.GetValueOrDefault(_name);
+        if (declaration != null)
+            VerifySignatureEquality(declaration);
+
+        var method = declaration switch
+        {
+            null => context.ModuleType.DefineMethod(context.TypeSystem, _name, returnType, _parameters),
+            { MethodReference: MethodDefinition md } => md,
+            _ => throw new NotSupportedException($"Function {_name} already defined as immutable.")
+        };
+
+        if (declaration?.IsDefined == true)
+            throw new NotSupportedException($"Double definition of function {_name}.");
+
+        if (declaration == null)
+            context.Functions.Add(_name, new FunctionInfo(_parameters, _returnType, method, IsDefined: true));
+        else
+            context.Functions[_name] = declaration with { IsDefined = true };
 
         var scope = new FunctionScope(context, method);
         if (IsMain)
@@ -72,7 +84,6 @@ internal class FunctionDefinition : ITopLevelNode
             assembly.EntryPoint = entryPoint;
         }
 
-        AddParameters(scope);
         EmitCode(scope);
     }
 
@@ -87,7 +98,7 @@ internal class FunctionDefinition : ITopLevelNode
         if (isVoid) return false; // supported, no synthetic entry point required
 
         if (isVarArg)
-            throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
+            throw new NotImplementedException($"Variable arguments for the {_name} function aren't supported, yet.");
 
         if (parameterList.Count != 2)
             throw new NotSupportedException(
@@ -111,29 +122,6 @@ internal class FunctionDefinition : ITopLevelNode
                 "int, char*[] expected.");
 
         return true;
-    }
-
-    private void AddParameters(FunctionScope scope)
-    {
-        if (_parameters == null) return;
-        var (parameters, isVoid, isVarArg) = _parameters;
-        if (isVoid) return;
-        if (isVarArg)
-            throw new NotImplementedException($"VarArg functions not supported, yet: {_name}.");
-
-        // TODO[#87]: Process empty (non-void) parameter list.
-
-        foreach (var parameter in parameters)
-        {
-            var (type, name) = parameter;
-            var parameterDefinition = new ParameterDefinition(type.Resolve(scope.TypeSystem))
-            {
-                Name = name
-            };
-            scope.Method.Parameters.Add(parameterDefinition);
-            if (parameter.Name != null)
-                scope.Parameters.Add(parameter.Name, parameterDefinition);
-        }
     }
 
     /// <summary>
@@ -273,6 +261,32 @@ internal class FunctionDefinition : ITopLevelNode
             var instructions = scope.Method.Body.Instructions;
             instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
             instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+    }
+
+    private void VerifySignatureEquality(FunctionInfo declaration)
+    {
+        if (!_returnType.Equals(declaration.ReturnType))
+            throw new NotSupportedException(
+                $"Incorrect return type for function {_name} declared as {declaration.ReturnType}: {_returnType}.");
+
+        if (declaration.Parameters?.IsVarArg == true || _parameters?.IsVarArg == true)
+            throw new NotSupportedException($"Vararg parameter not supported, yet: {_name}.");
+
+        var actualCount = _parameters?.Parameters.Count ?? 0;
+        var declaredCount = declaration.Parameters?.Parameters.Count ?? 0;
+        if (actualCount != declaredCount)
+            throw new NotSupportedException(
+                $"Incorrect parameter count for function {_name}: declared with {declaredCount} parameters, defined" +
+                $"with {actualCount}.");
+
+        var actualParams = _parameters?.Parameters ?? Array.Empty<ParameterInfo>();
+        var declaredParams = declaration.Parameters?.Parameters ?? Array.Empty<ParameterInfo>();
+        foreach (var (a, b) in actualParams.Zip(declaredParams))
+        {
+            if (a != b)
+                throw new NotSupportedException(
+                    $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
     }
 }

@@ -21,4 +21,28 @@ public class CodeGenTypeTests : CodeGenTestBase
     const char *test2 = ""hellow1"";
     const char *test3 = ""hellow"";
 }");
+
+    [Fact]
+    public void AbsentForwardDeclaration() => DoesNotCompile(@"int foo()
+{
+    return bar();
+}
+
+int bar()
+{
+    return 0;
+}", "Function \"bar\" was not found.");
+
+    [Fact]
+    public void FunctionForwardDeclaration() => DoTest(@"int bar(void);
+
+int foo(void)
+{
+    return bar();
+}
+
+int bar(void)
+{
+    return 0;
+}");
 }

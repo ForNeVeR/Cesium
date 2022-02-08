@@ -19,6 +19,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return EmitAssembly(context);
     }
 
+    protected static void DoesNotCompile(string source, string expectedMessage)
+    {
+        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(default, source));
+        Assert.Contains(expectedMessage, ex.Message);
+    }
+
     private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime) =>
         AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),

@@ -10,12 +10,6 @@ public class CodeGenMethodTests : CodeGenTestBase
         return VerifyMethods(moduleType);
     }
 
-    private static void DoesNotCompile(string source, string expectedMessage)
-    {
-        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(default, source));
-        Assert.Contains(expectedMessage, ex.Message);
-    }
-
     [Fact]
     public Task EmptyMainTest() => DoTest("int main() {}");
 
@@ -97,4 +91,25 @@ int main()
     return x + 2;
 }
 ");
+
+    [Fact]
+    public void IncorrectReturnTypeDoesNotCompile() => DoesNotCompile(@"int foo(void);
+void foo(void) {}", "Incorrect return type");
+
+    [Fact]
+    public void IncorrectParameterTypeDoesNotCompile() => DoesNotCompile(@"int foo(int bar);
+int foo(char *x) {}", "Incorrect type for parameter x");
+
+    [Fact]
+    public void IncorrectParameterCountDoesNotCompile() => DoesNotCompile(@"int foo(int bar, int baz);
+int foo(int bar) {}", "Incorrect parameter count");
+
+    [Fact]
+    public void IncorrectOverrideCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Read"")
+int console_read();
+int console_read() { return 0; }", "Function console_read already defined as immutable.");
+
+    [Fact]
+    public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
+int console_read() { return 2; }", "Double definition of function console_read.");
 }

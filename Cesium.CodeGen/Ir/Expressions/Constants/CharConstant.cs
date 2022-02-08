@@ -3,7 +3,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-public class CharConstant : IConstant
+internal class CharConstant : IConstant
 {
     private readonly byte _value;
 

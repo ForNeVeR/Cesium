@@ -4,17 +4,16 @@ using Cesium.CodeGen.Ir.Types;
 namespace Cesium.CodeGen.Ir;
 
 internal record DeclarationInfo(
-    IType Type,
-    bool IsConst,
+    IType ReturnType,
     string? Identifier,
     ParametersInfo? Parameters,
     string? CliImportMemberName)
 {
     public static DeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
-        (IType type, var isConst, var cliImportMemberName) = GetPrimitiveInfo(specifiers);
+        var (type, cliImportMemberName) = GetPrimitiveInfo(specifiers);
         if (declarator == null)
-            return new DeclarationInfo(type, isConst, null, null, null);
+            return new DeclarationInfo(type, null, null, null);
 
         var (pointer, directDeclarator) = declarator;
         if (pointer != null)
@@ -77,10 +76,10 @@ internal record DeclarationInfo(
             currentDirectDeclarator = currentDirectDeclarator.Base;
         }
 
-        return new DeclarationInfo(type, isConst, identifier, parameters, cliImportMemberName);
+        return new DeclarationInfo(type, identifier, parameters, cliImportMemberName);
     }
 
-    private static (PrimitiveType, bool isConst, string? cliImportMemberName) GetPrimitiveInfo(
+    private static (IType, string? cliImportMemberName) GetPrimitiveInfo(
         IList<IDeclarationSpecifier> specifiers)
     {
         PrimitiveType? type = null;
@@ -137,6 +136,6 @@ internal record DeclarationInfo(
             throw new NotSupportedException(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
-        return (type, isConst, cliImportMemberName);
+        return (isConst ? new ConstType(type) : type, cliImportMemberName);
     }
 }
