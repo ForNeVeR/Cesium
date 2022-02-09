@@ -34,7 +34,7 @@ int bar()
 }", "Function \"bar\" was not found.");
 
     [Fact]
-    public void FunctionForwardDeclaration() => DoTest(@"int bar(void);
+    public Task FunctionForwardDeclaration() => DoTest(@"int bar(void);
 
 int foo(void)
 {
