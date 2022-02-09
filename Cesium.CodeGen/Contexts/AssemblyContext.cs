@@ -17,8 +17,6 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-
-
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
         ModuleKind kind,
