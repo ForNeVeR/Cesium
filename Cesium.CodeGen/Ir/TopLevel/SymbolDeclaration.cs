@@ -65,7 +65,7 @@ internal class SymbolDeclaration : ITopLevelNode
         if (method == null) throw new NotSupportedException($"Cannot find CLI-imported member {memberName}.");
 
         // TODO[#93]: Verify method signature: {parametersIInfo, type}.
-        context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method));
+        context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
     private void EmitFunctionDeclaration(

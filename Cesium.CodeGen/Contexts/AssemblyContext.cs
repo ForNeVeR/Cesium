@@ -32,6 +32,11 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         var context = new TranslationUnitContext(this);
         foreach (var node in nodes)
             node.EmitTo(context);
+
+        foreach (var (name, function) in context.Functions)
+        {
+            if (!function.IsDefined) throw new NotSupportedException($"Function {name} not defined.");
+        }
     }
 
     public const string ConstantPoolTypeName = "<ConstantPool>";

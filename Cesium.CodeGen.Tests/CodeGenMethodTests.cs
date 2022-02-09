@@ -112,4 +112,8 @@ int console_read() { return 0; }", "Function console_read already defined as imm
     [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
 int console_read() { return 2; }", "Double definition of function console_read.");
+
+    [Fact]
+    public void NoDefinition() => DoesNotCompile(@"int foo(void);
+int main() { return foo(); }", "Function foo not defined.");
 }
