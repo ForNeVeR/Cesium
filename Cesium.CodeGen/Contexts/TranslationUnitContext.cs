@@ -9,5 +9,5 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
     public TypeDefinition ModuleType => Module.GetType("<Module>");
-    internal Dictionary<string, FunctionInfo> Functions { get; } = new();
+    internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 }

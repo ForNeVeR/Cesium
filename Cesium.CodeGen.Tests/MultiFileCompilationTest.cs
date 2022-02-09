@@ -10,4 +10,8 @@ public class MultiFileCompilationTest : CodeGenTestBase
 
     [Fact]
     public Task MultiFileProgram() => DoTest("int foo() { return 0; }", "int main() {}");
+
+    [Fact]
+    public Task ExternalLinkage() => DoTest("int foo(void) { return 0; }", @"int foo(void);
+int main(void) { return foo(); }");
 }

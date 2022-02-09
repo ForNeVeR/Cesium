@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
@@ -8,8 +9,16 @@ using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Module, Assembly[] ImportAssemblies)
+public class AssemblyContext
 {
+    internal AssemblyDefinition Assembly { get; }
+    public ModuleDefinition Module { get; }
+    public Assembly[] ImportAssemblies { get; }
+
+    internal Dictionary<string, FunctionInfo> Functions { get; } = new();
+
+
+
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
         ModuleKind kind,
@@ -32,11 +41,18 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
         var context = new TranslationUnitContext(this);
         foreach (var node in nodes)
             node.EmitTo(context);
+    }
 
-        foreach (var (name, function) in context.Functions)
+    /// <summary>Do final code generation tasks, analogous to linkage.</summary>
+    /// <remarks>As we link code on the fly, here we only need to check there are no unlinked functions left.</remarks>
+    public AssemblyDefinition VerifyAndGetAssembly()
+    {
+        foreach (var (name, function) in Functions)
         {
             if (!function.IsDefined) throw new NotSupportedException($"Function {name} not defined.");
         }
+
+        return Assembly;
     }
 
     public const string ConstantPoolTypeName = "<ConstantPool>";
@@ -44,13 +60,21 @@ public record AssemblyContext(AssemblyDefinition Assembly, ModuleDefinition Modu
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<string, FieldReference> _fields = new();
 
-    private readonly Lazy<TypeDefinition> _constantPool = new(
-        () =>
-        {
-            var type = new TypeDefinition("", ConstantPoolTypeName, TypeAttributes.Sealed, Module.TypeSystem.Object);
-            Module.Types.Add(type);
-            return type;
-        });
+    private readonly Lazy<TypeDefinition> _constantPool;
+
+    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies)
+    {
+        Assembly = assembly;
+        Module = module;
+        ImportAssemblies = importAssemblies;
+        _constantPool = new(
+            () =>
+            {
+                var type = new TypeDefinition("", ConstantPoolTypeName, TypeAttributes.Sealed, module.TypeSystem.Object);
+                module.Types.Add(type);
+                return type;
+            });
+    }
 
     public FieldReference GetConstantPoolReference(string stringConstant)
     {

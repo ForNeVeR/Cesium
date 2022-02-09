@@ -53,7 +53,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
 
     private static AssemblyDefinition EmitAssembly(AssemblyContext context)
     {
-        var assembly = context.Assembly;
+        var assembly = context.VerifyAndGetAssembly();
 
         // To resolve IL labels:
         using var stream = new MemoryStream();

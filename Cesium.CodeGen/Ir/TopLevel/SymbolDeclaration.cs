@@ -54,7 +54,7 @@ internal class SymbolDeclaration : ITopLevelNode
         }
     }
 
-    private void EmitCliImportDeclaration(
+    private static void EmitCliImportDeclaration(
         TranslationUnitContext context,
         string name,
         ParametersInfo? parametersInfo,
@@ -68,12 +68,21 @@ internal class SymbolDeclaration : ITopLevelNode
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
-    private void EmitFunctionDeclaration(
+    private static void EmitFunctionDeclaration(
         TranslationUnitContext context,
         string identifier,
         ParametersInfo parametersInfo,
         IType returnType)
     {
+        var existingFunction = context.Functions.GetValueOrDefault(identifier);
+        if (existingFunction != null)
+        {
+            // The function with the same name is already defined. Then, just verify that it has the same signature and
+            // exit:
+            existingFunction.VerifySignatureEquality(identifier, parametersInfo, returnType);
+            return;
+        }
+
         var typeSystem = context.TypeSystem;
         var method = context.ModuleType.DefineMethod(
             typeSystem,
@@ -81,8 +90,6 @@ internal class SymbolDeclaration : ITopLevelNode
             returnType.Resolve(typeSystem),
             parametersInfo);
 
-        context.Functions.Add(
-            identifier,
-            new FunctionInfo(parametersInfo, returnType, method));
+        context.Functions.Add(identifier, new FunctionInfo(parametersInfo, returnType, method));
     }
 }

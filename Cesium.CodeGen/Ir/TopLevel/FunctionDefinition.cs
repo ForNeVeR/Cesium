@@ -51,8 +51,7 @@ internal class FunctionDefinition : ITopLevelNode
             throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
 
         var declaration = context.Functions.GetValueOrDefault(_name);
-        if (declaration != null)
-            VerifySignatureEquality(declaration);
+        declaration?.VerifySignatureEquality(_name, _parameters, _returnType);
 
         var method = declaration switch
         {
@@ -261,32 +260,6 @@ internal class FunctionDefinition : ITopLevelNode
             var instructions = scope.Method.Body.Instructions;
             instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
             instructions.Add(Instruction.Create(OpCodes.Ret));
-        }
-    }
-
-    private void VerifySignatureEquality(FunctionInfo declaration)
-    {
-        if (!_returnType.Equals(declaration.ReturnType))
-            throw new NotSupportedException(
-                $"Incorrect return type for function {_name} declared as {declaration.ReturnType}: {_returnType}.");
-
-        if (declaration.Parameters?.IsVarArg == true || _parameters?.IsVarArg == true)
-            throw new NotSupportedException($"Vararg parameter not supported, yet: {_name}.");
-
-        var actualCount = _parameters?.Parameters.Count ?? 0;
-        var declaredCount = declaration.Parameters?.Parameters.Count ?? 0;
-        if (actualCount != declaredCount)
-            throw new NotSupportedException(
-                $"Incorrect parameter count for function {_name}: declared with {declaredCount} parameters, defined" +
-                $"with {actualCount}.");
-
-        var actualParams = _parameters?.Parameters ?? Array.Empty<ParameterInfo>();
-        var declaredParams = declaration.Parameters?.Parameters ?? Array.Empty<ParameterInfo>();
-        foreach (var (a, b) in actualParams.Zip(declaredParams))
-        {
-            if (a != b)
-                throw new NotSupportedException(
-                    $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
     }
 }

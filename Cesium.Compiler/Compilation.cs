@@ -102,7 +102,7 @@ internal static class Compilation
         SystemAssemblyKind targetFrameworkKind,
         string outputFilePath)
     {
-        context.Assembly.Write(outputFilePath);
+        context.VerifyAndGetAssembly().Write(outputFilePath);
 
         // This part should go to Cesium.SDK eventually together with
         // runtimeconfig.json generation
