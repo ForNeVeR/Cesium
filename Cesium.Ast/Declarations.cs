@@ -10,11 +10,35 @@ public record Declaration(
 public record InitDeclarator(Declarator Declarator, Initializer? Initializer = null);
 
 public interface IDeclarationSpecifier { }
+
+// 6.7.1 Storage-class specifiers
+public record StorageClassSpecifier(string Name) : IDeclarationSpecifier;
+
 // 6.7.2 Type specifiers
-public record TypeSpecifier(string TypeName) : IDeclarationSpecifier;
+public interface ITypeSpecifier : ISpecifierQualifierListItem, IDeclarationSpecifier { }
+
+public record SimpleTypeSpecifier(string TypeName) : ITypeSpecifier;
+public record StructOrUnionSpecifier(
+    ComplexTypeKind TypeKind,
+    string? Identifier,
+    ImmutableArray<StructDeclaration> StructDeclarations) : ITypeSpecifier;
+
+// 6.7.2.1 Structure and union specifiers
+public enum ComplexTypeKind
+{
+    Struct
+}
+
+public record StructDeclaration(
+    ImmutableArray<ISpecifierQualifierListItem> SpecifiersQualifiers,
+    ImmutableArray<StructDeclarator>? Declarators);
+
+public interface ISpecifierQualifierListItem {}
+
+public record StructDeclarator(Declarator Declarator);
 
 // 6.7.3 Type qualifiers
-public record TypeQualifier(string Name) : IDeclarationSpecifier;
+public record TypeQualifier(string Name) : IDeclarationSpecifier, ISpecifierQualifierListItem;
 
 // 6.7.7 Type names
 public record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);

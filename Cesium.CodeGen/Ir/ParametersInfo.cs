@@ -17,7 +17,7 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
             if (specifiers.Length != 1 || declarator != null || abstractDeclarator != null) isVoid = false;
             else
             {
-                isVoid = specifiers.Single() is TypeSpecifier { TypeName: "void" };
+                isVoid = specifiers.Single() is SimpleTypeSpecifier { TypeName: "void" };
             }
         }
         else isVoid = false;

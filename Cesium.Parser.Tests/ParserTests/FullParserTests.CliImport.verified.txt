@@ -11,7 +11,7 @@
             "MemberName": "Foo.Bar::Baz"
           },
           {
-            "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+            "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
             "TypeName": "int"
           }
         ],
@@ -40,7 +40,7 @@
       "$type": "Cesium.Ast.FunctionDefinition, Cesium.Ast",
       "Specifiers": [
         {
-          "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+          "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
           "TypeName": "int"
         }
       ],
@@ -65,7 +65,7 @@
             "$type": "Cesium.Ast.Declaration, Cesium.Ast",
             "Specifiers": [
               {
-                "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+                "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
                 "TypeName": "int"
               }
             ],

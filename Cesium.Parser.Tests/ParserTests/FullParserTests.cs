@@ -118,4 +118,7 @@ int main()
     ++x;
     return x;
  }");
+
+    [Fact]
+    public Task SimpleStructDefinition() => DoTest(@"typedef struct { int x; } foo;");
 }

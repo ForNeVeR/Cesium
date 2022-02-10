@@ -89,7 +89,7 @@ internal record DeclarationInfo(
         {
             switch (specifier)
             {
-                case TypeSpecifier ts:
+                case SimpleTypeSpecifier ts:
                     if (type != null)
                         throw new NotSupportedException(
                             $"Unsupported type definition after already resolved type {type}: {ts}.");

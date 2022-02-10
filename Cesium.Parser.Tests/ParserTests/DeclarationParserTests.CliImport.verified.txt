@@ -6,7 +6,7 @@
       "MemberName": "System.Runtime.InteropServices.Marshal::AllocHGlobal"
     },
     {
-      "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+      "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
       "TypeName": "void"
     }
   ],

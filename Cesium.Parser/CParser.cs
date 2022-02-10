@@ -15,6 +15,9 @@ using DeclarationSpecifiers = ImmutableArray<IDeclarationSpecifier>;
 using IdentifierList = ImmutableArray<string>;
 using InitDeclaratorList = ImmutableArray<InitDeclarator>;
 using ParameterList = ImmutableArray<ParameterDeclaration>;
+using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
+using StructDeclarationList = ImmutableArray<StructDeclaration>;
+using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
 
 /// <remarks>See the section 6 of the C17 standard.</remarks>
@@ -176,18 +179,13 @@ public partial class CParser
         InitDeclaratorList? initDeclarators,
         IToken _) => new(specifiers, initDeclarators);
 
-    // TODO: [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
+    [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
     [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
-    private static DeclarationSpecifiers MakeDeclarationSpecifiers(
-        TypeSpecifier typeSpecifier,
-        DeclarationSpecifiers? rest) =>
-        rest?.Insert(0, typeSpecifier) ?? ImmutableArray.Create<IDeclarationSpecifier>(typeSpecifier);
-
     [Rule("declaration_specifiers: type_qualifier declaration_specifiers?")]
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(
-        TypeQualifier typeQualifier,
+        IDeclarationSpecifier storageClassSpecifier,
         DeclarationSpecifiers? rest) =>
-        rest?.Insert(0, typeQualifier) ?? ImmutableArray.Create<IDeclarationSpecifier>(typeQualifier);
+        rest?.Insert(0, storageClassSpecifier) ?? ImmutableArray.Create(storageClassSpecifier);
 
     // TODO: [Rule("declaration_specifiers: function_specifier declaration_specifiers?")]
     // TODO: [Rule("declaration_specifiers: alignment_specifier declaration_specifiers?")]
@@ -207,7 +205,17 @@ public partial class CParser
     private static InitDeclarator MakeInitDeclarator(Declarator declarator, IToken _, Initializer initializer) =>
         new(declarator, initializer);
 
-    // TODO: 6.7.1 Storage_class specifiers
+    // 6.7.1 Storage-class specifiers
+    [Rule("storage_class_specifier: 'typedef'")]
+    private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
+
+    // TODO:
+    // storage-class-specifier:
+    //     extern
+    //     static
+    //     _Thread_local
+    //     auto
+    //     register
 
     // 6.7.2 Type specifiers
     [Rule("type_specifier: 'void'")]
@@ -221,11 +229,76 @@ public partial class CParser
     [Rule("type_specifier: 'unsigned'")]
     [Rule("type_specifier: '_Bool'")]
     [Rule("type_specifier: '_Complex'")]
+    private static ITypeSpecifier MakeSimpleTypeSpecifier(ICToken specifier) => new SimpleTypeSpecifier(specifier.Text);
+
     // TODO: [Rule("type_specifier: atomic_type_specifier")]
-    // TODO: [Rule("type_specifier: struct_or_union_specifier")]
+
+    [Rule("type_specifier: struct_or_union_specifier")]
+    private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
+        structOrUnionSpecifier;
+
     // TODO: [Rule("type_specifier: enum_specifier")]
     // TODO: [Rule("type_specifier: typedef_name")]
-    private static TypeSpecifier MakeTypeSpecifier(ICToken specifier) => new(specifier.Text);
+
+    // 6.7.2.1 Structure and union specifiers
+
+    [Rule("struct_or_union_specifier: struct_or_union Identifier? '{' struct_declaration_list '}'")]
+    private static StructOrUnionSpecifier MakeStructOrUnionSpecifier(
+        ComplexTypeKind structOrUnion,
+        IToken? identifier,
+        IToken _,
+        StructDeclarationList structDeclarationList,
+        IToken __) => new StructOrUnionSpecifier(structOrUnion, identifier?.Text, structDeclarationList);
+
+    // TODO: struct-or-union-specifier: struct-or-union identifier
+
+    [Rule("struct_or_union: 'struct'")]
+    private static ComplexTypeKind MakeStructComplexTypeKind(IToken _) => ComplexTypeKind.Struct;
+    // TODO: struct-or-union: union
+
+    [Rule("struct_declaration_list: struct_declaration")]
+    private static StructDeclarationList MakeStructDeclarationList(StructDeclaration structDeclaration) =>
+        ImmutableArray.Create(structDeclaration);
+
+    [Rule("struct_declaration_list: struct_declaration_list struct_declaration")]
+    private static StructDeclarationList MakeStructDeclarationList(
+        StructDeclarationList prev,
+        StructDeclaration structDeclaration) => prev.Add(structDeclaration);
+
+    [Rule("struct_declaration: specifier_qualifier_list struct_declarator_list? ';'")]
+    private static StructDeclaration MakeStructDeclaration(
+        SpecifierQualifierList specifiersQualifiers,
+        StructDeclaratorList? structDeclarators,
+        IToken _) => new(specifiersQualifiers, structDeclarators);
+
+    // TODO: struct-declaration: static_assert-declaration
+
+    [Rule("specifier_qualifier_list: type_specifier specifier_qualifier_list?")]
+    [Rule("specifier_qualifier_list: type_qualifier specifier_qualifier_list?")]
+    private SpecifierQualifierList MakeSpecifierQualifierList(
+        ISpecifierQualifierListItem item,
+        SpecifierQualifierList? rest) => rest?.Insert(0, item) ?? ImmutableArray.Create(item);
+
+    // TODO: specifier-qualifier-list: alignment-specifier specifier-qualifier-list?
+
+    [Rule("struct_declarator_list: struct_declarator")]
+    private static StructDeclaratorList MakeStructDeclaratorList(StructDeclarator structDeclarator) =>
+        ImmutableArray.Create(structDeclarator);
+
+    [Rule("struct_declarator_list: struct_declarator_list ',' struct_declarator")]
+    private static StructDeclaratorList MakeStructDeclaratorList(
+        StructDeclaratorList prev,
+        IToken _,
+        StructDeclarator next) => prev.Add(next);
+
+    [Rule("struct_declarator: declarator")]
+    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new StructDeclarator(declarator);
+
+    // TODO: struct-declarator: declarator? : constant-expression
+
+    // TODO: 6.7.2.2 Enumeration specifiers
+    // TODO: 6.7.2.3 Tags
+    // TODO: 6.7.2.4 Atomic type specifiers
 
     // 6.7.3 Type qualifiers
     [Rule("type_qualifier: 'const'")]
