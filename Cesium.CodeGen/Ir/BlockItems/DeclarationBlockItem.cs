@@ -77,7 +77,7 @@ internal class DeclarationBlockItem : IBlockItem
                 throw new NotSupportedException(
                     $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
-            var typeReference = type.Resolve(scope.TypeSystem);
+            var typeReference = type.Resolve(scope.Context);
             var variable = new VariableDefinition(typeReference);
             method.Body.Variables.Add(variable);
             scope.Variables.Add(identifier, variable);

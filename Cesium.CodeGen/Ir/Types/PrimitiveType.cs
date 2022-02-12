@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
@@ -11,11 +12,15 @@ internal enum PrimitiveTypeKind
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
 {
-    public TypeReference Resolve(TypeSystem typeSystem) => Kind switch
+    public TypeReference Resolve(TranslationUnitContext context)
     {
-        PrimitiveTypeKind.Char => typeSystem.Byte,
-        PrimitiveTypeKind.Int => typeSystem.Int32,
-        PrimitiveTypeKind.Void => typeSystem.Void,
-        _ => throw new NotImplementedException($"Primitive type not supported, yet: {this}.")
-    };
+        var typeSystem = context.TypeSystem;
+        return Kind switch
+        {
+            PrimitiveTypeKind.Char => typeSystem.Byte,
+            PrimitiveTypeKind.Int => typeSystem.Int32,
+            PrimitiveTypeKind.Void => typeSystem.Void,
+            _ => throw new NotImplementedException($"Primitive type not supported, yet: {this}.")
+        };
+    }
 }

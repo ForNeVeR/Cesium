@@ -42,7 +42,7 @@ internal class FunctionDefinition : ITopLevelNode
 
     public void EmitTo(TranslationUnitContext context)
     {
-        var returnType = _returnType.Resolve(context.TypeSystem);
+        var returnType = _returnType.Resolve(context);
         if (IsMain && returnType != context.TypeSystem.Int32)
             throw new NotSupportedException(
                 $"Invalid return type for the {_name} function: " +
@@ -56,7 +56,7 @@ internal class FunctionDefinition : ITopLevelNode
 
         var method = declaration switch
         {
-            null => context.ModuleType.DefineMethod(context.TypeSystem, _name, returnType, _parameters),
+            null => context.ModuleType.DefineMethod(context, _name, returnType, _parameters),
             { MethodReference: MethodDefinition md } => md,
             _ => throw new NotSupportedException($"Function {_name} already defined as immutable.")
         };

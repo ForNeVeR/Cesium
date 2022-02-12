@@ -4,7 +4,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Extensions;
 
-public static class TypeSystemEx
+internal static class TypeSystemEx
 {
     public static MethodReference? MethodLookup(this TranslationUnitContext context, string memberName)
     {

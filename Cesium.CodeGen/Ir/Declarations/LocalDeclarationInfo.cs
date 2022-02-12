@@ -148,7 +148,7 @@ internal record LocalDeclarationInfo(
                     if (identifier != null)
                         throw new NotImplementedException($"Named structures aren't supported, yet: {identifier}.");
 
-                    type = new StructType(structDeclarations);
+                    type = new StructType(GetTypeMemberDeclarations(structDeclarations));
                     break;
                 }
 
@@ -162,5 +162,28 @@ internal record LocalDeclarationInfo(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
+    }
+
+    private static IEnumerable<LocalDeclarationInfo> GetTypeMemberDeclarations(
+        IEnumerable<StructDeclaration> structDeclarations)
+    {
+        return structDeclarations.SelectMany(memberDeclarator =>
+        {
+            var (specifiersQualifiers, declarators) = memberDeclarator;
+            if (declarators == null)
+                throw new NotSupportedException(
+                    "Empty declarator list on a struct member declaration:" +
+                    $"{string.Join(", ", specifiersQualifiers)}.");
+
+            var collection = specifiersQualifiers
+                .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
+                .ToList();
+
+            return declarators.Select<StructDeclarator, LocalDeclarationInfo>(d =>
+            {
+                d.Deconstruct(out var declarator);
+                return Of(collection, declarator);
+            });
+        });
     }
 }

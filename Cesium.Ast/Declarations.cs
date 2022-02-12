@@ -15,7 +15,7 @@ public interface IDeclarationSpecifier { }
 public record StorageClassSpecifier(string Name) : IDeclarationSpecifier;
 
 // 6.7.2 Type specifiers
-public interface ITypeSpecifier : ISpecifierQualifierListItem, IDeclarationSpecifier { }
+public interface ITypeSpecifier : ISpecifierQualifierListItem { }
 
 public record SimpleTypeSpecifier(string TypeName) : ITypeSpecifier;
 public record StructOrUnionSpecifier(
@@ -33,12 +33,12 @@ public record StructDeclaration(
     ImmutableArray<ISpecifierQualifierListItem> SpecifiersQualifiers,
     ImmutableArray<StructDeclarator>? Declarators);
 
-public interface ISpecifierQualifierListItem {}
+public interface ISpecifierQualifierListItem : IDeclarationSpecifier {}
 
 public record StructDeclarator(Declarator Declarator);
 
 // 6.7.3 Type qualifiers
-public record TypeQualifier(string Name) : IDeclarationSpecifier, ISpecifierQualifierListItem;
+public record TypeQualifier(string Name) : ISpecifierQualifierListItem;
 
 // 6.7.7 Type names
 public record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);

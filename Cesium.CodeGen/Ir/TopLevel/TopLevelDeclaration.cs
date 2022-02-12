@@ -103,11 +103,10 @@ internal class TopLevelDeclaration : ITopLevelNode
             return;
         }
 
-        var typeSystem = context.TypeSystem;
         var method = context.ModuleType.DefineMethod(
-            typeSystem,
+            context,
             identifier,
-            returnType.Resolve(typeSystem),
+            returnType.Resolve(context),
             parametersInfo);
 
         context.Functions.Add(identifier, new FunctionInfo(parametersInfo, returnType, method));
@@ -128,7 +127,10 @@ internal class TopLevelDeclaration : ITopLevelNode
             if (cliImportMemberName != null)
                 throw new NotSupportedException($"typedef for CLI import not supported: {cliImportMemberName}.");
 
-            context.Types.Add(identifier, type.Resolve(context.TypeSystem));
+            if (type is INamedType t)
+                context.GenerateType(t, identifier);
+            else
+                throw new NotSupportedException($"Not supported type generation for type {type}.");
         }
     }
 }

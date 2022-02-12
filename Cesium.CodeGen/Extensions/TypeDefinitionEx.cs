@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
 using Mono.Cecil;
 
@@ -7,7 +8,7 @@ internal static class TypeDefinitionEx
 {
     public static MethodDefinition DefineMethod(
         this TypeDefinition type,
-        TypeSystem typeSystem,
+        TranslationUnitContext context,
         string name,
         TypeReference returnType,
         ParametersInfo? parameters)
@@ -16,12 +17,15 @@ internal static class TypeDefinitionEx
             name,
             MethodAttributes.Public | MethodAttributes.Static,
             returnType);
-        AddParameters(typeSystem, method, parameters);
+        AddParameters(context, method, parameters);
         type.Methods.Add(method);
         return method;
     }
 
-    private static void AddParameters(TypeSystem typeSystem, MethodDefinition method, ParametersInfo? parametersInfo)
+    private static void AddParameters(
+        TranslationUnitContext context,
+        MethodReference method,
+        ParametersInfo? parametersInfo)
     {
         if (parametersInfo == null) return;
         var (parameters, isVoid, isVarArg) = parametersInfo;
@@ -34,7 +38,7 @@ internal static class TypeDefinitionEx
         foreach (var parameter in parameters)
         {
             var (type, name) = parameter;
-            var parameterDefinition = new ParameterDefinition(type.Resolve(typeSystem))
+            var parameterDefinition = new ParameterDefinition(type.Resolve(context))
             {
                 Name = name
             };
