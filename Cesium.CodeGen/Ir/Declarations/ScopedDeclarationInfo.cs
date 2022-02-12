@@ -18,18 +18,41 @@ internal interface IScopedDeclarationInfo
 
         if (specifiers.Length > 0 && specifiers[0] is StorageClassSpecifier { Name: "typedef" })
         {
-            return TypeDefDeclaration.Of(specifiers.Skip(1), initDeclarators);
+            return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
         }
 
-        var initializableDeclarations = initDeclarators
-            .Select<InitDeclarator, InitializableDeclarationInfo>(id => Of(specifiers, id))
-            .ToList();
-
-        return new ScopedIdentifierDeclaration(initializableDeclarations);
+        return IdentifierOf(specifiers, initDeclarators);
     }
 
-    private static InitializableDeclarationInfo Of(
-        IList<IDeclarationSpecifier> specifiers,
+    private static TypeDefDeclaration TypeDefOf(
+        ICollection<IDeclarationSpecifier> specifiers,
+        IEnumerable<InitDeclarator> initDeclarators)
+    {
+        var declarations = initDeclarators.Select(d =>
+        {
+            var (declarator, initializer) = d;
+            if (initializer != null)
+                throw new NotSupportedException($"Initializer is not supported for a typedef.");
+
+            return LocalDeclarationInfo.Of(specifiers, declarator);
+        }).ToList();
+
+        return new TypeDefDeclaration(declarations);
+    }
+
+    private static ScopedIdentifierDeclaration IdentifierOf(
+        ICollection<IDeclarationSpecifier> specifiers,
+        IEnumerable<InitDeclarator> initDeclarators)
+    {
+        var declarations = initDeclarators
+            .Select(id => IdentifierOf(specifiers, id))
+            .ToList();
+
+        return new ScopedIdentifierDeclaration(declarations);
+    }
+
+    private static InitializableDeclarationInfo IdentifierOf(
+        ICollection<IDeclarationSpecifier> specifiers,
         InitDeclarator initDeclarator)
     {
         var (declarator, initializer) = initDeclarator;
@@ -44,14 +67,6 @@ internal interface IScopedDeclarationInfo
     }
 }
 
-internal record TypeDefDeclaration : IScopedDeclarationInfo
-{
-    internal static TypeDefDeclaration Of(
-        IEnumerable<IDeclarationSpecifier> specifiers,
-        IEnumerable<InitDeclarator> initDeclarators)
-    {
-        throw new NotSupportedException("typedef not supported, yet.");
-    }
-}
+internal record TypeDefDeclaration(ICollection<LocalDeclarationInfo> Types) : IScopedDeclarationInfo;
 internal record ScopedIdentifierDeclaration(ICollection<InitializableDeclarationInfo> Items) : IScopedDeclarationInfo;
 internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, IExpression? Initializer);

@@ -14,7 +14,7 @@ internal record LocalDeclarationInfo(
     ParametersInfo? Parameters,
     string? CliImportMemberName)
 {
-    public static LocalDeclarationInfo Of(IList<IDeclarationSpecifier> specifiers, Declarator? declarator)
+    public static LocalDeclarationInfo Of(ICollection<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
@@ -85,7 +85,7 @@ internal record LocalDeclarationInfo(
     }
 
     private static (IType, string? cliImportMemberName) ProcessSpecifiers(
-        IList<IDeclarationSpecifier> specifiers)
+        ICollection<IDeclarationSpecifier> specifiers)
     {
         IType? type = null;
         var isConst = false;

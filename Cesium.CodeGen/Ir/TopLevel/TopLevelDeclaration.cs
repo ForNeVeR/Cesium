@@ -23,7 +23,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 EmitScopedIdentifier(context, declaration);
                 break;
             case TypeDefDeclaration declaration:
-                EmitTypeDef(declaration);
+                EmitTypeDef(context, declaration);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(_declaration));
@@ -113,6 +113,22 @@ internal class TopLevelDeclaration : ITopLevelNode
         context.Functions.Add(identifier, new FunctionInfo(parametersInfo, returnType, method));
     }
 
-    private static void EmitTypeDef(TypeDefDeclaration declaration) =>
-        throw new NotImplementedException($"typedef is not supported at block level, yet: {declaration}.");
+    private static void EmitTypeDef(TranslationUnitContext context, TypeDefDeclaration declaration)
+    {
+        declaration.Deconstruct(out var types);
+        foreach (var typeDef in types)
+        {
+            var (type, identifier, parametersInfo, cliImportMemberName) = typeDef;
+            if (identifier == null)
+                throw new NotSupportedException($"Anonymous typedef not supported: {type}.");
+
+            if (parametersInfo != null)
+                throw new NotImplementedException($"Function typedef not supported, yet: {identifier}.");
+
+            if (cliImportMemberName != null)
+                throw new NotSupportedException($"typedef for CLI import not supported: {cliImportMemberName}.");
+
+            context.Types.Add(identifier, type.Resolve(context.TypeSystem));
+        }
+    }
 }
