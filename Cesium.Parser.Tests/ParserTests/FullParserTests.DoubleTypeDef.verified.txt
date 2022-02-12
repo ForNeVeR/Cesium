@@ -1,0 +1,75 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.SymbolDeclaration, Cesium.Ast",
+      "Declaration": {
+        "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+        "Specifiers": [
+          {
+            "$type": "Cesium.Ast.StorageClassSpecifier, Cesium.Ast",
+            "Name": "typedef"
+          },
+          {
+            "$type": "Cesium.Ast.StructOrUnionSpecifier, Cesium.Ast",
+            "TypeKind": "Struct",
+            "Identifier": null,
+            "StructDeclarations": [
+              {
+                "$type": "Cesium.Ast.StructDeclaration, Cesium.Ast",
+                "SpecifiersQualifiers": [
+                  {
+                    "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+                    "TypeName": "int"
+                  }
+                ],
+                "Declarators": [
+                  {
+                    "$type": "Cesium.Ast.StructDeclarator, Cesium.Ast",
+                    "Declarator": {
+                      "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                      "Pointer": null,
+                      "DirectDeclarator": {
+                        "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                        "Identifier": "x",
+                        "Base": null
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "InitDeclarators": [
+          {
+            "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+            "Declarator": {
+              "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+              "Pointer": null,
+              "DirectDeclarator": {
+                "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                "Identifier": "foo",
+                "Base": null
+              }
+            },
+            "Initializer": null
+          },
+          {
+            "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+            "Declarator": {
+              "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+              "Pointer": null,
+              "DirectDeclarator": {
+                "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                "Identifier": "bar",
+                "Base": null
+              }
+            },
+            "Initializer": null
+          }
+        ]
+      }
+    }
+  ]
+}

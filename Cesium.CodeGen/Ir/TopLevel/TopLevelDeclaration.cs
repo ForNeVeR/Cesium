@@ -1,22 +1,42 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
 
-internal class SymbolDeclaration : ITopLevelNode
+internal class TopLevelDeclaration : ITopLevelNode
 {
-    private readonly IList<InitializableDeclarationInfo> _declarations;
-    public SymbolDeclaration(Ast.SymbolDeclaration ast)
+    private readonly IScopedDeclarationInfo _declaration;
+    public TopLevelDeclaration(Ast.SymbolDeclaration ast)
     {
         ast.Deconstruct(out var declaration);
-        _declarations = InitializableDeclarationInfo.Of(declaration).ToList();
+        _declaration = IScopedDeclarationInfo.Of(declaration);
     }
 
     public void EmitTo(TranslationUnitContext context)
     {
-        foreach (var (declaration, initializer) in _declarations)
+        switch (_declaration)
+        {
+            case ScopedIdentifierDeclaration declaration:
+                EmitScopedIdentifier(context, declaration);
+                break;
+            case TypeDefDeclaration declaration:
+                EmitTypeDef(declaration);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(_declaration));
+        }
+    }
+
+    private static void EmitScopedIdentifier(
+        TranslationUnitContext context,
+        ScopedIdentifierDeclaration scopedDeclaration)
+    {
+        scopedDeclaration.Deconstruct(out var items);
+
+        foreach (var (declaration, initializer) in items)
         {
             var (type, identifier, parametersInfo, cliImportMemberName) = declaration;
             if (identifier == null)
@@ -92,4 +112,7 @@ internal class SymbolDeclaration : ITopLevelNode
 
         context.Functions.Add(identifier, new FunctionInfo(parametersInfo, returnType, method));
     }
+
+    private static void EmitTypeDef(TypeDefDeclaration declaration) =>
+        throw new NotImplementedException($"typedef is not supported at block level, yet: {declaration}.");
 }

@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir;
@@ -45,7 +46,7 @@ internal record ParameterInfo(IType Type, string? Name)
             throw new NotImplementedException(
                 $"Parameter with abstract declarator is not supported, yet: {declaration}.");
 
-        var (type, identifier, parameters, cliImportMemberName) = DeclarationInfo.Of(specifiers, declarator);
+        var (type, identifier, parameters, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
 
         if (parameters != null)
             throw new NotImplementedException($"Parameters with parameters are not supported, yet: {parameters}.");

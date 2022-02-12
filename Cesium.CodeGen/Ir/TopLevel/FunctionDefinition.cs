@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Runtime;
 using Mono.Cecil;
@@ -27,7 +28,7 @@ internal class FunctionDefinition : ITopLevelNode
     {
         var (specifiers, declarator, declarations, astStatement) = function;
         (_returnType, var name, _parameters, var cliImportMemberName) =
-            DeclarationInfo.Of(specifiers, declarator);
+            LocalDeclarationInfo.Of(specifiers, declarator);
         _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)

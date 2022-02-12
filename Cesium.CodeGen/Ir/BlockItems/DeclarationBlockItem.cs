@@ -1,36 +1,65 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class DeclarationBlockItem : IBlockItem
 {
-    private readonly IList<InitializableDeclarationInfo> _declarations;
-    private DeclarationBlockItem(IList<InitializableDeclarationInfo> declarations)
+    private readonly IScopedDeclarationInfo _declaration;
+    private DeclarationBlockItem(IScopedDeclarationInfo declaration)
     {
-        _declarations = declarations;
+        _declaration = declaration;
     }
 
     public DeclarationBlockItem(Declaration declaration)
-        : this(InitializableDeclarationInfo.Of(declaration).ToList())
+        : this(IScopedDeclarationInfo.Of(declaration))
     {
     }
 
-    public IBlockItem Lower() =>
-        new DeclarationBlockItem(
-            _declarations
-                .Select(d =>
-                {
-                    var (declaration, initializer) = d;
-                    return new InitializableDeclarationInfo(declaration, initializer?.Lower());
-                })
-                .ToList());
+    public IBlockItem Lower()
+    {
+        switch (_declaration)
+        {
+            case ScopedIdentifierDeclaration declaration:
+            {
+                declaration.Deconstruct(out var items);
+                return new DeclarationBlockItem(
+                    new ScopedIdentifierDeclaration(
+                        items.Select(d =>
+                            {
+                                var (itemDeclaration, initializer) = d;
+                                return new InitializableDeclarationInfo(itemDeclaration, initializer?.Lower());
+                            })
+                            .ToList()));
+            }
+            case TypeDefDeclaration _: return this;
+            default: throw new ArgumentOutOfRangeException(nameof(_declaration));
+        }
+    }
+
 
     public void EmitTo(FunctionScope scope)
     {
-        foreach (var (declaration, initializer) in _declarations)
+        switch (_declaration)
+        {
+            case ScopedIdentifierDeclaration declaration:
+                EmitScopedIdentifier(scope, declaration);
+                break;
+            case TypeDefDeclaration declaration:
+                EmitTypeDef(declaration);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(_declaration));
+        }
+    }
+
+    private static void EmitScopedIdentifier(FunctionScope scope, ScopedIdentifierDeclaration scopedDeclaration)
+    {
+        scopedDeclaration.Deconstruct(out var declarations);
+        foreach (var (declaration, initializer) in declarations)
         {
             var method = scope.Method;
             var (type, identifier, parametersInfo, cliImportMemberName) = declaration;
@@ -59,4 +88,7 @@ internal class DeclarationBlockItem : IBlockItem
             scope.StLoc(variable);
         }
     }
+
+    private static void EmitTypeDef(TypeDefDeclaration declaration) =>
+        throw new NotImplementedException($"typedef is not supported at block level, yet: {declaration}.");
 }

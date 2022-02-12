@@ -51,4 +51,7 @@ int bar(void)
 void foo(void)
 {
 }");
+
+    [Fact]
+    public Task EmptyStructDefinition() => DoTest("typedef struct { int x; } foo;");
 }
