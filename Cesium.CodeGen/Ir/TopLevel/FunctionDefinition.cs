@@ -83,7 +83,7 @@ internal class FunctionDefinition : ITopLevelNode
             assembly.EntryPoint = entryPoint;
         }
 
-        EmitCode(scope);
+        EmitCode(context, scope);
     }
 
     /// <remarks><see cref="GenerateSyntheticEntryPoint"/></remarks>
@@ -252,14 +252,26 @@ internal class FunctionDefinition : ITopLevelNode
         return syntheticEntrypoint;
     }
 
-    private void EmitCode(FunctionScope scope)
+    private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         _statement.EmitTo(scope);
-        if (IsMain && !_statement.HasDefiniteReturn)
+        if (!_statement.HasDefiniteReturn)
         {
-            var instructions = scope.Method.Body.Instructions;
-            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-            instructions.Add(Instruction.Create(OpCodes.Ret));
+            if (IsMain)
+            {
+                var instructions = scope.Method.Body.Instructions;
+                instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
+            else if (_returnType.Resolve(context.TypeSystem) == context.TypeSystem.Void)
+            {
+                var instructions = scope.Method.Body.Instructions;
+                instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
+            else
+            {
+                throw new InvalidOperationException($"{scope.Method.Name} do not have return statement. This is compiler bug.");
+            }
         }
     }
 }

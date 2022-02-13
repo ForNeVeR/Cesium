@@ -1,0 +1,5 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::foo()
+      IL_0000: ret
