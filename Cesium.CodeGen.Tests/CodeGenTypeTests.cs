@@ -54,4 +54,8 @@ void foo(void)
 
     [Fact]
     public Task SingleFieldStructDefinition() => DoTest("typedef struct { int x; } foo;");
+
+    [Fact]
+    public Task TypeDefStructUsage() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; return 0; }");
 }

@@ -177,7 +177,19 @@ public partial class CParser
     private static Declaration MakeDeclaration(
         DeclarationSpecifiers specifiers,
         InitDeclaratorList? initDeclarators,
-        IToken _) => new(specifiers, initDeclarators);
+        IToken _)
+    {
+        var firstInitDeclarator = initDeclarators?.FirstOrDefault();
+        if (firstInitDeclarator != null)
+        {
+            var firstDeclarator = firstInitDeclarator.Declarator;
+            (specifiers, firstDeclarator) = TypeDefNameIdentifierHack(specifiers, firstDeclarator);
+            firstInitDeclarator = firstInitDeclarator with { Declarator = firstDeclarator };
+            initDeclarators = initDeclarators!.Value.RemoveAt(0).Insert(0, firstInitDeclarator);
+        }
+
+        return new(specifiers, initDeclarators);
+    }
 
     [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
     [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
@@ -238,7 +250,10 @@ public partial class CParser
         structOrUnionSpecifier;
 
     // TODO: [Rule("type_specifier: enum_specifier")]
-    // TODO: [Rule("type_specifier: typedef_name")]
+
+    [Rule("type_specifier: typedef_name")]
+    private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
+        new NamedTypeSpecifier(typeDefName.Text);
 
     // 6.7.2.1 Structure and union specifiers
 
@@ -315,9 +330,9 @@ public partial class CParser
     private static Declarator MakeDeclarator(Pointer? pointer, IDirectDeclarator directDeclarator) =>
         new(pointer, directDeclarator);
 
-    [Rule("direct_declarator: Identifier")]
-    private static IDirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
-        new IdentifierDirectDeclarator(identifier.Text);
+    [Rule("direct_declarator: Identifier?")]
+    private static IDirectDeclarator MakeDirectDeclarator(ICToken? identifier) =>
+        new IdentifierDirectDeclarator(identifier?.Text);
 
     // TODO: direct_declarator: ( declarator )
 
@@ -378,7 +393,11 @@ public partial class CParser
     [Rule("parameter_declaration: declaration_specifiers declarator")]
     private static ParameterDeclaration MakeParameterTypeList(
         DeclarationSpecifiers specifiers,
-        Declarator declarator) => new(specifiers, declarator);
+        Declarator declarator)
+    {
+        (specifiers, declarator) = TypeDefNameIdentifierHack(specifiers, declarator);
+        return new(specifiers, declarator);
+    }
 
     [Rule("parameter_declaration: declaration_specifiers abstract_declarator?")]
     private static ParameterDeclaration MakeParameterTypeList(
@@ -442,7 +461,9 @@ public partial class CParser
     //     direct-abstract-declarator? [ * ]
     //     direct-abstract-declarator? ( parameter-type-list? )
 
-    // TODO: 6.7.8 Type definitions
+    // 6.7.8 Type definitions
+    [Rule("typedef_name: Identifier")]
+    private static IToken MakeTypeDefName(IToken identifier) => identifier;
 
     // 6.7.9 Initialization
 
@@ -533,7 +554,11 @@ public partial class CParser
         DeclarationSpecifiers specifiers,
         Declarator declarator,
         ImmutableArray<Declaration>? declarationList,
-        CompoundStatement statement) => new(specifiers, declarator, declarationList, statement);
+        CompoundStatement statement)
+    {
+        (specifiers, declarator) = TypeDefNameIdentifierHack(specifiers, declarator);
+        return new(specifiers, declarator, declarationList, statement);
+    }
 
     [Rule("declaration_list: declaration")]
     private static ImmutableArray<Declaration> MakeDeclarationList(Declaration declaration) =>
@@ -608,4 +633,37 @@ public partial class CParser
     // TODO: 6.10.7 Null directive
     // TODO: 6.10.8 Predefined macro names
     // TODO: 6.10.9 Pragma operator
+
+    // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
+    // As no simple workaround exist, we have to do ugly manipulations in parser and AST to support this.
+    // TODO: Eventually, I hope we'll get rid of that.
+    private static (DeclarationSpecifiers, Declarator) TypeDefNameIdentifierHack(
+        DeclarationSpecifiers specifiers,
+        Declarator declarator)
+    {
+        var directDeclarator = declarator.DirectDeclarator;
+        IdentifierDirectDeclarator? identifierDeclarator = null;
+        while (directDeclarator != null && identifierDeclarator == null)
+        {
+            identifierDeclarator = directDeclarator as IdentifierDirectDeclarator;
+            directDeclarator = directDeclarator.Base;
+        }
+
+        if (identifierDeclarator is { Identifier: null })
+        {
+            var lastSpecifier = specifiers.LastOrDefault();
+            if (lastSpecifier is NamedTypeSpecifier { TypeDefName: var tn })
+            {
+                specifiers = specifiers.RemoveAt(specifiers.Length - 1);
+                identifierDeclarator.Identifier = tn;
+            }
+        }
+
+        if (identifierDeclarator is { Identifier: null })
+            throw new NotSupportedException(
+                "THIS IS A BUG! It is caused by a hack in parsing for the sake of `typedef_name`." +
+                $" Please report to the Cesium maintainers: [{string.Join(",", specifiers)}] {declarator}.");
+
+        return (specifiers, declarator);
+    }
 }

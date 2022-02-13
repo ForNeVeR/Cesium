@@ -80,6 +80,8 @@ int main()
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
 
+    [Fact] public Task UninitializedVariable() => DoTest("int main() { int x; return 0; }");
+
     [Fact]
     public Task Arithmetic() => DoTest(@"int main(void)
 {

@@ -7,4 +7,5 @@ obj/
 *.dll
 *.exe
 *.runtimeconfig.json
+*.received.txt
 *.user

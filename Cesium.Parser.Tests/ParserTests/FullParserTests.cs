@@ -124,4 +124,8 @@ int main()
 
     [Fact]
     public Task DoubleTypeDef() => DoTest(@"typedef struct { int x; } foo, bar;");
+
+    [Fact]
+    public Task TypeDefStructUsage() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; return 0; }");
 }
