@@ -94,6 +94,9 @@ int main()
     public Task IntParameter() => DoTest("void foo(int x){}");
 
     [Fact]
+    public Task ForwardDeclarationNoParameters() => DoTest("void foo();");
+
+    [Fact]
     public Task PointerParameter() => DoTest("void foo(char *x){}");
 
     [Fact]

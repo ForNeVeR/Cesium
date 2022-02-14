@@ -271,7 +271,7 @@ public partial class CParser
         IDirectDeclarator @base,
         ICToken _,
         IdentifierList? identifierList,
-        ICToken __) => new IdentifierListDirectDeclarator(@base, identifierList);
+        ICToken __) => new IdentifierListDirectDeclarator(@base, identifierList ?? IdentifierList.Empty);
 
     [Rule("pointer: '*' type_qualifier_list?")]
     private static Pointer MakePointer(ICToken _, TypeQualifierList? typeQualifiers) => new(typeQualifiers);
