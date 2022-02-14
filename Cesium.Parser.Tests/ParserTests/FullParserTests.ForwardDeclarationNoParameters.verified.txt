@@ -1,0 +1,36 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.SymbolDeclaration, Cesium.Ast",
+      "Declaration": {
+        "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+        "Specifiers": [
+          {
+            "$type": "Cesium.Ast.TypeSpecifier, Cesium.Ast",
+            "TypeName": "void"
+          }
+        ],
+        "InitDeclarators": [
+          {
+            "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+            "Declarator": {
+              "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+              "Pointer": null,
+              "DirectDeclarator": {
+                "$type": "Cesium.Ast.IdentifierListDirectDeclarator, Cesium.Ast",
+                "Base": {
+                  "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                  "Identifier": "foo",
+                  "Base": null
+                },
+                "Identifiers": null
+              }
+            },
+            "Initializer": null
+          }
+        ]
+      }
+    }
+  ]
+}

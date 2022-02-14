@@ -51,4 +51,17 @@ int bar(void)
 void foo(void)
 {
 }");
+
+    [Fact]
+    public Task FunctionForwardDeclaration2() => DoTest(@"int bar();
+
+int foo(void)
+{
+    return bar();
+}
+
+int bar(void)
+{
+    return 0;
+}");
 }
