@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Cesium.Ast;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Parser;
 using Yoakke.SynKit.Parser.Attributes;
 
 namespace Cesium.Parser;
@@ -177,30 +178,21 @@ public partial class CParser
     private static Declaration MakeDeclaration(
         DeclarationSpecifiers specifiers,
         InitDeclaratorList? initDeclarators,
-        IToken _)
-    {
-        var firstInitDeclarator = initDeclarators?.FirstOrDefault();
-        if (firstInitDeclarator != null)
-        {
-            var firstDeclarator = firstInitDeclarator.Declarator;
-            (specifiers, firstDeclarator) = TypeDefNameIdentifierHack(specifiers, firstDeclarator);
-            firstInitDeclarator = firstInitDeclarator with { Declarator = firstDeclarator };
-            initDeclarators = initDeclarators!.Value.RemoveAt(0).Insert(0, firstInitDeclarator);
-        }
+        IToken _) => new(specifiers, initDeclarators);
 
-        return new(specifiers, initDeclarators);
-    }
+    // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
+    // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
+    [Rule("declaration_specifiers: declaration_specifier+")]
+    private static DeclarationSpecifiers MakeDeclarationSpecifiers(IEnumerable<IDeclarationSpecifier> specifiers) =>
+        specifiers.ToImmutableArray();
 
-    [Rule("declaration_specifiers: storage_class_specifier declaration_specifiers?")]
-    [Rule("declaration_specifiers: type_specifier declaration_specifiers?")]
-    [Rule("declaration_specifiers: type_qualifier declaration_specifiers?")]
-    private static DeclarationSpecifiers MakeDeclarationSpecifiers(
-        IDeclarationSpecifier storageClassSpecifier,
-        DeclarationSpecifiers? rest) =>
-        rest?.Insert(0, storageClassSpecifier) ?? ImmutableArray.Create(storageClassSpecifier);
+    [Rule("declaration_specifier: storage_class_specifier")]
+    [Rule("declaration_specifier: type_specifier")]
+    [Rule("declaration_specifier: type_qualifier")]
+    private static IDeclarationSpecifier MakeDeclarationSpecifier(IDeclarationSpecifier specifier) => specifier;
 
-    // TODO: [Rule("declaration_specifiers: function_specifier declaration_specifiers?")]
-    // TODO: [Rule("declaration_specifiers: alignment_specifier declaration_specifiers?")]
+    // TODO: [Rule("declaration_specifier: function_specifier")]
+    // TODO: [Rule("declaration_specifier: alignment_specifier")]
 
     [Rule("init_declarator_list: init_declarator")]
     private static InitDeclaratorList MakeInitDeclaratorList(InitDeclarator declarator) =>
@@ -330,9 +322,9 @@ public partial class CParser
     private static Declarator MakeDeclarator(Pointer? pointer, IDirectDeclarator directDeclarator) =>
         new(pointer, directDeclarator);
 
-    [Rule("direct_declarator: Identifier?")]
-    private static IDirectDeclarator MakeDirectDeclarator(ICToken? identifier) =>
-        new IdentifierDirectDeclarator(identifier?.Text);
+    [Rule("direct_declarator: Identifier")]
+    private static IDirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
+        new IdentifierDirectDeclarator(identifier.Text);
 
     // TODO: direct_declarator: ( declarator )
 
@@ -390,8 +382,26 @@ public partial class CParser
     private static ParameterList MakeParameterList(ParameterList prev, ICToken _, ParameterDeclaration declaration) =>
         prev.Add(declaration);
 
-    [Rule("parameter_declaration: declaration_specifiers declarator")]
-    private static ParameterDeclaration MakeParameterTypeList(
+    // HACK: custom parsing is required here due to the reasons outlined in
+    // https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // parameter_declaration: declaration_specifiers declarator
+    [CustomParser("parameter_declaration")]
+    private ParseResult<ParameterDeclaration> customParseParameterDeclaration(int offset)
+    {
+        var specifiersAndDeclarator = CustomParseSpecifiersAndDeclarator(offset);
+        if (specifiersAndDeclarator.IsError) return specifiersAndDeclarator.Error;
+        offset = specifiersAndDeclarator.Ok.Offset;
+
+        var (specifiers, declarator) = specifiersAndDeclarator.Ok.Value;
+
+        return ParseResult.Ok(
+            MakeParameterDeclaration(specifiers, declarator),
+            offset,
+            specifiersAndDeclarator.FurthestError);
+    }
+
+    private static ParameterDeclaration MakeParameterDeclaration(
         DeclarationSpecifiers specifiers,
         Declarator declarator)
     {
@@ -549,7 +559,36 @@ public partial class CParser
         new SymbolDeclaration(declaration);
 
     // 6.9.1 Function definitions
-    [Rule("function_definition: declaration_specifiers declarator declaration_list? compound_statement")]
+
+    // HACK: custom parsing is required here due to the reasons outlined in
+    // https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // function_definition: declaration_specifiers declarator declaration_list? compound_statement
+    [CustomParser("function_definition")]
+    private ParseResult<FunctionDefinition> customParseFunctionDefinition(int offset)
+    {
+        var specifiersAndDeclarator = CustomParseSpecifiersAndDeclarator(offset);
+        if (specifiersAndDeclarator.IsError) return specifiersAndDeclarator.Error;
+        offset = specifiersAndDeclarator.Ok.Offset;
+
+        var declarationList = parseDeclarationList(offset);
+        if (declarationList.IsOk) offset = declarationList.Ok.Offset;
+
+        var statement = parseCompoundStatement(offset);
+        if (statement.IsError) return statement.Error;
+        offset = statement.Ok.Offset;
+
+        var (specifiers, declarator) = specifiersAndDeclarator.Ok.Value;
+        return ParseResult.Ok(
+            MakeFunctionDefinition(
+                specifiers,
+                declarator,
+                declarationList.IsOk ? declarationList.Ok.Value : null,
+                statement.Ok.Value),
+            offset,
+            statement.FurthestError);
+    }
+
     private static FunctionDefinition MakeFunctionDefinition(
         DeclarationSpecifiers specifiers,
         Declarator declarator,
@@ -634,9 +673,49 @@ public partial class CParser
     // TODO: 6.10.8 Predefined macro names
     // TODO: 6.10.9 Pragma operator
 
+    private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
+    {
+        // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
+        // one by one and remember the offset of every one, to be able to backtrack if necessary.
+        var firstDeclarationSpecifier = parseDeclarationSpecifier(offset);
+        if (firstDeclarationSpecifier.IsError) return firstDeclarationSpecifier.Error;
+        offset = firstDeclarationSpecifier.Ok.Offset;
+
+        var declarationSpecifiers = new List<(IDeclarationSpecifier DS, int Offset)>
+            { (firstDeclarationSpecifier.Ok.Value, offset) };
+        while (true)
+        {
+            var declarationSpecifier = parseDeclarationSpecifier(offset);
+            if (declarationSpecifier.IsError) break;
+            offset = declarationSpecifier.Ok.Offset;
+
+            declarationSpecifiers.Add((declarationSpecifier.Ok.Value, offset));
+        }
+
+        var declarator = parseDeclarator(offset);
+        if (declarator.IsError && declarationSpecifiers.Count > 1)
+        {
+            // Try backtracking: drop the last declaration specifier and parse again:
+            var preLastDeclarationSpecifier = declarationSpecifiers[^2];
+            declarationSpecifiers.RemoveAt(declarationSpecifiers.Count - 1);
+            offset = preLastDeclarationSpecifier.Offset;
+
+            declarator = parseDeclarator(offset);
+            if (declarator.IsError) return declarator.Error;
+        }
+
+        if (declarator.IsError) return declarator.Error;
+        offset = declarator.Ok.Offset;
+
+        return ParseResult.Ok(
+            (MakeDeclarationSpecifiers(declarationSpecifiers.Select(pair => pair.DS)), declarator.Ok.Value),
+            offset,
+            declarator.FurthestError);
+    }
+
     // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
     // As no simple workaround exist, we have to do ugly manipulations in parser and AST to support this.
-    // TODO: Eventually, I hope we'll get rid of that.
+    // TODO: Drop this.
     private static (DeclarationSpecifiers, Declarator) TypeDefNameIdentifierHack(
         DeclarationSpecifiers specifiers,
         Declarator declarator)

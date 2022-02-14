@@ -21,15 +21,29 @@
           "ChildPointer": null
         },
         "DirectDeclarator": {
-          "$type": "Cesium.Ast.IdentifierListDirectDeclarator, Cesium.Ast",
+          "$type": "Cesium.Ast.ParameterListDirectDeclarator, Cesium.Ast",
           "Base": {
             "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
             "Identifier": "malloc",
             "Base": null
           },
-          "Identifiers": [
-            "size_t"
-          ]
+          "Parameters": {
+            "$type": "Cesium.Ast.ParameterTypeList, Cesium.Ast",
+            "Parameters": [
+              {
+                "$type": "Cesium.Ast.ParameterDeclaration, Cesium.Ast",
+                "Specifiers": [
+                  {
+                    "$type": "Cesium.Ast.NamedTypeSpecifier, Cesium.Ast",
+                    "TypeDefName": "size_t"
+                  }
+                ],
+                "Declarator": null,
+                "AbstractDeclarator": null
+              }
+            ],
+            "HasEllipsis": false
+          }
         }
       },
       "Initializer": null
