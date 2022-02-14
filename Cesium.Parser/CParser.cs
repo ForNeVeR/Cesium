@@ -174,7 +174,61 @@ public partial class CParser
     // TODO: 6.6 Constant expressions
 
     // 6.7 Declarations
-    [Rule("declaration: declaration_specifiers init_declarator_list? ';'")]
+
+    // HACK: custom parsing is required here due to the reasons outlined in
+    // https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // declaration: declaration_specifiers init_declarator_list? ';'
+    [CustomParser("declaration")]
+    private ParseResult<Declaration> customParseDeclaration(int offset)
+    {
+        // TODO[F]: Deduplicate with CustomParseSpecifiersAndDeclarator.
+
+        // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
+        // one by one and remember the offset of every one, to be able to backtrack if necessary.
+        var firstDeclarationSpecifier = parseDeclarationSpecifier(offset);
+        if (firstDeclarationSpecifier.IsError) return firstDeclarationSpecifier.Error;
+        offset = firstDeclarationSpecifier.Ok.Offset;
+
+        var declarationSpecifiers = new List<(IDeclarationSpecifier DS, int Offset)>
+            { (firstDeclarationSpecifier.Ok.Value, offset) };
+        while (true)
+        {
+            var declarationSpecifier = parseDeclarationSpecifier(offset);
+            if (declarationSpecifier.IsError) break;
+            offset = declarationSpecifier.Ok.Offset;
+
+            declarationSpecifiers.Add((declarationSpecifier.Ok.Value, offset));
+        }
+
+        var initDeclaratorList = parseInitDeclaratorList(offset);
+        if (initDeclaratorList.IsError && declarationSpecifiers.Count > 1)
+        {
+            // Try backtracking: drop the last declaration specifier and parse again:
+            var preLastDeclarationSpecifier = declarationSpecifiers[^2];
+            initDeclaratorList = parseInitDeclaratorList(preLastDeclarationSpecifier.Offset);
+            if (initDeclaratorList.IsOk)
+            {
+                declarationSpecifiers.RemoveAt(declarationSpecifiers.Count - 1);
+                offset = initDeclaratorList.Ok.Offset;
+            }
+        }
+
+        if (TokenStream.TryLookAhead(offset, out var t) && t.Text == ";")
+        {
+            ++offset;
+            return ParseResult.Ok(
+                MakeDeclaration(
+                    MakeDeclarationSpecifiers(declarationSpecifiers.Select(ds => ds.DS)),
+                    initDeclaratorList.IsOk ? initDeclaratorList.Ok.Value : null,
+                    t),
+                offset,
+                initDeclaratorList.FurthestError);
+        }
+
+        return ParseResult.Error(";", t, t!.Range.Start, ";");
+    }
+
     private static Declaration MakeDeclaration(
         DeclarationSpecifiers specifiers,
         InitDeclaratorList? initDeclarators,
@@ -673,6 +727,7 @@ public partial class CParser
     // TODO: 6.10.8 Predefined macro names
     // TODO: 6.10.9 Pragma operator
 
+    // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {
         // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
