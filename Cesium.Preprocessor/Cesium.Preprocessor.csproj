@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.Lexer" Version="2021.12.23-2.33.11-nightly" />
-      <PackageReference Include="Yoakke.Lexer.Generator" Version="2021.12.23-2.33.11-nightly" />
+      <PackageReference Include="Yoakke.SynKit.Lexer" Version="2022.2.14-2.21.20-nightly" />
+      <PackageReference Include="Yoakke.SynKit.Lexer.Generator" Version="2022.2.14-2.21.20-nightly" />
     </ItemGroup>
 
 </Project>

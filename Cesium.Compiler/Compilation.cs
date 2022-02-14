@@ -5,8 +5,8 @@ using Cesium.CodeGen.Extensions;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
-using Yoakke.C.Syntax;
 using Yoakke.Streams;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Compiler;
 

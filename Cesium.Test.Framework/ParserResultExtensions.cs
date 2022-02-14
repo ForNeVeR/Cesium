@@ -1,7 +1,7 @@
 using System.Text;
-using Yoakke.C.Syntax;
-using Yoakke.Lexer;
-using Yoakke.Parser;
+using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Parser;
 
 namespace Cesium.Test.Framework;
 

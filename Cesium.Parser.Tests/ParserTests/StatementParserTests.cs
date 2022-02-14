@@ -1,5 +1,5 @@
 using Cesium.Test.Framework;
-using Yoakke.C.Syntax;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Parser.Tests.ParserTests;
 

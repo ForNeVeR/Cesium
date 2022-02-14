@@ -1,6 +1,6 @@
 using Cesium.Preprocessor;
 using Cesium.Test.Framework;
-using Yoakke.Lexer;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Parser.Tests.LexerTests;
 

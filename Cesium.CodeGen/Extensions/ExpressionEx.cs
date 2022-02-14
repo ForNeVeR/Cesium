@@ -1,5 +1,5 @@
 using Cesium.CodeGen.Ir.Expressions;
-using Yoakke.C.Syntax;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Extensions;
 

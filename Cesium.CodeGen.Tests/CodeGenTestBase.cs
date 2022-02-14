@@ -5,8 +5,8 @@ using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Yoakke.C.Syntax;
 using Yoakke.Streams;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
 

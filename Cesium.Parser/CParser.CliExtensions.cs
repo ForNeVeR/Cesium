@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using Cesium.Ast;
-using Yoakke.C.Syntax;
-using Yoakke.Lexer;
-using Yoakke.Parser.Attributes;
+using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Parser.Attributes;
 
 namespace Cesium.Parser;
 

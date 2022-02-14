@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using Yoakke.Lexer;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Test.Framework;
 

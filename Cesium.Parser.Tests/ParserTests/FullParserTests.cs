@@ -1,7 +1,7 @@
 using Cesium.Test.Framework;
 using Xunit.Sdk;
-using Yoakke.C.Syntax;
 using Yoakke.Streams;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Parser.Tests.ParserTests;
 

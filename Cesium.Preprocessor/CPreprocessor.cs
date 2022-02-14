@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text;
-using Yoakke.Lexer;
 using Yoakke.Streams;
+using Yoakke.SynKit.Lexer;
 using static Cesium.Preprocessor.CPreprocessorTokenType;
-using Range = Yoakke.Text.Range;
+using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 

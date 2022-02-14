@@ -1,5 +1,5 @@
-using Yoakke.Lexer;
-using Yoakke.Lexer.Attributes;
+using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Lexer.Attributes;
 
 namespace Cesium.Preprocessor;
 

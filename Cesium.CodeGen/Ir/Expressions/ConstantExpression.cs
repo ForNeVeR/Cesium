@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
-using Yoakke.C.Syntax;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -25,6 +25,8 @@ internal class ConstantExpression : IExpression
 
     private static IConstant GetConstant(Ast.ConstantExpression expression)
     {
+        Span<char> x = new char[100];
+        var a = x.ToArray();
         var constant = expression.Constant;
         return constant.Kind switch
         {

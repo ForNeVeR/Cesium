@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Yoakke.C.Syntax;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Test.Framework;
 

@@ -1,5 +1,5 @@
-using Yoakke.C.Syntax;
-using Yoakke.Lexer;
+using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Parser;
 

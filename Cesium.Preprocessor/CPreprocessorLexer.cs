@@ -1,4 +1,4 @@
-﻿using Yoakke.Lexer.Attributes;
+﻿using Yoakke.SynKit.Lexer.Attributes;
 
 namespace Cesium.Preprocessor;
 
