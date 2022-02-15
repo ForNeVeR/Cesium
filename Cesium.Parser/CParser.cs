@@ -310,7 +310,7 @@ public partial class CParser
         IToken? identifier,
         IToken _,
         StructDeclarationList structDeclarationList,
-        IToken __) => new StructOrUnionSpecifier(structOrUnion, identifier?.Text, structDeclarationList);
+        IToken __) => new(structOrUnion, identifier?.Text, structDeclarationList);
 
     // TODO: struct-or-union-specifier: struct-or-union identifier
 
@@ -327,7 +327,59 @@ public partial class CParser
         StructDeclarationList prev,
         StructDeclaration structDeclaration) => prev.Add(structDeclaration);
 
-    [Rule("struct_declaration: specifier_qualifier_list struct_declarator_list? ';'")]
+    // HACK: custom parsing is required here due to the reasons outlined in
+    // https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // struct_declaration: specifier_qualifier_list struct_declarator_list? ';'
+    [CustomParser("struct_declaration")]
+    private ParseResult<StructDeclaration> customParseStructDeclaration(int offset)
+    {
+        // HACK: Usually, this would be a call to parseSpecifierQualifierList(offset). But here, we have to parse them
+        // one by one and remember the offset of every one, to be able to backtrack if necessary.
+        var firstListItem = parseSpecifierQualifierListItem(offset);
+        if (firstListItem.IsError) return firstListItem.Error;
+        offset = firstListItem.Ok.Offset;
+
+        var specifiersQualifiers = new List<(ISpecifierQualifierListItem Item, int Offset)>
+            { (firstListItem.Ok.Value, offset) };
+        while (true)
+        {
+            var listItem = parseSpecifierQualifierListItem(offset);
+            if (listItem.IsError) break;
+            offset = listItem.Ok.Offset;
+
+            specifiersQualifiers.Add((listItem.Ok.Value, offset));
+        }
+
+        var structDeclaratorList = parseStructDeclaratorList(offset);
+        if (structDeclaratorList.IsError && specifiersQualifiers.Count > 1)
+        {
+            // Try backtracking: drop the last declaration specifier and parse again:
+            var preLastSpecifierQualifier = specifiersQualifiers[^2];
+            structDeclaratorList = parseStructDeclaratorList(preLastSpecifierQualifier.Offset);
+            if (structDeclaratorList.IsOk)
+                specifiersQualifiers.RemoveAt(specifiersQualifiers.Count - 1);
+        }
+
+        if (structDeclaratorList.IsOk)
+            offset = structDeclaratorList.Ok.Offset;
+
+        if (TokenStream.TryLookAhead(offset, out var t) && t.Text == ";")
+        {
+            ++offset;
+            return ParseResult.Ok(
+                MakeStructDeclaration(
+                    MakeSpecifierQualifierList(specifiersQualifiers.Select(pair => pair.Item)),
+                    structDeclaratorList.IsOk ? structDeclaratorList.Ok.Value : null,
+                    t
+                ),
+                offset,
+                structDeclaratorList.FurthestError);
+        }
+
+        return ParseResult.Error(";", t, t!.Range.Start, ";");
+    }
+
     private static StructDeclaration MakeStructDeclaration(
         SpecifierQualifierList specifiersQualifiers,
         StructDeclaratorList? structDeclarators,
@@ -335,11 +387,20 @@ public partial class CParser
 
     // TODO: struct-declaration: static_assert-declaration
 
-    [Rule("specifier_qualifier_list: type_specifier specifier_qualifier_list?")]
-    [Rule("specifier_qualifier_list: type_qualifier specifier_qualifier_list?")]
-    private SpecifierQualifierList MakeSpecifierQualifierList(
-        ISpecifierQualifierListItem item,
-        SpecifierQualifierList? rest) => rest?.Insert(0, item) ?? ImmutableArray.Create(item);
+    // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
+    // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // Actual rules are:
+    // specifier_qualifier_list: type_specifier specifier_qualifier_list?
+    // specifier_qualifier_list: type_qualifier specifier_qualifier_list?
+    [Rule("specifier_qualifier_list: specifier_qualifier_list_item+")]
+    private static SpecifierQualifierList MakeSpecifierQualifierList(
+        IEnumerable<ISpecifierQualifierListItem> specifiersQualifiers) =>
+        specifiersQualifiers.ToImmutableArray();
+
+    [Rule("specifier_qualifier_list_item: type_specifier")]
+    [Rule("specifier_qualifier_list_item: type_qualifier")]
+    private static ISpecifierQualifierListItem MakeSpecifierQualifierListItem(ISpecifierQualifierListItem item) => item;
 
     // TODO: specifier-qualifier-list: alignment-specifier specifier-qualifier-list?
 
