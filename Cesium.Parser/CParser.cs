@@ -208,11 +208,11 @@ public partial class CParser
             var preLastDeclarationSpecifier = declarationSpecifiers[^2];
             initDeclaratorList = parseInitDeclaratorList(preLastDeclarationSpecifier.Offset);
             if (initDeclaratorList.IsOk)
-            {
                 declarationSpecifiers.RemoveAt(declarationSpecifiers.Count - 1);
-                offset = initDeclaratorList.Ok.Offset;
-            }
         }
+
+        if (initDeclaratorList.IsOk)
+            offset = initDeclaratorList.Ok.Offset;
 
         if (TokenStream.TryLookAhead(offset, out var t) && t.Text == ";")
         {
@@ -240,6 +240,7 @@ public partial class CParser
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(IEnumerable<IDeclarationSpecifier> specifiers) =>
         specifiers.ToImmutableArray();
 
+    [Rule("declaration_specifier: cli_import_specifier")] // Extension, see CParser.CliExtensions.cs
     [Rule("declaration_specifier: storage_class_specifier")]
     [Rule("declaration_specifier: type_specifier")]
     [Rule("declaration_specifier: type_qualifier")]
