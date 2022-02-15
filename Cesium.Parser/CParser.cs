@@ -178,6 +178,8 @@ public partial class CParser
     // HACK: custom parsing is required here due to the reasons outlined in
     // https://github.com/LanguageDev/Yoakke/issues/138
     //
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    //
     // declaration: declaration_specifiers init_declarator_list? ';'
     [CustomParser("declaration")]
     private ParseResult<Declaration> customParseDeclaration(int offset)
@@ -236,6 +238,7 @@ public partial class CParser
 
     // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
     // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
     [Rule("declaration_specifiers: declaration_specifier+")]
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(IEnumerable<IDeclarationSpecifier> specifiers) =>
         specifiers.ToImmutableArray();
@@ -330,6 +333,8 @@ public partial class CParser
     // HACK: custom parsing is required here due to the reasons outlined in
     // https://github.com/LanguageDev/Yoakke/issues/138
     //
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    //
     // struct_declaration: specifier_qualifier_list struct_declarator_list? ';'
     [CustomParser("struct_declaration")]
     private ParseResult<StructDeclaration> customParseStructDeclaration(int offset)
@@ -389,6 +394,8 @@ public partial class CParser
 
     // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
     // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
+    //
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
     //
     // Actual rules are:
     // specifier_qualifier_list: type_specifier specifier_qualifier_list?
@@ -501,6 +508,8 @@ public partial class CParser
     // HACK: custom parsing is required here due to the reasons outlined in
     // https://github.com/LanguageDev/Yoakke/issues/138
     //
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    //
     // parameter_declaration: declaration_specifiers declarator
     [CustomParser("parameter_declaration")]
     private ParseResult<ParameterDeclaration> customParseParameterDeclaration(int offset)
@@ -519,11 +528,7 @@ public partial class CParser
 
     private static ParameterDeclaration MakeParameterDeclaration(
         DeclarationSpecifiers specifiers,
-        Declarator declarator)
-    {
-        (specifiers, declarator) = TypeDefNameIdentifierHack(specifiers, declarator);
-        return new(specifiers, declarator);
-    }
+        Declarator declarator) => new(specifiers, declarator);
 
     [Rule("parameter_declaration: declaration_specifiers abstract_declarator?")]
     private static ParameterDeclaration MakeParameterTypeList(
@@ -679,6 +684,8 @@ public partial class CParser
     // HACK: custom parsing is required here due to the reasons outlined in
     // https://github.com/LanguageDev/Yoakke/issues/138
     //
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    //
     // function_definition: declaration_specifiers declarator declaration_list? compound_statement
     [CustomParser("function_definition")]
     private ParseResult<FunctionDefinition> customParseFunctionDefinition(int offset)
@@ -709,11 +716,7 @@ public partial class CParser
         DeclarationSpecifiers specifiers,
         Declarator declarator,
         ImmutableArray<Declaration>? declarationList,
-        CompoundStatement statement)
-    {
-        (specifiers, declarator) = TypeDefNameIdentifierHack(specifiers, declarator);
-        return new(specifiers, declarator, declarationList, statement);
-    }
+        CompoundStatement statement) => new(specifiers, declarator, declarationList, statement);
 
     [Rule("declaration_list: declaration")]
     private static ImmutableArray<Declaration> MakeDeclarationList(Declaration declaration) =>
@@ -790,6 +793,7 @@ public partial class CParser
     // TODO: 6.10.9 Pragma operator
 
     // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
+    // TODO: Wait for fix in Yoakke and get rid of the hack.
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {
         // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
@@ -828,38 +832,5 @@ public partial class CParser
             (MakeDeclarationSpecifiers(declarationSpecifiers.Select(pair => pair.DS)), declarator.Ok.Value),
             offset,
             declarator.FurthestError);
-    }
-
-    // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
-    // As no simple workaround exist, we have to do ugly manipulations in parser and AST to support this.
-    // TODO: Drop this.
-    private static (DeclarationSpecifiers, Declarator) TypeDefNameIdentifierHack(
-        DeclarationSpecifiers specifiers,
-        Declarator declarator)
-    {
-        var directDeclarator = declarator.DirectDeclarator;
-        IdentifierDirectDeclarator? identifierDeclarator = null;
-        while (directDeclarator != null && identifierDeclarator == null)
-        {
-            identifierDeclarator = directDeclarator as IdentifierDirectDeclarator;
-            directDeclarator = directDeclarator.Base;
-        }
-
-        if (identifierDeclarator is { Identifier: null })
-        {
-            var lastSpecifier = specifiers.LastOrDefault();
-            if (lastSpecifier is NamedTypeSpecifier { TypeDefName: var tn })
-            {
-                specifiers = specifiers.RemoveAt(specifiers.Length - 1);
-                identifierDeclarator.Identifier = tn;
-            }
-        }
-
-        if (identifierDeclarator is { Identifier: null })
-            throw new NotSupportedException(
-                "THIS IS A BUG! It is caused by a hack in parsing for the sake of `typedef_name`." +
-                $" Please report to the Cesium maintainers: [{string.Join(",", specifiers)}] {declarator}.");
-
-        return (specifiers, declarator);
     }
 }

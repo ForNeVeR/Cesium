@@ -63,13 +63,8 @@ public interface IDirectDeclarator
 {
     IDirectDeclarator? Base { get; }
 }
-public record IdentifierDirectDeclarator(string? Identifier) : IDirectDeclarator
+public record IdentifierDirectDeclarator(string Identifier) : IDirectDeclarator
 {
-    // HACK: This property is only mutable from CParser.TypeDefNameIdentifierHack.
-    // This requirement is caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
-    // TODO: Eventually, we should get rid of that.
-    public string? Identifier { get; set; } = Identifier;
-
     public IDirectDeclarator? Base => null;
 }
 public record ArrayDirectDeclarator(
