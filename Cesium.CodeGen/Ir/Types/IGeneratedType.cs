@@ -3,7 +3,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal interface INamedType
+internal interface IGeneratedType
 {
     TypeDefinition Emit(string name, TranslationUnitContext context);
 }

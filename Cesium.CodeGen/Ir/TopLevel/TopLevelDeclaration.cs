@@ -127,7 +127,7 @@ internal class TopLevelDeclaration : ITopLevelNode
             if (cliImportMemberName != null)
                 throw new NotSupportedException($"typedef for CLI import not supported: {cliImportMemberName}.");
 
-            if (type is INamedType t)
+            if (type is IGeneratedType t)
                 context.GenerateType(t, identifier);
             else
                 throw new NotSupportedException($"Not supported type generation for type {type}.");

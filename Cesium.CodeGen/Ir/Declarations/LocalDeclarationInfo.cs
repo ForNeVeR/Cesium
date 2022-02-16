@@ -109,6 +109,15 @@ internal record LocalDeclarationInfo(
                     });
                     break;
 
+                case NamedTypeSpecifier nt:
+                    if (type != null)
+                        throw new NotSupportedException(
+                            $"Unsupported type name after already resolved type {type}: {nt}.");
+
+                    nt.Deconstruct(out var typeName);
+                    type = new NamedType(typeName);
+                    break;
+
                 case TypeQualifier tq:
                     switch (tq.Name)
                     {

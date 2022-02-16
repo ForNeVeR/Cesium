@@ -4,7 +4,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class StructType : IType, INamedType
+internal class StructType : IType, IGeneratedType
 {
     private readonly IEnumerable<LocalDeclarationInfo> _members;
     public StructType(IEnumerable<LocalDeclarationInfo> members)
