@@ -175,33 +175,16 @@ public partial class CParser
 
     // 6.7 Declarations
 
-    // HACK: custom parsing is required here due to the reasons outlined in
-    // https://github.com/LanguageDev/Yoakke/issues/138
-    //
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.
     //
     // declaration: declaration_specifiers init_declarator_list? ';'
     [CustomParser("declaration")]
-    private ParseResult<Declaration> customParseDeclaration(int offset)
+    private ParseResult<Declaration> CustomParseDeclaration(int offset)
     {
-        // TODO[F]: Deduplicate with CustomParseSpecifiersAndDeclarator.
-
-        // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
-        // one by one and remember the offset of every one, to be able to backtrack if necessary.
-        var firstDeclarationSpecifier = parseDeclarationSpecifier(offset);
-        if (firstDeclarationSpecifier.IsError) return firstDeclarationSpecifier.Error;
-        offset = firstDeclarationSpecifier.Ok.Offset;
-
-        var declarationSpecifiers = new List<(IDeclarationSpecifier DS, int Offset)>
-            { (firstDeclarationSpecifier.Ok.Value, offset) };
-        while (true)
-        {
-            var declarationSpecifier = parseDeclarationSpecifier(offset);
-            if (declarationSpecifier.IsError) break;
-            offset = declarationSpecifier.Ok.Offset;
-
-            declarationSpecifiers.Add((declarationSpecifier.Ok.Value, offset));
-        }
+        var declarationSpecifiersResult = CustomParseOneOrMore(parseDeclarationSpecifier, offset);
+        if (declarationSpecifiersResult.IsError) return declarationSpecifiersResult.Error;
+        offset = declarationSpecifiersResult.Ok.Offset;
+        var declarationSpecifiers = declarationSpecifiersResult.Ok.Value;
 
         var initDeclaratorList = parseInitDeclaratorList(offset);
         if (initDeclaratorList.IsError && declarationSpecifiers.Count > 1)
@@ -221,7 +204,7 @@ public partial class CParser
             ++offset;
             return ParseResult.Ok(
                 MakeDeclaration(
-                    MakeDeclarationSpecifiers(declarationSpecifiers.Select(ds => ds.DS)),
+                    MakeDeclarationSpecifiers(declarationSpecifiers.Select(ds => ds.Item)),
                     initDeclaratorList.IsOk ? initDeclaratorList.Ok.Value : null,
                     t),
                 offset,
@@ -236,9 +219,8 @@ public partial class CParser
         InitDeclaratorList? initDeclarators,
         IToken _) => new(specifiers, initDeclarators);
 
-    // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
-    // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
+    // implementation. Get rid of this, eventually.
     [Rule("declaration_specifiers: declaration_specifier+")]
     private static DeclarationSpecifiers MakeDeclarationSpecifiers(IEnumerable<IDeclarationSpecifier> specifiers) =>
         specifiers.ToImmutableArray();
@@ -330,31 +312,16 @@ public partial class CParser
         StructDeclarationList prev,
         StructDeclaration structDeclaration) => prev.Add(structDeclaration);
 
-    // HACK: custom parsing is required here due to the reasons outlined in
-    // https://github.com/LanguageDev/Yoakke/issues/138
-    //
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.
     //
     // struct_declaration: specifier_qualifier_list struct_declarator_list? ';'
     [CustomParser("struct_declaration")]
-    private ParseResult<StructDeclaration> customParseStructDeclaration(int offset)
+    private ParseResult<StructDeclaration> CustomParseStructDeclaration(int offset)
     {
-        // HACK: Usually, this would be a call to parseSpecifierQualifierList(offset). But here, we have to parse them
-        // one by one and remember the offset of every one, to be able to backtrack if necessary.
-        var firstListItem = parseSpecifierQualifierListItem(offset);
-        if (firstListItem.IsError) return firstListItem.Error;
-        offset = firstListItem.Ok.Offset;
-
-        var specifiersQualifiers = new List<(ISpecifierQualifierListItem Item, int Offset)>
-            { (firstListItem.Ok.Value, offset) };
-        while (true)
-        {
-            var listItem = parseSpecifierQualifierListItem(offset);
-            if (listItem.IsError) break;
-            offset = listItem.Ok.Offset;
-
-            specifiersQualifiers.Add((listItem.Ok.Value, offset));
-        }
+        var specifiersQualifiersResult = CustomParseOneOrMore(parseSpecifierQualifierListItem, offset);
+        if (specifiersQualifiersResult.IsError) return specifiersQualifiersResult.Error;
+        offset = specifiersQualifiersResult.Ok.Offset;
+        var specifiersQualifiers = specifiersQualifiersResult.Ok.Value;
 
         var structDeclaratorList = parseStructDeclaratorList(offset);
         if (structDeclaratorList.IsError && specifiersQualifiers.Count > 1)
@@ -392,12 +359,10 @@ public partial class CParser
 
     // TODO: struct-declaration: static_assert-declaration
 
-    // HACK: This is a synthetic set of rules which is absent from the C standard, but required for simplification of
-    // the implementation of https://github.com/LanguageDev/Yoakke/issues/138
+    // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
+    // implementation. Get rid of this, eventually.
     //
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
-    //
-    // Actual rules are:
+    // The actual rules are:
     // specifier_qualifier_list: type_specifier specifier_qualifier_list?
     // specifier_qualifier_list: type_qualifier specifier_qualifier_list?
     [Rule("specifier_qualifier_list: specifier_qualifier_list_item+")]
@@ -505,14 +470,11 @@ public partial class CParser
     private static ParameterList MakeParameterList(ParameterList prev, ICToken _, ParameterDeclaration declaration) =>
         prev.Add(declaration);
 
-    // HACK: custom parsing is required here due to the reasons outlined in
-    // https://github.com/LanguageDev/Yoakke/issues/138
-    //
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.
     //
     // parameter_declaration: declaration_specifiers declarator
     [CustomParser("parameter_declaration")]
-    private ParseResult<ParameterDeclaration> customParseParameterDeclaration(int offset)
+    private ParseResult<ParameterDeclaration> CustomParseParameterDeclaration(int offset)
     {
         var specifiersAndDeclarator = CustomParseSpecifiersAndDeclarator(offset);
         if (specifiersAndDeclarator.IsError) return specifiersAndDeclarator.Error;
@@ -681,14 +643,11 @@ public partial class CParser
 
     // 6.9.1 Function definitions
 
-    // HACK: custom parsing is required here due to the reasons outlined in
-    // https://github.com/LanguageDev/Yoakke/issues/138
-    //
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
+    // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.
     //
     // function_definition: declaration_specifiers declarator declaration_list? compound_statement
     [CustomParser("function_definition")]
-    private ParseResult<FunctionDefinition> customParseFunctionDefinition(int offset)
+    private ParseResult<FunctionDefinition> CustomParseFunctionDefinition(int offset)
     {
         var specifiersAndDeclarator = CustomParseSpecifiersAndDeclarator(offset);
         if (specifiersAndDeclarator.IsError) return specifiersAndDeclarator.Error;
@@ -792,26 +751,12 @@ public partial class CParser
     // TODO: 6.10.8 Predefined macro names
     // TODO: 6.10.9 Pragma operator
 
-    // HACK: The existence of this method is caused caused by an issue https://github.com/LanguageDev/Yoakke/issues/138
-    // TODO: Wait for fix in Yoakke and get rid of the hack.
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {
-        // HACK: Usually, this would be a call to parseDeclarationSpecifiers(offset). But here, we have to parse them
-        // one by one and remember the offset of every one, to be able to backtrack if necessary.
-        var firstDeclarationSpecifier = parseDeclarationSpecifier(offset);
-        if (firstDeclarationSpecifier.IsError) return firstDeclarationSpecifier.Error;
-        offset = firstDeclarationSpecifier.Ok.Offset;
-
-        var declarationSpecifiers = new List<(IDeclarationSpecifier DS, int Offset)>
-            { (firstDeclarationSpecifier.Ok.Value, offset) };
-        while (true)
-        {
-            var declarationSpecifier = parseDeclarationSpecifier(offset);
-            if (declarationSpecifier.IsError) break;
-            offset = declarationSpecifier.Ok.Offset;
-
-            declarationSpecifiers.Add((declarationSpecifier.Ok.Value, offset));
-        }
+        var declarationSpecifiersResult = CustomParseOneOrMore(parseDeclarationSpecifier, offset);
+        if (declarationSpecifiersResult.IsError) return declarationSpecifiersResult.Error;
+        offset = declarationSpecifiersResult.Ok.Offset;
+        var declarationSpecifiers = declarationSpecifiersResult.Ok.Value;
 
         var declarator = parseDeclarator(offset);
         if (declarator.IsError && declarationSpecifiers.Count > 1)
@@ -829,8 +774,34 @@ public partial class CParser
         offset = declarator.Ok.Offset;
 
         return ParseResult.Ok(
-            (MakeDeclarationSpecifiers(declarationSpecifiers.Select(pair => pair.DS)), declarator.Ok.Value),
+            (MakeDeclarationSpecifiers(declarationSpecifiers.Select(pair => pair.Item)), declarator.Ok.Value),
             offset,
             declarator.FurthestError);
+    }
+
+    /// <remarks>
+    /// HACK: Usually, this would be a call to <code>parseDeclarationSpecifiers(offset)</code> instead of, say,
+    /// <code>CustomParseOneOrMore(parseDeclarationSpecifier, offset)</code>. But here, we have to parse them
+    /// one by one and remember the offset of every one, to be able to backtrack if necessary.
+    /// </remarks>
+    private static ParseResult<List<(T Item, int Offset)>> CustomParseOneOrMore<T>(
+        Func<int, ParseResult<T>> singleItemParser,
+        int offset)
+    {
+        var firstItem = singleItemParser(offset);
+        if (firstItem.IsError) return firstItem.Error;
+        offset = firstItem.Ok.Offset;
+
+        var declarationSpecifiers = new List<(T Item, int Offset)> { (firstItem.Ok.Value, offset) };
+        while (true)
+        {
+            var declarationSpecifier = singleItemParser(offset);
+            if (declarationSpecifier.IsError) break;
+            offset = declarationSpecifier.Ok.Offset;
+
+            declarationSpecifiers.Add((declarationSpecifier.Ok.Value, offset));
+        }
+
+        return ParseResult.Ok(declarationSpecifiers, offset);
     }
 }
