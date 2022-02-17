@@ -264,7 +264,7 @@ internal class FunctionDefinition : ITopLevelNode
                 instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                 instructions.Add(Instruction.Create(OpCodes.Ret));
             }
-            else if (_returnType.Resolve(context.TypeSystem) == context.TypeSystem.Void)
+            else if (_returnType.Resolve(context) == context.TypeSystem.Void)
             {
                 var instructions = scope.Method.Body.Instructions;
                 instructions.Add(Instruction.Create(OpCodes.Ret));
