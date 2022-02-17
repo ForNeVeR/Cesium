@@ -25,8 +25,6 @@ internal class ConstantExpression : IExpression
 
     private static IConstant GetConstant(Ast.ConstantExpression expression)
     {
-        Span<char> x = new char[100];
-        var a = x.ToArray();
         var constant = expression.Constant;
         return constant.Kind switch
         {
