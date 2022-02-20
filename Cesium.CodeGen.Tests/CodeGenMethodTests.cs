@@ -118,4 +118,17 @@ int console_read() { return 2; }", "Double definition of function console_read."
     [Fact]
     public void NoDefinition() => DoesNotCompile(@"int foo(void);
 int main() { return foo(); }", "Function foo not defined.");
+
+    [Fact]
+    public Task PrimitiveTypes() => DoTest(@"int main(void)
+{
+    // basic
+    char a;
+    int b;
+
+    // unsigned
+    unsigned char c;
+
+    return 0;
+}");
 }

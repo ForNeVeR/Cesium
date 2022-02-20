@@ -16,4 +16,8 @@
       <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cesium.CodeGen.Tests" />
+    </ItemGroup>
+
 </Project>

@@ -25,7 +25,7 @@ internal interface IScopedDeclarationInfo
     }
 
     private static TypeDefDeclaration TypeDefOf(
-        ICollection<IDeclarationSpecifier> specifiers,
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
         IEnumerable<InitDeclarator> initDeclarators)
     {
         var declarations = initDeclarators.Select(d =>
@@ -41,7 +41,7 @@ internal interface IScopedDeclarationInfo
     }
 
     private static ScopedIdentifierDeclaration IdentifierOf(
-        ICollection<IDeclarationSpecifier> specifiers,
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
         IEnumerable<InitDeclarator> initDeclarators)
     {
         var declarations = initDeclarators
@@ -52,7 +52,7 @@ internal interface IScopedDeclarationInfo
     }
 
     private static InitializableDeclarationInfo IdentifierOf(
-        ICollection<IDeclarationSpecifier> specifiers,
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
         InitDeclarator initDeclarator)
     {
         var (declarator, initializer) = initDeclarator;

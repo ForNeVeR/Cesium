@@ -1,0 +1,7 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Byte V_0
+    System.Int32 V_1
+    System.Byte V_2
+  IL_0000: ldc.i4 0
+  IL_0005: ret

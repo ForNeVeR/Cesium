@@ -14,7 +14,7 @@ internal record LocalDeclarationInfo(
     ParametersInfo? Parameters,
     string? CliImportMemberName)
 {
-    public static LocalDeclarationInfo Of(ICollection<IDeclarationSpecifier> specifiers, Declarator? declarator)
+    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
@@ -85,13 +85,14 @@ internal record LocalDeclarationInfo(
     }
 
     private static (IType, string? cliImportMemberName) ProcessSpecifiers(
-        ICollection<IDeclarationSpecifier> specifiers)
+        IReadOnlyList<IDeclarationSpecifier> specifiers)
     {
         IType? type = null;
         var isConst = false;
         string? cliImportMemberName = null;
-        foreach (var specifier in specifiers)
+        for (var i = 0; i < specifiers.Count; ++i)
         {
+            var specifier = specifiers[i];
             switch (specifier)
             {
                 case SimpleTypeSpecifier ts:
@@ -99,14 +100,7 @@ internal record LocalDeclarationInfo(
                         throw new NotSupportedException(
                             $"Unsupported type definition after already resolved type {type}: {ts}.");
 
-                    type = new PrimitiveType(ts.TypeName switch
-                    {
-                        "char" => PrimitiveTypeKind.Char,
-                        "int" => PrimitiveTypeKind.Int,
-                        "void" => PrimitiveTypeKind.Void,
-                        var unknown =>
-                            throw new NotImplementedException($"Not supported yet type specifier: {unknown}.")
-                    });
+                    type = ProcessSimpleTypeSpecifiers(ts, specifiers, ref i);
                     break;
 
                 case NamedTypeSpecifier nt:
@@ -194,5 +188,40 @@ internal record LocalDeclarationInfo(
                 return Of(collection, declarator);
             });
         });
+    }
+
+    private static IType ProcessSimpleTypeSpecifiers(
+        SimpleTypeSpecifier first,
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
+        ref int i)
+    {
+        var allSpecifiers = new List<SimpleTypeSpecifier> { first };
+        while (specifiers.Count > i + 1 && specifiers[i + 1] is SimpleTypeSpecifier next)
+        {
+            allSpecifiers.Add(next);
+            ++i;
+        }
+
+        var typeNames = allSpecifiers.Select(ts =>
+        {
+            ts.Deconstruct(out var typeName);
+            return typeName;
+        }).ToList();
+
+        return typeNames switch
+        {
+            { Count: 1 } => new PrimitiveType(typeNames.Single() switch
+            {
+                "char" => PrimitiveTypeKind.Char,
+                "int" => PrimitiveTypeKind.Int,
+                "void" => PrimitiveTypeKind.Void,
+                var unknown =>
+                    throw new NotImplementedException($"Not supported yet type specifier: {unknown}.")
+            }),
+            { Count: 2 } when typeNames[0] == "unsigned" && typeNames[1] == "char" =>
+                new PrimitiveType(PrimitiveTypeKind.UnsignedChar),
+            _ => throw new NotImplementedException(
+                $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}")
+        };
     }
 }

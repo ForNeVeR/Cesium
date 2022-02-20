@@ -5,9 +5,13 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal enum PrimitiveTypeKind
 {
+    // Basic
     Char,
     Int,
-    Void
+    Void,
+
+    // Unsigned
+    UnsignedChar
 }
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
@@ -17,9 +21,14 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
         var typeSystem = context.TypeSystem;
         return Kind switch
         {
+            // Basic
             PrimitiveTypeKind.Char => typeSystem.Byte,
             PrimitiveTypeKind.Int => typeSystem.Int32,
             PrimitiveTypeKind.Void => typeSystem.Void,
+
+            // Unsigned
+            PrimitiveTypeKind.UnsignedChar => typeSystem.Byte,
+
             _ => throw new NotImplementedException($"Primitive type not supported, yet: {this}.")
         };
     }
