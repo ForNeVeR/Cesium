@@ -414,7 +414,9 @@ public partial class CParser
     private static IDirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
         new IdentifierDirectDeclarator(identifier.Text);
 
-    // TODO: direct_declarator: ( declarator )
+    [Rule("direct_declarator: '(' declarator ')'")]
+    private static IDirectDeclarator MakeDirectDeclarator(IToken _, Declarator declarator, IToken __) =>
+        new DeclaratorDirectDeclarator(declarator);
 
     [Rule("direct_declarator: direct_declarator '[' type_qualifier_list? assignment_expression? ']'")]
     private static IDirectDeclarator MakeDirectDeclarator(
