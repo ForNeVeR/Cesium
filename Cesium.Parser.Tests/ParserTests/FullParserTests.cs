@@ -59,6 +59,13 @@ int main()
 }");
 
     [Fact]
+    public Task AbsCallTest() => DoTest(@"int main()
+{
+    int exitCode = abs(-42);
+    exit(exitCode);
+}");
+
+    [Fact]
     public Task CliImport() => DoTest(@"__cli_import(""Foo.Bar::Baz"")
 int foo();
 
