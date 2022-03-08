@@ -27,5 +27,5 @@ public class StatementParserTests : ParserTestBase
     public Task CompoundStatementWithVariable() => DoTest("{ int x = 0; }");
 
     [Fact]
-    public Task BitArithmetic() => DoTest("return 1 << 2 >> 3 | 4 & 5 ^ 6;");
+    public Task BitArithmetic() => DoTest("return ~1 << 2 >> 3 | 4 & 5 ^ 6;");
 }

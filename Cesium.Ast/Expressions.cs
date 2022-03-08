@@ -17,6 +17,7 @@ public record FunctionCallExpression(Expression Function, ImmutableArray<Express
 // 6.5.3 Unary operators
 public record NegationExpression(Expression Target) : Expression;
 public record PrefixIncrementExpression(Expression Target) : Expression;
+public record BitwiseNotExpression(Expression Target) : Expression;
 
 // 6.5.5–6.5.15: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;

@@ -7,10 +7,13 @@
       "Left": {
         "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
         "Left": {
-          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-          "Constant": {
-            "Kind": "IntLiteral",
-            "Text": "1"
+          "$type": "Cesium.Ast.BitwiseNotExpression, Cesium.Ast",
+          "Target": {
+            "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+            "Constant": {
+              "Kind": "IntLiteral",
+              "Text": "1"
+            }
           }
         },
         "Operator": "<<",

@@ -114,7 +114,7 @@ public partial class CParser
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
     // unary-operator: one of
-    //    & * + - ˜ !
+    //    & * + - ~ !
     [Rule("unary_expression: '-' unary_expression")]
     private static Expression MakeNegationExpression(ICToken _, Expression target) =>
         new NegationExpression(target);
@@ -122,6 +122,10 @@ public partial class CParser
     [Rule("unary_expression: '++' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken _, Expression target) =>
         new PrefixIncrementExpression(target);
+
+    [Rule("unary_expression: '~' unary_expression")]
+    private static Expression MakeBitwiseNotExpression(ICToken _, Expression target) =>
+        new BitwiseNotExpression(target);
 
     // TODO: 6.5.4 Cast operators
 
