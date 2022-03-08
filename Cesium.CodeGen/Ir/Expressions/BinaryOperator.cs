@@ -7,5 +7,11 @@ public enum BinaryOperator
 
     Assign, // =
     AddAndAssign, // +=
-    MultiplyAndAssign // *=
+    MultiplyAndAssign, // *=
+
+    BitwiseLeftShift, // <<
+    BitwiseRightShift, // >>
+    BitwiseOr, // |
+    BitwiseAnd, // &
+    BitwiseXor, // ^
 }

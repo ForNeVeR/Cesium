@@ -131,4 +131,7 @@ int main() { return foo(); }", "Function foo not defined.");
 
     return 0;
 }");
+
+    [Fact]
+    public Task BitArithmetic() => DoTest(@"int main() { return 1 << 2 >> 3 | 4 & 5 ^ 6; }");
 }
