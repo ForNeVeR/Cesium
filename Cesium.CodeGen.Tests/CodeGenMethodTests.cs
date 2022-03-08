@@ -133,7 +133,7 @@ int main() { return foo(); }", "Function foo not defined.");
 }");
 
     [Fact]
-    public Task BitArithmetic() => DoTest(@"int main() { return 1 << 2 >> 3 | 4 & 5 ^ 6; }");
+    public Task BitArithmetic() => DoTest(@"int main() { return ~1 << 2 >> 3 | 4 & 5 ^ 6; }");
 
     [Fact]
     public Task BitOrAssignmentLoweringTest() => DoTest(@"int main() {

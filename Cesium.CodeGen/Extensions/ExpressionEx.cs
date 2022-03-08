@@ -15,6 +15,7 @@ internal static class ExpressionEx
         // Unary operators:
         Ast.PrefixIncrementExpression e => new PrefixIncrementExpression(e),
         Ast.NegationExpression e => new NegationExpression(e),
+        Ast.BitwiseNotExpression e => new BitwiseNotExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),

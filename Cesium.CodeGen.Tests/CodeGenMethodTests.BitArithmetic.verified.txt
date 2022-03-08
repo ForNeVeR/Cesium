@@ -1,13 +1,14 @@
 ﻿System.Int32 <Module>::main()
   IL_0000: ldc.i4 1
-  IL_0005: ldc.i4 2
-  IL_000a: shl
-  IL_000b: ldc.i4 3
-  IL_0010: shr
-  IL_0011: ldc.i4 4
-  IL_0016: ldc.i4 5
-  IL_001b: and
-  IL_001c: ldc.i4 6
-  IL_0021: xor
-  IL_0022: or
-  IL_0023: ret
+  IL_0005: not
+  IL_0006: ldc.i4 2
+  IL_000b: shl
+  IL_000c: ldc.i4 3
+  IL_0011: shr
+  IL_0012: ldc.i4 4
+  IL_0017: ldc.i4 5
+  IL_001c: and
+  IL_001d: ldc.i4 6
+  IL_0022: xor
+  IL_0023: or
+  IL_0024: ret
