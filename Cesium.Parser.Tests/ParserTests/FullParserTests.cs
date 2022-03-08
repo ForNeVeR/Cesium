@@ -20,7 +20,7 @@ public class FullParserTests : ParserTestBase
             throw new XunitException($"Excessive output after the end of a translation unit at {lexer.Position}: {token.Kind} {token.Text}.");
 
         var serialized = JsonSerialize(result.Ok.Value);
-        return Verify(serialized);
+        return Verify(serialized, GetSettings());
     }
 
     [Fact]

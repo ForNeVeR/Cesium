@@ -71,7 +71,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             DumpTypes(module.Types, result, 1);
         }
 
-        return Verify(result);
+        return Verify(result, GetSettings());
     }
 
     protected static Task VerifyMethods(TypeDefinition type)
@@ -79,7 +79,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         var result = new StringBuilder();
         DumpMethods(type, result);
 
-        return Verify(result);
+        return Verify(result, GetSettings());
     }
 
     private static void DumpTypes(IEnumerable<TypeDefinition> types, StringBuilder result, int indent)

@@ -7,7 +7,7 @@ public class LexerTests : LexerTestBase
     private static Task DoLexerTest(string source)
     {
         var tokens = GetTokens(source).Select(t => $"{t.Kind}: {t.Text}");
-        return Verify(string.Join("\n", tokens));
+        return Verify(string.Join("\n", tokens), GetSettings());
     }
 
     [Fact]

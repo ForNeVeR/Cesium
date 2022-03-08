@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="ParserTests\DeclarationParserTests.*.verified.txt">
+      <None Update="ParserTests\verified\DeclarationParserTests.*.verified.txt">
         <ParentFile>DeclarationParserTests</ParentFile>
         <DependentUpon>DeclarationParserTests.cs</DependentUpon>
       </None>

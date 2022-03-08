@@ -11,7 +11,7 @@ public class PreprocessorTests : VerifyTestBase
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var preprocessor = new CPreprocessor(lexer, includeContext);
         var result = await preprocessor.ProcessSource();
-        await Verify(result);
+        await Verify(result, GetSettings());
     }
 
     [Fact]

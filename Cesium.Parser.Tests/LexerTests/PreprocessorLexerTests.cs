@@ -19,7 +19,7 @@ public class PreprocessorLexerTests : VerifyTestBase
     private static Task DoTest(string source)
     {
         var tokens = GetTokens(source).Select(t => $"{t.Kind}: \"{t.Text.ReplaceLineEndings(@"\n")}\"");
-        return Verify(string.Join("\n", tokens));
+        return Verify(string.Join("\n", tokens), GetSettings());
     }
 
     [Fact]
