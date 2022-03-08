@@ -14,4 +14,10 @@ public enum BinaryOperator
     BitwiseOr, // |
     BitwiseAnd, // &
     BitwiseXor, // ^
+
+    BitwiseLeftShiftAndAssign, // <<=
+    BitwiseRightShiftAndAssign, // >>=
+    BitwiseOrAndAssign, // |=
+    BitwiseAndAndAssign, // &=
+    BitwiseXorAndAssign, // ^=
 }

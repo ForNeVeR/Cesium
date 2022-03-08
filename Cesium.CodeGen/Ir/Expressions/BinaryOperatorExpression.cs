@@ -58,6 +58,11 @@ internal class BinaryOperatorExpression : IExpression
         "|" => BinaryOperator.BitwiseOr,
         "&" => BinaryOperator.BitwiseAnd,
         "^" => BinaryOperator.BitwiseXor,
+        "<<=" => BinaryOperator.BitwiseLeftShiftAndAssign,
+        ">>=" => BinaryOperator.BitwiseRightShiftAndAssign,
+        "|=" => BinaryOperator.BitwiseOrAndAssign,
+        "&=" => BinaryOperator.BitwiseAndAndAssign,
+        "^=" => BinaryOperator.BitwiseXorAndAssign,
         _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
     };
 }
