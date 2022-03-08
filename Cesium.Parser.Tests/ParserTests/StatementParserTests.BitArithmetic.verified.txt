@@ -1,0 +1,65 @@
+﻿{
+  "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
+  "Expression": {
+    "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+    "Left": {
+      "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+      "Left": {
+        "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+        "Left": {
+          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "1"
+          }
+        },
+        "Operator": "<<",
+        "Right": {
+          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "2"
+          }
+        }
+      },
+      "Operator": ">>",
+      "Right": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "Constant": {
+          "Kind": "IntLiteral",
+          "Text": "3"
+        }
+      }
+    },
+    "Operator": "|",
+    "Right": {
+      "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+      "Left": {
+        "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+        "Left": {
+          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "4"
+          }
+        },
+        "Operator": "&",
+        "Right": {
+          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "5"
+          }
+        }
+      },
+      "Operator": "^",
+      "Right": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "Constant": {
+          "Kind": "IntLiteral",
+          "Text": "6"
+        }
+      }
+    }
+  }
+}

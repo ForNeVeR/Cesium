@@ -28,46 +28,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="ParserTests\DeclarationParserTests.InitializerDeclarationTest.verified.txt">
+      <None Update="ParserTests\DeclarationParserTests.*.verified.txt">
         <ParentFile>DeclarationParserTests</ParentFile>
         <DependentUpon>DeclarationParserTests.cs</DependentUpon>
       </None>
-      <None Update="ParserTests\FullParserTests.SimpleVariableTest.verified.txt">
+      <None Update="ParserTests\FullParserTests.*.verified.txt">
         <ParentFile>FullParserTests</ParentFile>
         <DependentUpon>FullParserTests.cs</DependentUpon>
       </None>
-      <None Update="ParserTests\FullParserTests.MinimalProgramTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.ExpressionTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.VariableTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.ReturnTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.VariableArithmeticTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.FunctionCallTest.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-      </None>
-      <None Update="ParserTests\StatementParserTests.CompoundStatementWithVariable.verified.txt">
-        <ParentFile>StatementParserTests</ParentFile>
-        <DependentUpon>StatementParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\StatementParserTests.ReturnArithmetic.verified.txt">
-        <ParentFile>StatementParserTests</ParentFile>
-        <DependentUpon>StatementParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\StatementParserTests.ReturnVariableArithmetic.verified.txt">
+      <None Update="ParserTests\StatementParserTests.*.verified.txt">
         <ParentFile>StatementParserTests</ParentFile>
         <DependentUpon>StatementParserTests.cs</DependentUpon>
       </None>

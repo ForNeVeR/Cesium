@@ -138,12 +138,30 @@ public partial class CParser
     private static Expression MakeAdditiveExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.7 Bitwise shift operators
+    // 6.5.7 Bitwise shift operators
+    [Rule("shift_expression: shift_expression '<<' additive_expression")]
+    [Rule("shift_expression: shift_expression '>>' additive_expression")]
+    private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.8 Relational operators
     // TODO: 6.5.9 Equality operators
-    // TODO: 6.5.10 Bitwise AND operator
-    // TODO: 6.5.11 Bitwise exclusive OR operator
-    // TODO: 6.5.12 Bitwise inclusive OR operator
+
+    // 6.5.10 Bitwise AND operator
+    [Rule("AND_expression: AND_expression '&' equality_expression")]
+    private static Expression MakeBitwiseAndExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.11 Bitwise exclusive OR operator
+    [Rule("exclusive_OR_expression: exclusive_OR_expression '^' AND_expression")]
+    private static Expression MakeBitwiseXorExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.12 Bitwise inclusive OR operator
+    [Rule("inclusive_OR_expression: inclusive_OR_expression '|' exclusive_OR_expression")]
+    private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.13 Logical AND operator
     // TODO: 6.5.14 Logical OR operator
     // TODO: 6.5.15 Conditional operator
