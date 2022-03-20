@@ -28,4 +28,20 @@ public class StatementParserTests : ParserTestBase
 
     [Fact]
     public Task BitArithmetic() => DoTest("return ~1 << 2 >> 3 | 4 & 5 ^ 6;");
+
+    [Fact]
+    public Task IfStatement() => DoTest("if (1) { int x = 0; }");
+
+    [Fact]
+    public Task IfElseStatement() => DoTest("if (1) { int x = 0; } else { int y = 1; }");
+
+    [Fact]
+    public Task NestedIfs() => DoTest(@"
+if (1)
+    if (2) { 
+        int x = 0;
+    } else {
+        int y = 1;
+    } 
+");
 }

@@ -611,7 +611,7 @@ public partial class CParser
     // TODO: [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
-    // TODO: [Rule("statement: selection_statement")]
+    [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
     private static Statement MakeStatementIdentity(Statement statement) => statement;
@@ -636,7 +636,28 @@ public partial class CParser
     [Rule("expression_statement: expression? ';'")]
     private static ExpressionStatement MakeExpressionStatement(Expression expression, IToken _) => new(expression);
 
-    // TODO: 6.8.4 Selection statements
+    // 6.8.4 Selection statements
+    [Rule("selection_statement: 'if' '(' expression ')' statement")]
+    private static IfElseStatement MakeIfStatement(
+        IToken _,
+        IToken __,
+        Expression expression,
+        IToken ___,
+        Statement statement)
+        => new(expression, statement, null);
+
+    [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
+    private static IfElseStatement MakeIfElseStatement(
+        IToken _,
+        IToken __,
+        Expression expression,
+        IToken ___,
+        Statement trueBranch,
+        IToken ____,
+        Statement falseBranch)
+        => new(expression, trueBranch, falseBranch);
+    // TODO: 6.8.4 Selection statements switch
+
     // TODO: 6.8.5 Iteration statements
 
     // 6.8.6 Jump statements
