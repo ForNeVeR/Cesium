@@ -30,7 +30,7 @@ internal class IfElseStatement : IBlockItem
 
     public void EmitTo(FunctionScope scope)
     {
-        // todo: when branch ends with ret opcode if can be optimized and not generate jmp label
+        // TODO[#113]: when branch ends with ret opcode if can be optimized and not generate jmp label
 
         _expression.EmitTo(scope);
         var bodyProcessor = scope.Method.Body.GetILProcessor();
