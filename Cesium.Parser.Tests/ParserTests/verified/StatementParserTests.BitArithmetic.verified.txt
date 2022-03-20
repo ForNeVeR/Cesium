@@ -7,7 +7,8 @@
       "Left": {
         "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
         "Left": {
-          "$type": "Cesium.Ast.BitwiseNotExpression, Cesium.Ast",
+          "$type": "Cesium.Ast.UnaryOperatorExpression, Cesium.Ast",
+          "Operator": "~",
           "Target": {
             "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
             "Constant": {
