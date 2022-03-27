@@ -17,7 +17,7 @@ public class TargetRuntimeTests : CodeGenTestBase
         result.AppendLine($"CoreLibrary: {assembly.MainModule.TypeSystem.CoreLibrary}");
         result.AppendLine($"TargetFrameworkAttribute.FrameworkName: {frameworkName}");
 
-        var verify = Verify(result);
+        var verify = Verify(result, GetSettings());
         return targetRuntime != null
             ? verify.UseParameters(
                 targetRuntime.Kind,

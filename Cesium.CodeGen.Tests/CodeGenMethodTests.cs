@@ -133,6 +133,16 @@ int main() { return foo(); }", "Function foo not defined.");
 }");
 
     [Fact]
+    public Task BitArithmetic() => DoTest(@"int main() { return ~1 << 2 >> 3 | 4 & 5 ^ 6; }");
+
+    [Fact]
+    public Task BitOrAssignmentLoweringTest() => DoTest(@"int main() {
+    int x = 0;
+    x |= 1;
+    return x;
+}");
+
+    [Fact]
     public Task AmbiguousCallTest() => DoTest(@"
 int abs(int x) { return x; }
 void exit(int x) { }

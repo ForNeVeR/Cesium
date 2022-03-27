@@ -20,16 +20,18 @@ internal class AssignmentExpression : BinaryOperatorExpression
     public override IExpression Lower() => Operator switch
     {
         BinaryOperator.Assign => new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, Right.Lower()),
-        BinaryOperator.AddAndAssign => new AssignmentExpression(
-            Left,
-            BinaryOperator.Assign,
-            new BinaryOperatorExpression(Left, BinaryOperator.Add, Right.Lower())),
-        BinaryOperator.MultiplyAndAssign => new AssignmentExpression(
-            Left,
-            BinaryOperator.Assign,
-            new BinaryOperatorExpression(Left, BinaryOperator.Multiply, Right.Lower())),
+        BinaryOperator.AddAndAssign => LowerSmthAndAssign(BinaryOperator.Add),
+        BinaryOperator.MultiplyAndAssign => LowerSmthAndAssign(BinaryOperator.Multiply),
+        BinaryOperator.BitwiseLeftShiftAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseLeftShift),
+        BinaryOperator.BitwiseRightShiftAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseRightShift),
+        BinaryOperator.BitwiseOrAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseOr),
+        BinaryOperator.BitwiseAndAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseAnd),
+        BinaryOperator.BitwiseXorAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseXor),
         _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
     };
+
+    private AssignmentExpression LowerSmthAndAssign(BinaryOperator @operator)
+        => new(Left, BinaryOperator.Assign, new BinaryOperatorExpression(Left, @operator, Right.Lower()));
 
     public override void EmitTo(FunctionScope scope)
     {

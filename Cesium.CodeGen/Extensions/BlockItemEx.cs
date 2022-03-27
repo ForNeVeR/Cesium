@@ -17,6 +17,7 @@ internal static class BlockItemEx
         Ast.CompoundStatement s => s.ToIntermediate(),
         Ast.ReturnStatement s => new ReturnStatement(s),
         Ast.ExpressionStatement s => new ExpressionStatement(s),
+        Ast.IfElseStatement s => new IfElseStatement(s),
         Ast.AmbiguousBlockItem a => new AmbiguousBlockItem(a),
         _ => throw new NotImplementedException($"Statement not supported, yet: {blockItem}.")
     };

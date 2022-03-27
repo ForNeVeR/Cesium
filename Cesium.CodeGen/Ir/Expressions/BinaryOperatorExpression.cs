@@ -21,7 +21,7 @@ internal class BinaryOperatorExpression : IExpression
     {
         var (left, @operator, right) = expression;
         Left = left.ToIntermediate();
-        Operator = GetOperatorKind(expression.Operator);
+        Operator = GetOperatorKind(@operator);
         Right = right.ToIntermediate();
     }
 
@@ -37,6 +37,11 @@ internal class BinaryOperatorExpression : IExpression
         {
             BinaryOperator.Add => Instruction.Create(OpCodes.Add),
             BinaryOperator.Multiply => Instruction.Create(OpCodes.Mul),
+            BinaryOperator.BitwiseLeftShift => Instruction.Create(OpCodes.Shl),
+            BinaryOperator.BitwiseRightShift => Instruction.Create(OpCodes.Shr),
+            BinaryOperator.BitwiseOr => Instruction.Create(OpCodes.Or),
+            BinaryOperator.BitwiseAnd => Instruction.Create(OpCodes.And),
+            BinaryOperator.BitwiseXor => Instruction.Create(OpCodes.Xor),
             _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
         };
     }
@@ -48,6 +53,16 @@ internal class BinaryOperatorExpression : IExpression
         "=" => BinaryOperator.Assign,
         "+=" => BinaryOperator.AddAndAssign,
         "*=" => BinaryOperator.MultiplyAndAssign,
+        "<<" => BinaryOperator.BitwiseLeftShift,
+        ">>" => BinaryOperator.BitwiseRightShift,
+        "|" => BinaryOperator.BitwiseOr,
+        "&" => BinaryOperator.BitwiseAnd,
+        "^" => BinaryOperator.BitwiseXor,
+        "<<=" => BinaryOperator.BitwiseLeftShiftAndAssign,
+        ">>=" => BinaryOperator.BitwiseRightShiftAndAssign,
+        "|=" => BinaryOperator.BitwiseOrAndAssign,
+        "&=" => BinaryOperator.BitwiseAndAndAssign,
+        "^=" => BinaryOperator.BitwiseXorAndAssign,
         _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
     };
 }

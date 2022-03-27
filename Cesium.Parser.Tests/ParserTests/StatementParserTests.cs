@@ -14,7 +14,7 @@ public class StatementParserTests : ParserTestBase
         Assert.True(result.IsOk, result.GetErrorString());
 
         var serialized = JsonSerialize(result.Ok.Value);
-        return Verify(serialized);
+        return Verify(serialized, GetSettings());
     }
 
     [Fact]
@@ -25,4 +25,23 @@ public class StatementParserTests : ParserTestBase
 
     [Fact]
     public Task CompoundStatementWithVariable() => DoTest("{ int x = 0; }");
+
+    [Fact]
+    public Task BitArithmetic() => DoTest("return ~1 << 2 >> 3 | 4 & 5 ^ 6;");
+
+    [Fact]
+    public Task IfStatement() => DoTest("if (1) { int x = 0; }");
+
+    [Fact]
+    public Task IfElseStatement() => DoTest("if (1) { int x = 0; } else { int y = 1; }");
+
+    [Fact]
+    public Task NestedIfs() => DoTest(@"
+if (1)
+    if (2) { 
+        int x = 0;
+    } else {
+        int y = 1;
+    } 
+");
 }

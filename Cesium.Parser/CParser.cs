@@ -113,15 +113,22 @@ public partial class CParser
     //    sizeof unary-expression
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
-    // unary-operator: one of
-    //    & * + - ˜ !
-    [Rule("unary_expression: '-' unary_expression")]
-    private static Expression MakeNegationExpression(ICToken _, Expression target) =>
-        new NegationExpression(target);
-
     [Rule("unary_expression: '++' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken _, Expression target) =>
         new PrefixIncrementExpression(target);
+
+    [Rule("unary_expression: unary_operator unary_expression")]
+    private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
+        new UnaryOperatorExpression(@operator.Text, target);
+
+    // unary-operator: one of
+    //    & * + - !
+    [Rule("unary_operator: '-'")]
+    [Rule("unary_operator: '~'")]
+    // TODO: [Rule("unary_operator: '!'")]
+    // TODO: [Rule("unary_operator: '&'")]
+    // TODO: [Rule("unary_operator: '*'")]
+    private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
     // TODO: 6.5.4 Cast operators
 
@@ -138,12 +145,30 @@ public partial class CParser
     private static Expression MakeAdditiveExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.7 Bitwise shift operators
+    // 6.5.7 Bitwise shift operators
+    [Rule("shift_expression: shift_expression '<<' additive_expression")]
+    [Rule("shift_expression: shift_expression '>>' additive_expression")]
+    private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.8 Relational operators
     // TODO: 6.5.9 Equality operators
-    // TODO: 6.5.10 Bitwise AND operator
-    // TODO: 6.5.11 Bitwise exclusive OR operator
-    // TODO: 6.5.12 Bitwise inclusive OR operator
+
+    // 6.5.10 Bitwise AND operator
+    [Rule("AND_expression: AND_expression '&' equality_expression")]
+    private static Expression MakeBitwiseAndExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.11 Bitwise exclusive OR operator
+    [Rule("exclusive_OR_expression: exclusive_OR_expression '^' AND_expression")]
+    private static Expression MakeBitwiseXorExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.12 Bitwise inclusive OR operator
+    [Rule("inclusive_OR_expression: inclusive_OR_expression '|' exclusive_OR_expression")]
+    private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.13 Logical AND operator
     // TODO: 6.5.14 Logical OR operator
     // TODO: 6.5.15 Conditional operator
@@ -609,7 +634,7 @@ public partial class CParser
     // TODO: [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
-    // TODO: [Rule("statement: selection_statement")]
+    [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
     private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
@@ -634,7 +659,28 @@ public partial class CParser
     [Rule("expression_statement: expression? ';'")]
     private static ExpressionStatement MakeExpressionStatement(Expression? expression, IToken _) => new(expression);
 
-    // TODO: 6.8.4 Selection statements
+    // 6.8.4 Selection statements
+    [Rule("selection_statement: 'if' '(' expression ')' statement")]
+    private static IfElseStatement MakeIfStatement(
+        IToken _,
+        IToken __,
+        Expression expression,
+        IToken ___,
+        Statement statement)
+        => new(expression, statement, null);
+
+    [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
+    private static IfElseStatement MakeIfElseStatement(
+        IToken _,
+        IToken __,
+        Expression expression,
+        IToken ___,
+        Statement trueBranch,
+        IToken ____,
+        Statement falseBranch)
+        => new(expression, trueBranch, falseBranch);
+    // TODO: 6.8.4 Selection statements switch
+
     // TODO: 6.8.5 Iteration statements
 
     // 6.8.6 Jump statements

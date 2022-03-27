@@ -19,6 +19,9 @@ public record ExpressionStatement(Expression? Expression) : Statement;
 /// </summary>
 public record AmbiguousBlockItem(string Item1, string Item2) : IBlockItem;
 
+// 6.8.4 Selection statements
+public record IfElseStatement(Expression Expression, Statement TrueBranch, Statement? FalseBranch) : Statement;
+
 // 6.8.6 Jump statements
 public record GoToStatement(string Identifier) : Statement;
 public record ReturnStatement(Expression Expression) : Statement;

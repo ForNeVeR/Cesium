@@ -14,7 +14,7 @@ public class DeclarationParserTests : ParserTestBase
         Assert.True(result.IsOk, result.GetErrorString());
 
         var serialized = JsonSerialize(result.Ok.Value);
-        return Verify(serialized);
+        return Verify(serialized, GetSettings());
     }
 
     [Fact]
