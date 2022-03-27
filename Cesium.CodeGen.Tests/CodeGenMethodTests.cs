@@ -131,4 +131,15 @@ int main() { return foo(); }", "Function foo not defined.");
 
     return 0;
 }");
+
+    [Fact]
+    public Task AmbiguousCallTest() => DoTest(@"
+int abs(int x) { return x; }
+void exit(int x) { }
+
+int main()
+{
+    int exitCode = abs(-42);
+    exit(exitCode);
+}");
 }

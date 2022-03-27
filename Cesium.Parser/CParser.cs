@@ -179,7 +179,7 @@ public partial class CParser
     //
     // declaration: declaration_specifiers init_declarator_list? ';'
     [CustomParser("declaration")]
-    private ParseResult<Declaration> CustomParseDeclaration(int offset)
+    private ParseResult<IBlockItem> CustomParseDeclaration(int offset)
     {
         var declarationSpecifiersResult = CustomParseOneOrMore(parseDeclarationSpecifier, offset);
         if (declarationSpecifiersResult.IsError) return declarationSpecifiersResult.Error;
@@ -214,10 +214,31 @@ public partial class CParser
         return ParseResult.Error(";", t, t!.Range.Start, ";");
     }
 
-    private static Declaration MakeDeclaration(
+    private static IBlockItem MakeDeclaration(
         DeclarationSpecifiers specifiers,
         InitDeclaratorList? initDeclarators,
-        IToken _) => new(specifiers, initDeclarators);
+        IToken _)
+    {
+        // NOTE: this is the "lexer hack" to deal with syntax ambiguity. The same syntax may be either a function call
+        // or a variable declaration, depending on the context, and we have no this information in the parser, yet.
+        if (specifiers.Length == 1 && specifiers.Single() is NamedTypeSpecifier specifier
+            && initDeclarators?.Length == 1)
+        {
+            var ((pointer, directDeclarator), initializer) = initDeclarators.Value.Single();
+            if (pointer == null && initializer == null && directDeclarator is DeclaratorDirectDeclarator ddd)
+            {
+                ddd.Deconstruct(out var nestedDeclarator);
+                var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
+                if (nestedPointer == null && nestedDirectDeclarator is IdentifierDirectDeclarator idd)
+                {
+                    idd.Deconstruct(out var identifier);
+                    return new AmbiguousBlockItem(specifier.TypeDefName, identifier);
+                }
+            }
+        }
+
+        return new Declaration(specifiers, initDeclarators);
+    }
 
     // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
     // implementation. Get rid of this, eventually.
@@ -591,7 +612,7 @@ public partial class CParser
     // TODO: [Rule("statement: selection_statement")]
     // TODO: [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
-    private static Statement MakeStatementIdentity(Statement statement) => statement;
+    private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
 
     // TODO: 6.8.1 Labeled statements
     // 6.8.2 Compound statement
@@ -611,7 +632,7 @@ public partial class CParser
 
     // 6.8.3 Expression and null statements
     [Rule("expression_statement: expression? ';'")]
-    private static ExpressionStatement MakeExpressionStatement(Expression expression, IToken _) => new(expression);
+    private static ExpressionStatement MakeExpressionStatement(Expression? expression, IToken _) => new(expression);
 
     // TODO: 6.8.4 Selection statements
     // TODO: 6.8.5 Iteration statements
@@ -640,8 +661,9 @@ public partial class CParser
     private static ExternalDeclaration MakeExternalDeclaration(FunctionDefinition function) => function;
 
     [Rule("external_declaration: declaration")]
-    private static ExternalDeclaration MakeExternalDeclaration(Declaration declaration) =>
-        new SymbolDeclaration(declaration);
+    private static ExternalDeclaration MakeExternalDeclaration(IBlockItem declaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        new SymbolDeclaration((Declaration)declaration);
 
     // 6.9.1 Function definitions
 
@@ -680,13 +702,16 @@ public partial class CParser
         CompoundStatement statement) => new(specifiers, declarator, declarationList, statement);
 
     [Rule("declaration_list: declaration")]
-    private static ImmutableArray<Declaration> MakeDeclarationList(Declaration declaration) =>
-        ImmutableArray.Create(declaration);
+    private static ImmutableArray<Declaration> MakeDeclarationList(IBlockItem declaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        ImmutableArray.Create((Declaration)declaration);
 
     [Rule("declaration_list: declaration_list declaration")]
     private static ImmutableArray<Declaration> MakeDeclarationList(
         ImmutableArray<Declaration> declarations,
-        Declaration newDeclaration) => declarations.Add(newDeclaration);
+        IBlockItem newDeclaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        declarations.Add((Declaration)newDeclaration);
 
     // TODO: 6.9.2 External object definitions
 

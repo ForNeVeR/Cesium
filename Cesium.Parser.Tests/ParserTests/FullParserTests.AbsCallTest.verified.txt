@@ -75,26 +75,9 @@
             ]
           },
           {
-            "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
-            "Expression": {
-              "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
-              "Function": {
-                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "exit"
-                }
-              },
-              "Arguments": [
-                {
-                  "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-                  "Constant": {
-                    "Kind": "Identifier",
-                    "Text": "exitCode"
-                  }
-                }
-              ]
-            }
+            "$type": "Cesium.Ast.AmbiguousBlockItem, Cesium.Ast",
+            "PossibleFunction": "exit",
+            "PossibleArgument": "exitCode"
           }
         ]
       }
