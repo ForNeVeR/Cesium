@@ -59,7 +59,8 @@
                     },
                     "Arguments": [
                       {
-                        "$type": "Cesium.Ast.NegationExpression, Cesium.Ast",
+                        "$type": "Cesium.Ast.UnaryOperatorExpression, Cesium.Ast",
+                        "Operator": "-",
                         "Target": {
                           "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
                           "Constant": {
@@ -76,8 +77,8 @@
           },
           {
             "$type": "Cesium.Ast.AmbiguousBlockItem, Cesium.Ast",
-            "PossibleFunction": "exit",
-            "PossibleArgument": "exitCode"
+            "Item1": "exit",
+            "Item2": "exitCode"
           }
         ]
       }

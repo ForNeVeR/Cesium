@@ -666,8 +666,9 @@ public partial class CParser
         IToken __,
         Expression expression,
         IToken ___,
-        Statement statement)
-        => new(expression, statement, null);
+        IBlockItem statement) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        new(expression, (Statement)statement, null);
 
     [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
     private static IfElseStatement MakeIfElseStatement(
@@ -675,10 +676,11 @@ public partial class CParser
         IToken __,
         Expression expression,
         IToken ___,
-        Statement trueBranch,
+        IBlockItem trueBranch,
         IToken ____,
-        Statement falseBranch)
-        => new(expression, trueBranch, falseBranch);
+        IBlockItem falseBranch)
+        // TODO[#115]: These direct casts should't be necessary. They are here because of the "lexer hack".
+        => new(expression, (Statement)trueBranch, (Statement)falseBranch);
     // TODO: 6.8.4 Selection statements switch
 
     // TODO: 6.8.5 Iteration statements
