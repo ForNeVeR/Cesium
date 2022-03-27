@@ -27,11 +27,4 @@
       <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="verified\CodeGenMethodTests.AmbiguousCallTest.verified.txt">
-        <ParentFile>CodeGenMethodTests</ParentFile>
-        <DependentUpon>CodeGenMethodTests.cs</DependentUpon>
-      </None>
-    </ItemGroup>
-
 </Project>

@@ -40,18 +40,6 @@
         <ParentFile>StatementParserTests</ParentFile>
         <DependentUpon>StatementParserTests.cs</DependentUpon>
       </None>
-      <None Update="ParserTests\verified\DeclarationParserTests.ComplexFunctionPointerTypeDef.verified.txt">
-        <ParentFile>DeclarationParserTests</ParentFile>
-        <DependentUpon>DeclarationParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\verified\DeclarationParserTests.FunctionPointerTypeDef.verified.txt">
-        <ParentFile>DeclarationParserTests</ParentFile>
-        <DependentUpon>DeclarationParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\verified\DeclarationParserTests.FunctionTypeDef.verified.txt">
-        <ParentFile>DeclarationParserTests</ParentFile>
-        <DependentUpon>DeclarationParserTests.cs</DependentUpon>
-      </None>
     </ItemGroup>
 
 </Project>
