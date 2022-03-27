@@ -1,6 +1,4 @@
 using System.Collections.Immutable;
-using Yoakke.SynKit.C.Syntax;
-using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Ast;
 

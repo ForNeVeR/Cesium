@@ -2,8 +2,6 @@ using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Yoakke.SynKit.C.Syntax;
-using Yoakke.SynKit.Lexer;
-using Yoakke.SynKit.Text;
 using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
