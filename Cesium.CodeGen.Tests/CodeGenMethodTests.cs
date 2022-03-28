@@ -152,4 +152,10 @@ int main()
     int exitCode = abs(-42);
     exit(exitCode);
 }");
+
+    [Fact]
+    public Task FunctionPtrTest() => DoTest(@"typedef int (*foo)(void);
+int main() {
+    foo unused;
+}");
 }

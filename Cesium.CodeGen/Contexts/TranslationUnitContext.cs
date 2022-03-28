@@ -22,6 +22,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
         _types.Add(name, typeReference);
     }
 
+    // TODO[#72]: Unnecessary.
+    internal void AddType(TypeReference type, string name) => _types.Add(name, type);
+
     internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
     internal TypeReference? GetTypeReference(string typeName) => _types.GetValueOrDefault(typeName);
 }

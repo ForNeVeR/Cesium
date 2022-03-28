@@ -3,6 +3,7 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
+using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
 
@@ -122,7 +123,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 throw new NotSupportedException($"Anonymous typedef not supported: {type}.");
 
             if (parametersInfo != null)
-                throw new NotImplementedException($"Function typedef not supported, yet: {identifier}.");
+                GenerateFunctionType(context, identifier, parametersInfo, type);
 
             if (cliImportMemberName != null)
                 throw new NotSupportedException($"typedef for CLI import not supported: {cliImportMemberName}.");
@@ -132,5 +133,19 @@ internal class TopLevelDeclaration : ITopLevelNode
             else
                 throw new NotSupportedException($"Not supported type generation for type {type}.");
         }
+    }
+
+    private static void GenerateFunctionType(
+        TranslationUnitContext context,
+        string identifier,
+        ParametersInfo parametersInfo,
+        IType returnType)
+    {
+        var type = new FunctionPointerType();
+
+        throw new NotImplementedException(
+            $"Function type not supported, yet: {identifier}: {parametersInfo} → {returnType}");
+
+        context.AddType(type, identifier);
     }
 }
