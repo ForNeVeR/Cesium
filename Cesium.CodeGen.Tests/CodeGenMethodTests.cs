@@ -141,4 +141,21 @@ int main() { return foo(); }", "Function foo not defined.");
     x |= 1;
     return x;
 }");
+
+    [Fact]
+    public Task AmbiguousCallTest() => DoTest(@"
+int abs(int x) { return x; }
+void exit(int x) { }
+
+int main()
+{
+    int exitCode = abs(-42);
+    exit(exitCode);
+}");
+
+    [Fact]
+    public Task FunctionPtrTest() => DoTest(@"typedef int (*foo)(void);
+int main() {
+    foo unused;
+}");
 }

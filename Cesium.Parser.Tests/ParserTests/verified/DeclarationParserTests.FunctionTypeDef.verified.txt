@@ -1,0 +1,48 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.StorageClassSpecifier, Cesium.Ast",
+      "Name": "typedef"
+    },
+    {
+      "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+      "TypeName": "void"
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.ParameterListDirectDeclarator, Cesium.Ast",
+          "Base": {
+            "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+            "Identifier": "foo",
+            "Base": null
+          },
+          "Parameters": {
+            "$type": "Cesium.Ast.ParameterTypeList, Cesium.Ast",
+            "Parameters": [
+              {
+                "$type": "Cesium.Ast.ParameterDeclaration, Cesium.Ast",
+                "Specifiers": [
+                  {
+                    "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+                    "TypeName": "int"
+                  }
+                ],
+                "Declarator": null,
+                "AbstractDeclarator": null
+              }
+            ],
+            "HasEllipsis": false
+          }
+        }
+      },
+      "Initializer": null
+    }
+  ]
+}

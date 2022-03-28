@@ -7,7 +7,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class ExpressionStatement : IBlockItem
 {
     private readonly IExpression? _expression;
-    private ExpressionStatement(IExpression? expression)
+    internal ExpressionStatement(IExpression? expression)
     {
         _expression = expression;
     }

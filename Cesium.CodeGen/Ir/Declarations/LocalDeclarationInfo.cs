@@ -75,6 +75,27 @@ internal record LocalDeclarationInfo(
                     type = new PointerType(type);
                     break;
 
+                case DeclaratorDirectDeclarator ddd:
+                    ddd.Deconstruct(out var nestedDeclarator);
+                    var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
+                    if (nestedPointer != null)
+                    {
+                        var (nestedTypeQualifiers, nestedChildPointer) = nestedPointer;
+                        if (nestedTypeQualifiers != null || nestedChildPointer != null)
+                            throw new NotImplementedException(
+                                $"Nested pointer of kind {nestedPointer} is not supported, yet.");
+
+                        type = new PointerType(type);
+                    }
+
+                    // TODO[#72]: Rewrite this to append a pointer to the current type.
+                    // TODO[#72]: "The current type", though, should be a function type already at this moment.
+                    // TODO[#72]: This means that LocalDeclarationInfo should get rid of "Parameters" and they will
+                    //            become a part of the underlying type.
+                    throw new NotImplementedException("TODO: This code is wrong.");
+                    currentDirectDeclarator = nestedDirectDeclarator;
+                    continue;
+
                 default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
             }
 

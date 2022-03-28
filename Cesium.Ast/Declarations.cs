@@ -76,6 +76,11 @@ public record IdentifierListDirectDeclarator(
     IDirectDeclarator Base,
     ImmutableArray<string>? Identifiers) : IDirectDeclarator;
 
+public record DeclaratorDirectDeclarator(Declarator Declarator) : IDirectDeclarator
+{
+    public IDirectDeclarator? Base => null;
+}
+
 public record Pointer(ImmutableArray<TypeQualifier>? TypeQualifiers = null, Pointer? ChildPointer = null);
 
 public record ParameterTypeList(ImmutableArray<ParameterDeclaration> Parameters, bool HasEllipsis = false);

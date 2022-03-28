@@ -13,6 +13,12 @@ public interface IBlockItem {}
 // 6.8.3 Expression and null statements
 public record ExpressionStatement(Expression? Expression) : Statement;
 
+/// <summary>
+/// An expression of form <code>item1(item2);</code> which may be either a function call or a variable definition,
+/// depending on the context.
+/// </summary>
+public record AmbiguousBlockItem(string Item1, string Item2) : IBlockItem;
+
 // 6.8.4 Selection statements
 public record IfElseStatement(Expression Expression, Statement TrueBranch, Statement? FalseBranch) : Statement;
 
