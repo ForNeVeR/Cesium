@@ -141,4 +141,16 @@ int main() { return foo(); }", "Function foo not defined.");
     x |= 1;
     return x;
 }");
+
+    [Fact]
+    public Task SimpleRelationalOperators() => DoTest(@"int main() { return 1 > 2 < 4; }");
+
+    [Fact]
+    public Task RelationalOperatorsWithLowering() => DoTest(@"int main() { return 1 >= 2 <= 4; }");
+
+    [Fact]
+    public Task EqualToOperator() => DoTest(@"int main() { return 1 == 2; }");
+
+    [Fact]
+    public Task NotEqualToOperator() => DoTest(@"int main() { return 1 != 2; }");
 }

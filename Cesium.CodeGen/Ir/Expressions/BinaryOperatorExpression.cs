@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -25,7 +26,22 @@ internal class BinaryOperatorExpression : IExpression
         Right = right.ToIntermediate();
     }
 
-    public virtual IExpression Lower() => new BinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public virtual IExpression Lower() => Operator switch
+    {
+        BinaryOperator.GreaterThanOrEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.LessThan, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        BinaryOperator.LessThanOrEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.GreaterThan, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        BinaryOperator.NotEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.EqualTo, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        _ => new BinaryOperatorExpression(Left.Lower(), Operator, Right.Lower()),
+    };
 
     public virtual void EmitTo(FunctionScope scope)
     {
@@ -42,6 +58,9 @@ internal class BinaryOperatorExpression : IExpression
             BinaryOperator.BitwiseOr => Instruction.Create(OpCodes.Or),
             BinaryOperator.BitwiseAnd => Instruction.Create(OpCodes.And),
             BinaryOperator.BitwiseXor => Instruction.Create(OpCodes.Xor),
+            BinaryOperator.GreaterThan => Instruction.Create(OpCodes.Cgt),
+            BinaryOperator.LessThan => Instruction.Create(OpCodes.Clt),
+            BinaryOperator.EqualTo => Instruction.Create(OpCodes.Ceq),
             _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
         };
     }
@@ -63,6 +82,12 @@ internal class BinaryOperatorExpression : IExpression
         "|=" => BinaryOperator.BitwiseOrAndAssign,
         "&=" => BinaryOperator.BitwiseAndAndAssign,
         "^=" => BinaryOperator.BitwiseXorAndAssign,
+        ">" => BinaryOperator.GreaterThan,
+        "<" => BinaryOperator.LessThan,
+        ">=" => BinaryOperator.GreaterThanOrEqualTo,
+        "<=" => BinaryOperator.LessThanOrEqualTo,
+        "==" => BinaryOperator.EqualTo,
+        "!=" => BinaryOperator.NotEqualTo,
         _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
     };
 }

@@ -20,4 +20,11 @@ public enum BinaryOperator
     BitwiseOrAndAssign, // |=
     BitwiseAndAndAssign, // &=
     BitwiseXorAndAssign, // ^=
+
+    GreaterThan, // >
+    LessThan, // <
+    GreaterThanOrEqualTo, // >=
+    LessThanOrEqualTo, // <=
+    EqualTo, // ==
+    NotEqualTo, // !=
 }

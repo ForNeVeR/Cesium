@@ -14,7 +14,12 @@ internal class ReturnStatement : IBlockItem
         _expression = statement.Expression.ToIntermediate();
     }
 
-    public IBlockItem Lower() => this;
+    private ReturnStatement(IExpression expression)
+    {
+        _expression = expression;
+    }
+
+    public IBlockItem Lower() => new ReturnStatement(_expression.Lower());
 
     public void EmitTo(FunctionScope scope)
     {
