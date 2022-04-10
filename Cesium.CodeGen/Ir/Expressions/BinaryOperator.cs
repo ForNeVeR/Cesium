@@ -27,4 +27,7 @@ public enum BinaryOperator
     LessThanOrEqualTo, // <=
     EqualTo, // ==
     NotEqualTo, // !=
+
+    LogicalAnd, // &&
+    LogicalOr, // ||
 }

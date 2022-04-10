@@ -153,4 +153,10 @@ int main() { return foo(); }", "Function foo not defined.");
 
     [Fact]
     public Task NotEqualToOperator() => DoTest(@"int main() { return 1 != 2; }");
+
+    [Fact]
+    public Task LogicalAndOperator() => DoTest(@"int main() { return 1 && 2; }");
+
+    [Fact]
+    public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
 }

@@ -88,6 +88,8 @@ internal class BinaryOperatorExpression : IExpression
         "<=" => BinaryOperator.LessThanOrEqualTo,
         "==" => BinaryOperator.EqualTo,
         "!=" => BinaryOperator.NotEqualTo,
+        "&&" => BinaryOperator.LogicalAnd,
+        "||" => BinaryOperator.LogicalOr,
         _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
     };
 }

@@ -18,6 +18,7 @@ internal static class ExpressionEx
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
+        Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
         _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
