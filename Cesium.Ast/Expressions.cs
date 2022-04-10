@@ -20,6 +20,8 @@ public record UnaryOperatorExpression(string Operator, Expression Target) : Expr
 
 // 6.5.5–6.5.15: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
+public record LogicalBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
+    : BinaryOperatorExpression(Left, Operator, Right);
 
 // 6.5.16 Assignment operators
 public record AssignmentExpression(Expression Left, string Operator, Expression Right)

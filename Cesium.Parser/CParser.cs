@@ -180,8 +180,16 @@ public partial class CParser
     private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.13 Logical AND operator
-    // TODO: 6.5.14 Logical OR operator
+    // 6.5.13 Logical AND operator
+    [Rule("logical_AND_expression: logical_AND_expression '&&' inclusive_OR_expression")]
+    private static Expression MakeLogicalAndExpression(Expression a, ICToken @operator, Expression b) =>
+        new LogicalBinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.14 Logical OR operator
+    [Rule("logical_OR_expression: logical_OR_expression '||' logical_AND_expression")]
+    private static Expression MakeLogicalOrExpression(Expression a, ICToken @operator, Expression b) =>
+        new LogicalBinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.15 Conditional operator
 
     // 6.5.16 Assignment operators

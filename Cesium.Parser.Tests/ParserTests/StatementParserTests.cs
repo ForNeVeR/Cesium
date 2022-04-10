@@ -50,4 +50,10 @@ if (1)
 
     [Fact]
     public Task EqualityOperators() => DoTest("return 1 == 2 != 3;");
+
+    [Fact]
+    public Task LogicalAndOperator() => DoTest("return 1 && 2;");
+
+    [Fact]
+    public Task LogicalOrOperator() => DoTest("return 1 || 2;");
 }
