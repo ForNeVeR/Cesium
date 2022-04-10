@@ -159,7 +159,11 @@ public partial class CParser
     private static Expression MakeRelationalExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.9 Equality operators
+    // 6.5.9 Equality operators
+    [Rule("equality_expression: equality_expression '==' additive_expression")]
+    [Rule("equality_expression: equality_expression '!=' additive_expression")]
+    private static Expression MakeEqualityExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.10 Bitwise AND operator
     [Rule("AND_expression: AND_expression '&' equality_expression")]

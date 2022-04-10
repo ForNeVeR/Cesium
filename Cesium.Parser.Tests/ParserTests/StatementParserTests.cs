@@ -47,4 +47,7 @@ if (1)
 
     [Fact]
     public Task RelationalOperators() => DoTest("return 1 > 2 < 4 <= 5 >= 6;");
+
+    [Fact]
+    public Task EqualityOperators() => DoTest("return 1 == 2 != 3;");
 }
