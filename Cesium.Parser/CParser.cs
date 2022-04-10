@@ -151,7 +151,14 @@ public partial class CParser
     private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.8 Relational operators
+    // 6.5.8 Relational operators
+    [Rule("relational_expression: relational_expression '<' additive_expression")]
+    [Rule("relational_expression: relational_expression '>' additive_expression")]
+    [Rule("relational_expression: relational_expression '<=' additive_expression")]
+    [Rule("relational_expression: relational_expression '>=' additive_expression")]
+    private static Expression MakeRelationalExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.9 Equality operators
 
     // 6.5.10 Bitwise AND operator

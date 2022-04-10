@@ -44,4 +44,7 @@ if (1)
         int y = 1;
     } 
 ");
+
+    [Fact]
+    public Task RelationalOperators() => DoTest("return 1 > 2 < 4 <= 5 >= 6;");
 }
