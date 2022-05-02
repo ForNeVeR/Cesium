@@ -1,0 +1,45 @@
+﻿{
+  "$type": "Cesium.Ast.ForStatement, Cesium.Ast",
+  "InitExpression": null,
+  "TestExpression": {
+    "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+    "Left": {
+      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "Constant": {
+        "Kind": "Identifier",
+        "Text": "i"
+      }
+    },
+    "Operator": "<",
+    "Right": {
+      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "Constant": {
+        "Kind": "IntLiteral",
+        "Text": "0"
+      }
+    }
+  },
+  "UpdateExpression": {
+    "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+    "Target": {
+      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "Constant": {
+        "Kind": "Identifier",
+        "Text": "i"
+      }
+    }
+  },
+  "Body": {
+    "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
+    "Expression": {
+      "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+      "Target": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "Constant": {
+          "Kind": "Identifier",
+          "Text": "i"
+        }
+      }
+    }
+  }
+}

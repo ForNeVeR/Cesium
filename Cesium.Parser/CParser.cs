@@ -631,7 +631,7 @@ public partial class CParser
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
     [Rule("statement: selection_statement")]
-    // TODO: [Rule("statement: iteration_statement")]
+    [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
     private static Statement MakeStatementIdentity(Statement statement) => statement;
 
@@ -678,6 +678,18 @@ public partial class CParser
     // TODO: 6.8.4 Selection statements switch
 
     // TODO: 6.8.5 Iteration statements
+    [Rule("iteration_statement: 'for' '(' expression? ';' expression? ';' expression? ')' statement")]
+    private static ForStatement MakeForStatement(
+        ICToken _,
+        ICToken __,
+        Expression initExpression,
+        ICToken ___,
+        Expression testExpression,
+        ICToken ____,
+        Expression updateExpression,
+        ICToken _____,
+        Statement body)
+        => new(initExpression, testExpression, updateExpression, body);
 
     // 6.8.6 Jump statements
     [Rule("jump_statement: 'goto' Identifier ';'")]
