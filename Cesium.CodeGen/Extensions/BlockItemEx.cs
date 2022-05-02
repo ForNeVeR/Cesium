@@ -18,6 +18,7 @@ internal static class BlockItemEx
         Ast.ReturnStatement s => new ReturnStatement(s),
         Ast.ExpressionStatement s => new ExpressionStatement(s),
         Ast.IfElseStatement s => new IfElseStatement(s),
+        Ast.ForStatement s => new ForStatement(s),
         _ => throw new NotImplementedException($"Statement not supported, yet: {blockItem}.")
     };
 }
