@@ -22,11 +22,7 @@ internal class IdentifierConstantExpression : IExpression, ILValueExpression
     public ILValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
-        var par = scope switch
-        {
-            FunctionScope funcScope => funcScope.GetParameter(Identifier),
-            _ => throw new NotImplementedException($"Can't get parameter from {scope.GetType()}"),
-        };
+        var par = scope.GetParameter(Identifier);
 
         switch (var, par)
         {

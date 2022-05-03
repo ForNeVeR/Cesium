@@ -13,4 +13,5 @@ internal interface IDeclarationScope
     TranslationUnitContext Context { get; }
     MethodDefinition Method { get; }
     Dictionary<string, VariableDefinition> Variables { get; }
+    ParameterDefinition? GetParameter(string name);
 }

@@ -45,22 +45,27 @@ internal class ForStatement : IBlockItem
 
     public void EmitTo(IDeclarationScope scope)
     {
-        var bodyProcessor = scope.Method.Body.GetILProcessor();
+        var forScope = new ForScope(scope);
+
+        var bodyProcessor = forScope.Method.Body.GetILProcessor();
         var instructions = bodyProcessor.Body.Instructions;
         var stub = bodyProcessor.Create(OpCodes.Nop);
 
-        _initExpression?.EmitTo(scope);
+        _initExpression?.EmitTo(forScope);
         var brToTest = bodyProcessor.Create(OpCodes.Br, stub);
         bodyProcessor.Append(brToTest);
         var loopStartIndex = instructions.Count;
-        _body.EmitTo(scope);
-        _updateExpression?.EmitTo(scope);
+        _body.EmitTo(forScope);
+        _updateExpression?.EmitTo(forScope);
         var testStartIndex = instructions.Count;
-        _testExpression.EmitTo(scope);
+        _testExpression.EmitTo(forScope);
         var testStart = instructions[testStartIndex];
         brToTest.Operand = testStart;
 
         var loopStart = instructions[loopStartIndex];
         bodyProcessor.Emit(OpCodes.Brtrue, loopStart);
+
+        if (forScope.EndInstruction != null)
+            bodyProcessor.Append(forScope.EndInstruction);
     }
 }
