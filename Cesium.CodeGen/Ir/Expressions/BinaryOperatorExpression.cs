@@ -43,7 +43,7 @@ internal class BinaryOperatorExpression : IExpression
         _ => new BinaryOperatorExpression(Left.Lower(), Operator, Right.Lower()),
     };
 
-    public virtual void EmitTo(FunctionScope scope)
+    public virtual void EmitTo(IDeclarationScope scope)
     {
         Left.EmitTo(scope);
         Right.EmitTo(scope);

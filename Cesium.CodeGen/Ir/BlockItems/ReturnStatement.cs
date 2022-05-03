@@ -21,7 +21,7 @@ internal class ReturnStatement : IBlockItem
 
     public IBlockItem Lower() => new ReturnStatement(_expression.Lower());
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         _expression.EmitTo(scope);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));

@@ -24,7 +24,7 @@ internal class UnaryOperatorExpression : IExpression
 
     public virtual IExpression Lower() => new UnaryOperatorExpression(_operator, _target.Lower());
 
-    public virtual void EmitTo(FunctionScope scope)
+    public virtual void EmitTo(IDeclarationScope scope)
     {
         _target.EmitTo(scope);
         scope.Method.Body.Instructions.Add(GetInstruction());

@@ -12,13 +12,13 @@ internal class LValueParameter : ILValue
         _definition = definition;
     }
 
-    public void EmitGetValue(FunctionScope scope)
+    public void EmitGetValue(IDeclarationScope scope)
     {
         // TODO[#92]: Special instructions to emit Ldarg_0 etc.
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg, _definition));
     }
 
-    public void EmitSetValue(FunctionScope scope)
+    public void EmitSetValue(IDeclarationScope scope)
     {
         // TODO[#92]: Special instructions to emit Starg_0 etc.
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Starg, _definition));

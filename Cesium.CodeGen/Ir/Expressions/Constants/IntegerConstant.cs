@@ -13,7 +13,7 @@ internal class IntegerConstant : IConstant
             throw new NotSupportedException($"Cannot parse an integer literal: {value}.");
     }
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         // TODO[#92]: Optimizations like Ldc_I4_0 for selected constants
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4, _value));

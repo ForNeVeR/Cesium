@@ -41,7 +41,7 @@ internal class DeclarationBlockItem : IBlockItem
     }
 
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         switch (_declaration)
         {
@@ -56,7 +56,7 @@ internal class DeclarationBlockItem : IBlockItem
         }
     }
 
-    private static void EmitScopedIdentifier(FunctionScope scope, ScopedIdentifierDeclaration scopedDeclaration)
+    private static void EmitScopedIdentifier(IDeclarationScope scope, ScopedIdentifierDeclaration scopedDeclaration)
     {
         scopedDeclaration.Deconstruct(out var declarations);
         foreach (var (declaration, initializer) in declarations)

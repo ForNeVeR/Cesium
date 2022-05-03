@@ -33,7 +33,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
     private AssignmentExpression LowerSmthAndAssign(BinaryOperator @operator)
         => new(Left, BinaryOperator.Assign, new BinaryOperatorExpression(Left, @operator, Right.Lower()));
 
-    public override void EmitTo(FunctionScope scope)
+    public override void EmitTo(IDeclarationScope scope)
     {
         if (Operator != BinaryOperator.Assign)
             throw new NotSupportedException($"Operator {Operator} should've been lowered before emitting.");

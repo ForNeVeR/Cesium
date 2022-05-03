@@ -12,7 +12,7 @@ internal class CharConstant : IConstant
         _value = checked((byte)UnescapeCharacter(value));
     }
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         var instructions = scope.Method.Body.Instructions;
         instructions.Add(Instruction.Create(OpCodes.Ldc_I4, (int)_value));

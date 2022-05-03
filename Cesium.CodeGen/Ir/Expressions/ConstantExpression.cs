@@ -19,7 +19,7 @@ internal class ConstantExpression : IExpression
 
     public IExpression Lower() => this;
 
-    public void EmitTo(FunctionScope scope) => _constant.EmitTo(scope);
+    public void EmitTo(IDeclarationScope scope) => _constant.EmitTo(scope);
 
     public override string ToString() => $"{nameof(ConstantExpression)}: {_constant}";
 

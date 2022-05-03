@@ -16,7 +16,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
 
     public override IExpression Lower() => new LogicalBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
 
-    public override void EmitTo(FunctionScope scope)
+    public override void EmitTo(IDeclarationScope scope)
     {
         switch (Operator)
         {
@@ -31,7 +31,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         }
     }
 
-    private void EmitLogicalAnd(FunctionScope scope)
+    private void EmitLogicalAnd(IDeclarationScope scope)
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
         var fastExitLabel = bodyProcessor.Create(OpCodes.Ldc_I4_0);
@@ -51,7 +51,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         bodyProcessor.Append(exitLabel);
     }
 
-    private void EmitLogicalOr(FunctionScope scope)
+    private void EmitLogicalOr(IDeclarationScope scope)
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
         var fastExitLabel = bodyProcessor.Create(OpCodes.Ldc_I4_1);

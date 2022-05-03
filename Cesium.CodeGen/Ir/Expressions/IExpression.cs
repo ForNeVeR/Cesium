@@ -5,5 +5,5 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal interface IExpression
 {
     IExpression Lower();
-    void EmitTo(FunctionScope scope);
+    void EmitTo(IDeclarationScope scope);
 }

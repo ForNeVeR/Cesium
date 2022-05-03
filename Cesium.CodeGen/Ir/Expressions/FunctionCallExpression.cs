@@ -30,7 +30,7 @@ internal class FunctionCallExpression : IExpression
         (IdentifierConstantExpression)_function.Lower(),
         _arguments.Select(a => a.Lower()).ToList());
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         foreach (var argument in _arguments)
             argument.EmitTo(scope);

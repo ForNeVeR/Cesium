@@ -19,10 +19,14 @@ internal class IdentifierConstantExpression : IExpression, ILValueExpression
 
     public IExpression Lower() => this;
 
-    public ILValue Resolve(FunctionScope scope)
+    public ILValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
-        var par = scope.GetParameter(Identifier);
+        var par = scope switch
+        {
+            FunctionScope funcScope => funcScope.GetParameter(Identifier),
+            _ => throw new NotImplementedException($"Can't get parameter from {scope.GetType()}"),
+        };
 
         switch (var, par)
         {
@@ -38,5 +42,5 @@ internal class IdentifierConstantExpression : IExpression, ILValueExpression
         }
     }
 
-    public void EmitTo(FunctionScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 }

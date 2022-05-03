@@ -43,7 +43,7 @@ internal class ForStatement : IBlockItem
             _updateExpression?.Lower(),
             _body.Lower());
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
         var instructions = bodyProcessor.Body.Instructions;

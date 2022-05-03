@@ -28,7 +28,7 @@ internal class IfElseStatement : IBlockItem
 
     public IBlockItem Lower() => new IfElseStatement(_expression.Lower(), _trueBranch.Lower(), _falseBranch?.Lower());
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         // TODO[#113]: when branch ends with ret opcode if can be optimized and not generate jmp label
 

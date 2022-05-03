@@ -27,5 +27,5 @@ internal class PrefixIncrementExpression : IExpression
         );
     }
 
-    public void EmitTo(FunctionScope scope) => throw new NotSupportedException("Should be lowered");
+    public void EmitTo(IDeclarationScope scope) => throw new NotSupportedException("Should be lowered");
 }
