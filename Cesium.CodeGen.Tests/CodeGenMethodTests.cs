@@ -123,11 +123,39 @@ int main() { return foo(); }", "Function foo not defined.");
     public Task PrimitiveTypes() => DoTest(@"int main(void)
 {
     // basic
-    char a;
-    int b;
+    char c;
+    short s;
+    signed s1;
+    int i;
+    unsigned u;
+    long l;
+    float f;
+    double d;
 
     // unsigned
-    unsigned char c;
+    unsigned char uc;
+    unsigned short us;
+    unsigned short int usi;
+    unsigned int ui;
+    unsigned long ul;
+    unsigned long int uli;
+    unsigned long long ull;
+    unsigned long long int ulli;
+
+    // signed
+    signed char sc;
+    signed short ss;
+    short int shi;
+    signed short int ssi;
+    signed int si;
+    signed long sl;
+    long int li;
+    signed long int sli;
+    long long ll;
+    signed long long sll;
+    long long int lli;
+    signed long long int slli;
+    long double ld;
 
     return 0;
 }");
