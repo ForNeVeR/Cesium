@@ -697,7 +697,10 @@ public partial class CParser
         new GoToStatement(identifier.Text);
 
     // [Rule("jump_statement: 'continue' ';'")]
-    // [Rule("jump_statement: 'break' ';'")]
+    [Rule("jump_statement: 'break' ';'")]
+    private static Statement MakeBreakStatement(ICToken _, ICToken __)
+        => new BreakStatement();
+
     [Rule("jump_statement: 'return' expression? ';'")]
     private static Statement MakeReturnStatement(ICToken _, Expression expression, ICToken __) =>
         new ReturnStatement(expression);

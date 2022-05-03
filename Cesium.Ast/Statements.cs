@@ -28,4 +28,6 @@ public record ForStatement(
 // 6.8.6 Jump statements
 public record GoToStatement(string Identifier) : Statement;
 
+public record BreakStatement : Statement;
+
 public record ReturnStatement(Expression Expression) : Statement;
