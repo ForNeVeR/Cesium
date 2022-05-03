@@ -208,20 +208,46 @@ internal record LocalDeclarationInfo(
             return typeName;
         }).ToList();
 
-        return typeNames switch
-        {
-            { Count: 1 } => new PrimitiveType(typeNames.Single() switch
+        // todo when c#11 is released replace to list pattern matching
+        var p1 = typeNames.FirstOrDefault();
+        var p2 = typeNames.Skip(1).FirstOrDefault();
+        var p3 = typeNames.Skip(2).FirstOrDefault();
+        var p4 = typeNames.Skip(3).FirstOrDefault();
+        return new PrimitiveType(
+            (p1, p2, p3, p4) switch
             {
-                "char" => PrimitiveTypeKind.Char,
-                "int" => PrimitiveTypeKind.Int,
-                "void" => PrimitiveTypeKind.Void,
-                var unknown =>
-                    throw new NotImplementedException($"Not supported yet type specifier: {unknown}.")
-            }),
-            { Count: 2 } when typeNames[0] == "unsigned" && typeNames[1] == "char" =>
-                new PrimitiveType(PrimitiveTypeKind.UnsignedChar),
-            _ => throw new NotImplementedException(
-                $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}")
-        };
+                ("signed", "long", "long", "int") => PrimitiveTypeKind.SignedLongLongInt,
+                ("unsigned", "long", "long", "int") => PrimitiveTypeKind.UnsignedLongLongInt,
+                ("signed", "short", "int", _) => PrimitiveTypeKind.SignedShortInt,
+                ("signed", "long", "int", _) => PrimitiveTypeKind.SignedLongInt,
+                ("signed", "long", "long", _) => PrimitiveTypeKind.SignedLongLong,
+                ("long", "long", "int", _) => PrimitiveTypeKind.LongLongInt,
+                ("unsigned", "short", "int", _) => PrimitiveTypeKind.UnsignedShortInt,
+                ("unsigned", "long", "int", _) => PrimitiveTypeKind.UnsignedLongInt,
+                ("unsigned", "long", "long", _) => PrimitiveTypeKind.UnsignedLongLong,
+                ("signed", "char", _, _) => PrimitiveTypeKind.SignedChar,
+                ("signed", "short", _, _) => PrimitiveTypeKind.SignedShort,
+                ("short", "int", _, _) => PrimitiveTypeKind.ShortInt,
+                ("signed", "int", _, _) => PrimitiveTypeKind.SignedInt,
+                ("signed", "long", _, _) => PrimitiveTypeKind.SignedLong,
+                ("long", "int", _, _) => PrimitiveTypeKind.LongInt,
+                ("long", "long", _, _) => PrimitiveTypeKind.LongLong,
+                ("long", "double", _, _) => PrimitiveTypeKind.LongDouble,
+                ("unsigned", "char", _, _) => PrimitiveTypeKind.UnsignedChar,
+                ("unsigned", "short", _, _) => PrimitiveTypeKind.UnsignedShort,
+                ("unsigned", "int", _, _) => PrimitiveTypeKind.UnsignedInt,
+                ("unsigned", "long", _, _) => PrimitiveTypeKind.UnsignedLong,
+                ("void", _, _, _) => PrimitiveTypeKind.Void,
+                ("char", _, _, _) => PrimitiveTypeKind.Char,
+                ("short", _, _, _) => PrimitiveTypeKind.Short,
+                ("signed", _, _, _) => PrimitiveTypeKind.Signed,
+                ("int", _, _, _) => PrimitiveTypeKind.Int,
+                ("unsigned", _, _, _) => PrimitiveTypeKind.Unsigned,
+                ("long", _, _, _) => PrimitiveTypeKind.Long,
+                ("float", _, _, _) => PrimitiveTypeKind.Float,
+                ("double", _, _, _) => PrimitiveTypeKind.Double,
+                _ => throw new NotImplementedException(
+                    $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
+            });
     }
 }
