@@ -38,8 +38,6 @@ internal class AssignmentExpression : BinaryOperatorExpression
         if (Operator != BinaryOperator.Assign)
             throw new NotSupportedException($"Operator {Operator} should've been lowered before emitting.");
 
-        Right.EmitTo(scope);
-
-        _target.Resolve(scope).EmitSetValue(scope);
+        _target.Resolve(scope).EmitSetValue(scope, Right);
     }
 }
