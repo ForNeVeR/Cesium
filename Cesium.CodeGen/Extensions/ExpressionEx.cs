@@ -21,6 +21,8 @@ internal static class ExpressionEx
         Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
+        Ast.SubscriptingExpression e => new SubscriptingExpression(e),
+
         _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
     };
 }

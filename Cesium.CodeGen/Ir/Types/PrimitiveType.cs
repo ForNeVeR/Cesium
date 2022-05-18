@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -132,4 +133,39 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
 
     public override string ToString()
         => $"PrimitiveType {{ Kind = {Kind} }}";
+}
+
+internal static class PrimitiveTypeInfo
+{
+    internal static readonly Dictionary<string, int> Size = new()
+    {
+        { "Byte", 1 },
+        { "SByte", 1 },
+        { "Boolean", 1 },
+        { "Int16", 2 },
+        { "UInt16", 2 },
+        { "Char", 2 },
+        { "Int32", 4 },
+        { "UInt32", 4 },
+        { "Single", 4 },
+        { "Int64", 8 },
+        { "UInt64", 8 },
+        { "Double", 8 },
+    };
+
+    internal static readonly Dictionary<string, (OpCode load, OpCode store)> Opcodes = new()
+    {
+        { "Byte", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { "SByte", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { "Boolean", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { "Int16", (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
+        { "UInt16", (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
+        { "Char", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
+        { "Int32", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
+        { "UInt32", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
+        { "Single", (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
+        { "Int64", (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
+        { "UInt64", (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
+        { "Double", (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
+    };
 }

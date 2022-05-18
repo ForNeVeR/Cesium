@@ -86,4 +86,10 @@ if (1)
     i = i - 1;
     i = i + 2;
 }");
+
+    [Fact]
+    public Task ArrayAssigment() => DoTest(@"{
+    int a[1];
+    a[0] = 0;
+}");
 }

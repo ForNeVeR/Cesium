@@ -187,4 +187,11 @@ int main() { return foo(); }", "Function foo not defined.");
 
     [Fact]
     public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
+
+    [Fact]
+    public Task ArrayAssignment() => DoTest(@"int main() {
+    int a[10];
+    a[1] = 2;
+    return a[1];
+ }");
 }
