@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -82,9 +83,18 @@ internal class DeclarationBlockItem : IBlockItem
             method.Body.Variables.Add(variable);
             scope.Variables.Add(identifier, variable);
 
-            if (initializer == null) return;
+            switch (initializer)
+            {
+                case null when type is not ArrayType:
+                    return;
+                case null when type is ArrayType arrayType:
+                    arrayType.EmitInitializer(scope);
+                    break;
+                default:
+                    initializer?.EmitTo(scope);
+                    break;
+            }
 
-            initializer.EmitTo(scope);
             scope.StLoc(variable);
         }
     }

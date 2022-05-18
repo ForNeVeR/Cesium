@@ -58,4 +58,12 @@ void foo(void)
     [Fact]
     public Task TypeDefStructUsage() => DoTest(@"typedef struct { int x; } foo;
 int main(void) { foo x; return 0; }");
+
+    [Fact]
+    public Task ArrayDeclaration() => DoTest(@"int main()
+{
+    int i;
+    int x[1];
+    return 0;
+}");
 }

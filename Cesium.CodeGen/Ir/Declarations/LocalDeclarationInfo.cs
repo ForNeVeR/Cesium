@@ -1,5 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Types;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -64,15 +65,24 @@ internal record LocalDeclarationInfo(
                     break;
 
                 case ArrayDirectDeclarator array:
-                    var (_, typeQualifiers, size) = array;
+                    var (_, typeQualifiers, sizeExpr) = array;
                     if (typeQualifiers != null)
                         throw new NotImplementedException(
                             $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
-                    if (size != null)
-                        throw new NotImplementedException(
-                            $"Array with specified size isn't supported, yet: {array}.");
 
-                    type = new PointerType(type);
+                    // todo should check that size required in scoped declaration and not needed in parameter declaration
+                    if (sizeExpr == null)
+                        type = new PointerType(type);
+                    else
+                    {
+                        if (sizeExpr is not ConstantExpression constantExpression ||
+                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
+                            !int.TryParse(constantExpression.Constant.Text, out var size))
+                            throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
+
+                        type = new ArrayType(type, size);
+                    }
+
                     break;
 
                 default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
