@@ -48,4 +48,6 @@ internal class StructType : IType, IGeneratedType
 
     public TypeReference Resolve(TranslationUnitContext context) =>
         context.GetTypeReference(this) ?? throw new NotSupportedException($"Type {this} was not found.");
+
+    public int SizeInBytes => throw new NotImplementedException($"Could not calculate size for {this} yet.");
 }

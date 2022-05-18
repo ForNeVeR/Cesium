@@ -6,4 +6,5 @@ namespace Cesium.CodeGen.Ir.Types;
 internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
+    int SizeInBytes { get; }
 }

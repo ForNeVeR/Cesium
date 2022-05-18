@@ -85,7 +85,51 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => typeSystem.Int64,
             PrimitiveTypeKind.LongDouble => typeSystem.Double,
 
-            _ => throw new NotImplementedException($"Primitive type not supported, yet: {this}.")
+            _ => throw new NotImplementedException($"Primitive type not supported, yet: {Kind}.")
         };
     }
+
+    public int SizeInBytes =>
+        Kind switch
+        {
+            // Basic
+            PrimitiveTypeKind.Char => 1,
+            PrimitiveTypeKind.Short => 1,
+            PrimitiveTypeKind.Signed => 2,
+            PrimitiveTypeKind.Int => 4,
+            PrimitiveTypeKind.Unsigned => 4,
+            PrimitiveTypeKind.Long => 8,
+            PrimitiveTypeKind.Float => 4,
+            PrimitiveTypeKind.Double => 8,
+
+            // Unsigned
+            PrimitiveTypeKind.UnsignedChar => 1,
+            PrimitiveTypeKind.UnsignedShort => 2,
+            PrimitiveTypeKind.UnsignedShortInt => 2,
+            PrimitiveTypeKind.UnsignedInt => 4,
+            PrimitiveTypeKind.UnsignedLong => 8,
+            PrimitiveTypeKind.UnsignedLongInt => 8,
+            PrimitiveTypeKind.UnsignedLongLong => 8,
+            PrimitiveTypeKind.UnsignedLongLongInt => 8,
+
+            // Signed
+            PrimitiveTypeKind.SignedChar => 1,
+            PrimitiveTypeKind.SignedShort => 2,
+            PrimitiveTypeKind.ShortInt => 2,
+            PrimitiveTypeKind.SignedShortInt => 2,
+            PrimitiveTypeKind.SignedInt => 4,
+            PrimitiveTypeKind.SignedLong => 8,
+            PrimitiveTypeKind.LongInt => 8,
+            PrimitiveTypeKind.SignedLongInt => 8,
+            PrimitiveTypeKind.LongLong => 8,
+            PrimitiveTypeKind.SignedLongLong => 8,
+            PrimitiveTypeKind.LongLongInt => 8,
+            PrimitiveTypeKind.SignedLongLongInt => 8,
+            PrimitiveTypeKind.LongDouble => 8,
+
+            _ => throw new NotImplementedException($"Could not calculate size for {Kind}."),
+        };
+
+    public override string ToString()
+        => $"PrimitiveType {{ Kind = {Kind} }}";
 }
