@@ -5,7 +5,7 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record ArrayType(IType Base, int Size) : PointerType(Base)
+internal record StackArrayType(IType Base, int Size) : PointerType(Base)
 {
     public override TypeReference Resolve(TranslationUnitContext context)
     {
