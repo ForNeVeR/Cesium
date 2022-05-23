@@ -1,8 +1,8 @@
 ﻿System.Int32 <Module>::main()
   Locals:
     System.Byte V_0
-    System.SByte V_1
-    System.Int16 V_2
+    System.Int16 V_1
+    System.Int32 V_2
     System.Int32 V_3
     System.UInt32 V_4
     System.Int64 V_5
