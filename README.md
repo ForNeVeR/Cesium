@@ -1,5 +1,7 @@
 Cesium [![Status Enfer][status-enfer]][andivionian-status-classifier]
 ======
+[![Run Build and Unit tests](https://github.com/ForNeVeR/Cesium/actions/workflows/run-build-and-unit-tests.yml/badge.svg)](https://github.com/ForNeVeR/Cesium/actions/workflows/run-build-and-unit-tests.yml)
+[![Run Build and Integration tests](https://github.com/ForNeVeR/Cesium/actions/workflows/run-build-and-integration-tests.yml/badge.svg)](https://github.com/ForNeVeR/Cesium/actions/workflows/run-build-and-integration-tests.yml)
 
 Cesium is a fully managed C compiler for CLI platform (.NET).
 
