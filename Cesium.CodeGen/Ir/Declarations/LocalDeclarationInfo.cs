@@ -70,7 +70,7 @@ internal record LocalDeclarationInfo(
                         throw new NotImplementedException(
                             $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
 
-                    // todo should check that size required in scoped declaration and not needed in parameter declaration
+                    // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
                     if (sizeExpr == null)
                         type = new PointerType(type);
                     else
