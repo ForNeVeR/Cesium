@@ -6,10 +6,10 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class FunctionCallExpression : IExpression
 {
-    private readonly IdentifierConstantExpression _function;
+    private readonly IdentifierExpression _function;
     private readonly IList<IExpression> _arguments;
 
-    private FunctionCallExpression(IdentifierConstantExpression function, IList<IExpression> arguments)
+    private FunctionCallExpression(IdentifierExpression function, IList<IExpression> arguments)
     {
         _function = function;
         _arguments = arguments;
@@ -19,7 +19,7 @@ internal class FunctionCallExpression : IExpression
     {
         var (function, arguments) = expression;
         var functionExpression = function.ToIntermediate();
-        _function = functionExpression as IdentifierConstantExpression
+        _function = functionExpression as IdentifierExpression
                     ?? throw new NotImplementedException(
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
         _arguments = (IList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
@@ -27,7 +27,7 @@ internal class FunctionCallExpression : IExpression
     }
 
     public IExpression Lower() => new FunctionCallExpression(
-        (IdentifierConstantExpression)_function.Lower(),
+        (IdentifierExpression)_function.Lower(),
         _arguments.Select(a => a.Lower()).ToList());
 
     public void EmitTo(IDeclarationScope scope)

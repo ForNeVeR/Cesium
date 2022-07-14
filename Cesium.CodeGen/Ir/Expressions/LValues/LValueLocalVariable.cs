@@ -20,6 +20,11 @@ internal class LValueLocalVariable : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc, _definition));
     }
 
+    public void EmitGetAddress(IDeclarationScope scope)
+    {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloca, _definition));
+    }
+
     public void EmitSetValue(IDeclarationScope scope, IExpression value)
     {
         value.EmitTo(scope);

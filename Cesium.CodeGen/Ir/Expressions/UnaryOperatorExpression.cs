@@ -26,21 +26,40 @@ internal class UnaryOperatorExpression : IExpression
 
     public virtual void EmitTo(IDeclarationScope scope)
     {
-        _target.EmitTo(scope);
-        scope.Method.Body.Instructions.Add(GetInstruction());
+        switch (_operator)
+        {
+            case UnaryOperator.AddressOf:
+                EmitGetAddress(scope, _target);
+                break;
+            default:
+                _target.EmitTo(scope);
+                scope.Method.Body.Instructions.Add(GetInstruction());
+                break;
+        }
 
         Instruction GetInstruction() => _operator switch
         {
             UnaryOperator.Negation => Instruction.Create(OpCodes.Neg),
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
+            UnaryOperator.AddressOf => Instruction.Create(OpCodes.Neg),
             _ => throw new NotSupportedException($"Unsupported unary operator: {_operator}.")
         };
+
+        void EmitGetAddress(IDeclarationScope scope, IExpression target)
+        {
+            if (target is not ILValueExpression expression)
+                throw new NotSupportedException($"lvalue required as '&' operand");
+
+            expression.Resolve(scope).EmitGetAddress(scope);
+            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
+        }
     }
 
     private static UnaryOperator GetOperatorKind(string @operator) => @operator switch
     {
         "-" => UnaryOperator.Negation,
         "~" => UnaryOperator.BitwiseNot,
+        "&" => UnaryOperator.AddressOf,
         _ => throw new NotSupportedException($"Unary operator not supported, yet: {@operator}."),
     };
 }

@@ -7,7 +7,8 @@ internal static class ExpressionEx
 {
     public static IExpression ToIntermediate(this Ast.Expression ex) => ex switch
     {
-        Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierConstantExpression(e),
+        Ast.IdentifierExpression e => new IdentifierExpression(e),
+        Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
         Ast.ConstantExpression e => new ConstantExpression(e),
 
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
@@ -22,6 +23,7 @@ internal static class ExpressionEx
         Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
+        Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
 
         _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
     };

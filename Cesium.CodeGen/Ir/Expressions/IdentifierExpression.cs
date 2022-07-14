@@ -4,17 +4,22 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IdentifierConstantExpression : IExpression, ILValueExpression
+internal class IdentifierExpression : IExpression, ILValueExpression
 {
     public string Identifier { get; }
 
-    public IdentifierConstantExpression(Ast.ConstantExpression expression)
+    public IdentifierExpression(Ast.ConstantExpression expression)
     {
         var constant = expression.Constant;
         if (expression.Constant.Kind != CTokenType.Identifier)
             throw new NotSupportedException($"Constant kind not supported: {expression.Constant.Kind}.");
 
         Identifier = constant.Text;
+    }
+
+    public IdentifierExpression(Ast.IdentifierExpression expression)
+    {
+        Identifier = expression.Identifier;
     }
 
     public IExpression Lower() => this;

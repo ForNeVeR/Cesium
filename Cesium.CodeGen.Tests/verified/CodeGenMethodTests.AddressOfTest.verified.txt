@@ -1,0 +1,7 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Int32 V_0
+    System.Int32* V_1
+  IL_0000: ldloca V_0
+  IL_0004: conv.u
+  IL_0005: stloc V_1

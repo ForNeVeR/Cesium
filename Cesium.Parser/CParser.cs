@@ -86,6 +86,12 @@ public partial class CParser
         ArgumentExpressionList? arguments,
         IToken __) => new FunctionCallExpression(function, arguments);
 
+    [Rule("postfix_expression: postfix_expression '->' Identifier")]
+    private static Expression MakePointerMemberAccessExpression(
+        Expression function,
+        IToken _,
+        IToken identifier) => new PointerMemberAccessExpression(function, new IdentifierExpression(identifier.Text));
+
     // TODO:
     // postfix-expression:
     //     postfix-expression . identifier
@@ -125,8 +131,8 @@ public partial class CParser
     //    & * + - !
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
+    [Rule("unary_operator: '&'")]
     // TODO: [Rule("unary_operator: '!'")]
-    // TODO: [Rule("unary_operator: '&'")]
     // TODO: [Rule("unary_operator: '*'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 

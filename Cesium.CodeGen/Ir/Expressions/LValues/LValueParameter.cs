@@ -18,6 +18,11 @@ internal class LValueParameter : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg, _definition));
     }
 
+    public void EmitGetAddress(IDeclarationScope scope)
+    {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarga, _definition));
+    }
+
     public void EmitSetValue(IDeclarationScope scope, IExpression value)
     {
         value.EmitTo(scope);

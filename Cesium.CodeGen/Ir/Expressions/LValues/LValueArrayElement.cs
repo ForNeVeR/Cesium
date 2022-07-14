@@ -24,6 +24,12 @@ internal class LValueArrayElement : ILValue
         scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
+    public void EmitGetAddress(IDeclarationScope scope)
+    {
+        // TODO Implement '&' operator for array elements
+        throw new NotImplementedException("Unary operator '&' is not supported for array elements");
+    }
+
     public void EmitSetValue(IDeclarationScope scope, IExpression value)
     {
         EmitPointerMoveToElement(scope);
