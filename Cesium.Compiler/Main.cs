@@ -39,6 +39,6 @@ static void DisplayHelp<T>(ParserResult<T> result)
     {
         h.AddEnumValuesToHelpText = true;
         return h;
-    }, e => e, verbsIndex: true);
+    }, e => e);
     Console.WriteLine(helpText);
 }
