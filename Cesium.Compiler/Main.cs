@@ -3,7 +3,9 @@ using Cesium.CodeGen;
 using Cesium.Compiler;
 using CommandLine;
 
-return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args =>
+var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
+
+return await parserResult.MapResult(async args =>
     {
         if (!args.NoLogo)
         {
@@ -25,4 +27,18 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
 
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind);
     },
-    _ => Task.FromResult(-1));
+    _ =>
+    {
+        DisplayHelp(parserResult);
+        return Task.FromResult(-1);
+    });
+
+static void DisplayHelp<T>(ParserResult<T> result)
+{
+    var helpText = CommandLine.Text.HelpText.AutoBuild(result, h =>
+    {
+        h.AddEnumValuesToHelpText = true;
+        return h;
+    }, e => e, verbsIndex: true);
+    Console.WriteLine(helpText);
+}
