@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Cesium.CodeGen;
 using Cesium.Compiler;
 using CommandLine;
@@ -23,6 +23,6 @@ return await Parser.Default.ParseArguments<Arguments>(args).MapResult(async args
             _ => TargetRuntimeDescriptor.Net60
         };
 
-        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime);
+        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind);
     },
     _ => Task.FromResult(-1));
