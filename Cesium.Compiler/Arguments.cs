@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
+using Mono.Cecil;
 
 namespace Cesium.Compiler;
 
@@ -14,12 +15,17 @@ public enum TargetFrameworkKind
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class Arguments
 {
-    [Value(0)] public IList<string> InputFilePaths { get; init; } = null!;
+    [Value(0)]
+    public IList<string> InputFilePaths { get; init; } = null!;
 
-    [Option('o', "out", Required = true)] public string OutputFilePath { get; init; } = null!;
+    [Option('o', "out", Required = true)]
+    public string OutputFilePath { get; init; } = null!;
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
     public TargetFrameworkKind Framework { get; init; }
+
+    [Option("modulekind")]
+    public ModuleKind? ModuleKind { get; init; } = null!;
 
     [Option("nologo", HelpText = "Suppress compiler banner message")]
     public bool NoLogo { get; set; }
