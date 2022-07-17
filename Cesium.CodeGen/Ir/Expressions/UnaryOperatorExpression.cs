@@ -41,7 +41,6 @@ internal class UnaryOperatorExpression : IExpression
         {
             UnaryOperator.Negation => Instruction.Create(OpCodes.Neg),
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
-            UnaryOperator.AddressOf => Instruction.Create(OpCodes.Neg),
             _ => throw new NotSupportedException($"Unsupported unary operator: {_operator}.")
         };
 
