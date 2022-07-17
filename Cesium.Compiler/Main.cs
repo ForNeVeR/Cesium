@@ -1,7 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Cesium.CodeGen;
 using Cesium.Compiler;
 using CommandLine;
+using CommandLine.Text;
 
 var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
 
@@ -35,10 +36,10 @@ return await parserResult.MapResult(async args =>
 
 static void DisplayHelp<T>(ParserResult<T> result)
 {
-    var helpText = CommandLine.Text.HelpText.AutoBuild(result, h =>
+    var helpText = HelpText.AutoBuild(result, h =>
     {
         h.AddEnumValuesToHelpText = true;
-        return h;
+        return HelpText.DefaultParsingErrorsHandler(result, h);
     }, e => e);
     Console.WriteLine(helpText);
 }
