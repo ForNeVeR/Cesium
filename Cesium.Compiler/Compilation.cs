@@ -15,7 +15,8 @@ internal static class Compilation
     public static async Task<int> Compile(
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime, ModuleKind? moduleKind = null)
+        TargetRuntimeDescriptor targetRuntime,
+        ModuleKind? moduleKind = null)
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
         var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind);
@@ -31,13 +32,16 @@ internal static class Compilation
         return 0;
     }
 
-    private static AssemblyContext CreateAssembly(string outputFilePath, TargetRuntimeDescriptor targetRuntime, ModuleKind? moduleKind = null)
+    private static AssemblyContext CreateAssembly(
+        string outputFilePath,
+        TargetRuntimeDescriptor targetRuntime,
+        ModuleKind? moduleKind = null)
     {
         var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
         {
             ".exe" => ModuleKind.Console,
             ".dll" => ModuleKind.Dll,
-            var o => throw new Exception($"Unknown file extension: {o}. \"modulekind\" is not specified")
+            var o => throw new Exception($"Unknown file extension: {o}. \"modulekind\" is not specified.")
         };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
         var defaultImportAssemblies = new []
