@@ -26,7 +26,7 @@ internal class LValueArrayElement : ILValue
 
     public void EmitGetAddress(IDeclarationScope scope)
     {
-        // TODO Implement '&' operator for array elements
+        // TODO[#133]: Implement '&' operator for array elements
         throw new NotImplementedException("Unary operator '&' is not supported for array elements");
     }
 
