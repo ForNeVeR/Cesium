@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -20,6 +21,8 @@ internal class ConstantExpression : IExpression
     public IExpression Lower() => this;
 
     public void EmitTo(IDeclarationScope scope) => _constant.EmitTo(scope);
+
+    public TypeReference GetExpressionType(IDeclarationScope scope) => _constant.GetConstantType(scope);
 
     public override string ToString() => $"{nameof(ConstantExpression)}: {_constant}";
 

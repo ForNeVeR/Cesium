@@ -28,26 +28,24 @@ internal class PointerMemberAccessExpression : IExpression, ILValueExpression
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
+    public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+
     public ILValue Resolve(IDeclarationScope scope)
     {
-        if (_expression is not ILValueExpression expression)
-            throw new NotSupportedException("Pointer member access supported only for lvalues");
-
         if (_memberIdentifier is not IdentifierExpression memberIdentifier)
             throw new NotSupportedException($"\"{_memberIdentifier}\" is not a valid identifier");
 
-        var lvalue = expression.Resolve(scope);
-        var valueType = lvalue.GetValueType();
+        var valueType = _expression.GetExpressionType(scope);
         var valueTypeDef = valueType.Resolve();
 
         try
         {
             var field = valueTypeDef.Fields.First(f => f?.Name == memberIdentifier.Identifier);
-            return new LValueField(lvalue, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+            return new LValueField(_expression, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
         }
         catch (InvalidOperationException _)
         {
-            throw new NotSupportedException($"Unable to find field \"{memberIdentifier.Identifier}\" for type \"{valueTypeDef.Name}\"");
+            throw new NotSupportedException($"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
         }
     }
 }
