@@ -68,6 +68,9 @@ public partial class CParser
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantExpression(stringLiteral);
 
+    [Rule("primary_expression: '(' expression ')'")]
+    private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
+
     // TODO:
     // primary-expression:
     //     ( expression )

@@ -1,6 +1,8 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -53,6 +55,12 @@ internal class UnaryOperatorExpression : IExpression
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
         }
     }
+
+    public TypeReference GetExpressionType(IDeclarationScope scope) => _operator switch
+    {
+        UnaryOperator.AddressOf => _target.GetExpressionType(scope).MakePointerType(), // address-of returns T*
+        _ => _target.GetExpressionType(scope), // other operators return T
+    };
 
     private static UnaryOperator GetOperatorKind(string @operator) => @operator switch
     {

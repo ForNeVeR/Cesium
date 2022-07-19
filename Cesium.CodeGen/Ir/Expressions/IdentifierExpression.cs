@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.LValues;
+using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -24,6 +25,10 @@ internal class IdentifierExpression : IExpression, ILValueExpression
 
     public IExpression Lower() => this;
 
+    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+
+    public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+
     public ILValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
@@ -42,6 +47,4 @@ internal class IdentifierExpression : IExpression, ILValueExpression
                     $"Variable {Identifier} is both available as a local and as a function parameter.");
         }
     }
-
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 }

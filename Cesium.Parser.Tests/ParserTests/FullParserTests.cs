@@ -139,4 +139,12 @@ int main(void) { foo *x; return x->x; }");
     [Fact]
     public Task StructUsageWithPointerMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
 int main(void) { foo *x; x->x = 42; return 0; }");
+
+    [Fact]
+    public Task StructAddressWithPointerMemberAccessGet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; return (&x)->x; }");
+
+    [Fact]
+    public Task StructAddressWithPointerMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; (&x)->x = 42; return 0; }");
 }
