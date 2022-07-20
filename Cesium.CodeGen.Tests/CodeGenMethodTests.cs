@@ -197,4 +197,11 @@ int main() { return foo(); }", "Function foo not defined.");
     a[1] = 2;
     return a[1];
  }");
+
+    [Fact]
+    public Task ArrayAddressOf() => DoTest(@"int main() {
+    int a[10];
+    int *x = &a[2];
+    return 0;
+ }");
 }
