@@ -38,11 +38,11 @@ public class StatementParserTests : ParserTestBase
     [Fact]
     public Task NestedIfs() => DoTest(@"
 if (1)
-    if (2) { 
+    if (2) {
         int x = 0;
     } else {
         int y = 1;
-    } 
+    }
 ");
 
     [Fact]
@@ -91,5 +91,24 @@ if (1)
     public Task ArrayAssigment() => DoTest(@"{
     int a[1];
     a[0] = 0;
+}");
+
+    [Fact]
+    public Task SwitchStatement_Empty() => DoTest(@"switch(x) { }");
+
+    [Fact]
+    public Task SwitchStatement_OneCase() => DoTest(@"switch(x) { case 0: break; }");
+
+    [Fact]
+    public Task SwitchStatement_MultiCases() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+}");
+
+    [Fact]
+    public Task SwitchStatement_MultiCasesWithDefault() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+    default: break;
 }");
 }

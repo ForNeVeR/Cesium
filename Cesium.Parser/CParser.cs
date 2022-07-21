@@ -635,7 +635,7 @@ public partial class CParser
     // TODO: 6.7.10 Static assertions
 
     // 6.8 Statements and blocks
-    // TODO: [Rule("statement: labeled_statement")]
+    [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
     [Rule("statement: selection_statement")]
@@ -643,7 +643,20 @@ public partial class CParser
     [Rule("statement: jump_statement")]
     private static Statement MakeStatementIdentity(Statement statement) => statement;
 
-    // TODO: 6.8.1 Labeled statements
+    // 6.8.1 Labeled statements
+    [Rule("labeled_statement: Identifier ':' statement")]
+    private static Statement MakeLabelStatement(IToken identifier, IToken _, Statement block) =>
+        new LabelStatement(identifier.Text, block);
+
+    // TODO: constant or constant-expression? What's difference? gsomix.
+    [Rule("labeled_statement: 'case' constant ':' statement")]
+    private static Statement MakeCaseStatement(IToken _, ICToken constant, IToken __, Statement block) =>
+        new CaseStatement(constant, block);
+
+    [Rule("labeled_statement: 'default' ':' statement")]
+    private static Statement MakeDefaultStatement(IToken _, IToken __, Statement block) =>
+        new DefaultStatement(block);
+
     // 6.8.2 Compound statement
     [Rule("compound_statement: '{' block_item_list? '}'")]
     private static CompoundStatement MakeCompoundStatement(ICToken _, BlockItemList? block, ICToken __) =>
@@ -665,16 +678,16 @@ public partial class CParser
 
     // 6.8.4 Selection statements
     [Rule("selection_statement: 'if' '(' expression ')' statement")]
-    private static IfElseStatement MakeIfStatement(
+    private static Statement MakeIfStatement(
         IToken _,
         IToken __,
         Expression expression,
         IToken ___,
         Statement statement)
-        => new(expression, statement, null);
+        => new IfElseStatement(expression, statement, null);
 
     [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
-    private static IfElseStatement MakeIfElseStatement(
+    private static Statement MakeIfElseStatement(
         IToken _,
         IToken __,
         Expression expression,
@@ -682,8 +695,17 @@ public partial class CParser
         Statement trueBranch,
         IToken ____,
         Statement falseBranch)
-        => new(expression, trueBranch, falseBranch);
-    // TODO: 6.8.4 Selection statements switch
+        => new IfElseStatement(expression, trueBranch, falseBranch);
+
+    [Rule("selection_statement: 'switch' '(' expression ')' statement")]
+    private static Statement MakeSwitchStatement(
+        IToken _, // switch
+        IToken __, // (
+        Expression expression,
+        IToken ___, // )
+        Statement body)
+        => new SwitchStatement(expression, body);
+
 
     // TODO: 6.8.5 Iteration statements
     [Rule("iteration_statement: 'for' '(' expression? ';' expression? ';' expression? ')' statement")]
