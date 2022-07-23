@@ -29,4 +29,7 @@ public class Arguments
 
     [Option("nologo", HelpText = "Suppress compiler banner message")]
     public bool NoLogo { get; set; }
+
+    [Option("namespace", HelpText = "Sets default namespace instead of \"global\"")]
+    public string Namespace { get; init; } = "";
 }

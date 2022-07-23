@@ -16,10 +16,11 @@ internal static class Compilation
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
         TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null)
+        ModuleKind? moduleKind = null,
+        string @namespace = "")
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind);
+        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -35,7 +36,8 @@ internal static class Compilation
     private static AssemblyContext CreateAssembly(
         string outputFilePath,
         TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null)
+        ModuleKind? moduleKind = null,
+        string @namespace = "")
     {
         var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
         {
@@ -54,7 +56,8 @@ internal static class Compilation
             new AssemblyNameDefinition(assemblyName, new Version()),
             parsedModuleKind,
             targetRuntime,
-            defaultImportAssemblies);
+            defaultImportAssemblies,
+            @namespace);
     }
 
     private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
