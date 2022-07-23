@@ -30,9 +30,7 @@ internal record LocalDeclarationInfo(
             type = new PointerType(type);
         }
 
-        string? identifier = null;
-
-        (type, identifier) = ProcessDirectDeclarator(directDeclarator, type, identifier);
+        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
@@ -120,11 +118,10 @@ internal record LocalDeclarationInfo(
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
     }
 
-    private static (IType, string? Identifier) ProcessDirectDeclarator(
-        IDirectDeclarator directDeclarator,
-        IType type,
-        string? identifier)
+    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type)
     {
+        string? identifier = null;
+
         var currentDirectDeclarator = directDeclarator;
         while (currentDirectDeclarator != null)
         {
@@ -191,13 +188,28 @@ internal record LocalDeclarationInfo(
                         type = new PointerType(type);
                     }
 
-                    // TODO[#72]: Rewrite this to append a pointer to the current type.
-                    // TODO[#72]: "The current type", though, should be a function type already at this moment.
-                    // TODO[#72]: This means that LocalDeclarationInfo should get rid of "Parameters" and they will
-                    //            become a part of the underlying type.
-                    throw new NotImplementedException("TODO: This code is wrong.");
-                    currentDirectDeclarator = nestedDirectDeclarator;
-                    continue;
+                    // The only kind of nested direct declarator we support is this one:
+                    if (nestedDirectDeclarator is IdentifierDirectDeclarator idd)
+                    {
+                        if (idd.Base != null)
+                            throw new NotSupportedException(
+                                $"Not supported nested direct declarator with base: {idd}.");
+
+                        idd.Deconstruct(out var nestedIdentifier);
+                        if (identifier != null && nestedIdentifier != null)
+                            throw new NotSupportedException(
+                                $"Identifier conflict: nested identifier \"{nestedIdentifier}\"" +
+                                $" tries to override \"{identifier}.\"");
+
+                        identifier = nestedIdentifier;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            $"Not supported nested direct declarator: {nestedDirectDeclarator}.");
+                    }
+
+                    break;
 
                 default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
             }

@@ -6,7 +6,13 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal record PointerType(IType Base) : IType
 {
-    public virtual TypeReference Resolve(TranslationUnitContext context) => Base.Resolve(context).MakePointerType();
+    public virtual TypeReference Resolve(TranslationUnitContext context)
+    {
+        if (Base is FunctionType ft)
+            return ft.ResolvePointer(context);
+
+        return Base.Resolve(context).MakePointerType();
+    }
 
     public virtual int SizeInBytes => throw new NotImplementedException("Could not calculate size yet.");
 
