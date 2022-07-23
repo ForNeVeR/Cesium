@@ -217,8 +217,18 @@ int main()
 }");
 
     [Fact]
-    public Task FunctionPtrTest() => DoTest(@"typedef int (*foo)(void);
-int main() {
+    public Task FunctionPtrTest() => DoTest(@"typedef void (*foo)(void);
+int main()
+{
     foo unused;
+    return 0;
+}");
+
+    [Fact]
+    public Task FunctionPtrWithParamsTest() => DoTest(@"typedef int (*foo)(int x);
+int main()
+{
+    foo unused;
+    return 0;
 }");
 }

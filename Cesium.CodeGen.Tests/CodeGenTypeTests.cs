@@ -84,10 +84,10 @@ int main(void) { foo x; (&x)->x = 42; return 0; }");
 }");
 
     [Fact]
-    public Task StructFunctionMemberDeclaration() => DoTest(@"typedef struct { void bar(int unused); } foo;
+    public Task StructFunctionMemberDeclaration() => DoTest(@"typedef struct { void (*bar)(int unused); } foo;
 int main(void) {}");
 
     [Fact]
     public Task BasicTypeDef() => DoTest(@"typedef int foo;
-int main(void) { foo x; }");
+int main(void) { foo x; return 0; }");
 }

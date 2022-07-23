@@ -1,0 +1,11 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      IL_0000: ldc.i4.0
+      IL_0001: ret
+
+  Type: foo
+  Fields:
+    method System.Void *(System.Int32) foo::bar
+       Init with: []
