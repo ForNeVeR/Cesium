@@ -32,90 +32,12 @@ internal record LocalDeclarationInfo(
 
         string? identifier = null;
 
-        var currentDirectDeclarator = directDeclarator;
-        while (currentDirectDeclarator != null)
-        {
-            switch (currentDirectDeclarator)
-            {
-                case IdentifierListDirectDeclarator list:
-                {
-                    var (_, identifiers) = list;
-                    if (identifiers != null)
-                        throw new NotImplementedException(
-                            "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
-                            $" {string.Join(", ", identifiers)}");
-
-                    // An absent identifier list is `()` in a declaration like `int main()`. It means that there's an
-                    // empty parameter list, actually.
-                    type = ProcessFunctionParameters(type, null);
-
-                    break;
-                }
-
-                case IdentifierDirectDeclarator identifierD:
-                    if (identifier != null)
-                        throw new NotSupportedException(
-                            $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
-                    identifier = identifierD.Identifier;
-                    break;
-
-                case ParameterListDirectDeclarator parametersD:
-                    var (_ /* base */, parameters) = parametersD;
-                    type = ProcessFunctionParameters(type, parameters);
-                    break;
-
-                case ArrayDirectDeclarator array:
-                    var (_, typeQualifiers, sizeExpr) = array;
-                    if (typeQualifiers != null)
-                        throw new NotImplementedException(
-                            $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
-
-                    // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
-                    if (sizeExpr == null)
-                        type = new PointerType(type);
-                    else
-                    {
-                        if (sizeExpr is not ConstantExpression constantExpression ||
-                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
-                            !int.TryParse(constantExpression.Constant.Text, out var size))
-                            throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
-
-                        type = new StackArrayType(type, size);
-                    }
-
-                    break;
-
-                case DeclaratorDirectDeclarator ddd:
-                    ddd.Deconstruct(out var nestedDeclarator);
-                    var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
-                    if (nestedPointer != null)
-                    {
-                        var (nestedTypeQualifiers, nestedChildPointer) = nestedPointer;
-                        if (nestedTypeQualifiers != null || nestedChildPointer != null)
-                            throw new NotImplementedException(
-                                $"Nested pointer of kind {nestedPointer} is not supported, yet.");
-
-                        type = new PointerType(type);
-                    }
-
-                    // TODO[#72]: Rewrite this to append a pointer to the current type.
-                    // TODO[#72]: "The current type", though, should be a function type already at this moment.
-                    // TODO[#72]: This means that LocalDeclarationInfo should get rid of "Parameters" and they will
-                    //            become a part of the underlying type.
-                    throw new NotImplementedException("TODO: This code is wrong.");
-                    currentDirectDeclarator = nestedDirectDeclarator;
-                    continue;
-
-                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
-            }
-
-            currentDirectDeclarator = currentDirectDeclarator.Base;
-        }
+        (type, identifier) = ProcessDirectDeclarator(directDeclarator, type, identifier);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
 
-    private static (IType, string? cliImportMemberName) ProcessSpecifiers(
+    private static (IType, string? CliImportMemberName) ProcessSpecifiers(
         IReadOnlyList<IDeclarationSpecifier> specifiers)
     {
         IType? type = null;
@@ -196,6 +118,94 @@ internal record LocalDeclarationInfo(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
+    }
+
+    private static (IType, string? Identifier) ProcessDirectDeclarator(
+        IDirectDeclarator directDeclarator,
+        IType type,
+        string? identifier)
+    {
+        var currentDirectDeclarator = directDeclarator;
+        while (currentDirectDeclarator != null)
+        {
+            switch (currentDirectDeclarator)
+            {
+                case IdentifierListDirectDeclarator list:
+                {
+                    var (_, identifiers) = list;
+                    if (identifiers != null)
+                        throw new NotImplementedException(
+                            "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
+                            $" {string.Join(", ", identifiers)}");
+
+                    // An absent identifier list is `()` in a declaration like `int main()`. It means that there's an
+                    // empty parameter list, actually.
+                    type = ProcessFunctionParameters(type, null);
+
+                    break;
+                }
+
+                case IdentifierDirectDeclarator identifierD:
+                    if (identifier != null)
+                        throw new NotSupportedException(
+                            $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
+                    identifier = identifierD.Identifier;
+                    break;
+
+                case ParameterListDirectDeclarator parametersD:
+                    var (_ /* base */, parameters) = parametersD;
+                    type = ProcessFunctionParameters(type, parameters);
+                    break;
+
+                case ArrayDirectDeclarator array:
+                    var (_, typeQualifiers, sizeExpr) = array;
+                    if (typeQualifiers != null)
+                        throw new NotImplementedException(
+                            $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
+
+                    // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
+                    if (sizeExpr == null)
+                        type = new PointerType(type);
+                    else
+                    {
+                        if (sizeExpr is not ConstantExpression constantExpression ||
+                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
+                            !int.TryParse(constantExpression.Constant.Text, out var size))
+                            throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
+
+                        type = new StackArrayType(type, size);
+                    }
+
+                    break;
+
+                case DeclaratorDirectDeclarator ddd:
+                    ddd.Deconstruct(out var nestedDeclarator);
+                    var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
+                    if (nestedPointer != null)
+                    {
+                        var (nestedTypeQualifiers, nestedChildPointer) = nestedPointer;
+                        if (nestedTypeQualifiers != null || nestedChildPointer != null)
+                            throw new NotImplementedException(
+                                $"Nested pointer of kind {nestedPointer} is not supported, yet.");
+
+                        type = new PointerType(type);
+                    }
+
+                    // TODO[#72]: Rewrite this to append a pointer to the current type.
+                    // TODO[#72]: "The current type", though, should be a function type already at this moment.
+                    // TODO[#72]: This means that LocalDeclarationInfo should get rid of "Parameters" and they will
+                    //            become a part of the underlying type.
+                    throw new NotImplementedException("TODO: This code is wrong.");
+                    currentDirectDeclarator = nestedDirectDeclarator;
+                    continue;
+
+                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
+            }
+
+            currentDirectDeclarator = currentDirectDeclarator.Base;
+        }
+
+        return (type, identifier);
     }
 
     private static IEnumerable<LocalDeclarationInfo> GetTypeMemberDeclarations(
