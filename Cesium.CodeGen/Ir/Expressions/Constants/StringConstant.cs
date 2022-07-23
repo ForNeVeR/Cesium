@@ -24,5 +24,5 @@ internal class StringConstant : IConstant
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
 
-    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Char.MakePointerType(); // char*
+    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Byte.MakePointerType(); // char*
 }
