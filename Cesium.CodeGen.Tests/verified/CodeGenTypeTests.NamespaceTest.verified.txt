@@ -1,0 +1,12 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: TestNameSpace.TestClass
+  Methods:
+    System.Int32 TestNameSpace.TestClass::foo()
+      IL_0000: ldc.i4 42
+      IL_0005: ret
+
+    System.Int32 TestNameSpace.TestClass::main()
+      IL_0000: call System.Int32 TestNameSpace.TestClass::foo()
+      IL_0005: ret

@@ -7,6 +7,49 @@ public class CodeGenTypeTests : CodeGenTestBase
         var assembly = GenerateAssembly(default, source);
         return VerifyTypes(assembly);
     }
+    private static Task DoTest(string source, string @namespace = "", string globalTypeFQN = "")
+    {
+        var assembly = GenerateAssembly(default, @namespace, globalTypeFQN, source);
+        return VerifyTypes(assembly);
+    }
+
+    [Fact]
+    public Task NamespaceTest() => DoTest(@"int foo()
+{
+    return 42;
+}
+
+int main()
+{
+    return foo();
+}",
+        "TestNameSpace", "TestClass");
+
+    [Fact]
+    public Task GlobalClassTest() => DoTest(@"int foo()
+{
+    return 42;
+}
+
+int main()
+{
+    return foo();
+}",
+    "",
+    "TestClass");
+
+    [Fact]
+    public Task GlobalClassFQNTest() => DoTest(@"int foo()
+{
+    return 42;
+}
+
+int main()
+{
+    return foo();
+}",
+    "",
+    "MyNameSpace.TestClass");
 
     [Fact]
     public Task ConstCharLiteralTest() => DoTest(@"int main()
