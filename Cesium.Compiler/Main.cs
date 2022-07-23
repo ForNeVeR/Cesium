@@ -26,7 +26,7 @@ return await parserResult.MapResult(async args =>
             _ => TargetRuntimeDescriptor.Net60
         };
 
-        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, args.Namespace);
+        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, args.Namespace, args.GlobalClass);
     },
     _ =>
     {

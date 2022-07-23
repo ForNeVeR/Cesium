@@ -14,6 +14,9 @@ public class AssemblyContext
     internal AssemblyDefinition Assembly { get; }
     public ModuleDefinition Module { get; }
     public Assembly[] ImportAssemblies { get; }
+    public TypeDefinition GlobalFunctionsType { get; }
+    public string GlobalFunctionsTypeFQN { get; }
+    public string Namespace { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
@@ -22,11 +25,12 @@ public class AssemblyContext
         ModuleKind kind,
         TargetRuntimeDescriptor? targetRuntime,
         Assembly[] importAssemblies,
-        string @namespace = "")
+        string @namespace = "",
+        string globalFunctionsTypeFQN = "")
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace);
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalFunctionsTypeFQN);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
@@ -55,7 +59,6 @@ public class AssemblyContext
     }
 
     public const string ConstantPoolTypeName = "<ConstantPool>";
-    public const string GlobalFunctionsTypeName = "GlobalFunctions";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<string, FieldReference> _fields = new();
@@ -65,7 +68,7 @@ public class AssemblyContext
     public readonly TypeDefinition GlobalFunctionsType;
 
 
-    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "")
+    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "", string globalFunctionsTypeFQN = "")
     {
         Assembly = assembly;
         Module = module;
@@ -77,10 +80,35 @@ public class AssemblyContext
                 module.Types.Add(type);
                 return type;
             });
-        GlobalFunctionsType = new TypeDefinition("", GlobalFunctionsTypeName, TypeAttributes.Class | TypeAttributes.Public, module.TypeSystem.Object);
-        module.Types.Add(GlobalFunctionsType);
-    }
+        Namespace = @namespace;
 
+        if (!string.IsNullOrWhiteSpace(globalFunctionsTypeFQN))
+        {
+            string typeName;
+            string typeNamespace;
+
+            if (!globalFunctionsTypeFQN.Contains('.'))
+            {
+                typeName = globalFunctionsTypeFQN;
+                typeNamespace = @namespace;
+                GlobalFunctionsTypeFQN = $"{@namespace}.{globalFunctionsTypeFQN}";
+            }
+            else
+            {
+                GlobalFunctionsTypeFQN = globalFunctionsTypeFQN;
+                var splittedFQN = globalFunctionsTypeFQN.Split();
+                typeName = splittedFQN.Last();
+                typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
+            }
+            GlobalFunctionsType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
+            module.Types.Add(GlobalFunctionsType);
+        }
+        else
+        {
+            GlobalFunctionsTypeFQN = "<Module>";
+            GlobalFunctionsType = Module.GetType("<Module>");
+        }
+    }
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
         if (_fields.TryGetValue(stringConstant, out var field))

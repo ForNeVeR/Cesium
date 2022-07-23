@@ -32,4 +32,8 @@ public class Arguments
 
     [Option("namespace", HelpText = "Sets default namespace instead of \"global\"")]
     public string Namespace { get; init; } = "";
+
+    [Option("globalclass", HelpText = "Sets default global class instead of \"<Module>\"")]
+    public string GlobalClass { get; init; } = "";
+
 }
