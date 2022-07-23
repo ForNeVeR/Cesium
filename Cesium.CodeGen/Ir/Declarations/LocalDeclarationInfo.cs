@@ -12,14 +12,13 @@ namespace Cesium.CodeGen.Ir.Declarations;
 internal record LocalDeclarationInfo(
     IType Type,
     string? Identifier,
-    ParametersInfo? Parameters,
     string? CliImportMemberName)
 {
     public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
-            return new LocalDeclarationInfo(type, null, null, null);
+            return new LocalDeclarationInfo(type, null, null);
 
         var (pointer, directDeclarator) = declarator;
         if (pointer != null)
@@ -32,7 +31,6 @@ internal record LocalDeclarationInfo(
         }
 
         string? identifier = null;
-        ParametersInfo? parameters = null;
 
         var currentDirectDeclarator = directDeclarator;
         while (currentDirectDeclarator != null)
@@ -46,6 +44,11 @@ internal record LocalDeclarationInfo(
                         throw new NotImplementedException(
                             "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
                             $" {string.Join(", ", identifiers)}");
+
+                    // An absent identifier list is `()` in a declaration like `int main()`. It means that there's an
+                    // empty parameter list, actually.
+                    type = ProcessFunctionParameters(type, null);
+
                     break;
                 }
 
@@ -57,11 +60,8 @@ internal record LocalDeclarationInfo(
                     break;
 
                 case ParameterListDirectDeclarator parametersD:
-                    if (parameters != null)
-                        throw new NotSupportedException(
-                            $"Second parameters list declarator for an entity already having one: {parametersD}.");
-
-                    parameters = ParametersInfo.Of(parametersD.Parameters);
+                    var (_ /* base */, parameters) = parametersD;
+                    type = ProcessFunctionParameters(type, parameters);
                     break;
 
                 case ArrayDirectDeclarator array:
@@ -112,7 +112,7 @@ internal record LocalDeclarationInfo(
             currentDirectDeclarator = currentDirectDeclarator.Base;
         }
 
-        return new LocalDeclarationInfo(type, identifier, parameters, cliImportMemberName);
+        return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
 
     private static (IType, string? cliImportMemberName) ProcessSpecifiers(
@@ -281,4 +281,7 @@ internal record LocalDeclarationInfo(
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
             });
     }
+
+    private static IType ProcessFunctionParameters(IType returnType, ParameterTypeList? parameters) =>
+        new FunctionType(ParametersInfo.Of(parameters), returnType);
 }

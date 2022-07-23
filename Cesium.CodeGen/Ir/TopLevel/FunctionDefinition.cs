@@ -16,19 +16,18 @@ internal class FunctionDefinition : ITopLevelNode
 {
     private const string MainFunctionName = "main";
 
-    private readonly IType _returnType;
+    private readonly FunctionType _functionType;
     private readonly string _name;
-    private readonly ParametersInfo? _parameters;
     private readonly CompoundStatement _statement;
 
     private bool IsMain => _name == MainFunctionName;
 
-
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
-        (_returnType, var name, _parameters, var cliImportMemberName) =
-            LocalDeclarationInfo.Of(specifiers, declarator);
+        var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
+        _functionType = type as FunctionType
+                        ?? throw new NotSupportedException($"Function of not a function type: {type}.");
         _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)
@@ -42,21 +41,22 @@ internal class FunctionDefinition : ITopLevelNode
 
     public void EmitTo(TranslationUnitContext context)
     {
-        var returnType = _returnType.Resolve(context);
-        if (IsMain && returnType != context.TypeSystem.Int32)
+        var (parameters, returnType) = _functionType;
+        var resolvedReturnType = returnType.Resolve(context);
+        if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
             throw new NotSupportedException(
                 $"Invalid return type for the {_name} function: " +
-                $"int expected, got {_returnType}.");
+                $"int expected, got {returnType}.");
 
-        if (IsMain && _parameters?.IsVarArg == true)
+        if (IsMain && parameters?.IsVarArg == true)
             throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
 
         var declaration = context.Functions.GetValueOrDefault(_name);
-        declaration?.VerifySignatureEquality(_name, _parameters, _returnType);
+        declaration?.VerifySignatureEquality(_name, parameters, returnType);
 
         var method = declaration switch
         {
-            null => context.ModuleType.DefineMethod(context, _name, returnType, _parameters),
+            null => context.ModuleType.DefineMethod(context, _name, resolvedReturnType, parameters),
             { MethodReference: MethodDefinition md } => md,
             _ => throw new NotSupportedException($"Function {_name} already defined as immutable.")
         };
@@ -65,7 +65,7 @@ internal class FunctionDefinition : ITopLevelNode
             throw new NotSupportedException($"Double definition of function {_name}.");
 
         if (declaration == null)
-            context.Functions.Add(_name, new FunctionInfo(_parameters, _returnType, method, IsDefined: true));
+            context.Functions.Add(_name, new FunctionInfo(parameters, returnType, method, IsDefined: true));
         else
             context.Functions[_name] = declaration with { IsDefined = true };
 
@@ -91,10 +91,10 @@ internal class FunctionDefinition : ITopLevelNode
     /// <returns>Whether the synthetic entry point should be generated.</returns>
     private bool ValidateMainParameters()
     {
-        if (_parameters == null)
+        if (_functionType.Parameters == null)
             return false; // TODO[#87]: Decide whether this is normal or not.
 
-        var (parameterList, isVoid, isVarArg) = _parameters;
+        var (parameterList, isVoid, isVarArg) = _functionType.Parameters;
         if (isVoid) return false; // supported, no synthetic entry point required
 
         if (isVarArg)
@@ -264,7 +264,7 @@ internal class FunctionDefinition : ITopLevelNode
                 instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                 instructions.Add(Instruction.Create(OpCodes.Ret));
             }
-            else if (_returnType.Resolve(context) == context.TypeSystem.Void)
+            else if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
             {
                 var instructions = scope.Method.Body.Instructions;
                 instructions.Add(Instruction.Create(OpCodes.Ret));
