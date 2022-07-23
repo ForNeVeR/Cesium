@@ -20,7 +20,7 @@ internal class CharConstant : IConstant
         instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 
-    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Char;
+    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Byte;
 
     public override string ToString() => $"char: {_value}";
 
