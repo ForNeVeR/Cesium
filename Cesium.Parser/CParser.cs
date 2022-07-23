@@ -73,7 +73,6 @@ public partial class CParser
 
     // TODO:
     // primary-expression:
-    //     ( expression )
     //     generic-selection
 
     // 6.5.2 Postfix operators
