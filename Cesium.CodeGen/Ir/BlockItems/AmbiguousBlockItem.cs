@@ -25,7 +25,7 @@ internal class AmbiguousBlockItem : IBlockItem
 
     public IBlockItem Lower() => this;
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         // Check if this can be a valid variable declaration:
         var typeReference = scope.Context.GetTypeReference(_item1);
@@ -49,12 +49,12 @@ internal class AmbiguousBlockItem : IBlockItem
                 $" but it's ambiguous which it is, since both a function and a type of name {_item1} exist.");
     }
 
-    private void EmitVariableDeclaration(FunctionScope scope)
+    private void EmitVariableDeclaration(IDeclarationScope scope)
     {
         throw new NotImplementedException("Ambiguous variable declarations aren't supported, yet.");
     }
 
-    private void EmitFunctionCall(FunctionScope scope)
+    private void EmitFunctionCall(IDeclarationScope scope)
     {
         CToken CreateFakeToken(string id) => new(new Range(), id, new Range(), id, CTokenType.Identifier);
 

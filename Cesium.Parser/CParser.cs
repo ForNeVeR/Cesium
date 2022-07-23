@@ -723,7 +723,7 @@ public partial class CParser
         ICToken ____,
         Expression updateExpression,
         ICToken _____,
-        Statement body)
+        IBlockItem body)
         => new(initExpression, testExpression, updateExpression, body);
 
     // 6.8.6 Jump statements

@@ -29,7 +29,7 @@ public record ForStatement(
     Expression? InitExpression,
     Expression? TestExpression,
     Expression? UpdateExpression,
-    Statement Body) : Statement;
+    IBlockItem Body) : Statement;
 
 // 6.8.6 Jump statements
 public record GoToStatement(string Identifier) : Statement;
