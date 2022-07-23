@@ -66,7 +66,7 @@ internal class BinaryOperatorExpression : IExpression
         };
     }
 
-    // TODO[139]: Implement conversions and types tracking for arithmetic operations
+    // TODO[136]: Implement conversions and types tracking for arithmetic operations
     public virtual TypeReference GetExpressionType(IDeclarationScope scope) => throw new NotImplementedException();
 
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
