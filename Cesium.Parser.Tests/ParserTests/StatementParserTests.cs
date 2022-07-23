@@ -38,10 +38,61 @@ public class StatementParserTests : ParserTestBase
     [Fact]
     public Task NestedIfs() => DoTest(@"
 if (1)
-    if (2) { 
+    if (2) {
         int x = 0;
     } else {
         int y = 1;
-    } 
+    }
 ");
+
+    [Fact]
+    public Task RelationalOperators() => DoTest("return 1 > 2 < 4 <= 5 >= 6;");
+
+    [Fact]
+    public Task EqualityOperators() => DoTest("return 1 == 2 != 3;");
+
+    [Fact]
+    public Task LogicalAndOperator() => DoTest("return 1 && 2;");
+
+    [Fact]
+    public Task LogicalOrOperator() => DoTest("return 1 || 2;");
+
+    [Fact]
+    public Task ForStatement_Full() => DoTest("for (i = 1; i < 0; ++i) ++i;");
+
+    [Fact]
+    public Task ForStatement_NoInit() => DoTest("for (; i < 0; ++i) ++i;");
+
+    [Fact]
+    public Task ForStatement_NoTest() => DoTest("for (i = 1;; ++i) ++i;");
+
+    [Fact]
+    public Task ForStatement_NoUpdate() => DoTest("for (i = 1; i < 0;) ++i;");
+
+    [Fact]
+    public Task ForStatement_OnlyInit() => DoTest("for (i = 1;;) ++i;");
+
+    [Fact]
+    public Task ForStatement_OnlyCondition() => DoTest("for (; i < 0;) ++i;");
+
+    [Fact]
+    public Task ForStatement_OnlyUpdate() => DoTest("for (;; ++i) ++i;");
+
+    [Fact]
+    public Task ForStatement_Empty() => DoTest("for (;;) ++i;");
+
+    [Fact]
+    public Task ForStatement_MultiLineBody() => DoTest(@"for (i = 1; i < 0; ++i) {
+    i = i - 1;
+    i = i + 2;
+}");
+
+    [Fact]
+    public Task ArrayAssigment() => DoTest(@"{
+    int a[1];
+    a[0] = 0;
+}");
+
+    [Fact]
+    public Task AddressOfInParens() => DoTest("(&x)->x = 42;");
 }

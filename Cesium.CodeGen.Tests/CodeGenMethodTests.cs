@@ -63,6 +63,9 @@ int main()
     [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 
+    [Fact]
+    public Task AddressOfTest() => DoTest("int main() { int x; int *y = &x; }");
+
     [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
@@ -123,11 +126,39 @@ int main() { return foo(); }", "Function foo not defined.");
     public Task PrimitiveTypes() => DoTest(@"int main(void)
 {
     // basic
-    char a;
-    int b;
+    char c;
+    short s;
+    signed s1;
+    int i;
+    unsigned u;
+    long l;
+    float f;
+    double d;
 
     // unsigned
-    unsigned char c;
+    unsigned char uc;
+    unsigned short us;
+    unsigned short int usi;
+    unsigned int ui;
+    unsigned long ul;
+    unsigned long int uli;
+    unsigned long long ull;
+    unsigned long long int ulli;
+
+    // signed
+    signed char sc;
+    signed short ss;
+    short int shi;
+    signed short int ssi;
+    signed int si;
+    signed long sl;
+    long int li;
+    signed long int sli;
+    long long ll;
+    signed long long sll;
+    long long int lli;
+    signed long long int slli;
+    long double ld;
 
     return 0;
 }");
@@ -141,6 +172,38 @@ int main() { return foo(); }", "Function foo not defined.");
     x |= 1;
     return x;
 }");
+
+    [Fact]
+    public Task SimpleRelationalOperators() => DoTest(@"int main() { return 1 > 2 < 4; }");
+
+    [Fact]
+    public Task RelationalOperatorsWithLowering() => DoTest(@"int main() { return 1 >= 2 <= 4; }");
+
+    [Fact]
+    public Task EqualToOperator() => DoTest(@"int main() { return 1 == 2; }");
+
+    [Fact]
+    public Task NotEqualToOperator() => DoTest(@"int main() { return 1 != 2; }");
+
+    [Fact]
+    public Task LogicalAndOperator() => DoTest(@"int main() { return 1 && 2; }");
+
+    [Fact]
+    public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
+
+    [Fact]
+    public Task ArrayAssignment() => DoTest(@"int main() {
+    int a[10];
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
+    public Task ArrayAddressOf() => DoTest(@"int main() {
+    int a[10];
+    int *x = &a[2];
+    return 0;
+ }");
 
     [Fact]
     public Task AmbiguousCallTest() => DoTest(@"

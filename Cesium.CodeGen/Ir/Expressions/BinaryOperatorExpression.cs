@@ -1,5 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -25,9 +27,24 @@ internal class BinaryOperatorExpression : IExpression
         Right = right.ToIntermediate();
     }
 
-    public virtual IExpression Lower() => new BinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public virtual IExpression Lower() => Operator switch
+    {
+        BinaryOperator.GreaterThanOrEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.LessThan, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        BinaryOperator.LessThanOrEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.GreaterThan, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        BinaryOperator.NotEqualTo => new BinaryOperatorExpression(
+            new BinaryOperatorExpression(Left.Lower(), BinaryOperator.EqualTo, Right.Lower()),
+            BinaryOperator.EqualTo,
+            new ConstantExpression(new IntegerConstant("0"))),
+        _ => new BinaryOperatorExpression(Left.Lower(), Operator, Right.Lower()),
+    };
 
-    public virtual void EmitTo(FunctionScope scope)
+    public virtual void EmitTo(IDeclarationScope scope)
     {
         Left.EmitTo(scope);
         Right.EmitTo(scope);
@@ -42,9 +59,15 @@ internal class BinaryOperatorExpression : IExpression
             BinaryOperator.BitwiseOr => Instruction.Create(OpCodes.Or),
             BinaryOperator.BitwiseAnd => Instruction.Create(OpCodes.And),
             BinaryOperator.BitwiseXor => Instruction.Create(OpCodes.Xor),
+            BinaryOperator.GreaterThan => Instruction.Create(OpCodes.Cgt),
+            BinaryOperator.LessThan => Instruction.Create(OpCodes.Clt),
+            BinaryOperator.EqualTo => Instruction.Create(OpCodes.Ceq),
             _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
         };
     }
+
+    // TODO[136]: Implement conversions and types tracking for arithmetic operations
+    public virtual TypeReference GetExpressionType(IDeclarationScope scope) => throw new NotImplementedException();
 
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
     {
@@ -63,6 +86,14 @@ internal class BinaryOperatorExpression : IExpression
         "|=" => BinaryOperator.BitwiseOrAndAssign,
         "&=" => BinaryOperator.BitwiseAndAndAssign,
         "^=" => BinaryOperator.BitwiseXorAndAssign,
+        ">" => BinaryOperator.GreaterThan,
+        "<" => BinaryOperator.LessThan,
+        ">=" => BinaryOperator.GreaterThanOrEqualTo,
+        "<=" => BinaryOperator.LessThanOrEqualTo,
+        "==" => BinaryOperator.EqualTo,
+        "!=" => BinaryOperator.NotEqualTo,
+        "&&" => BinaryOperator.LogicalAnd,
+        "||" => BinaryOperator.LogicalOr,
         _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
     };
 }

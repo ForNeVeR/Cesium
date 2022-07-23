@@ -15,10 +15,12 @@ internal static class Compilation
     public static async Task<int> Compile(
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime)
+        TargetRuntimeDescriptor targetRuntime,
+        ModuleKind? moduleKind = null,
+        string @namespace = "")
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime);
+        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -31,13 +33,17 @@ internal static class Compilation
         return 0;
     }
 
-    private static AssemblyContext CreateAssembly(string outputFilePath, TargetRuntimeDescriptor targetRuntime)
+    private static AssemblyContext CreateAssembly(
+        string outputFilePath,
+        TargetRuntimeDescriptor targetRuntime,
+        ModuleKind? moduleKind = null,
+        string @namespace = "")
     {
-        var moduleKind = Path.GetExtension(outputFilePath).ToLowerInvariant() switch
+        var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
         {
             ".exe" => ModuleKind.Console,
             ".dll" => ModuleKind.Dll,
-            var o => throw new Exception($"Unknown file extension: {o}.")
+            var o => throw new Exception($"Unknown file extension: {o}. \"modulekind\" is not specified.")
         };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
         var defaultImportAssemblies = new []
@@ -48,9 +54,10 @@ internal static class Compilation
         };
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
-            moduleKind,
+            parsedModuleKind,
             targetRuntime,
-            defaultImportAssemblies);
+            defaultImportAssemblies,
+            @namespace);
     }
 
     private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)

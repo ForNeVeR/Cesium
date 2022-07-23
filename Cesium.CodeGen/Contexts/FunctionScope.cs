@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record FunctionScope(TranslationUnitContext Context, MethodDefinition Method)
+internal record FunctionScope(TranslationUnitContext Context, MethodDefinition Method) : IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;

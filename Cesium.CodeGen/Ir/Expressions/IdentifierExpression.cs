@@ -1,14 +1,15 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.LValues;
+using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IdentifierConstantExpression : IExpression, ILValueExpression
+internal class IdentifierExpression : IExpression, ILValueExpression
 {
     public string Identifier { get; }
 
-    public IdentifierConstantExpression(Ast.ConstantExpression expression)
+    public IdentifierExpression(Ast.ConstantExpression expression)
     {
         var constant = expression.Constant;
         if (expression.Constant.Kind != CTokenType.Identifier)
@@ -17,9 +18,18 @@ internal class IdentifierConstantExpression : IExpression, ILValueExpression
         Identifier = constant.Text;
     }
 
+    public IdentifierExpression(Ast.IdentifierExpression expression)
+    {
+        Identifier = expression.Identifier;
+    }
+
     public IExpression Lower() => this;
 
-    public ILValue Resolve(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+
+    public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+
+    public ILValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         var par = scope.GetParameter(Identifier);
@@ -37,6 +47,4 @@ internal class IdentifierConstantExpression : IExpression, ILValueExpression
                     $"Variable {Identifier} is both available as a local and as a function parameter.");
         }
     }
-
-    public void EmitTo(FunctionScope scope) => Resolve(scope).EmitGetValue(scope);
 }

@@ -1,0 +1,27 @@
+name: "Perform common steps"
+description: "Performs common steps over the workflows"
+runs:
+  using: "composite"
+  steps:
+    - name: ⚙ Setup .NET 6.0 SDK ⚙
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: ♻ NuGet Cache ♻
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.NUGET_PACKAGES }}
+        key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
+
+    - name: 🔄 Restore Nuget Packages 🔄
+      shell: bash
+      run: dotnet restore
+
+    - name: 🛠 Build Solution 🛠
+      shell: bash
+      run: dotnet build
+
+    - name: ✅ Run Unit Tests ✅
+      shell: bash
+      run: dotnet test

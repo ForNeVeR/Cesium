@@ -5,5 +5,5 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal interface ILValueExpression
 {
-    ILValue Resolve(FunctionScope scope);
+    ILValue Resolve(IDeclarationScope scope);
 }

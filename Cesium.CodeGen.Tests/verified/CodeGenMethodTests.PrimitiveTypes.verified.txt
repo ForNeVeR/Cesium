@@ -1,7 +1,33 @@
 ﻿System.Int32 <Module>::main()
   Locals:
     System.Byte V_0
-    System.Int32 V_1
-    System.Byte V_2
+    System.Int16 V_1
+    System.Int32 V_2
+    System.Int32 V_3
+    System.UInt32 V_4
+    System.Int64 V_5
+    System.Single V_6
+    System.Double V_7
+    System.Byte V_8
+    System.UInt16 V_9
+    System.UInt16 V_10
+    System.UInt32 V_11
+    System.UInt64 V_12
+    System.UInt64 V_13
+    System.UInt64 V_14
+    System.UInt64 V_15
+    System.SByte V_16
+    System.Int16 V_17
+    System.Int16 V_18
+    System.Int16 V_19
+    System.Int32 V_20
+    System.Int64 V_21
+    System.Int64 V_22
+    System.Int64 V_23
+    System.Int64 V_24
+    System.Int64 V_25
+    System.Int64 V_26
+    System.Int64 V_27
+    System.Double V_28
   IL_0000: ldc.i4 0
   IL_0005: ret

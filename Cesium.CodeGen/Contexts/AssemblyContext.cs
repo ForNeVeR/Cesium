@@ -21,11 +21,12 @@ public class AssemblyContext
         AssemblyNameDefinition name,
         ModuleKind kind,
         TargetRuntimeDescriptor? targetRuntime,
-        Assembly[] importAssemblies)
+        Assembly[] importAssemblies,
+        string @namespace = "")
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies);
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
@@ -60,7 +61,7 @@ public class AssemblyContext
 
     private readonly Lazy<TypeDefinition> _constantPool;
 
-    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies)
+    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "")
     {
         Assembly = assembly;
         Module = module;
@@ -68,7 +69,7 @@ public class AssemblyContext
         _constantPool = new(
             () =>
             {
-                var type = new TypeDefinition("", ConstantPoolTypeName, TypeAttributes.Sealed, module.TypeSystem.Object);
+                var type = new TypeDefinition(@namespace, ConstantPoolTypeName, TypeAttributes.Sealed, module.TypeSystem.Object);
                 module.Types.Add(type);
                 return type;
             });

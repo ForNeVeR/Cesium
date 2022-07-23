@@ -17,5 +17,5 @@ internal class ExpressionStatement : IBlockItem
     }
 
     public IBlockItem Lower() => new ExpressionStatement(_expression?.Lower());
-    public void EmitTo(FunctionScope scope) => _expression?.EmitTo(scope);
+    public void EmitTo(IDeclarationScope scope) => _expression?.EmitTo(scope);
 }

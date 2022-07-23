@@ -68,9 +68,11 @@ public partial class CParser
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantExpression(stringLiteral);
 
+    [Rule("primary_expression: '(' expression ')'")]
+    private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
+
     // TODO:
     // primary-expression:
-    //     ( expression )
     //     generic-selection
 
     // 6.5.2 Postfix operators
@@ -89,7 +91,15 @@ public partial class CParser
     // TODO:
     // postfix-expression:
     //     postfix-expression . identifier
-    //     postfix-expression -> identifier
+
+    [Rule("postfix_expression: postfix_expression '->' Identifier")]
+    private static Expression MakePointerMemberAccessExpression(
+        Expression function,
+        IToken _,
+        IToken identifier) => new PointerMemberAccessExpression(function, new IdentifierExpression(identifier.Text));
+
+    // TODO:
+    // postfix-expression:
     //     postfix-expression ++
     //     postfix-expression -
     //     ( type-name ) { initializer-list }
@@ -126,7 +136,7 @@ public partial class CParser
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     // TODO: [Rule("unary_operator: '!'")]
-    // TODO: [Rule("unary_operator: '&'")]
+    [Rule("unary_operator: '&'")]
     // TODO: [Rule("unary_operator: '*'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
@@ -151,8 +161,19 @@ public partial class CParser
     private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.8 Relational operators
-    // TODO: 6.5.9 Equality operators
+    // 6.5.8 Relational operators
+    [Rule("relational_expression: relational_expression '<' additive_expression")]
+    [Rule("relational_expression: relational_expression '>' additive_expression")]
+    [Rule("relational_expression: relational_expression '<=' additive_expression")]
+    [Rule("relational_expression: relational_expression '>=' additive_expression")]
+    private static Expression MakeRelationalExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.9 Equality operators
+    [Rule("equality_expression: equality_expression '==' additive_expression")]
+    [Rule("equality_expression: equality_expression '!=' additive_expression")]
+    private static Expression MakeEqualityExpression(Expression a, ICToken @operator, Expression b) =>
+        new BinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.10 Bitwise AND operator
     [Rule("AND_expression: AND_expression '&' equality_expression")]
@@ -169,8 +190,16 @@ public partial class CParser
     private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
         new BinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.13 Logical AND operator
-    // TODO: 6.5.14 Logical OR operator
+    // 6.5.13 Logical AND operator
+    [Rule("logical_AND_expression: logical_AND_expression '&&' inclusive_OR_expression")]
+    private static Expression MakeLogicalAndExpression(Expression a, ICToken @operator, Expression b) =>
+        new LogicalBinaryOperatorExpression(a, @operator.Text, b);
+
+    // 6.5.14 Logical OR operator
+    [Rule("logical_OR_expression: logical_OR_expression '||' logical_AND_expression")]
+    private static Expression MakeLogicalOrExpression(Expression a, ICToken @operator, Expression b) =>
+        new LogicalBinaryOperatorExpression(a, @operator.Text, b);
+
     // TODO: 6.5.15 Conditional operator
 
     // 6.5.16 Assignment operators
@@ -635,7 +664,7 @@ public partial class CParser
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
     [Rule("statement: selection_statement")]
-    // TODO: [Rule("statement: iteration_statement")]
+    [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
     private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
 
@@ -684,6 +713,18 @@ public partial class CParser
     // TODO: 6.8.4 Selection statements switch
 
     // TODO: 6.8.5 Iteration statements
+    [Rule("iteration_statement: 'for' '(' expression? ';' expression? ';' expression? ')' statement")]
+    private static ForStatement MakeForStatement(
+        ICToken _,
+        ICToken __,
+        Expression initExpression,
+        ICToken ___,
+        Expression testExpression,
+        ICToken ____,
+        Expression updateExpression,
+        ICToken _____,
+        Statement body)
+        => new(initExpression, testExpression, updateExpression, body);
 
     // 6.8.6 Jump statements
     [Rule("jump_statement: 'goto' Identifier ';'")]
@@ -691,7 +732,10 @@ public partial class CParser
         new GoToStatement(identifier.Text);
 
     // [Rule("jump_statement: 'continue' ';'")]
-    // [Rule("jump_statement: 'break' ';'")]
+    [Rule("jump_statement: 'break' ';'")]
+    private static Statement MakeBreakStatement(ICToken _, ICToken __)
+        => new BreakStatement();
+
     [Rule("jump_statement: 'return' expression? ';'")]
     private static Statement MakeReturnStatement(ICToken _, Expression expression, ICToken __) =>
         new ReturnStatement(expression);

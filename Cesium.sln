@@ -17,8 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\integration-tests.yml = .github\workflows\integration-tests.yml
-		.github\workflows\main.yml = .github\workflows\main.yml
+		.github\workflows\run-build-and-integration-tests.yml = .github\workflows\run-build-and-integration-tests.yml
+		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Parser", "Cesium.Parser\Cesium.Parser.csproj", "{537F83F5-67B1-4863-A557-CF08149A99CB}"
@@ -58,6 +58,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime", "Cesium.Runtime\Cesium.Runtime.csproj", "{309E8DE2-673A-4A6B-83A6-328ED480DB2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.IntegrationTests", "Cesium.IntegrationTests\Cesium.IntegrationTests.proj", "{6A8E561A-70DF-41BB-BABE-79B31904E67C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perform-common-steps", "perform-common-steps", "{BDB20BB2-0C0E-4EEA-8D65-AF53A3E65837}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\perform-common-steps\action.yml = .github\workflows\perform-common-steps\action.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +116,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C08E4851-DE2E-490E-970D-4F6A0A902A98} = {720F6830-E724-4B3A-BFDC-3FA1301A59D0}
+		{BDB20BB2-0C0E-4EEA-8D65-AF53A3E65837} = {C08E4851-DE2E-490E-970D-4F6A0A902A98}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4EAC8E60-2623-4A2D-B08C-4326184915E7}

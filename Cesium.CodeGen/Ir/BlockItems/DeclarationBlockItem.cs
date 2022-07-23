@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -41,7 +42,7 @@ internal class DeclarationBlockItem : IBlockItem
     }
 
 
-    public void EmitTo(FunctionScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         switch (_declaration)
         {
@@ -56,7 +57,7 @@ internal class DeclarationBlockItem : IBlockItem
         }
     }
 
-    private static void EmitScopedIdentifier(FunctionScope scope, ScopedIdentifierDeclaration scopedDeclaration)
+    private static void EmitScopedIdentifier(IDeclarationScope scope, ScopedIdentifierDeclaration scopedDeclaration)
     {
         scopedDeclaration.Deconstruct(out var declarations);
         foreach (var (declaration, initializer) in declarations)
@@ -82,9 +83,18 @@ internal class DeclarationBlockItem : IBlockItem
             method.Body.Variables.Add(variable);
             scope.Variables.Add(identifier, variable);
 
-            if (initializer == null) return;
+            switch (initializer)
+            {
+                case null when type is not StackArrayType:
+                    return;
+                case null when type is StackArrayType arrayType:
+                    arrayType.EmitInitializer(scope);
+                    break;
+                default:
+                    initializer?.EmitTo(scope);
+                    break;
+            }
 
-            initializer.EmitTo(scope);
             scope.StLoc(variable);
         }
     }
