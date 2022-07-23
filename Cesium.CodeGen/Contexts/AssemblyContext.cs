@@ -14,8 +14,8 @@ public class AssemblyContext
     internal AssemblyDefinition Assembly { get; }
     public ModuleDefinition Module { get; }
     public Assembly[] ImportAssemblies { get; }
-    public TypeDefinition GlobalFunctionsType { get; }
-    public string GlobalFunctionsTypeFQN { get; }
+    public TypeDefinition GlobalType { get; }
+    public string GlobalTypeFQN { get; }
     public string Namespace { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
@@ -26,11 +26,11 @@ public class AssemblyContext
         TargetRuntimeDescriptor? targetRuntime,
         Assembly[] importAssemblies,
         string @namespace = "",
-        string globalFunctionsTypeFQN = "")
+        string globalTypeFQN = "")
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalFunctionsTypeFQN);
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalTypeFQN);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
@@ -68,7 +68,7 @@ public class AssemblyContext
     public readonly TypeDefinition GlobalFunctionsType;
 
 
-    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "", string globalFunctionsTypeFQN = "")
+    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "", string globalTypeFQN = "")
     {
         Assembly = assembly;
         Module = module;
@@ -82,31 +82,31 @@ public class AssemblyContext
             });
         Namespace = @namespace;
 
-        if (!string.IsNullOrWhiteSpace(globalFunctionsTypeFQN))
+        if (!string.IsNullOrWhiteSpace(globalTypeFQN))
         {
             string typeName;
             string typeNamespace;
 
-            if (!globalFunctionsTypeFQN.Contains('.'))
+            if (!globalTypeFQN.Contains('.'))
             {
-                typeName = globalFunctionsTypeFQN;
+                typeName = globalTypeFQN;
                 typeNamespace = @namespace;
-                GlobalFunctionsTypeFQN = $"{@namespace}.{globalFunctionsTypeFQN}";
+                GlobalTypeFQN = $"{@namespace}.{globalTypeFQN}";
             }
             else
             {
-                GlobalFunctionsTypeFQN = globalFunctionsTypeFQN;
-                var splittedFQN = globalFunctionsTypeFQN.Split();
+                GlobalTypeFQN = globalTypeFQN;
+                var splittedFQN = globalTypeFQN.Split();
                 typeName = splittedFQN.Last();
                 typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
             }
-            GlobalFunctionsType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
-            module.Types.Add(GlobalFunctionsType);
+            GlobalType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
+            module.Types.Add(GlobalType);
         }
         else
         {
-            GlobalFunctionsTypeFQN = "<Module>";
-            GlobalFunctionsType = Module.GetType("<Module>");
+            GlobalTypeFQN = "<Module>";
+            GlobalType = Module.GetType("<Module>");
         }
     }
     public FieldReference GetConstantPoolReference(string stringConstant)

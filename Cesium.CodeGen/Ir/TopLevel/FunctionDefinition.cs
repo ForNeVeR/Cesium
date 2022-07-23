@@ -56,7 +56,7 @@ internal class FunctionDefinition : ITopLevelNode
 
         var method = declaration switch
         {
-            null => context.GlobalFunctionsType.DefineMethod(context, _name, resolvedReturnType, parameters),
+            null => context.GlobalType.DefineMethod(context, _name, resolvedReturnType, parameters),
             { MethodReference: MethodDefinition md } => md,
             _ => throw new NotSupportedException($"Function {_name} already defined as immutable.")
         };
