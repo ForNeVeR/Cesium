@@ -10,6 +10,8 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
     public TypeDefinition ModuleType => Module.GetType("<Module>");
+    public TypeDefinition GlobalFunctionsType => AssemblyContext.GlobalFunctionsType;
+
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();

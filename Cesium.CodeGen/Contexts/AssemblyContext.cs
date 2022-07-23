@@ -55,11 +55,15 @@ public class AssemblyContext
     }
 
     public const string ConstantPoolTypeName = "<ConstantPool>";
+    public const string GlobalFunctionsTypeName = "GlobalFunctions";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<string, FieldReference> _fields = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
+
+    public readonly TypeDefinition GlobalFunctionsType;
+
 
     private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "")
     {
@@ -73,6 +77,8 @@ public class AssemblyContext
                 module.Types.Add(type);
                 return type;
             });
+        GlobalFunctionsType = new TypeDefinition("", GlobalFunctionsTypeName, TypeAttributes.Class | TypeAttributes.Public, module.TypeSystem.Object);
+        module.Types.Add(GlobalFunctionsType);
     }
 
     public FieldReference GetConstantPoolReference(string stringConstant)
