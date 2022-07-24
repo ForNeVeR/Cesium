@@ -21,7 +21,15 @@ int main()
     x = x + 1;
     return x;
 }",
-        "TestNameSpace", "TestClass");
+        "", "TestClass");
+    [Fact]
+    public Task GlobalVariableModuleTest() => DoTest(@"int x = 50;
+
+int main()
+{
+    x = x + 1;
+    return x;
+}");
 
     [Fact]
     public Task NamespaceTest() => DoTest(@"int foo()

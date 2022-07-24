@@ -7,10 +7,9 @@
        Init with: []
   Methods:
     System.Void TestClass::.cctor()
-      IL_0000: ldarg.0
-      IL_0001: ldc.i4 50
-      IL_0006: stfld System.Int32 TestClass::x
-      IL_000b: ret
+      IL_0000: ldc.i4 50
+      IL_0005: stfld System.Int32 TestClass::x
+      IL_000a: ret
 
     System.Int32 TestClass::main()
       IL_0000: ldfld System.Int32 TestClass::x
