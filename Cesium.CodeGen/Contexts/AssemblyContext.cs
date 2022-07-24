@@ -84,16 +84,10 @@ public class AssemblyContext
 
         if (!string.IsNullOrWhiteSpace(globalTypeFQN))
         {
-            var typeName = globalTypeFQN;
-            var typeNamespace = "";
-            GlobalTypeFQN = globalTypeFQN;
-
-            if (globalTypeFQN.Contains('.'))
-            {              
-                var splittedFQN = globalTypeFQN.Split('.');
-                typeName = splittedFQN[^1];
-                typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
-            }
+            GlobalTypeFQN = globalTypeFQN;         
+            var splittedFQN = globalTypeFQN.Split('.');
+            var typeName = splittedFQN[^1];
+            var typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
 
             GlobalType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
             module.Types.Add(GlobalType);
