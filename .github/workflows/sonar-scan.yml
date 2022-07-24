@@ -1,9 +1,7 @@
 name: Run .NET SonarQube analysis
 on:
   push:
-    branches:
-      - main
-      - ci/sonar
+    branches: [ main ]
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'
