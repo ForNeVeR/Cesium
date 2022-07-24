@@ -14,6 +14,16 @@ public class CodeGenTypeTests : CodeGenTestBase
     }
 
     [Fact]
+    public Task GlobalVariableTest() => DoTest(@"int x = 50;
+
+int main()
+{
+    x = x + 1;
+    return x;
+}",
+        "TestNameSpace", "TestClass");
+
+    [Fact]
     public Task NamespaceTest() => DoTest(@"int foo()
 {
     return 42;
