@@ -71,3 +71,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PROJECT_KEY: 'Cesium_Test'
+          ORGANIZATION: 'petro-kolosov-own-repos'
