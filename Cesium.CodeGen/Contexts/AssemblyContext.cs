@@ -89,7 +89,14 @@ public class AssemblyContext
             var typeName = splittedFQN[^1];
             var typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
 
-            GlobalType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
+            GlobalType = new TypeDefinition(
+                typeNamespace,
+                typeName,
+                TypeAttributes.Class
+                | TypeAttributes.Public
+                | TypeAttributes.Abstract
+                | TypeAttributes.Sealed,
+                module.TypeSystem.Object);
             module.Types.Add(GlobalType);
         }
         else
