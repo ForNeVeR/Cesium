@@ -117,6 +117,11 @@ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fal
 
 where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folder.
 
+Code Quality (Experimental)
+------------
+
+See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Cesium).
+
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
