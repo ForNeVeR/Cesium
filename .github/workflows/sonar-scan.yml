@@ -1,5 +1,7 @@
 name: Run .NET SonarQube analysis
 on:
+  push:
+    branches: [ ci/sonar ]
   workflow_dispatch:
 jobs:
   run-dotnet-sonarqube-analysis:
