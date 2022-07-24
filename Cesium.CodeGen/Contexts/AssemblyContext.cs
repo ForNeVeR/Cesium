@@ -15,8 +15,6 @@ public class AssemblyContext
     public ModuleDefinition Module { get; }
     public Assembly[] ImportAssemblies { get; }
     public TypeDefinition GlobalType { get; }
-    public string GlobalTypeFQN { get; }
-    public string Namespace { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
@@ -26,11 +24,11 @@ public class AssemblyContext
         TargetRuntimeDescriptor? targetRuntime,
         Assembly[] importAssemblies,
         string @namespace = "",
-        string globalTypeFQN = "")
+        string globalTypeFqn = "")
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalTypeFQN);
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalTypeFqn);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
@@ -65,12 +63,13 @@ public class AssemblyContext
 
     private readonly Lazy<TypeDefinition> _constantPool;
 
-    public readonly TypeDefinition GlobalFunctionsType;
-
-
-    private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "", string globalTypeFQN = "")
+    private AssemblyContext(
+        AssemblyDefinition assembly,
+        ModuleDefinition module,
+        Assembly[] importAssemblies,
+        string @namespace = "",
+        string globalTypeFqn = "")
     {
-        Namespace = @namespace;
         Assembly = assembly;
         Module = module;
         ImportAssemblies = importAssemblies;
@@ -82,12 +81,11 @@ public class AssemblyContext
                 return type;
             });
 
-        if (!string.IsNullOrWhiteSpace(globalTypeFQN))
+        if (!string.IsNullOrWhiteSpace(globalTypeFqn))
         {
-            GlobalTypeFQN = globalTypeFQN;         
-            var splittedFQN = globalTypeFQN.Split('.');
-            var typeName = splittedFQN[^1];
-            var typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
+            var fqnComponents = globalTypeFqn.Split('.');
+            var typeName = fqnComponents[^1];
+            var typeNamespace = string.Join('.', fqnComponents.SkipLast(1));
 
             GlobalType = new TypeDefinition(
                 typeNamespace,
@@ -101,7 +99,6 @@ public class AssemblyContext
         }
         else
         {
-            GlobalTypeFQN = "<Module>";
             GlobalType = Module.GetType("<Module>");
         }
     }
