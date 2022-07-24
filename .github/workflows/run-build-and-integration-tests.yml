@@ -29,6 +29,9 @@ jobs:
       - name: 💡 Perform Common Steps 💡
         uses: ./.github/workflows/perform-common-steps
 
+      - name: 🛠 Build Solution 🛠
+        run: dotnet build
+
       - name: 🔃 Setup MSVC Environment 🔃
         uses: ilammy/msvc-dev-cmd@v1
         if: startsWith(runner.os, 'windows')
