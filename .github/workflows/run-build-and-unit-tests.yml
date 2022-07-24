@@ -28,3 +28,11 @@ jobs:
 
       - name: 💡 Perform Common Steps 💡
         uses: ./.github/workflows/perform-common-steps
+
+      - name: 🛠 Build Solution 🛠
+        shell: bash
+        run: dotnet build
+
+      - name: ✅ Run Unit Tests ✅
+        shell: bash
+        run: dotnet test
