@@ -4,10 +4,6 @@ on:
     branches:
       - main
       - ci/sonar
-  pull_request:
-    branches:
-      - main
-      - ci/sonar
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'
@@ -71,5 +67,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          PROJECT_KEY: 'Cesium_Test'
-          ORGANIZATION: 'petro-kolosov-own-repos'
+          PROJECT_KEY: 'ForNeVeR_Cesium'
+          ORGANIZATION: 'fornever'
