@@ -66,16 +66,31 @@ internal class TopLevelDeclaration : ITopLevelNode
                 continue;
             }
 
+            EmitGlobalVariable(context, identifier, type);
+            continue;
             // TODO[#75]: Generate a global variable of type {type, isConst}.
             if (initializer != null)
             {
-                throw new NotImplementedException(
-                    $"Declaration {declaration} with initializer {initializer} not supported, yet.");
+                //throw new NotImplementedException(
+                //    $"Declaration {declaration} with initializer {initializer} not supported, yet.");
                 // TODO[#75]: Don't forget to lower the initializer.
+                //initializer.EmitTo();
             }
 
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");
         }
+    }
+
+    private static void EmitGlobalVariable(
+        TranslationUnitContext context,
+        string memberName,
+        IType variableType)
+    {
+        var field = new Mono.Cecil.FieldDefinition(
+            memberName,
+            Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static,
+            variableType.Resolve(context));
+        context.GlobalType.Fields.Add(field);
     }
 
     private static void EmitCliImportDeclaration(

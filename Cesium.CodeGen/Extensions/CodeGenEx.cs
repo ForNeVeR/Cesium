@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Extensions;
@@ -15,5 +16,9 @@ internal static class CodeGenEx
                 variable
             )
         );
+    }
+    public static void StFld(this IDeclarationScope scope, FieldDefinition variable)
+    {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, variable));
     }
 }

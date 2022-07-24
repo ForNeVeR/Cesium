@@ -33,10 +33,12 @@ internal class IdentifierExpression : IExpression, ILValueExpression
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         var par = scope.GetParameter(Identifier);
-
+        var global = scope.Context.GlobalType.Fields.FirstOrDefault(x => x.Name == Identifier);
         switch (var, par)
         {
             case (null, null):
+                if(global is { })
+                    return new LValueGlobalVariable(global);
                 throw new NotSupportedException($"Cannot find variable {Identifier}.");
             case ({ }, null):
                 return new LValueLocalVariable(var);
