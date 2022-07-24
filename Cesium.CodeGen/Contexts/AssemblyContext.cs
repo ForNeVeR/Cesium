@@ -70,6 +70,7 @@ public class AssemblyContext
 
     private AssemblyContext(AssemblyDefinition assembly, ModuleDefinition module, Assembly[] importAssemblies, string @namespace = "", string globalTypeFQN = "")
     {
+        Namespace = @namespace;
         Assembly = assembly;
         Module = module;
         ImportAssemblies = importAssemblies;
@@ -80,26 +81,20 @@ public class AssemblyContext
                 module.Types.Add(type);
                 return type;
             });
-        Namespace = @namespace;
 
         if (!string.IsNullOrWhiteSpace(globalTypeFQN))
         {
-            string typeName;
-            string typeNamespace;
+            var typeName = globalTypeFQN;
+            var typeNamespace = "";
+            GlobalTypeFQN = globalTypeFQN;
 
-            if (!globalTypeFQN.Contains('.'))
-            {
-                typeName = globalTypeFQN;
-                typeNamespace = @namespace;
-                GlobalTypeFQN = $"{@namespace}.{globalTypeFQN}";
-            }
-            else
-            {
-                GlobalTypeFQN = globalTypeFQN;
-                var splittedFQN = globalTypeFQN.Split();
-                typeName = splittedFQN.Last();
+            if (globalTypeFQN.Contains('.'))
+            {              
+                var splittedFQN = globalTypeFQN.Split('.');
+                typeName = splittedFQN[^1];
                 typeNamespace = string.Join('.', splittedFQN.SkipLast(1));
             }
+
             GlobalType = new TypeDefinition(typeNamespace, typeName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed, module.TypeSystem.Object);
             module.Types.Add(GlobalType);
         }
