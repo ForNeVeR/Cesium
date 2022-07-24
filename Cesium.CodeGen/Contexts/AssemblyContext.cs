@@ -119,7 +119,6 @@ public class AssemblyContext
                                | MethodAttributes.RTSpecialName
                                | MethodAttributes.Static;
         MethodDefinition method = new MethodDefinition(".cctor", methodAttributes, Module.TypeSystem.Void);
-        method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
         method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         return method;
     }
