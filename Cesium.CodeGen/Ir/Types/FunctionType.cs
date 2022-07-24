@@ -17,13 +17,10 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
 
         if (Parameters is var (parameterInfos, isVoid, isVarArg))
         {
-            if (isVoid)
-            {
-                if (parameterInfos.Count > 0 || isVarArg)
-                    throw new NotSupportedException(
-                        $"Invalid function pointer type {this}: declared as void " +
-                        $"but has parameters or declared as vararg.");
-            }
+            if (isVoid && (parameterInfos.Count > 0 || isVarArg))
+                throw new NotSupportedException(
+                    $"Invalid function pointer type {this}: declared as void " +
+                    "but has parameters or declared as vararg.");
 
             if (isVarArg)
                 throw new NotImplementedException($"A pointer to a vararg function is not implemented, yet: {this}.");

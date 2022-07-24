@@ -26,7 +26,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 EmitTypeDef(context, declaration);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(_declaration));
+                throw new NotSupportedException($"Unknown kind of declaration: {_declaration}.");
         }
     }
 

@@ -88,18 +88,18 @@ internal static class Compilation
             switch (translationUnitParseError.Error.Got)
             {
                 case CToken token:
-                    throw new Exception($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
+                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
                 case char ch:
-                    throw new Exception($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
+                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
                 default:
-                    throw new Exception($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
+                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
             }
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;
 
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
-            throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
+            throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
         context.EmitTranslationUnit(translationUnit.ToIntermediate());
     }

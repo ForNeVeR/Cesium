@@ -36,8 +36,8 @@ internal class DeclarationBlockItem : IBlockItem
                             })
                             .ToList()));
             }
-            case TypeDefDeclaration _: return this;
-            default: throw new ArgumentOutOfRangeException(nameof(_declaration));
+            case TypeDefDeclaration: return this;
+            default: throw new NotSupportedException($"Unknown kind of declaration: {_declaration}.");
         }
     }
 
@@ -53,7 +53,7 @@ internal class DeclarationBlockItem : IBlockItem
                 EmitTypeDef(declaration);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(_declaration));
+                throw new NotSupportedException($"Unknown kind of declaration: {_declaration}.");
         }
     }
 

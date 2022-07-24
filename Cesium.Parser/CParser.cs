@@ -570,7 +570,7 @@ public partial class CParser
         Declarator declarator) => new(specifiers, declarator);
 
     [Rule("parameter_declaration: declaration_specifiers abstract_declarator?")]
-    private static ParameterDeclaration MakeParameterTypeList(
+    private static ParameterDeclaration MakeParameterDeclaration(
         DeclarationSpecifiers specifiers,
         AbstractDeclarator? declarator) => new(specifiers, AbstractDeclarator: declarator);
 
