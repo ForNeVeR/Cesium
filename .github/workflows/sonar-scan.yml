@@ -45,11 +45,6 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
-      - name: ⚙ Setup .NET 6 SDK ⚙
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.0.x
-
       - name: ⚙ Install SonarCloud scanner ⚙
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
