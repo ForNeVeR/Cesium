@@ -1,14 +1,34 @@
 name: Run .NET SonarQube analysis
 on:
   push:
-    branches: [ ci/sonar ]
+    branches:
+      - main
+      - ci/sonar
+  pull_request:
+    branches:
+      - main
+      - ci/sonar
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
 jobs:
   run-dotnet-sonarqube-analysis:
     name: Run .NET SonarQube Analysis
     runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
     steps:
-      - name: ⚙ Set up JDK 11 ⚙
+      - name: 📝 Fetch Sources 📝
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: 💡 Perform Common Steps 💡
+        uses: ./.github/workflows/perform-common-steps
+
+      - name: ☕ Set up JDK 11 ☕
         uses: actions/setup-java@v1
         with:
           java-version: 1.11
