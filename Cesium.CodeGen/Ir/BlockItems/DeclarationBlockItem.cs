@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -62,16 +63,12 @@ internal class DeclarationBlockItem : IBlockItem
         foreach (var (declaration, initializer) in declarations)
         {
             var method = scope.Method;
-            var (type, identifier, parametersInfo, cliImportMemberName) = declaration;
+            var (type, identifier, cliImportMemberName) = declaration;
 
             // TODO[#91]: A place to register whether {type} is const or not.
 
             if (identifier == null)
                 throw new NotSupportedException("An anonymous local declaration isn't supported.");
-
-            if (parametersInfo != null)
-                throw new NotImplementedException(
-                    $"A local declaration of function {identifier} isn't supported, yet.");
 
             if (cliImportMemberName != null)
                 throw new NotSupportedException(
@@ -82,9 +79,18 @@ internal class DeclarationBlockItem : IBlockItem
             method.Body.Variables.Add(variable);
             scope.Variables.Add(identifier, variable);
 
-            if (initializer == null) return;
+            switch (initializer)
+            {
+                case null when type is not StackArrayType:
+                    return;
+                case null when type is StackArrayType arrayType:
+                    arrayType.EmitInitializer(scope);
+                    break;
+                default:
+                    initializer?.EmitTo(scope);
+                    break;
+            }
 
-            initializer.EmitTo(scope);
             scope.StLoc(variable);
         }
     }

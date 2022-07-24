@@ -38,11 +38,11 @@ public class StatementParserTests : ParserTestBase
     [Fact]
     public Task NestedIfs() => DoTest(@"
 if (1)
-    if (2) { 
+    if (2) {
         int x = 0;
     } else {
         int y = 1;
-    } 
+    }
 ");
 
     [Fact]
@@ -86,4 +86,13 @@ if (1)
     i = i - 1;
     i = i + 2;
 }");
+
+    [Fact]
+    public Task ArrayAssigment() => DoTest(@"{
+    int a[1];
+    a[0] = 0;
+}");
+
+    [Fact]
+    public Task AddressOfInParens() => DoTest("(&x)->x = 42;");
 }

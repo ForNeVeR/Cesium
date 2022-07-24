@@ -68,9 +68,11 @@ public partial class CParser
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantExpression(stringLiteral);
 
+    [Rule("primary_expression: '(' expression ')'")]
+    private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
+
     // TODO:
     // primary-expression:
-    //     ( expression )
     //     generic-selection
 
     // 6.5.2 Postfix operators
@@ -89,7 +91,15 @@ public partial class CParser
     // TODO:
     // postfix-expression:
     //     postfix-expression . identifier
-    //     postfix-expression -> identifier
+
+    [Rule("postfix_expression: postfix_expression '->' Identifier")]
+    private static Expression MakePointerMemberAccessExpression(
+        Expression function,
+        IToken _,
+        IToken identifier) => new PointerMemberAccessExpression(function, new IdentifierExpression(identifier.Text));
+
+    // TODO:
+    // postfix-expression:
     //     postfix-expression ++
     //     postfix-expression -
     //     ( type-name ) { initializer-list }
@@ -126,7 +136,7 @@ public partial class CParser
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     // TODO: [Rule("unary_operator: '!'")]
-    // TODO: [Rule("unary_operator: '&'")]
+    [Rule("unary_operator: '&'")]
     // TODO: [Rule("unary_operator: '*'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
@@ -223,7 +233,7 @@ public partial class CParser
     //
     // declaration: declaration_specifiers init_declarator_list? ';'
     [CustomParser("declaration")]
-    private ParseResult<Declaration> CustomParseDeclaration(int offset)
+    private ParseResult<IBlockItem> CustomParseDeclaration(int offset)
     {
         var declarationSpecifiersResult = CustomParseOneOrMore(parseDeclarationSpecifier, offset);
         if (declarationSpecifiersResult.IsError) return declarationSpecifiersResult.Error;
@@ -258,10 +268,31 @@ public partial class CParser
         return ParseResult.Error(";", t, t!.Range.Start, ";");
     }
 
-    private static Declaration MakeDeclaration(
+    private static IBlockItem MakeDeclaration(
         DeclarationSpecifiers specifiers,
         InitDeclaratorList? initDeclarators,
-        IToken _) => new(specifiers, initDeclarators);
+        IToken _)
+    {
+        // NOTE: this is the "lexer hack" to deal with syntax ambiguity. The same syntax may be either a function call
+        // or a variable declaration, depending on the context, and we have no this information in the parser, yet.
+        if (specifiers.Length == 1 && specifiers.Single() is NamedTypeSpecifier specifier
+            && initDeclarators?.Length == 1)
+        {
+            var ((pointer, directDeclarator), initializer) = initDeclarators.Value.Single();
+            if (pointer == null && initializer == null && directDeclarator is DeclaratorDirectDeclarator ddd)
+            {
+                ddd.Deconstruct(out var nestedDeclarator);
+                var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
+                if (nestedPointer == null && nestedDirectDeclarator is IdentifierDirectDeclarator idd)
+                {
+                    idd.Deconstruct(out var identifier);
+                    return new AmbiguousBlockItem(specifier.TypeDefName, identifier);
+                }
+            }
+        }
+
+        return new Declaration(specifiers, initDeclarators);
+    }
 
     // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
     // implementation. Get rid of this, eventually.
@@ -458,7 +489,9 @@ public partial class CParser
     private static IDirectDeclarator MakeDirectDeclarator(ICToken identifier) =>
         new IdentifierDirectDeclarator(identifier.Text);
 
-    // TODO: direct_declarator: ( declarator )
+    [Rule("direct_declarator: '(' declarator ')'")]
+    private static IDirectDeclarator MakeDirectDeclarator(IToken _, Declarator declarator, IToken __) =>
+        new DeclaratorDirectDeclarator(declarator);
 
     [Rule("direct_declarator: direct_declarator '[' type_qualifier_list? assignment_expression? ']'")]
     private static IDirectDeclarator MakeDirectDeclarator(
@@ -633,7 +666,7 @@ public partial class CParser
     [Rule("statement: selection_statement")]
     [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
-    private static Statement MakeStatementIdentity(Statement statement) => statement;
+    private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
 
     // TODO: 6.8.1 Labeled statements
     // 6.8.2 Compound statement
@@ -653,7 +686,7 @@ public partial class CParser
 
     // 6.8.3 Expression and null statements
     [Rule("expression_statement: expression? ';'")]
-    private static ExpressionStatement MakeExpressionStatement(Expression expression, IToken _) => new(expression);
+    private static ExpressionStatement MakeExpressionStatement(Expression? expression, IToken _) => new(expression);
 
     // 6.8.4 Selection statements
     [Rule("selection_statement: 'if' '(' expression ')' statement")]
@@ -662,8 +695,9 @@ public partial class CParser
         IToken __,
         Expression expression,
         IToken ___,
-        Statement statement)
-        => new(expression, statement, null);
+        IBlockItem statement) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        new(expression, (Statement)statement, null);
 
     [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
     private static IfElseStatement MakeIfElseStatement(
@@ -671,10 +705,11 @@ public partial class CParser
         IToken __,
         Expression expression,
         IToken ___,
-        Statement trueBranch,
+        IBlockItem trueBranch,
         IToken ____,
-        Statement falseBranch)
-        => new(expression, trueBranch, falseBranch);
+        IBlockItem falseBranch)
+        // TODO[#115]: These direct casts should't be necessary. They are here because of the "lexer hack".
+        => new(expression, (Statement)trueBranch, (Statement)falseBranch);
     // TODO: 6.8.4 Selection statements switch
 
     // TODO: 6.8.5 Iteration statements
@@ -688,7 +723,7 @@ public partial class CParser
         ICToken ____,
         Expression updateExpression,
         ICToken _____,
-        Statement body)
+        IBlockItem body)
         => new(initExpression, testExpression, updateExpression, body);
 
     // 6.8.6 Jump statements
@@ -718,8 +753,9 @@ public partial class CParser
     private static ExternalDeclaration MakeExternalDeclaration(FunctionDefinition function) => function;
 
     [Rule("external_declaration: declaration")]
-    private static ExternalDeclaration MakeExternalDeclaration(Declaration declaration) =>
-        new SymbolDeclaration(declaration);
+    private static ExternalDeclaration MakeExternalDeclaration(IBlockItem declaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        new SymbolDeclaration((Declaration)declaration);
 
     // 6.9.1 Function definitions
 
@@ -758,13 +794,16 @@ public partial class CParser
         CompoundStatement statement) => new(specifiers, declarator, declarationList, statement);
 
     [Rule("declaration_list: declaration")]
-    private static ImmutableArray<Declaration> MakeDeclarationList(Declaration declaration) =>
-        ImmutableArray.Create(declaration);
+    private static ImmutableArray<Declaration> MakeDeclarationList(IBlockItem declaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        ImmutableArray.Create((Declaration)declaration);
 
     [Rule("declaration_list: declaration_list declaration")]
     private static ImmutableArray<Declaration> MakeDeclarationList(
         ImmutableArray<Declaration> declarations,
-        Declaration newDeclaration) => declarations.Add(newDeclaration);
+        IBlockItem newDeclaration) =>
+        // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
+        declarations.Add((Declaration)newDeclaration);
 
     // TODO: 6.9.2 External object definitions
 

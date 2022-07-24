@@ -63,6 +63,9 @@ int main()
     [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 
+    [Fact]
+    public Task AddressOfTest() => DoTest("int main() { int x; int *y = &x; }");
+
     [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
@@ -187,4 +190,45 @@ int main() { return foo(); }", "Function foo not defined.");
 
     [Fact]
     public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
+
+    [Fact]
+    public Task ArrayAssignment() => DoTest(@"int main() {
+    int a[10];
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
+    public Task ArrayAddressOf() => DoTest(@"int main() {
+    int a[10];
+    int *x = &a[2];
+    return 0;
+ }");
+
+    [Fact]
+    public Task AmbiguousCallTest() => DoTest(@"
+int abs(int x) { return x; }
+void exit(int x) { }
+
+int main()
+{
+    int exitCode = abs(-42);
+    exit(exitCode);
+}");
+
+    [Fact]
+    public Task FunctionPtrTest() => DoTest(@"typedef void (*foo)(void);
+int main()
+{
+    foo unused;
+    return 0;
+}");
+
+    [Fact]
+    public Task FunctionPtrWithParamsTest() => DoTest(@"typedef int (*foo)(int x);
+int main()
+{
+    foo unused;
+    return 0;
+}");
 }

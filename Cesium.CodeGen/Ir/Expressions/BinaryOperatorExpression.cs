@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -64,6 +65,9 @@ internal class BinaryOperatorExpression : IExpression
             _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
         };
     }
+
+    // TODO[136]: Implement conversions and types tracking for arithmetic operations
+    public virtual TypeReference GetExpressionType(IDeclarationScope scope) => throw new NotImplementedException();
 
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
     {

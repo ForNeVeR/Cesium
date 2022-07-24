@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 }
 ```
 
-The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **10%** complete.
+The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete.
 
 Documentation
 -------------
@@ -80,6 +80,18 @@ $ dotnet ./out.exe # run with .NET 6
 $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
+
+## Optional parameters
+
+- `--framework <framework>`: specifies the target framework, defaults to `Net`
+  - `NetFramework` for .NET Framework
+  - `NetStandard` for .NET Standard
+  - `Net` for .NET 5+
+- `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
+  - `Dll`: gets detected from a `.dll` extension
+  - `Console`: gets detected from an `.exe` extension
+  - `Windows`: doesn't get detected, so it's only possible to select manually
+  - `NetModule`: is a rudiment from Cecil, not supported
 
 ## Testing
 

@@ -59,6 +59,13 @@ int main()
 }");
 
     [Fact]
+    public Task AbsCallTest() => DoTest(@"int main()
+{
+    int exitCode = abs(-42);
+    exit(exitCode);
+}");
+
+    [Fact]
     public Task CliImport() => DoTest(@"__cli_import(""Foo.Bar::Baz"")
 int foo();
 
@@ -89,6 +96,9 @@ int main()
 
     [Fact]
     public Task NegationTest() => DoTest("void foo() { int x = -42; }");
+
+    [Fact]
+    public Task AddressOfTest() => DoTest("void foo() { int x; int *y = &x; }");
 
     [Fact]
     public Task IntParameter() => DoTest("void foo(int x){}");
@@ -128,4 +138,20 @@ int main()
     [Fact]
     public Task TypeDefStructUsage() => DoTest(@"typedef struct { int x; } foo;
 int main(void) { foo x; return 0; }");
+
+    [Fact]
+    public Task StructUsageWithPointerMemberAccessGet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo *x; return x->x; }");
+
+    [Fact]
+    public Task StructUsageWithPointerMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo *x; x->x = 42; return 0; }");
+
+    [Fact]
+    public Task StructAddressWithPointerMemberAccessGet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; return (&x)->x; }");
+
+    [Fact]
+    public Task StructAddressWithPointerMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
+int main(void) { foo x; (&x)->x = 42; return 0; }");
 }

@@ -1,5 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Types;
+using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -11,14 +12,13 @@ namespace Cesium.CodeGen.Ir.Declarations;
 internal record LocalDeclarationInfo(
     IType Type,
     string? Identifier,
-    ParametersInfo? Parameters,
     string? CliImportMemberName)
 {
     public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
-            return new LocalDeclarationInfo(type, null, null, null);
+            return new LocalDeclarationInfo(type, null, null);
 
         var (pointer, directDeclarator) = declarator;
         if (pointer != null)
@@ -30,61 +30,12 @@ internal record LocalDeclarationInfo(
             type = new PointerType(type);
         }
 
-        string? identifier = null;
-        ParametersInfo? parameters = null;
+        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type);
 
-        var currentDirectDeclarator = directDeclarator;
-        while (currentDirectDeclarator != null)
-        {
-            switch (currentDirectDeclarator)
-            {
-                case IdentifierListDirectDeclarator list:
-                {
-                    var (_, identifiers) = list;
-                    if (identifiers != null)
-                        throw new NotImplementedException(
-                            "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
-                            $" {string.Join(", ", identifiers)}");
-                    break;
-                }
-
-                case IdentifierDirectDeclarator identifierD:
-                    if (identifier != null)
-                        throw new NotSupportedException(
-                            $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
-                    identifier = identifierD.Identifier;
-                    break;
-
-                case ParameterListDirectDeclarator parametersD:
-                    if (parameters != null)
-                        throw new NotSupportedException(
-                            $"Second parameters list declarator for an entity already having one: {parametersD}.");
-
-                    parameters = ParametersInfo.Of(parametersD.Parameters);
-                    break;
-
-                case ArrayDirectDeclarator array:
-                    var (_, typeQualifiers, size) = array;
-                    if (typeQualifiers != null)
-                        throw new NotImplementedException(
-                            $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
-                    if (size != null)
-                        throw new NotImplementedException(
-                            $"Array with specified size isn't supported, yet: {array}.");
-
-                    type = new PointerType(type);
-                    break;
-
-                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
-            }
-
-            currentDirectDeclarator = currentDirectDeclarator.Base;
-        }
-
-        return new LocalDeclarationInfo(type, identifier, parameters, cliImportMemberName);
+        return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
 
-    private static (IType, string? cliImportMemberName) ProcessSpecifiers(
+    private static (IType, string? CliImportMemberName) ProcessSpecifiers(
         IReadOnlyList<IDeclarationSpecifier> specifiers)
     {
         IType? type = null;
@@ -165,6 +116,108 @@ internal record LocalDeclarationInfo(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
+    }
+
+    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type)
+    {
+        string? identifier = null;
+
+        var currentDirectDeclarator = directDeclarator;
+        while (currentDirectDeclarator != null)
+        {
+            switch (currentDirectDeclarator)
+            {
+                case IdentifierListDirectDeclarator list:
+                {
+                    var (_, identifiers) = list;
+                    if (identifiers != null)
+                        throw new NotImplementedException(
+                            "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
+                            $" {string.Join(", ", identifiers)}");
+
+                    // An absent identifier list is `()` in a declaration like `int main()`. It means that there's an
+                    // empty parameter list, actually.
+                    type = ProcessFunctionParameters(type, null);
+
+                    break;
+                }
+
+                case IdentifierDirectDeclarator identifierD:
+                    if (identifier != null)
+                        throw new NotSupportedException(
+                            $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
+                    identifier = identifierD.Identifier;
+                    break;
+
+                case ParameterListDirectDeclarator parametersD:
+                    var (_ /* base */, parameters) = parametersD;
+                    type = ProcessFunctionParameters(type, parameters);
+                    break;
+
+                case ArrayDirectDeclarator array:
+                    var (_, typeQualifiers, sizeExpr) = array;
+                    if (typeQualifiers != null)
+                        throw new NotImplementedException(
+                            $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
+
+                    // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
+                    if (sizeExpr == null)
+                        type = new PointerType(type);
+                    else
+                    {
+                        if (sizeExpr is not ConstantExpression constantExpression ||
+                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
+                            !int.TryParse(constantExpression.Constant.Text, out var size))
+                            throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
+
+                        type = new StackArrayType(type, size);
+                    }
+
+                    break;
+
+                case DeclaratorDirectDeclarator ddd:
+                    ddd.Deconstruct(out var nestedDeclarator);
+                    var (nestedPointer, nestedDirectDeclarator) = nestedDeclarator;
+                    if (nestedPointer != null)
+                    {
+                        var (nestedTypeQualifiers, nestedChildPointer) = nestedPointer;
+                        if (nestedTypeQualifiers != null || nestedChildPointer != null)
+                            throw new NotImplementedException(
+                                $"Nested pointer of kind {nestedPointer} is not supported, yet.");
+
+                        type = new PointerType(type);
+                    }
+
+                    // The only kind of nested direct declarator we support is this one:
+                    if (nestedDirectDeclarator is IdentifierDirectDeclarator idd)
+                    {
+                        if (idd.Base != null)
+                            throw new NotSupportedException(
+                                $"Not supported nested direct declarator with base: {idd}.");
+
+                        idd.Deconstruct(out var nestedIdentifier);
+                        if (identifier != null && nestedIdentifier != null)
+                            throw new NotSupportedException(
+                                $"Identifier conflict: nested identifier \"{nestedIdentifier}\"" +
+                                $" tries to override \"{identifier}.\"");
+
+                        identifier = nestedIdentifier;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            $"Not supported nested direct declarator: {nestedDirectDeclarator}.");
+                    }
+
+                    break;
+
+                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
+            }
+
+            currentDirectDeclarator = currentDirectDeclarator.Base;
+        }
+
+        return (type, identifier);
     }
 
     private static IEnumerable<LocalDeclarationInfo> GetTypeMemberDeclarations(
@@ -250,4 +303,7 @@ internal record LocalDeclarationInfo(
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
             });
     }
+
+    private static IType ProcessFunctionParameters(IType returnType, ParameterTypeList? parameters) =>
+        new FunctionType(ParametersInfo.Of(parameters), returnType);
 }

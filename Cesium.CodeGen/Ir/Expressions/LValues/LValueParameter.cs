@@ -18,9 +18,18 @@ internal class LValueParameter : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg, _definition));
     }
 
-    public void EmitSetValue(IDeclarationScope scope)
+    public void EmitGetAddress(IDeclarationScope scope)
     {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarga, _definition));
+    }
+
+    public void EmitSetValue(IDeclarationScope scope, IExpression value)
+    {
+        value.EmitTo(scope);
+
         // TODO[#92]: Special instructions to emit Starg_0 etc.
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Starg, _definition));
     }
+
+    public TypeReference GetValueType() => _definition.ParameterType;
 }

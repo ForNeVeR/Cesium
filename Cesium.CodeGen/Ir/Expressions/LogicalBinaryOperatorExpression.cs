@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -30,6 +31,8 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
                 throw new NotSupportedException($"Operator {Operator} is not binary logical operator");
         }
     }
+
+    public override TypeReference GetExpressionType(IDeclarationScope scope) => scope.TypeSystem.Boolean;
 
     private void EmitLogicalAnd(IDeclarationScope scope)
     {

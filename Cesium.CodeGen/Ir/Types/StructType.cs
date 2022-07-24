@@ -23,14 +23,10 @@ internal class StructType : IType, IGeneratedType
 
         foreach (var member in _members)
         {
-            var (type, identifier, parametersInfo, cliImportMemberName) = member;
+            var (type, identifier, cliImportMemberName) = member;
             if (identifier == null)
                 throw new NotImplementedException(
                     $"Anonymous struct members for {name} aren't supported, yet: {type}.");
-
-            if (parametersInfo != null)
-                throw new NotImplementedException(
-                    $"Functional struct members for {name} aren't supported, yet: {identifier}.");
 
             if (cliImportMemberName != null)
                 throw new NotSupportedException(
@@ -48,4 +44,6 @@ internal class StructType : IType, IGeneratedType
 
     public TypeReference Resolve(TranslationUnitContext context) =>
         context.GetTypeReference(this) ?? throw new NotSupportedException($"Type {this} was not found.");
+
+    public int SizeInBytes => throw new NotImplementedException($"Could not calculate size for {this} yet.");
 }

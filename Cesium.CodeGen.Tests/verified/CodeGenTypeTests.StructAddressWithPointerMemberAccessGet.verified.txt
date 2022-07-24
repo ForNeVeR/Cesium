@@ -1,0 +1,15 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        foo V_0
+      IL_0000: ldloca V_0
+      IL_0004: conv.u
+      IL_0005: ldfld System.Int32 foo::x
+      IL_000a: ret
+
+  Type: foo
+  Fields:
+    System.Int32 foo::x
+       Init with: []

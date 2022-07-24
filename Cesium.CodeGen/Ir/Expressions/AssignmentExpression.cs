@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -30,16 +31,18 @@ internal class AssignmentExpression : BinaryOperatorExpression
         _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
     };
 
-    private AssignmentExpression LowerSmthAndAssign(BinaryOperator @operator)
-        => new(Left, BinaryOperator.Assign, new BinaryOperatorExpression(Left, @operator, Right.Lower()));
-
     public override void EmitTo(IDeclarationScope scope)
     {
         if (Operator != BinaryOperator.Assign)
             throw new NotSupportedException($"Operator {Operator} should've been lowered before emitting.");
 
-        Right.EmitTo(scope);
-
-        _target.Resolve(scope).EmitSetValue(scope);
+        _target.Resolve(scope).EmitSetValue(scope, Right);
     }
+
+    // `x = v` expression returns type of x (and v)
+    // e.g `int x; int y; x = (y = 10);`
+    public override TypeReference GetExpressionType(IDeclarationScope scope) => _target.Resolve(scope).GetValueType();
+
+    private AssignmentExpression LowerSmthAndAssign(BinaryOperator @operator)
+        => new(Left, BinaryOperator.Assign, new BinaryOperatorExpression(Left, @operator, Right.Lower()));
 }

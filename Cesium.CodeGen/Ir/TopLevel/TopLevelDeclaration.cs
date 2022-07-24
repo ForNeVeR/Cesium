@@ -38,7 +38,7 @@ internal class TopLevelDeclaration : ITopLevelNode
 
         foreach (var (declaration, initializer) in items)
         {
-            var (type, identifier, parametersInfo, cliImportMemberName) = declaration;
+            var (type, identifier, cliImportMemberName) = declaration;
             if (identifier == null)
                 throw new NotSupportedException($"Unnamed global symbol of type {type} is not supported.");
 
@@ -48,17 +48,20 @@ internal class TopLevelDeclaration : ITopLevelNode
                     throw new NotSupportedException(
                         $"Initializer expression for a CLI import isn't supported: {initializer}.");
 
-                EmitCliImportDeclaration(context, identifier, parametersInfo, type, cliImportMemberName);
+                if (type is not FunctionType cliFunction)
+                    throw new NotSupportedException($"CLI initializer should be a function for identifier {identifier}.");
+
+                EmitCliImportDeclaration(context, identifier, cliFunction, cliImportMemberName);
                 continue;
             }
 
-            if (parametersInfo != null)
+            if (type is FunctionType functionType)
             {
                 if (initializer != null)
                     throw new NotSupportedException(
                         $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
-                EmitFunctionDeclaration(context, identifier, parametersInfo, type);
+                EmitFunctionDeclaration(context, identifier, functionType);
                 continue;
             }
 
@@ -77,23 +80,23 @@ internal class TopLevelDeclaration : ITopLevelNode
     private static void EmitCliImportDeclaration(
         TranslationUnitContext context,
         string name,
-        ParametersInfo? parametersInfo,
-        IType returnType,
+        FunctionType functionType,
         string memberName)
     {
         var method = context.MethodLookup(memberName);
         if (method == null) throw new NotSupportedException($"Cannot find CLI-imported member {memberName}.");
 
-        // TODO[#93]: Verify method signature: {parametersIInfo, type}.
+        var (parametersInfo, returnType) = functionType;
+        // TODO[#93]: Verify method signature: {parametersInfo, type}.
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
     private static void EmitFunctionDeclaration(
         TranslationUnitContext context,
         string identifier,
-        ParametersInfo parametersInfo,
-        IType returnType)
+        FunctionType functionType)
     {
+        var (parametersInfo, returnType) = functionType;
         var existingFunction = context.Functions.GetValueOrDefault(identifier);
         if (existingFunction != null)
         {
@@ -117,12 +120,9 @@ internal class TopLevelDeclaration : ITopLevelNode
         declaration.Deconstruct(out var types);
         foreach (var typeDef in types)
         {
-            var (type, identifier, parametersInfo, cliImportMemberName) = typeDef;
+            var (type, identifier, cliImportMemberName) = typeDef;
             if (identifier == null)
                 throw new NotSupportedException($"Anonymous typedef not supported: {type}.");
-
-            if (parametersInfo != null)
-                throw new NotImplementedException($"Function typedef not supported, yet: {identifier}.");
 
             if (cliImportMemberName != null)
                 throw new NotSupportedException($"typedef for CLI import not supported: {cliImportMemberName}.");
@@ -130,7 +130,7 @@ internal class TopLevelDeclaration : ITopLevelNode
             if (type is IGeneratedType t)
                 context.GenerateType(t, identifier);
             else
-                throw new NotSupportedException($"Not supported type generation for type {type}.");
+               context.AddPlainType(type, identifier);
         }
     }
 }

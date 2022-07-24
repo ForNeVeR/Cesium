@@ -24,6 +24,18 @@ public class DeclarationParserTests : ParserTestBase
     public Task MultiDeclaration() => DoDeclarationParserTest("int x = 0, y = 2 + 2;");
 
     [Fact]
+    public Task ArrayDeclaration() => DoDeclarationParserTest("int x[100];");
+
+    [Fact]
     public Task CliImport() => DoDeclarationParserTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
 void *malloc(size_t);");
+
+    [Fact]
+    public Task FunctionTypeDef() => DoDeclarationParserTest("typedef void foo(int);");
+
+    [Fact]
+    public Task FunctionPointerTypeDef() => DoDeclarationParserTest("typedef void (*foo)(int);");
+
+    [Fact]
+    public Task ComplexFunctionPointerTypeDef() => DoDeclarationParserTest("typedef void (*foo)(uint64_t, const uint32_t*);");
 }
