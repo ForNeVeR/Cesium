@@ -4,7 +4,9 @@ using System.Text;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Cesium.CodeGen.Contexts;
@@ -15,6 +17,8 @@ public class AssemblyContext
     public ModuleDefinition Module { get; }
     public Assembly[] ImportAssemblies { get; }
     public TypeDefinition GlobalType { get; }
+    public MethodDefinition GlobalTypeStaticCtor { get; }
+
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
@@ -101,6 +105,39 @@ public class AssemblyContext
         {
             GlobalType = Module.GetType("<Module>");
         }
+
+        var ctor = BuildStaticCtor();
+        GlobalType.Methods.Add(ctor);
+        GlobalTypeStaticCtor = ctor;
+    }
+
+    private MethodDefinition BuildStaticCtor()
+    {
+        var methodAttributes = MethodAttributes.Private
+                               | MethodAttributes.HideBySig
+                               | MethodAttributes.SpecialName
+                               | MethodAttributes.RTSpecialName
+                               | MethodAttributes.Static;
+        MethodDefinition method = new MethodDefinition(".cctor", methodAttributes, Module.TypeSystem.Void);
+        method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+        method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        return method;
+    }
+
+    internal void AddFieldInitialization(FieldDefinition field, Ir.Expressions.IExpression value)
+    {
+        var lval = new Ir.Expressions.LValues.LValueGlobalVariable(field);
+        var context = new TranslationUnitContext(this);
+        var scope = new FunctionScope(context, GlobalTypeStaticCtor);
+        var lastOpcode = GlobalTypeStaticCtor.Body.Instructions.Last();
+        if (lastOpcode.OpCode == OpCodes.Ret)
+        {
+            GlobalTypeStaticCtor.Body.Instructions.Remove(lastOpcode);
+            lval.EmitSetValue(scope, value);
+            GlobalTypeStaticCtor.Body.Instructions.Add(lastOpcode);
+        }
+        else
+            lval.EmitSetValue(scope, value);
     }
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
