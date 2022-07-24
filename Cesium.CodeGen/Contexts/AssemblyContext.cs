@@ -17,7 +17,7 @@ public class AssemblyContext
     public ModuleDefinition Module { get; }
     public Assembly[] ImportAssemblies { get; }
     public TypeDefinition GlobalType { get; }
-    public MethodDefinition GlobalTypeStaticCtor { get; }
+    public MethodDefinition GlobalTypeStaticCtor => _globalTypeStaticCtor.Value;
 
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
@@ -66,6 +66,8 @@ public class AssemblyContext
     private readonly Dictionary<string, FieldReference> _fields = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
+    private Lazy<MethodDefinition> _globalTypeStaticCtor;
+
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -105,10 +107,13 @@ public class AssemblyContext
         {
             GlobalType = Module.GetType("<Module>");
         }
-
-        var ctor = BuildStaticCtor();
-        GlobalType.Methods.Add(ctor);
-        GlobalTypeStaticCtor = ctor;
+        _globalTypeStaticCtor = new(
+            () =>
+            {
+                var ctor = BuildStaticCtor();
+                GlobalType.Methods.Add(ctor);
+                return ctor;
+            });
     }
 
     private MethodDefinition BuildStaticCtor()
