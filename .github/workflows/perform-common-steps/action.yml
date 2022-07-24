@@ -17,11 +17,3 @@ runs:
     - name: 🔄 Restore Nuget Packages 🔄
       shell: bash
       run: dotnet restore
-
-    - name: 🛠 Build Solution 🛠
-      shell: bash
-      run: dotnet build
-
-    - name: ✅ Run Unit Tests ✅
-      shell: bash
-      run: dotnet test
