@@ -14,6 +14,9 @@ public class CodeGenMethodTests : CodeGenTestBase
     public Task EmptyMainTest() => DoTest("int main() {}");
 
     [Fact]
+    public Task EmptyMainTestWithUnusedVariable() => DoTest("int main() {int unused;}");
+
+    [Fact]
     public Task ArithmeticMainTest() => DoTest("int main() { return 2 + 2 * 2; }");
 
     [Fact]
