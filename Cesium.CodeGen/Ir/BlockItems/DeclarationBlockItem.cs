@@ -10,6 +10,10 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class DeclarationBlockItem : IBlockItem
 {
     private readonly IScopedDeclarationInfo _declaration;
+    public bool IsScopedIdentifierWithInitalizer =>
+                _declaration is ScopedIdentifierDeclaration scopedIdentifier
+                && scopedIdentifier.Items.All(x => x.Initializer != null);
+                                                            
     private DeclarationBlockItem(IScopedDeclarationInfo declaration)
     {
         _declaration = declaration;
