@@ -40,10 +40,3 @@ System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
   IL_0036: endfinally
   IL_0037: ldloc.s V_4
   IL_0039: ret
-  Exception handlers:
-    Finally:
-      try: IL_001a..IL_002d
-      handler: IL_002d..IL_0030
-    Finally:
-      try: IL_000a..IL_0030
-      handler: IL_0030..IL_0037
