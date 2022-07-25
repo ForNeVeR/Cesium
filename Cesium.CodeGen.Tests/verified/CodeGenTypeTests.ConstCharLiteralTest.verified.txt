@@ -5,7 +5,7 @@
       Locals:
         System.Byte* V_0
       IL_0000: ldsflda <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstStringBuffer0
-      IL_0005: stloc V_0
+      IL_0005: stloc.s V_0
 
   Type: <ConstantPool>
   Types:

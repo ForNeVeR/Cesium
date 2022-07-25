@@ -4,5 +4,5 @@
     System.Int32 <Module>::main()
       Locals:
         System.Int32 V_0
-      IL_0000: ldc.i4 0
-      IL_0005: ret
+      IL_0000: ldc.i4.0
+      IL_0001: ret

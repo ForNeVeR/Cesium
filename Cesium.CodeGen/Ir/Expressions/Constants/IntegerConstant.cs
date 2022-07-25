@@ -16,8 +16,21 @@ internal class IntegerConstant : IConstant
 
     public void EmitTo(IDeclarationScope scope)
     {
-        // TODO[#92]: Optimizations like Ldc_I4_0 for selected constants
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4, _value));
+        scope.Method.Body.Instructions.Add(_value switch
+        {
+            0 => Instruction.Create(OpCodes.Ldc_I4_0),
+            1 => Instruction.Create(OpCodes.Ldc_I4_1),
+            2 => Instruction.Create(OpCodes.Ldc_I4_2),
+            3 => Instruction.Create(OpCodes.Ldc_I4_3),
+            4 => Instruction.Create(OpCodes.Ldc_I4_4),
+            5 => Instruction.Create(OpCodes.Ldc_I4_5),
+            6 => Instruction.Create(OpCodes.Ldc_I4_6),
+            7 => Instruction.Create(OpCodes.Ldc_I4_7),
+            8 => Instruction.Create(OpCodes.Ldc_I4_8),
+            -1 => Instruction.Create(OpCodes.Ldc_I4_M1),
+            >= sbyte.MinValue and <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) _value),
+            _ => Instruction.Create(OpCodes.Ldc_I4, _value)
+        });
     }
 
     public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Int32;

@@ -1,6 +1,6 @@
 ﻿System.Int32 <Module>::abs(System.Int32 x)
-  IL_0000: ldarg x
-  IL_0004: ret
+  IL_0000: ldarg.0
+  IL_0001: ret
 
 System.Void <Module>::exit(System.Int32 x)
   IL_0000: ret
@@ -8,9 +8,9 @@ System.Void <Module>::exit(System.Int32 x)
 System.Int32 <Module>::main()
   Locals:
     System.Int32 V_0
-  IL_0000: ldc.i4 42
-  IL_0005: neg
-  IL_0006: call System.Int32 <Module>::abs(System.Int32)
-  IL_000b: stloc V_0
-  IL_000f: ldloc V_0
-  IL_0013: call System.Void <Module>::exit(System.Int32)
+  IL_0000: ldc.i4.s 42
+  IL_0002: neg
+  IL_0003: call System.Int32 <Module>::abs(System.Int32)
+  IL_0008: stloc.s V_0
+  IL_000a: ldloc.0
+  IL_000b: call System.Void <Module>::exit(System.Int32)

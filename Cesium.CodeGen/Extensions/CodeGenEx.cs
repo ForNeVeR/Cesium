@@ -7,6 +7,13 @@ internal static class CodeGenEx
 {
     public static void StLoc(this IDeclarationScope scope, VariableDefinition variable)
     {
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc, variable));
+        scope.Method.Body.Instructions.Add(
+            Instruction.Create(
+                variable.Index <= sbyte.MaxValue
+                    ? OpCodes.Stloc_S
+                    : OpCodes.Stloc,
+                variable
+            )
+        );
     }
 }

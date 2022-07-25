@@ -1,16 +1,16 @@
 ﻿System.Int32 <Module>::main()
   Locals:
     System.Int32 V_0
-  IL_0000: ldc.i4 0
-  IL_0005: stloc V_0
-  IL_0009: br IL_002a
-  IL_000e: ldloc V_0
-  IL_0012: ldc.i4 1
-  IL_0017: add
-  IL_0018: stloc V_0
-  IL_001c: ldloc V_0
-  IL_0020: ldc.i4 1
-  IL_0025: add
-  IL_0026: stloc V_0
-  IL_002a: ldc.i4 1
-  IL_002f: brtrue IL_000e
+  IL_0000: ldc.i4.0
+  IL_0001: stloc.s V_0
+  IL_0003: br IL_0012
+  IL_0008: ldloc.0
+  IL_0009: ldc.i4.1
+  IL_000a: add
+  IL_000b: stloc.s V_0
+  IL_000d: ldloc.0
+  IL_000e: ldc.i4.1
+  IL_000f: add
+  IL_0010: stloc.s V_0
+  IL_0012: ldc.i4.1
+  IL_0013: brtrue IL_0008

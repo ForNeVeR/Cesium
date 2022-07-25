@@ -14,8 +14,15 @@ internal class LValueParameter : ILValue
 
     public void EmitGetValue(IDeclarationScope scope)
     {
-        // TODO[#92]: Special instructions to emit Ldarg_0 etc.
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg, _definition));
+        scope.Method.Body.Instructions.Add(_definition.Index switch
+        {
+            0 => Instruction.Create(OpCodes.Ldarg_0),
+            1 => Instruction.Create(OpCodes.Ldarg_1),
+            2 => Instruction.Create(OpCodes.Ldarg_2),
+            3 => Instruction.Create(OpCodes.Ldarg_3),
+            <= byte.MaxValue => Instruction.Create(OpCodes.Ldarg_S, _definition),
+            _ => Instruction.Create(OpCodes.Ldarg, _definition)
+        });
     }
 
     public void EmitGetAddress(IDeclarationScope scope)
@@ -27,8 +34,11 @@ internal class LValueParameter : ILValue
     {
         value.EmitTo(scope);
 
-        // TODO[#92]: Special instructions to emit Starg_0 etc.
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Starg, _definition));
+        scope.Method.Body.Instructions.Add(_definition.Index switch
+        {
+            <= byte.MaxValue => Instruction.Create(OpCodes.Starg_S, _definition),
+            _ => Instruction.Create(OpCodes.Starg, _definition)
+        });
     }
 
     public TypeReference GetValueType() => _definition.ParameterType;

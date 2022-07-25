@@ -4,8 +4,8 @@
   Type: MyNameSpace.TestClass
   Methods:
     System.Int32 MyNameSpace.TestClass::foo()
-      IL_0000: ldc.i4 42
-      IL_0005: ret
+      IL_0000: ldc.i4.s 42
+      IL_0002: ret
 
     System.Int32 MyNameSpace.TestClass::main()
       IL_0000: call System.Int32 MyNameSpace.TestClass::foo()

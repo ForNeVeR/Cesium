@@ -58,6 +58,18 @@ int main()
 }");
 
     [Fact]
+    public Task ConstIntSmallLiteralTest() => DoTest(@"int main()
+{
+    return 42;
+}");
+
+    [Fact]
+    public Task ConstIntLargeLiteralTest() => DoTest(@"int main()
+{
+    return 1337;
+}");
+
+    [Fact]
     public Task ConstCharLiteralDeduplication() => DoTest(@"int main()
 {
     const char *test1 = ""hellow"";
