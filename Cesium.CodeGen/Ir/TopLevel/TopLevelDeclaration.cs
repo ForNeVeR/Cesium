@@ -81,9 +81,14 @@ internal class TopLevelDeclaration : ITopLevelNode
         string memberName,
         IType variableType)
     {
+        var fieldAttributes = Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static;
+
+        if(variableType is ConstType)
+            fieldAttributes |= Mono.Cecil.FieldAttributes.InitOnly;
+
         var field = new Mono.Cecil.FieldDefinition(
             memberName,
-            Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static,
+            fieldAttributes,
             variableType.Resolve(context));
         context.GlobalType.Fields.Add(field);
         return field;
