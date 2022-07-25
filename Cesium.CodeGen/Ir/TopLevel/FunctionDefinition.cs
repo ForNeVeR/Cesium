@@ -185,12 +185,11 @@ internal class FunctionDefinition : ITopLevelNode
         instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
 
         // try
-        Instruction tryStart, tryEnd;
         Instruction pinStart, pinEnd;
         Instruction unpinStart, unpinEnd;
         {
             // argVCopy = new byte*[argV.Length];
-            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Ldlen));
             instructions.Add(Instruction.Create(OpCodes.Newarr, bytePtrType));
             instructions.Add(Instruction.Create(OpCodes.Stloc_2)); // 2 = argVCopy.Index
@@ -221,35 +220,15 @@ internal class FunctionDefinition : ITopLevelNode
             }
         }
         // finally
-        Instruction finallyStart, finallyEnd;
         {
             // Cesium.Runtime.RuntimeHelpers.FreeArgv(argV);
-            instructions.Add(unpinEnd = tryEnd = finallyStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(unpinEnd = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
             instructions.Add(Instruction.Create(OpCodes.Endfinally));
         }
 
-        instructions.Add(finallyEnd = atExitLdLocExitCode);
+        instructions.Add(atExitLdLocExitCode);
         instructions.Add(Instruction.Create(OpCodes.Ret));
-
-        var unpinHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-        {
-            TryStart = pinStart,
-            TryEnd = pinEnd,
-            HandlerStart = unpinStart,
-            HandlerEnd = unpinEnd
-        };
-        syntheticEntrypoint.Body.ExceptionHandlers.Add(unpinHandler);
-
-        var finallyHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-        {
-            TryStart = tryStart,
-            TryEnd = tryEnd,
-            HandlerStart = finallyStart,
-            HandlerEnd = finallyEnd
-        };
-        syntheticEntrypoint.Body.ExceptionHandlers.Add(finallyHandler);
-
         return syntheticEntrypoint;
     }
 
