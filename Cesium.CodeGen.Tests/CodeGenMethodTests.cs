@@ -231,4 +231,16 @@ int main()
     foo unused;
     return 0;
 }");
+
+    [Fact]
+    public Task ImplicitReturnAllowedForMain() => DoTest(@"int main()
+{
+    int unused;
+}");
+
+    [Fact]
+    public void ImplicitReturnDisallowedNonMain() => DoesNotCompile(@"int foo()
+{
+    int unused;
+}", "Function foo has no return statement.");
 }

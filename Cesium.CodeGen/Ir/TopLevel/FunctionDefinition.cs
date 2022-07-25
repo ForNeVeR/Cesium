@@ -256,7 +256,7 @@ internal class FunctionDefinition : ITopLevelNode
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         _statement.EmitTo(scope);
-        if (!_statement.HasDefiniteReturn)
+        if ((_statement as IBlockItem).HasDefiniteReturn == false)
         {
             if (IsMain)
             {
@@ -271,7 +271,7 @@ internal class FunctionDefinition : ITopLevelNode
             }
             else
             {
-                throw new InvalidOperationException($"{scope.Method.Name} do not have return statement. This is compiler bug.");
+                throw new NotSupportedException($"Function {scope.Method.Name} has no return statement.");
             }
         }
     }

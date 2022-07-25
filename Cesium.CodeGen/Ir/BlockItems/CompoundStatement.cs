@@ -17,7 +17,7 @@ internal class CompoundStatement : IBlockItem
     {
     }
 
-    public bool HasDefiniteReturn => _items.Count > 0; // TODO[#90]: Better definite return analysis.
+    bool IBlockItem.HasDefiniteReturn => _items.Any(x => x.HasDefiniteReturn);
 
     public IBlockItem Lower() => this; // since actual lowering of child items is done on emit, anyway
 

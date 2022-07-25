@@ -8,3 +8,5 @@
   IL_0004: ldc.i4.2
   IL_0005: add
   IL_0006: stloc.s V_1
+  IL_0008: ldc.i4.0
+  IL_0009: ret
