@@ -18,7 +18,7 @@ internal static class TypeDefinitionEx
             MethodAttributes.Public | MethodAttributes.Static,
             returnType);
 
-        var _ = method.Body.Instructions; // Initalize instructions with empty collection to avoid NRE
+        var _ = method.Body.Instructions; // Initialize instructions with empty collection to avoid NRE
         AddParameters(context, method, parameters);
         type.Methods.Add(method);
         return method;
