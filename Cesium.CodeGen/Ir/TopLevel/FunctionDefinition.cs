@@ -184,9 +184,6 @@ internal class FunctionDefinition : ITopLevelNode
         instructions.Add(Instruction.Create(OpCodes.Call, argsToArgv));
         instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
 
-        // try
-        Instruction pinStart, pinEnd;
-        Instruction unpinStart, unpinEnd;
         {
             // argVCopy = new byte*[argV.Length];
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
@@ -202,7 +199,7 @@ internal class FunctionDefinition : ITopLevelNode
             //     return main(argC, argVPtr);
             // pin
             {
-                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
+                instructions.Add(Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
                 instructions.Add(Instruction.Create(OpCodes.Ldloc_2)); // 2 = argVCopy.Index
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
                 instructions.Add(Instruction.Create(OpCodes.Ldloc_3));  // 3 = argVPinned.Index
@@ -214,7 +211,7 @@ internal class FunctionDefinition : ITopLevelNode
             }
             // finally: unpin
             {
-                instructions.Add(pinEnd = unpinStart = Instruction.Create(OpCodes.Ldnull));
+                instructions.Add(Instruction.Create(OpCodes.Ldnull));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
                 instructions.Add(Instruction.Create(OpCodes.Endfinally));
             }
@@ -222,7 +219,7 @@ internal class FunctionDefinition : ITopLevelNode
         // finally
         {
             // Cesium.Runtime.RuntimeHelpers.FreeArgv(argV);
-            instructions.Add(unpinEnd = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
             instructions.Add(Instruction.Create(OpCodes.Endfinally));
         }
