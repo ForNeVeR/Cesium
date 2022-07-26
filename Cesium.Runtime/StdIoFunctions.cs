@@ -8,7 +8,7 @@ using System.Text;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
-    public static void PutS(byte* str)
+    public static int PutS(byte* str)
     {
 #if NETSTANDARD
         Encoding encoding = Encoding.UTF8;
@@ -31,5 +31,6 @@ public unsafe static class StdIoFunctions
 #else
         Console.Write(Marshal.PtrToStringUTF8((nint)str));
 #endif
+        return 1;
     }
 }
