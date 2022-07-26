@@ -52,15 +52,6 @@ int main()
 }");
 
     [Fact]
-    public Task CliImportTest() => DoTest(@"__cli_import(""System.Console::Read"")
-int console_read();
-
-int main()
-{
-    return console_read();
-}");
-
-    [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 
     [Fact]
