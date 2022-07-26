@@ -1,5 +1,8 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Mono.Cecil;
+using ArithmeticBinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.ArithmeticBinaryOperatorExpression;
+using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -18,18 +21,23 @@ internal class AssignmentExpression : BinaryOperatorExpression
         _target = Left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {Left}.");
     }
 
-    public override IExpression Lower() => Operator switch
+    public override IExpression Lower()
     {
-        BinaryOperator.Assign => new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, Right.Lower()),
-        BinaryOperator.AddAndAssign => LowerSmthAndAssign(BinaryOperator.Add),
-        BinaryOperator.MultiplyAndAssign => LowerSmthAndAssign(BinaryOperator.Multiply),
-        BinaryOperator.BitwiseLeftShiftAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseLeftShift),
-        BinaryOperator.BitwiseRightShiftAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseRightShift),
-        BinaryOperator.BitwiseOrAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseOr),
-        BinaryOperator.BitwiseAndAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseAnd),
-        BinaryOperator.BitwiseXorAndAssign => LowerSmthAndAssign(BinaryOperator.BitwiseXor),
-        _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
-    };
+        var rightExpanded = Operator switch
+        {
+            BinaryOperator.Assign => Right,
+            BinaryOperator.AddAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Add, Right),
+            BinaryOperator.MultiplyAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
+            BinaryOperator.BitwiseLeftShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
+            BinaryOperator.BitwiseRightShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
+            BinaryOperator.BitwiseOrAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
+            BinaryOperator.BitwiseAndAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
+            BinaryOperator.BitwiseXorAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
+            _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
+        };
+
+        return new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, rightExpanded.Lower());
+    }
 
     public override void EmitTo(IDeclarationScope scope)
     {
@@ -42,7 +50,4 @@ internal class AssignmentExpression : BinaryOperatorExpression
     // `x = v` expression returns type of x (and v)
     // e.g `int x; int y; x = (y = 10);`
     public override TypeReference GetExpressionType(IDeclarationScope scope) => _target.Resolve(scope).GetValueType();
-
-    private AssignmentExpression LowerSmthAndAssign(BinaryOperator @operator)
-        => new(Left, BinaryOperator.Assign, new BinaryOperatorExpression(Left, @operator, Right.Lower()));
 }

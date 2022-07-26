@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Extensions;
@@ -20,7 +21,9 @@ internal static class ExpressionEx
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
         Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
-        Ast.BinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ArithmeticBinaryOperatorExpression e => new ArithmeticBinaryOperatorExpression(e),
+        Ast.BitwiseBinaryOperatorExpression e => new BitwiseBinaryOperatorExpression(e),
+        Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
 
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
