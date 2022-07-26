@@ -59,6 +59,14 @@ int main()
 {
     return console_read();
 }");
+    [Fact]
+    public Task CliImportTestWithParams() => DoTest(@"__cli_import(""System.Console::WriteLine"")
+void console_writeline(int x);
+
+int main()
+{
+    return console_writeline(25);
+}");
 
     [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
