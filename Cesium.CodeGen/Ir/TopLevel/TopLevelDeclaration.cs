@@ -83,11 +83,23 @@ internal class TopLevelDeclaration : ITopLevelNode
         FunctionType functionType,
         string memberName)
     {
-        var method = context.MethodLookup(memberName);
-        if (method == null) throw new NotSupportedException($"Cannot find CLI-imported member {memberName}.");
 
         var (parametersInfo, returnType) = functionType;
-        // TODO[#93]: Verify method signature: {parametersInfo, type}.
+
+        var method = context.MethodLookup(memberName, parametersInfo);
+        if (method == null)
+        {
+            var paramsString = "";
+            if(parametersInfo != null)
+                paramsString =string.Join(", ", parametersInfo.Parameters.Select(x => x.Type.Resolve(context)));
+
+            throw new NotSupportedException($"Cannot find CLI-imported member {memberName}({paramsString}).");
+        }
+        var resolvedReturnType = returnType.Resolve(context);
+
+        if (!resolvedReturnType.IsEqual(method.ReturnType))
+            throw new InvalidOperationException($"Return types do not match. Declared: {resolvedReturnType}, imported: {method.ReturnType}");
+
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
