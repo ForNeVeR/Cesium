@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Mono.Cecil;
 
@@ -20,7 +21,7 @@ internal class PrefixIncrementExpression : IExpression
         return new AssignmentExpression(
             target,
             BinaryOperator.Assign,
-            new BinaryOperatorExpression(
+            new ArithmeticBinaryOperatorExpression(
                 target,
                 BinaryOperator.Add,
                 new ConstantExpression(new IntegerConstant("1"))
