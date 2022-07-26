@@ -209,21 +209,16 @@ internal class FunctionDefinition : ITopLevelNode
                 instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
                 instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
-            // finally: unpin
+            //unpin
             {
                 instructions.Add(Instruction.Create(OpCodes.Ldnull));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
-                instructions.Add(Instruction.Create(OpCodes.Endfinally));
             }
-        }
-        // finally
-        {
+
             // Cesium.Runtime.RuntimeHelpers.FreeArgv(argV);
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
-            instructions.Add(Instruction.Create(OpCodes.Endfinally));
         }
-
         instructions.Add(atExitLdLocExitCode);
         instructions.Add(Instruction.Create(OpCodes.Ret));
         return syntheticEntrypoint;
