@@ -25,6 +25,18 @@ internal static class TypeSystemEx
         return method == null ? null : context.Module.ImportReference(method);
     }
 
+    public static MethodReference[] MethodsLookup(this TranslationUnitContext context, string memberName)
+    {
+        var components = memberName.Split("::", 2);
+        if (components.Length != 2)
+            throw new NotSupportedException($"Invalid CLI member name: {memberName}.");
+
+        var typeName = components[0];
+        var methodName = components[1];
+        var methods = FindMethodGroup(context.AssemblyContext.ImportAssemblies, typeName, methodName);
+        return methods == null ? Array.Empty<MethodReference>() : methods.Select(x => context.Module.ImportReference(x)).ToArray();
+    }
+
     private static MethodInfo? FindMethod(IEnumerable<Assembly> assemblies, string typeName, string methodName, Type[]? parametersType = null)
     {
         foreach (var assembly in assemblies)
@@ -44,6 +56,16 @@ internal static class TypeSystemEx
         var method = parametersType is not null ? type?.GetMethod(methodName, parametersType)
                                                 : type?.GetMethod(methodName);
         return method;
+    }
+
+    private static MethodInfo[] FindMethodGroup(IEnumerable<Assembly> assemblies, string typeName, string methodName)
+    {
+        return assemblies.SelectMany(x => FindMethodGroup(x, typeName, methodName) ?? Enumerable.Empty<MethodInfo>()).ToArray();
+    }
+
+    private static MethodInfo[]? FindMethodGroup(Assembly assembly, string typeName, string methodName)
+    {
+        return assembly.GetType(typeName)?.GetMethods().Where(x => x.Name == methodName).ToArray();
     }
 
     public static Type? GetTypeObject(this TypeReference typeReference)

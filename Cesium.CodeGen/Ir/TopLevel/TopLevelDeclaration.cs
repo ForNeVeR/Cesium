@@ -85,13 +85,28 @@ internal class TopLevelDeclaration : ITopLevelNode
         string memberName)
     {
         // TODO[#48]: use function type arguments to resolve overloads
-        var method = context.MethodLookup(memberName);
+        var (parametersInfo, returnType) = functionType;
+        var method = context.MethodLookup(memberName, parametersInfo);
+
         if (method == null)
+        {
+            var methods = context.MethodsLookup(memberName);
+            if(methods.Length > 0)
+            {
+                var paramsString = parametersInfo != null
+                    ? string.Join(", ", parametersInfo.Parameters.Select(x => x.Type.Resolve(context)))
+                    : string.Empty;
+                string methodsInfo = string.Join("\n", (IEnumerable<MethodReference>)methods);
+                string message = $"Cannot find CLI-imported member {memberName}({paramsString}).\nAvailable methods:\n{methodsInfo}";
+                throw new NotSupportedException(message);
+            }
+
             throw new NotSupportedException($"Cannot find CLI-imported member {memberName}.");
+        }
+           
 
         ValidateImportDeclaration(context, method, functionType, name);
 
-        var (parametersInfo, returnType) = functionType;
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
