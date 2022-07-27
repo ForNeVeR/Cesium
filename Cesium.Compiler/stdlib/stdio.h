@@ -1,2 +1,2 @@
 __cli_import("Cesium.Runtime.StdIoFunctions::PutS")
-int puts(char *s);
+void puts(char *s); // TODO[#156]: Change to int
