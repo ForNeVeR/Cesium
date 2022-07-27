@@ -30,7 +30,7 @@ int main()
     public void CliImportArgumentCountMismatch() => DoesNotCompile(
         @"__cli_import(""System.Console::Read"")
         int console_read(int a, int b);",
-        "Number of arguments for imported function console_read do not match"
+        "Cannot find CLI-imported member System.Console::Read(System.Int32, System.Int32)."
     );
 
     [Fact]
