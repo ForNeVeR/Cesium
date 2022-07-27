@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 
 function buildCompiler() {
     Write-Host 'Building the Cesium.Compiler project.'
-    dotnet build Cesium.Compiler/Cesium.Compiler.csproj
+    dotnet build "$SourceRoot/Cesium.Compiler/Cesium.Compiler.csproj"
     if (!$?) {
         throw "Couldn't build the compiler: dotnet build returned $LASTEXITCODE."
     }
