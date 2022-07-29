@@ -52,6 +52,7 @@ public class AssemblyContext
     /// <remarks>As we link code on the fly, here we only need to check there are no unlinked functions left.</remarks>
     public AssemblyDefinition VerifyAndGetAssembly()
     {
+        EndInitialization();
         foreach (var (name, function) in Functions)
         {
             if (!function.IsDefined) throw new NotSupportedException($"Function {name} not defined.");
@@ -67,7 +68,6 @@ public class AssemblyContext
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private Lazy<MethodDefinition> _globalTypeStaticCtor;
-
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -124,24 +124,19 @@ public class AssemblyContext
                                | MethodAttributes.RTSpecialName
                                | MethodAttributes.Static;
         MethodDefinition method = new MethodDefinition(".cctor", methodAttributes, Module.TypeSystem.Void);
-        method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         return method;
     }
 
-    internal void AddFieldInitialization(FieldDefinition field, Ir.Expressions.IExpression value)
+    internal void AddFieldInitialization(TranslationUnitContext context, FieldDefinition field, Ir.Expressions.IExpression value)
     {
         var lval = new Ir.Expressions.LValues.LValueGlobalVariable(field);
-        var context = new TranslationUnitContext(this);
         var scope = new FunctionScope(context, GlobalTypeStaticCtor);
-        var lastOpcode = GlobalTypeStaticCtor.Body.Instructions.Last();
-        if (lastOpcode.OpCode == OpCodes.Ret)
-        {
-            GlobalTypeStaticCtor.Body.Instructions.Remove(lastOpcode);
-            lval.EmitSetValue(scope, value);
-            GlobalTypeStaticCtor.Body.Instructions.Add(lastOpcode);
-        }
-        else
-            lval.EmitSetValue(scope, value);
+        lval.EmitSetValue(scope, value);
+    }
+
+    internal void EndInitialization()
+    {
+        GlobalTypeStaticCtor.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
