@@ -16,7 +16,6 @@ namespace Cesium.CodeGen.Ir.Expressions.LValues
 
         public void EmitGetValue(IDeclarationScope scope)
         {
-            // TODO[#92]: Special instructions to emit Ldloc_0 etc.
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldfld, _definition));
         }
 
