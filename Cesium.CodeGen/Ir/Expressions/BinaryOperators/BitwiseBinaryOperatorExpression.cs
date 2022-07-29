@@ -42,11 +42,11 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
     public override TypeReference GetExpressionType(IDeclarationScope scope)
     {
         var leftType = Left.GetExpressionType(scope);
-        if (!leftType.IsInteger(scope.TypeSystem))
+        if (!scope.TypeSystem.IsInteger(leftType))
             throw new NotSupportedException($"Left operand of '{Operator}' is not of integer type: {Left}");
 
         var rightType = Right.GetExpressionType(scope);
-        if (!rightType.IsInteger(scope.TypeSystem))
+        if (!scope.TypeSystem.IsInteger(rightType))
             throw new NotSupportedException($"Right operand of '{Operator}' is not of integer type: {Right}");
 
         return leftType;
