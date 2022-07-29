@@ -68,6 +68,8 @@ public class AssemblyContext
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private Lazy<MethodDefinition> _globalTypeStaticCtor;
+    private Lazy<GlobalConstructorScope> _globalTypeStaticCtorScope;
+
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -114,6 +116,8 @@ public class AssemblyContext
                 GlobalType.Methods.Add(ctor);
                 return ctor;
             });
+
+        _globalTypeStaticCtorScope = new(() => new GlobalConstructorScope(this, GlobalTypeStaticCtor));
     }
 
     private MethodDefinition BuildStaticCtor()
@@ -127,11 +131,10 @@ public class AssemblyContext
         return method;
     }
 
-    internal void AddFieldInitialization(TranslationUnitContext context, FieldDefinition field, Ir.Expressions.IExpression value)
+    internal void AddFieldInitialization(FieldDefinition field, Ir.Expressions.IExpression value)
     {
         var lval = new Ir.Expressions.LValues.LValueGlobalVariable(field);
-        var scope = new FunctionScope(context, GlobalTypeStaticCtor);
-        lval.EmitSetValue(scope, value.Lower());
+        lval.EmitSetValue(_globalTypeStaticCtorScope.Value, value.Lower());
     }
 
     internal void EndInitialization()

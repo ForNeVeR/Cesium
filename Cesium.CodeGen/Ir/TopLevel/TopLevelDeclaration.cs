@@ -70,7 +70,7 @@ internal class TopLevelDeclaration : ITopLevelNode
             {
                 var field = EmitGlobalVariable(context, identifier, type);
                 if (initializer != null)
-                    context.AssemblyContext.AddFieldInitialization(context, field, initializer);
+                    context.AssemblyContext.AddFieldInitialization(field, initializer);
 
                 continue;
             }
