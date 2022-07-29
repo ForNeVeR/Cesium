@@ -131,7 +131,7 @@ public class AssemblyContext
     {
         var lval = new Ir.Expressions.LValues.LValueGlobalVariable(field);
         var scope = new FunctionScope(context, GlobalTypeStaticCtor);
-        lval.EmitSetValue(scope, value);
+        lval.EmitSetValue(scope, value.Lower());
     }
 
     internal void EndInitialization()
