@@ -47,12 +47,6 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
 
-        // If both operands have the same type, then no further conversion is needed.
-        if (leftType.Equals(rightType))
-            return leftType;
-
-        throw new NotImplementedException("TODO");
-
-        bool EitherIs(TypeReference tr) => leftType!.IsEqualTo(tr) || rightType!.IsEqualTo(tr);
+        return scope.TypeSystem.GetCommonNumericType(leftType, rightType);
     }
 }
