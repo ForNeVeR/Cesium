@@ -65,6 +65,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 EmitFunctionDeclaration(context, identifier, functionType);
                 continue;
             }
+
             if (type is PrimitiveType)
             {
                 var field = EmitGlobalVariable(context, identifier, type);
