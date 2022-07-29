@@ -65,13 +65,14 @@ internal class TopLevelDeclaration : ITopLevelNode
                 EmitFunctionDeclaration(context, identifier, functionType);
                 continue;
             }
-
-            var field = EmitGlobalVariable(context, identifier, type);
-            if (initializer != null)
+            if (type is PrimitiveType)
             {
-                context.AssemblyContext.AddFieldInitialization(field, initializer);
+                var field = EmitGlobalVariable(context, identifier, type);
+                if (initializer != null)
+                    context.AssemblyContext.AddFieldInitialization(context, field, initializer);
+
+                continue;
             }
-            continue;
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");
         }
     }
