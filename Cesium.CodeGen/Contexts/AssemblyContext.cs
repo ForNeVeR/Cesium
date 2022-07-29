@@ -139,7 +139,8 @@ public class AssemblyContext
 
     internal void EndInitialization()
     {
-        GlobalTypeStaticCtor.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        if(_globalTypeStaticCtor.IsValueCreated)
+            GlobalTypeStaticCtor.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
