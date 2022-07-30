@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 
@@ -66,34 +67,29 @@ internal class TopLevelDeclaration : ITopLevelNode
                 continue;
             }
 
-            if (type is PrimitiveType)
+            if (type is PrimitiveType) // TODO[#75]: Consider other type categories.
             {
-                var field = EmitGlobalVariable(context, identifier, type);
-                if (initializer != null)
-                    context.AssemblyContext.AddFieldInitialization(field, initializer);
-
+                EmitGlobalVariable(context, identifier, type, initializer);
                 continue;
             }
+
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");
         }
     }
 
-    private static Mono.Cecil.FieldDefinition EmitGlobalVariable(
+    private static void EmitGlobalVariable(
         TranslationUnitContext context,
-        string memberName,
-        IType variableType)
+        string name,
+        IType type,
+        IExpression? initializer)
     {
-        var fieldAttributes = Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static;
-
-        if(variableType is ConstType)
-            fieldAttributes |= Mono.Cecil.FieldAttributes.InitOnly;
-
-        var field = new Mono.Cecil.FieldDefinition(
-            memberName,
-            fieldAttributes,
-            variableType.Resolve(context));
-        context.GlobalType.Fields.Add(field);
-        return field;
+        var field = context.AssemblyContext.AddGlobalField(name, type.Resolve(context));
+        if (initializer != null)
+        {
+            var globalInitializerScope = context.GetInitializerScope();
+            initializer.Lower().EmitTo(globalInitializerScope);
+            globalInitializerScope.StFld(field);
+        }
     }
 
     private static void EmitCliImportDeclaration(

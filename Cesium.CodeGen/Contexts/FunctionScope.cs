@@ -11,7 +11,9 @@ internal record FunctionScope(TranslationUnitContext Context, MethodDefinition M
     public TypeSystem TypeSystem => Context.TypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
-    public Dictionary<string, VariableDefinition> Variables { get; } = new();
+    private readonly Dictionary<string, VariableDefinition> _variables = new();
+    public IReadOnlyDictionary<string, VariableDefinition> Variables => _variables;
+    public void AddVariable(string identifier, VariableDefinition variable) => _variables.Add(identifier, variable);
 
     private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
     public ParameterDefinition? GetParameter(string name)

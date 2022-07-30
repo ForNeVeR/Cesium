@@ -17,7 +17,8 @@ internal static class CodeGenEx
             )
         );
     }
-    public static void StFld(this IDeclarationScope scope, FieldDefinition variable)
+
+    public static void StFld(this IDeclarationScope scope, FieldReference variable)
     {
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, variable));
     }

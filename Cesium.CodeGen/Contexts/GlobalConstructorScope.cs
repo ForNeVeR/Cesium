@@ -1,26 +1,20 @@
+using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Cesium.CodeGen.Contexts
+namespace Cesium.CodeGen.Contexts;
+
+internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDefinition Method) : IDeclarationScope
 {
-    internal record GlobalConstructorScope(AssemblyContext Context, MethodDefinition Method) : IDeclarationScope
-    {
-        public AssemblyContext AssemblyContext => Context;
-        public ModuleDefinition Module => Context.Module;
-        public TypeSystem TypeSystem => Module.TypeSystem;
-        public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
-        TranslationUnitContext IDeclarationScope.Context => throw new NotImplementedException();
-        public Dictionary<string, VariableDefinition> Variables => new();
+    public AssemblyContext AssemblyContext => Context.AssemblyContext;
+    public ModuleDefinition Module => Context.Module;
+    public TypeSystem TypeSystem => Module.TypeSystem;
+    public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
-        public ParameterDefinition? GetParameter(string name)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    public IReadOnlyDictionary<string, VariableDefinition> Variables => ImmutableDictionary<string, VariableDefinition>.Empty;
+    public void AddVariable(string identifier, VariableDefinition variable) =>
+        throw new NotSupportedException("Cannot add a variable into a global constructor scope");
+
+    public ParameterDefinition? GetParameter(string name) => null;
 }

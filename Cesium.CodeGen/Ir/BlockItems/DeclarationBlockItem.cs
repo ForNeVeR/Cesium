@@ -77,7 +77,7 @@ internal class DeclarationBlockItem : IBlockItem
             var typeReference = type.Resolve(scope.Context);
             var variable = new VariableDefinition(typeReference);
             method.Body.Variables.Add(variable);
-            scope.Variables.Add(identifier, variable);
+            scope.AddVariable(identifier, variable);
 
             switch (initializer)
             {
