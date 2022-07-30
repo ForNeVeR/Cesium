@@ -36,26 +36,28 @@ internal abstract class BinaryOperatorExpression : IExpression
             return;
 
         var ts = scope.TypeSystem;
+        if(!ts.IsNumeric(exprType))
+            throw new NotSupportedException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
 
-        if(exprType.Equals(ts.SByte))
+        if(desiredType.Equals(ts.SByte))
             Add(OpCodes.Conv_I1);
-        else if(exprType.Equals(ts.Int16))
+        else if(desiredType.Equals(ts.Int16))
             Add(OpCodes.Conv_I2);
-        else if(exprType.Equals(ts.Int32))
+        else if(desiredType.Equals(ts.Int32))
             Add(OpCodes.Conv_I4);
-        else if(exprType.Equals(ts.Int64))
+        else if(desiredType.Equals(ts.Int64))
             Add(OpCodes.Conv_I8);
-        else if(exprType.Equals(ts.Byte))
+        else if(desiredType.Equals(ts.Byte))
             Add(OpCodes.Conv_U1);
-        else if(exprType.Equals(ts.UInt16))
+        else if(desiredType.Equals(ts.UInt16))
             Add(OpCodes.Conv_U2);
-        else if(exprType.Equals(ts.UInt32))
+        else if(desiredType.Equals(ts.UInt32))
             Add(OpCodes.Conv_U4);
-        else if(exprType.Equals(ts.UInt64))
+        else if(desiredType.Equals(ts.UInt64))
             Add(OpCodes.Conv_U8);
-        else if(exprType.Equals(ts.Single))
+        else if(desiredType.Equals(ts.Single))
             Add(OpCodes.Conv_R4);
-        else if (exprType.Equals(ts.Double))
+        else if (desiredType.Equals(ts.Double))
             Add(OpCodes.Conv_R8);
         else
             throw new NotSupportedException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");

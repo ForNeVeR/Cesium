@@ -37,13 +37,9 @@ internal static class TypeSystemEx
             || t.IsEqualTo(ts.UInt64);
     }
 
-    public static bool IsFloatingPoint(this TypeSystem ts, TypeReference t)
-    {
-        return t.IsEqualTo(ts.Double)
-            || t.IsEqualTo(ts.Single);
-    }
-
+    public static bool IsFloatingPoint(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Single);
     public static bool IsInteger(this TypeSystem ts, TypeReference t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
+    public static bool IsNumeric(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
 
     public static TypeReference GetCommonNumericType(this TypeSystem ts, TypeReference a, TypeReference b)
     {
