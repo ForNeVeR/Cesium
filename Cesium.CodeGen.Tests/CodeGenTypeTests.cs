@@ -2,14 +2,9 @@ namespace Cesium.CodeGen.Tests;
 
 public class CodeGenTypeTests : CodeGenTestBase
 {
-    private static Task DoTest(string source)
+    private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
     {
-        var assembly = GenerateAssembly(default, source);
-        return VerifyTypes(assembly);
-    }
-    private static Task DoTest(string source, string @namespace = "", string globalTypeFQN = "")
-    {
-        var assembly = GenerateAssembly(default, @namespace, globalTypeFQN, source);
+        var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);
         return VerifyTypes(assembly);
     }
 
@@ -57,7 +52,7 @@ int main()
     "TestClass");
 
     [Fact]
-    public Task GlobalClassFQNTest() => DoTest(@"int foo()
+    public Task GlobalClassFqnTest() => DoTest(@"int foo()
 {
     return 42;
 }
