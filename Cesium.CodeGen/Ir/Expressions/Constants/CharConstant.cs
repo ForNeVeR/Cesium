@@ -16,7 +16,7 @@ internal class CharConstant : IConstant
     public void EmitTo(IDeclarationScope scope)
     {
         var instructions = scope.Method.Body.Instructions;
-        instructions.Add(Instruction.Create(OpCodes.Ldc_I4, (int)_value));
+        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) _value));
         instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 

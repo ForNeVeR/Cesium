@@ -184,13 +184,9 @@ internal class FunctionDefinition : ITopLevelNode
         instructions.Add(Instruction.Create(OpCodes.Call, argsToArgv));
         instructions.Add(Instruction.Create(OpCodes.Stloc_1)); // 1 = argV.Index
 
-        // try
-        Instruction tryStart, tryEnd;
-        Instruction pinStart, pinEnd;
-        Instruction unpinStart, unpinEnd;
         {
             // argVCopy = new byte*[argV.Length];
-            instructions.Add(tryStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Ldlen));
             instructions.Add(Instruction.Create(OpCodes.Newarr, bytePtrType));
             instructions.Add(Instruction.Create(OpCodes.Stloc_2)); // 2 = argVCopy.Index
@@ -203,7 +199,7 @@ internal class FunctionDefinition : ITopLevelNode
             //     return main(argC, argVPtr);
             // pin
             {
-                instructions.Add(pinStart = Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
+                instructions.Add(Instruction.Create(OpCodes.Ldloc_0)); // 0 = argC.Index
                 instructions.Add(Instruction.Create(OpCodes.Ldloc_2)); // 2 = argVCopy.Index
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
                 instructions.Add(Instruction.Create(OpCodes.Ldloc_3));  // 3 = argVPinned.Index
@@ -213,50 +209,25 @@ internal class FunctionDefinition : ITopLevelNode
                 instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
                 instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
-            // finally: unpin
+            //unpin
             {
-                instructions.Add(pinEnd = unpinStart = Instruction.Create(OpCodes.Ldnull));
+                instructions.Add(Instruction.Create(OpCodes.Ldnull));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
-                instructions.Add(Instruction.Create(OpCodes.Endfinally));
             }
-        }
-        // finally
-        Instruction finallyStart, finallyEnd;
-        {
+
             // Cesium.Runtime.RuntimeHelpers.FreeArgv(argV);
-            instructions.Add(unpinEnd = tryEnd = finallyStart = Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
+            instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
-            instructions.Add(Instruction.Create(OpCodes.Endfinally));
         }
-
-        instructions.Add(finallyEnd = atExitLdLocExitCode);
+        instructions.Add(atExitLdLocExitCode);
         instructions.Add(Instruction.Create(OpCodes.Ret));
-
-        var unpinHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-        {
-            TryStart = pinStart,
-            TryEnd = pinEnd,
-            HandlerStart = unpinStart,
-            HandlerEnd = unpinEnd
-        };
-        syntheticEntrypoint.Body.ExceptionHandlers.Add(unpinHandler);
-
-        var finallyHandler = new ExceptionHandler(ExceptionHandlerType.Finally)
-        {
-            TryStart = tryStart,
-            TryEnd = tryEnd,
-            HandlerStart = finallyStart,
-            HandlerEnd = finallyEnd
-        };
-        syntheticEntrypoint.Body.ExceptionHandlers.Add(finallyHandler);
-
         return syntheticEntrypoint;
     }
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         _statement.EmitTo(scope);
-        if (!_statement.HasDefiniteReturn)
+        if ((_statement as IBlockItem).HasDefiniteReturn == false)
         {
             if (IsMain)
             {
@@ -271,7 +242,7 @@ internal class FunctionDefinition : ITopLevelNode
             }
             else
             {
-                throw new InvalidOperationException($"{scope.Method.Name} do not have return statement. This is compiler bug.");
+                throw new NotSupportedException($"Function {scope.Method.Name} has no return statement.");
             }
         }
     }

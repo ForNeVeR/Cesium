@@ -31,19 +31,10 @@ System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
   IL_001f: ldelema System.Byte*
   IL_0024: call System.Int32 <Module>::main(System.Int32,System.Byte**)
   IL_0029: stloc.s V_4
-  IL_002b: leave.s IL_0037
+  IL_002b: leave.s IL_0035
   IL_002d: ldnull
   IL_002e: stloc.3
-  IL_002f: endfinally
-  IL_0030: ldloc.1
-  IL_0031: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
-  IL_0036: endfinally
-  IL_0037: ldloc.s V_4
-  IL_0039: ret
-  Exception handlers:
-    Finally:
-      try: IL_001a..IL_002d
-      handler: IL_002d..IL_0030
-    Finally:
-      try: IL_000a..IL_0030
-      handler: IL_0030..IL_0037
+  IL_002f: ldloc.1
+  IL_0030: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
+  IL_0035: ldloc.s V_4
+  IL_0037: ret

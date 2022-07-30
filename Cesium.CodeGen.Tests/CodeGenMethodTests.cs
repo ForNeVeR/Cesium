@@ -52,15 +52,6 @@ int main()
 }");
 
     [Fact]
-    public Task CliImportTest() => DoTest(@"__cli_import(""System.Console::Read"")
-int console_read();
-
-int main()
-{
-    return console_read();
-}");
-
-    [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 
     [Fact]
@@ -77,9 +68,9 @@ int main()
         "int main(int argc, char *argv[], ...){}",
         "Variable arguments for the main function aren't supported.");
 
-    [Fact] public Task ParameterGet() => DoTest("int foo(int x){ return x + 1; }");
-    [Fact]
-    public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
+    [Fact] public Task Parameter1Get() => DoTest("int foo(int x){ return x + 1; }");
+    [Fact] public Task Parameter5Get() => DoTest("int foo(int a, int b, int c, int d, int e){ return e + 1; }");
+    [Fact] public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
 
@@ -231,4 +222,16 @@ int main()
     foo unused;
     return 0;
 }");
+
+    [Fact]
+    public Task ImplicitReturnAllowedForMain() => DoTest(@"int main()
+{
+    int unused;
+}");
+
+    [Fact]
+    public void ImplicitReturnDisallowedNonMain() => DoesNotCompile(@"int foo()
+{
+    int unused;
+}", "Function foo has no return statement.");
 }

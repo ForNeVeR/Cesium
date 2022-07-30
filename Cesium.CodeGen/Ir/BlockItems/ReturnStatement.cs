@@ -19,6 +19,8 @@ internal class ReturnStatement : IBlockItem
         _expression = expression;
     }
 
+    bool IBlockItem.HasDefiniteReturn => true;
+
     public IBlockItem Lower() => new ReturnStatement(_expression.Lower());
 
     public void EmitTo(IDeclarationScope scope)

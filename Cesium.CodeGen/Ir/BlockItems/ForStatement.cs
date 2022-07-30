@@ -43,6 +43,8 @@ internal class ForStatement : IBlockItem
             _updateExpression?.Lower(),
             _body.Lower());
 
+    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
+
     public void EmitTo(IDeclarationScope scope)
     {
         var forScope = new ForScope(scope);

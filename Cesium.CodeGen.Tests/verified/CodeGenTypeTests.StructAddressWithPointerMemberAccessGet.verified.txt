@@ -4,10 +4,10 @@
     System.Int32 <Module>::main()
       Locals:
         foo V_0
-      IL_0000: ldloca V_0
-      IL_0004: conv.u
-      IL_0005: ldfld System.Int32 foo::x
-      IL_000a: ret
+      IL_0000: ldloca.s V_0
+      IL_0002: conv.u
+      IL_0003: ldfld System.Int32 foo::x
+      IL_0008: ret
 
   Type: foo
   Fields:

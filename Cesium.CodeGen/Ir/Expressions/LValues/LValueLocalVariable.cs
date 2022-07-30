@@ -16,13 +16,27 @@ internal class LValueLocalVariable : ILValue
 
     public void EmitGetValue(IDeclarationScope scope)
     {
-        // TODO[#92]: Special instructions to emit Ldloc_0 etc.
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc, _definition));
+        scope.Method.Body.Instructions.Add(_definition.Index switch
+        {
+            0 => Instruction.Create(OpCodes.Ldloc_0),
+            1 => Instruction.Create(OpCodes.Ldloc_1),
+            2 => Instruction.Create(OpCodes.Ldloc_2),
+            3 => Instruction.Create(OpCodes.Ldloc_3),
+            <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldloc_S, _definition),
+            _ => Instruction.Create(OpCodes.Ldloc, _definition)
+        });
     }
 
     public void EmitGetAddress(IDeclarationScope scope)
     {
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloca, _definition));
+        scope.Method.Body.Instructions.Add(
+            Instruction.Create(
+                _definition.Index <= sbyte.MaxValue
+                    ? OpCodes.Ldloca_S
+                    : OpCodes.Ldloca,
+                _definition
+            )
+        );
     }
 
     public void EmitSetValue(IDeclarationScope scope, IExpression value)

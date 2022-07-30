@@ -1,7 +1,7 @@
 ﻿System.Int32 <Module>::main()
-  IL_0000: ldc.i4 1
-  IL_0005: ldc.i4 2
-  IL_000a: cgt
-  IL_000c: ldc.i4 4
-  IL_0011: clt
-  IL_0013: ret
+  IL_0000: ldc.i4.1
+  IL_0001: ldc.i4.2
+  IL_0002: cgt
+  IL_0004: ldc.i4.4
+  IL_0005: clt
+  IL_0007: ret

@@ -36,8 +36,9 @@ If you're interested in certain project area, check the per-area issue labels:
 - [`area:cil-interop`][issues.cil-interop]: issues related to CLI interop
 - [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
 - [`area:parser`][issues.parser]: issues related to C parsing
-- [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
 - [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
+- [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
+- [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
 
 ### Sneak peek
 
@@ -143,5 +144,6 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [issues.preprocessor]: https://github.com/ForNeVeR/Cesium/labels/area%3Apreprocessor
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
+[issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
 [stdlib]: Cesium.Compiler/stdlib

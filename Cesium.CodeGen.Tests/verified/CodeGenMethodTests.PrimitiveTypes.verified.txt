@@ -29,5 +29,5 @@
     System.Int64 V_26
     System.Int64 V_27
     System.Double V_28
-  IL_0000: ldc.i4 0
-  IL_0005: ret
+  IL_0000: ldc.i4.0
+  IL_0001: ret

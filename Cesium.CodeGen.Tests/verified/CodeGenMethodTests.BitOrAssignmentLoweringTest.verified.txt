@@ -1,11 +1,11 @@
 ﻿System.Int32 <Module>::main()
   Locals:
     System.Int32 V_0
-  IL_0000: ldc.i4 0
-  IL_0005: stloc V_0
-  IL_0009: ldloc V_0
-  IL_000d: ldc.i4 1
-  IL_0012: or
-  IL_0013: stloc V_0
-  IL_0017: ldloc V_0
-  IL_001b: ret
+  IL_0000: ldc.i4.0
+  IL_0001: stloc.s V_0
+  IL_0003: ldloc.0
+  IL_0004: ldc.i4.1
+  IL_0005: or
+  IL_0006: stloc.s V_0
+  IL_0008: ldloc.0
+  IL_0009: ret
