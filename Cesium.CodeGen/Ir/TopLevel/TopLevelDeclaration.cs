@@ -3,7 +3,6 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
 
@@ -84,29 +83,11 @@ internal class TopLevelDeclaration : ITopLevelNode
         FunctionType functionType,
         string memberName)
     {
-        // TODO[#48]: use function type arguments to resolve overloads
         var (parametersInfo, returnType) = functionType;
-        var method = context.MethodLookup(memberName, parametersInfo);
+        if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
+            throw new NotSupportedException($"Empty parameter list is not allowed for CLI-imported function {name}.");
 
-        if (method == null)
-        {
-            var methods = context.MethodsLookup(memberName);
-            if(methods.Length > 0)
-            {
-                var paramsString = parametersInfo != null
-                    ? string.Join(", ", parametersInfo.Parameters.Select(x => x.Type.Resolve(context)))
-                    : string.Empty;
-                string methodsInfo = string.Join("\n", (IEnumerable<MethodReference>)methods);
-                string message = $"Cannot find CLI-imported member {memberName}({paramsString}).\nAvailable methods:\n{methodsInfo}";
-                throw new NotSupportedException(message);
-            }
-
-            throw new NotSupportedException($"Cannot find CLI-imported member {memberName}.");
-        }
-           
-
-        ValidateImportDeclaration(context, method, functionType, name);
-
+        var method = context.MethodLookup(memberName, parametersInfo, returnType);
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
     }
 
@@ -151,55 +132,5 @@ internal class TopLevelDeclaration : ITopLevelNode
             else
                context.AddPlainType(type, identifier);
         }
-    }
-
-    private static void ValidateImportDeclaration(
-        TranslationUnitContext context,
-        MethodReference method,
-        FunctionType funcType,
-        string funcName
-        )
-    {
-        var (declParameters, declReturn) = funcType;
-
-        var declReturnReified = declReturn.Resolve(context);
-        if (declReturnReified.FullName != method.ReturnType.FullName)
-            throw new NotSupportedException($"Returns types for imported function {funcName} do not match: {declReturnReified.Name} in declaration, {method.ReturnType.Name} in source.");
-
-        // TODO[#87]: Use source method arguments definitions if import declaration contains empty parameter list
-        if (declParameters == null)
-            return;
-
-        var declParamCount = declParameters switch
-        {
-            {IsVoid: true} => 0,
-            {IsVarArg: true} => declParameters.Parameters.Count + 1,
-            _ => declParameters.Parameters.Count
-        };
-
-        if(method.Parameters.Count != declParamCount)
-            throw new NotSupportedException($"Number of arguments for imported function {funcName} do not match: {declParamCount} in declaration, {method.Parameters.Count} in source.");
-
-        for (var i = 0; i < declParameters.Parameters.Count; i++)
-        {
-            var declParam = declParameters.Parameters[i];
-            var declParamType = declParam.Type.Resolve(context);
-
-            var srcParam = method.Parameters[i];
-            var srcParamType = srcParam.ParameterType;
-
-            if(declParamType.FullName != srcParamType.FullName)
-                throw new NotSupportedException($"Type of argument #{i} for imported function {funcName} does not match: {declParamType} in declaration, {srcParamType} in source.");
-        }
-
-        if (declParameters.IsVarArg)
-        {
-            var lastSrcParam = method.Parameters.Last();
-            var paramsAttrType = context.Module.ImportReference(typeof(ParamArrayAttribute));
-            if(lastSrcParam.ParameterType.IsArray == false || lastSrcParam.CustomAttributes.Any(x => x.AttributeType == paramsAttrType) == false)
-                throw new NotSupportedException($"Signature for imported function {funcName} does not match: accepts variadic arguments in declaration, but not in source.");
-        }
-
-        // sic! no backwards check: if the last argument is a params array in source, and a plain array in declaration, it's safe to pass it as is
     }
 }

@@ -12,7 +12,7 @@ public class CliImportTests : CodeGenTestBase
 
     [Fact]
     public Task CliImportTest() => DoTest(@"__cli_import(""System.Console::Read"")
-int console_read();
+int console_read(void);
 
 int main()
 {
@@ -22,8 +22,8 @@ int main()
     [Fact]
     public void CliImportReturnTypeMismatch() => DoesNotCompile(
         @"__cli_import(""System.Console::Read"")
-        void console_read();",
-        "Returns types for imported function console_read do not match"
+        void console_read(void);",
+        "Returns types do not match"
     );
 
     [Fact]
@@ -37,7 +37,7 @@ int main()
     public void CliImportArgumentTypesMismatch() => DoesNotCompile(
         @"__cli_import(""System.Console::SetCursorPosition"")
         void console_set_cursor_position(int a, char b);",
-        "Type of argument #1 for imported function console_set_cursor_position does not match"
+        "Type of argument #1 does not match"
     );
 
     // todo: add tests for variadic arguments when it's supported by the parser

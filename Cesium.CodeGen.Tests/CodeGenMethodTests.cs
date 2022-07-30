@@ -102,8 +102,8 @@ int foo(int bar) {}", "Incorrect parameter count");
 
     [Fact]
     public void IncorrectOverrideCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Read"")
-int console_read();
-int console_read() { return 0; }", "Function console_read already defined as immutable.");
+int console_read(void);
+int console_read(void) { return 0; }", "Function console_read already defined as immutable.");
 
     [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
