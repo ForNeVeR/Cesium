@@ -1,7 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.LValues
 {
@@ -14,21 +13,16 @@ namespace Cesium.CodeGen.Ir.Expressions.LValues
             _definition = definition;
         }
 
-        public void EmitGetValue(IDeclarationScope scope)
-        {
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldfld, _definition));
-        }
+        public void EmitGetValue(IDeclarationScope scope) =>
+            scope.LdSFld(_definition);
 
-        public void EmitGetAddress(IDeclarationScope scope)
-        {
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldflda, _definition));
-        }
+        public void EmitGetAddress(IDeclarationScope scope) =>
+            scope.LdSFldA(_definition);
 
         public void EmitSetValue(IDeclarationScope scope, IExpression value)
         {
             value.EmitTo(scope);
-
-            scope.StFld(_definition);
+            scope.StSFld(_definition);
         }
 
         public TypeReference GetValueType() => _definition.FieldType;

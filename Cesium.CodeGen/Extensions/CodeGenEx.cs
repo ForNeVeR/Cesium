@@ -18,8 +18,18 @@ internal static class CodeGenEx
         );
     }
 
-    public static void StFld(this IDeclarationScope scope, FieldReference variable)
+    public static void LdSFld(this IDeclarationScope scope, FieldReference field)
     {
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, variable));
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, field));
+    }
+
+    public static void LdSFldA(this IDeclarationScope scope, FieldReference field)
+    {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, field));
+    }
+
+    public static void StSFld(this IDeclarationScope scope, FieldReference field)
+    {
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stsfld, field));
     }
 }

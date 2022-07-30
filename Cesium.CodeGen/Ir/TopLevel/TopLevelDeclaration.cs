@@ -88,7 +88,7 @@ internal class TopLevelDeclaration : ITopLevelNode
         {
             var globalInitializerScope = context.GetInitializerScope();
             initializer.Lower().EmitTo(globalInitializerScope);
-            globalInitializerScope.StFld(field);
+            globalInitializerScope.StSFld(field);
         }
     }
 
