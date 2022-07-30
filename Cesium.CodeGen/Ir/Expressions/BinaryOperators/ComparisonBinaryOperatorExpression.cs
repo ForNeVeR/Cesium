@@ -1,5 +1,4 @@
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -42,7 +41,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
 
     public override void EmitTo(IDeclarationScope scope)
     {
-        // todo: check if operand types are compatible?
+        // TODO[#160]: check if operand types are compatible?
 
         Left.EmitTo(scope);
         Right.EmitTo(scope);
