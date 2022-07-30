@@ -4,7 +4,9 @@ using System.Text;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Cesium.CodeGen.Contexts;
@@ -17,6 +19,9 @@ public class AssemblyContext
     public TypeDefinition GlobalType { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
+
+    private readonly Dictionary<string, FieldDefinition> _globalFields = new();
+    internal IReadOnlyDictionary<string, FieldDefinition> GlobalFields => _globalFields;
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
@@ -53,15 +58,17 @@ public class AssemblyContext
             if (!function.IsDefined) throw new NotSupportedException($"Function {name} not defined.");
         }
 
+        FinishGlobalInitializer();
         return Assembly;
     }
 
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
-    private readonly Dictionary<string, FieldReference> _fields = new();
+    private readonly Dictionary<string, FieldReference> _stringConstantHolders = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
+    private MethodDefinition? _globalInitializer;
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -102,9 +109,43 @@ public class AssemblyContext
             GlobalType = Module.GetType("<Module>");
         }
     }
+
+    public FieldReference AddGlobalField(string name, TypeReference type)
+    {
+        if (_globalFields.ContainsKey(name))
+            throw new NotSupportedException($"Cannot add a duplicate global field named {name}.");
+
+        var field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type);
+        _globalFields.Add(name, field);
+        GlobalType.Fields.Add(field);
+
+        return field;
+    }
+
+    /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>
+    public MethodDefinition GetGlobalInitializer()
+    {
+        if (_globalInitializer != null) return _globalInitializer;
+        var methodAttributes =
+            MethodAttributes.Private
+            | MethodAttributes.HideBySig
+            | MethodAttributes.SpecialName
+            | MethodAttributes.RTSpecialName
+            | MethodAttributes.Static;
+        _globalInitializer = new MethodDefinition(".cctor", methodAttributes, Module.TypeSystem.Void);
+        GlobalType.Methods.Add(_globalInitializer);
+        return _globalInitializer;
+    }
+
+    private void FinishGlobalInitializer()
+    {
+        if (_globalInitializer != null)
+            _globalInitializer.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+    }
+
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
-        if (_fields.TryGetValue(stringConstant, out var field))
+        if (_stringConstantHolders.TryGetValue(stringConstant, out var field))
             return field;
 
         var encoding = Encoding.UTF8;
@@ -115,7 +156,7 @@ public class AssemblyContext
 
         var type = GetStubType(bufferSize);
         field = GenerateFieldForStringConstant(type, data);
-        _fields.Add(stringConstant, field);
+        _stringConstantHolders.Add(stringConstant, field);
 
         return field;
     }
@@ -147,7 +188,7 @@ public class AssemblyContext
         TypeReference stubStructType,
         byte[] contentWithTerminatingZero)
     {
-        var number = _fields.Count;
+        var number = _stringConstantHolders.Count;
         var fieldName = $"ConstStringBuffer{number}";
 
         var field = new FieldDefinition(fieldName, FieldAttributes.Static | FieldAttributes.InitOnly, stubStructType)

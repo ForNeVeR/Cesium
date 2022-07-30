@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
@@ -65,15 +66,28 @@ internal class TopLevelDeclaration : ITopLevelNode
                 continue;
             }
 
-            // TODO[#75]: Generate a global variable of type {type, isConst}.
-            if (initializer != null)
+            if (type is PrimitiveType) // TODO[#75]: Consider other type categories.
             {
-                throw new NotImplementedException(
-                    $"Declaration {declaration} with initializer {initializer} not supported, yet.");
-                // TODO[#75]: Don't forget to lower the initializer.
+                EmitGlobalVariable(context, identifier, type, initializer);
+                continue;
             }
 
             throw new NotImplementedException($"Declaration not supported, yet: {declaration}.");
+        }
+    }
+
+    private static void EmitGlobalVariable(
+        TranslationUnitContext context,
+        string name,
+        IType type,
+        IExpression? initializer)
+    {
+        var field = context.AssemblyContext.AddGlobalField(name, type.Resolve(context));
+        if (initializer != null)
+        {
+            var globalInitializerScope = context.GetInitializerScope();
+            initializer.Lower().EmitTo(globalInitializerScope);
+            globalInitializerScope.StSFld(field);
         }
     }
 

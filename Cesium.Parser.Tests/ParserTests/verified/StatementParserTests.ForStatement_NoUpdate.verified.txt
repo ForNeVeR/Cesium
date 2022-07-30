@@ -19,7 +19,7 @@
     }
   },
   "TestExpression": {
-    "$type": "Cesium.Ast.BinaryOperatorExpression, Cesium.Ast",
+    "$type": "Cesium.Ast.ComparisonBinaryOperatorExpression, Cesium.Ast",
     "Left": {
       "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
       "Constant": {

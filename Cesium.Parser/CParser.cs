@@ -147,19 +147,19 @@ public partial class CParser
     [Rule("multiplicative_expression: multiplicative_expression '/' cast_expression")]
     [Rule("multiplicative_expression: multiplicative_expression '%' cast_expression")]
     private static Expression MakeMultiplicativeExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new ArithmeticBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.6 Additive operators
     [Rule("additive_expression: additive_expression '+' multiplicative_expression")]
     [Rule("additive_expression: additive_expression '-' multiplicative_expression")]
     private static Expression MakeAdditiveExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new ArithmeticBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.7 Bitwise shift operators
     [Rule("shift_expression: shift_expression '<<' additive_expression")]
     [Rule("shift_expression: shift_expression '>>' additive_expression")]
     private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.8 Relational operators
     [Rule("relational_expression: relational_expression '<' additive_expression")]
@@ -167,28 +167,28 @@ public partial class CParser
     [Rule("relational_expression: relational_expression '<=' additive_expression")]
     [Rule("relational_expression: relational_expression '>=' additive_expression")]
     private static Expression MakeRelationalExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new ComparisonBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.9 Equality operators
     [Rule("equality_expression: equality_expression '==' additive_expression")]
     [Rule("equality_expression: equality_expression '!=' additive_expression")]
     private static Expression MakeEqualityExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new ComparisonBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.10 Bitwise AND operator
     [Rule("AND_expression: AND_expression '&' equality_expression")]
     private static Expression MakeBitwiseAndExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.11 Bitwise exclusive OR operator
     [Rule("exclusive_OR_expression: exclusive_OR_expression '^' AND_expression")]
     private static Expression MakeBitwiseXorExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.12 Bitwise inclusive OR operator
     [Rule("inclusive_OR_expression: inclusive_OR_expression '|' exclusive_OR_expression")]
     private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
-        new BinaryOperatorExpression(a, @operator.Text, b);
+        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
 
     // 6.5.13 Logical AND operator
     [Rule("logical_AND_expression: logical_AND_expression '&&' inclusive_OR_expression")]

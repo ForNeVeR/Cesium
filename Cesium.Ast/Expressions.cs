@@ -23,6 +23,12 @@ public record UnaryOperatorExpression(string Operator, Expression Target) : Expr
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
 public record LogicalBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
     : BinaryOperatorExpression(Left, Operator, Right);
+public record ArithmeticBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
+    : BinaryOperatorExpression(Left, Operator, Right);
+public record BitwiseBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
+    : BinaryOperatorExpression(Left, Operator, Right);
+public record ComparisonBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
+    : BinaryOperatorExpression(Left, Operator, Right);
 
 // 6.5.16 Assignment operators
 public record AssignmentExpression(Expression Left, string Operator, Expression Right)

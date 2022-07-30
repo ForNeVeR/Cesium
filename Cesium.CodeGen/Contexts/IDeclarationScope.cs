@@ -12,6 +12,7 @@ internal interface IDeclarationScope
     IReadOnlyDictionary<string, FunctionInfo> Functions { get; }
     TranslationUnitContext Context { get; }
     MethodDefinition Method { get; }
-    Dictionary<string, VariableDefinition> Variables { get; }
+    IReadOnlyDictionary<string, VariableDefinition> Variables { get; }
+    void AddVariable(string identifier, VariableDefinition variable);
     ParameterDefinition? GetParameter(string name);
 }

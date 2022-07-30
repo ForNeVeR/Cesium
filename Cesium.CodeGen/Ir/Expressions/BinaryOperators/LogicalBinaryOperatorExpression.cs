@@ -2,16 +2,19 @@ using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace Cesium.CodeGen.Ir.Expressions;
+namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
 {
     private LogicalBinaryOperatorExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
+        if(!Operator.IsLogical())
+            throw new NotSupportedException($"Internal error: operator {Operator} is not logical.");
     }
 
-    public LogicalBinaryOperatorExpression(Ast.LogicalBinaryOperatorExpression expression) : base(expression)
+    public LogicalBinaryOperatorExpression(Ast.LogicalBinaryOperatorExpression expression)
+        : base(expression)
     {
     }
 
