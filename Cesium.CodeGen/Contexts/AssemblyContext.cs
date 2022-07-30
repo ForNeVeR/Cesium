@@ -19,7 +19,9 @@ public class AssemblyContext
     public TypeDefinition GlobalType { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
+
     private readonly Dictionary<string, FieldDefinition> _globalFields = new();
+    internal IReadOnlyDictionary<string, FieldDefinition> GlobalFields => _globalFields;
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,

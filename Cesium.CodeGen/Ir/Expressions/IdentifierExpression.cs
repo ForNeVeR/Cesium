@@ -33,7 +33,7 @@ internal class IdentifierExpression : IExpression, ILValueExpression
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         var par = scope.GetParameter(Identifier);
-        var global = scope.Context.GlobalType.Fields.FirstOrDefault(x => x.Name == Identifier);
+        scope.Context.AssemblyContext.GlobalFields.TryGetValue(Identifier, out var global);
         switch (var, par)
         {
             case (null, null):
