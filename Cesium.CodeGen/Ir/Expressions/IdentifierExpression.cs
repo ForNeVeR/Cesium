@@ -37,7 +37,7 @@ internal class IdentifierExpression : IExpression, ILValueExpression
         switch (var, par)
         {
             case (null, null):
-                if(global is { })
+                if (global != null)
                     return new LValueGlobalVariable(global);
                 throw new NotSupportedException($"Cannot find variable {Identifier}.");
             case ({ }, null):
