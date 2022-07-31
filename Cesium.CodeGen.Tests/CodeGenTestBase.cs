@@ -18,9 +18,9 @@ public abstract class CodeGenTestBase : VerifyTestBase
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
-    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, string @namespace = "", string globalTypeFQN = "", params string[] sources)
+    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, string @namespace = "", string globalTypeFqn = "", params string[] sources)
     {
-        var context = CreateAssembly(runtime, @namespace, globalTypeFQN);
+        var context = CreateAssembly(runtime, @namespace, globalTypeFqn);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -31,14 +31,14 @@ public abstract class CodeGenTestBase : VerifyTestBase
         Assert.Contains(expectedMessage, ex.Message);
     }
 
-    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFQN = "") =>
+    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFqn = "") =>
         AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console,
             targetRuntime,
             new [] { typeof(Console).Assembly },
             @namespace,
-            globalTypeFQN);
+            globalTypeFqn);
 
     private static void GenerateCode(AssemblyContext context, IEnumerable<string> sources)
     {
