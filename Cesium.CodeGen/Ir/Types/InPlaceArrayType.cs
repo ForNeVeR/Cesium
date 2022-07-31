@@ -5,9 +5,9 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record StackArrayType(IType Base, int Size) : PointerType(Base)
+internal record InPlaceArrayType(IType Base, int Size) : IType
 {
-    public override TypeReference Resolve(TranslationUnitContext context)
+    public TypeReference Resolve(TranslationUnitContext context)
     {
         return Base.Resolve(context).MakePointerType();
     }
@@ -25,5 +25,5 @@ internal record StackArrayType(IType Base, int Size) : PointerType(Base)
         method.Emit(OpCodes.Localloc);
     }
 
-    public override int SizeInBytes => Base.SizeInBytes * Size;
+    public int SizeInBytes => Base.SizeInBytes * Size;
 }

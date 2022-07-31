@@ -170,7 +170,7 @@ internal record LocalDeclarationInfo(
                             !int.TryParse(constantExpression.Constant.Text, out var size))
                             throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
 
-                        type = new StackArrayType(type, size);
+                        type = new InPlaceArrayType(type, size);
                     }
 
                     break;
