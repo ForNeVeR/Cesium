@@ -166,4 +166,9 @@ int main(void) {}");
     [Fact]
     public Task BasicTypeDef() => DoTest(@"typedef int foo;
 int main(void) { foo x; return 0; }");
+
+    [Fact]
+    public Task StructWithArray() => DoTest(@"typedef struct {
+    int x[4];
+} foo;");
 }

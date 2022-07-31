@@ -38,4 +38,9 @@ void *malloc(size_t);");
 
     [Fact]
     public Task ComplexFunctionPointerTypeDef() => DoDeclarationParserTest("typedef void (*foo)(uint64_t, const uint32_t*);");
+
+    [Fact]
+    public Task StructWithArray() => DoDeclarationParserTest(@"typedef struct {
+    int x[4];
+} foo;");
 }
