@@ -150,6 +150,9 @@ internal static class TypeSystemEx
     public static bool IsFloatingPoint(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Single);
     public static bool IsInteger(this TypeSystem ts, TypeReference t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
     public static bool IsNumeric(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
+    public static bool IsNumericOrBool(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || t.IsEqualTo(ts.Boolean);
+    public static bool IsBool(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Boolean);
+
 
     public static TypeReference GetCommonNumericType(this TypeSystem ts, TypeReference a, TypeReference b)
     {
