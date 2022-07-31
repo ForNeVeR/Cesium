@@ -6,6 +6,6 @@
   IL_0003: conv.u1
   IL_0004: conv.i4
   IL_0005: add
-  IL_0006: stloc.s V_0
-  IL_0008: ldc.i4.0
-  IL_0009: ret
+  IL_0006: stloc.0
+  IL_0007: ldc.i4.0
+  IL_0008: ret

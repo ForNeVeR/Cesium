@@ -5,14 +5,14 @@
   IL_0000: ldc.i4 40
   IL_0005: conv.u
   IL_0006: localloc
-  IL_0008: stloc.s V_0
-  IL_000a: ldloc.0
-  IL_000b: ldc.i4.2
-  IL_000c: conv.i
-  IL_000d: ldc.i4 4
-  IL_0012: mul
-  IL_0013: add
-  IL_0014: conv.u
-  IL_0015: stloc.s V_1
-  IL_0017: ldc.i4.0
-  IL_0018: ret
+  IL_0008: stloc.0
+  IL_0009: ldloc.0
+  IL_000a: ldc.i4.2
+  IL_000b: conv.i
+  IL_000c: ldc.i4 4
+  IL_0011: mul
+  IL_0012: add
+  IL_0013: conv.u
+  IL_0014: stloc.1
+  IL_0015: ldc.i4.0
+  IL_0016: ret
