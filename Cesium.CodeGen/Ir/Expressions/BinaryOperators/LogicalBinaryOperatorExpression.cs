@@ -49,7 +49,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         Right.EmitTo(scope);
         bodyProcessor.Emit(OpCodes.Ldc_I4_0);
         bodyProcessor.Emit(OpCodes.Ceq);
-        // TODO[#118]
+
         var exitLabel = bodyProcessor.Create(OpCodes.Nop);
         bodyProcessor.Emit(OpCodes.Br, exitLabel);
 
@@ -73,7 +73,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         bodyProcessor.Emit(OpCodes.Ceq);
         bodyProcessor.Emit(OpCodes.Ldc_I4_1);
         bodyProcessor.Emit(OpCodes.Ceq);
-        // TODO[#118]
+
         var exitLabel = bodyProcessor.Create(OpCodes.Nop);
         bodyProcessor.Emit(OpCodes.Br, exitLabel);
 
