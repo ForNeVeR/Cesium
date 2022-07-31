@@ -144,7 +144,8 @@ internal static class TypeSystemEx
 
     public static bool IsUnsignedInteger(this TypeSystem ts, TypeReference t)
     {
-        return t.IsEqualTo(ts.Byte)
+        return t.IsEqualTo(ts.Boolean)
+            || t.IsEqualTo(ts.Byte)
             || t.IsEqualTo(ts.UInt16)
             || t.IsEqualTo(ts.UInt32)
             || t.IsEqualTo(ts.UInt64);
@@ -153,7 +154,6 @@ internal static class TypeSystemEx
     public static bool IsFloatingPoint(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Single);
     public static bool IsInteger(this TypeSystem ts, TypeReference t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
     public static bool IsNumeric(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
-    public static bool IsNumericOrBool(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || t.IsEqualTo(ts.Boolean);
     public static bool IsBool(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Boolean);
 
 
@@ -173,7 +173,7 @@ internal static class TypeSystemEx
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] {ts.SByte, ts.Int16, ts.Int32, ts.Int64};
-        var unsignedTypes = new[] {ts.Byte, ts.UInt16, ts.UInt32, ts.UInt64};
+        var unsignedTypes = new[] {ts.Boolean, ts.Byte, ts.UInt16, ts.UInt32, ts.UInt64};
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
