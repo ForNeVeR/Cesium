@@ -88,9 +88,11 @@ public partial class CParser
         ArgumentExpressionList? arguments,
         IToken __) => new FunctionCallExpression(function, arguments);
 
-    // TODO:
-    // postfix-expression:
-    //     postfix-expression . identifier
+    [Rule("postfix_expression: postfix_expression '.' Identifier")]
+    private static Expression MakeMemberAccessExpression(
+        Expression target,
+        IToken _,
+        IToken identifier) => new MemberAccessExpression(target, new IdentifierExpression(identifier.Text));
 
     [Rule("postfix_expression: postfix_expression '->' Identifier")]
     private static Expression MakePointerMemberAccessExpression(

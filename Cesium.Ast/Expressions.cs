@@ -13,6 +13,7 @@ public record ConstantExpression(IToken<CTokenType> Constant) : Expression;
 // 6.5.2 Postfix operators
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
 public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments) : Expression;
+public record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PointerMemberAccessExpression(Expression Function, IdentifierExpression Identifier) : Expression;
 
 // 6.5.3 Unary operators
