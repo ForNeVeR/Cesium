@@ -151,6 +151,7 @@ internal static class TypeSystemEx
     public static bool IsInteger(this TypeSystem ts, TypeReference t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
     public static bool IsNumeric(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
 
+    /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
     public static TypeReference GetCommonNumericType(this TypeSystem ts, TypeReference a, TypeReference b)
     {
         // First, if the corresponding real type of either operand is (long) double,
