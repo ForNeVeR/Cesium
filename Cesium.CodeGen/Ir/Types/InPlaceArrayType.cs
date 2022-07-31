@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -10,6 +11,35 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
     public TypeReference Resolve(TranslationUnitContext context)
     {
         return Base.Resolve(context).MakePointerType();
+    }
+
+    public FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName)
+    {
+        var itemType = Base.Resolve(context);
+        var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName);
+        ownerType.NestedTypes.Add(bufferType);
+
+        return new FieldDefinition(fieldName, FieldAttributes.Public, bufferType)
+        {
+            CustomAttributes = { GenerateCustomFieldAttribute() }
+        };
+
+        CustomAttribute GenerateCustomFieldAttribute()
+        {
+            var fixedBufferCtor = typeof(FixedBufferAttribute).GetConstructor(new[] { typeof(Type), typeof(int) });
+            if (fixedBufferCtor == null)
+                throw new NotSupportedException(
+                    "Cannot find a constructor with signature (Type, Int32) in type FixedBufferAttribute.");
+
+            return new CustomAttribute(context.Module.ImportReference(fixedBufferCtor))
+            {
+                ConstructorArguments =
+                {
+                    new CustomAttributeArgument(context.Module.ImportReference(typeof(Type)), itemType),
+                    new CustomAttributeArgument(context.TypeSystem.Int32, SizeInBytes)
+                }
+            };
+        }
     }
 
     public void EmitInitializer(IDeclarationScope scope)
@@ -26,4 +56,38 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
     }
 
     public int SizeInBytes => Base.SizeInBytes * Size;
+
+    private TypeDefinition CreateFixedBufferType(
+        ModuleDefinition module,
+        TypeReference fieldType,
+        string fieldName)
+    {
+        // An example of what C# does for fixed int x[20]:
+        //
+        // [StructLayout(LayoutKind.Sequential, Size = 80)]
+        // [CompilerGenerated]
+        // [UnsafeValueType]
+        // public struct <x>e__FixedBuffer
+        // {
+        //     public int FixedElementField;
+        // }
+
+        var compilerGeneratedCtor = typeof(CompilerGeneratedAttribute).GetConstructor(Array.Empty<Type>());
+        var compilerGeneratedAttribute = new CustomAttribute(module.ImportReference(compilerGeneratedCtor));
+
+        var unsafeValueTypeCtor = typeof(UnsafeValueTypeAttribute).GetConstructor(Array.Empty<Type>());
+        var unsafeValueTypeAttribute = new CustomAttribute(module.ImportReference(unsafeValueTypeCtor));
+
+        return new TypeDefinition(
+            "",
+            $"<SyntheticBuffer>{fieldName}",
+            TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.NestedPublic,
+            module.ImportReference(typeof(ValueType)))
+        {
+            PackingSize = 0,
+            ClassSize = SizeInBytes,
+            CustomAttributes = { compilerGeneratedAttribute, unsafeValueTypeAttribute },
+            Fields = { new FieldDefinition("FixedElementField", FieldAttributes.Public, fieldType) }
+        };
+    }
 }

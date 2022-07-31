@@ -2,7 +2,6 @@
   Type: <Module>
   Fields:
     System.Int32 <Module>::x
-       Init with: []
   Methods:
     System.Void <Module>::.cctor()
       IL_0000: ldc.i4.s 50

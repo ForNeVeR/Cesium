@@ -11,6 +11,10 @@ namespace Cesium.CodeGen.Ir.Types;
 internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
+
+    FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName) =>
+        new(fieldName, FieldAttributes.Public, Resolve(context));
+
     int SizeInBytes { get; }
 }
 

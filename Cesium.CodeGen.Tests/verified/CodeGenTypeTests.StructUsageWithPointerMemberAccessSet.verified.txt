@@ -13,4 +13,3 @@
   Type: foo
   Fields:
     System.Int32 foo::x
-       Init with: []

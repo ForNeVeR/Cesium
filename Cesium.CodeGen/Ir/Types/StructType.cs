@@ -32,11 +32,8 @@ internal class StructType : IGeneratedType
                 throw new NotSupportedException(
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
-            structType.Fields.Add(
-                new FieldDefinition(
-                    identifier,
-                    FieldAttributes.Public,
-                    type.Resolve(context)));
+            var field = type.CreateFieldOfType(context, structType, identifier);
+            structType.Fields.Add(field);
         }
 
         return structType;

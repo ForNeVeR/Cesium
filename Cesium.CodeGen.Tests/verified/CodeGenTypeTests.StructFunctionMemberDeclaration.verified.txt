@@ -8,4 +8,3 @@
   Type: foo
   Fields:
     method System.Void *(System.Int32) foo::bar
-       Init with: []

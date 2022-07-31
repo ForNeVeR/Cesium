@@ -105,9 +105,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
             if (type.ClassSize != -1)
                 result.AppendLine($"{Indent(indent)}Size: {type.ClassSize}");
 
+            if (type.HasCustomAttributes)
+                PrintCustomAttributes(indent, type.CustomAttributes);
+
             if (type.HasNestedTypes)
             {
-                result.AppendLine($"{Indent(indent)}Types:");
+                result.AppendLine($"{Indent(indent)}Nested types:");
                 DumpTypes(type.NestedTypes, result, indent + 1);
             }
 
@@ -117,8 +120,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 foreach (var field in type.Fields)
                 {
                     result.AppendLine($"{Indent(indent + 1)}{field}");
+
+                    if (field.HasCustomAttributes)
+                        PrintCustomAttributes(indent + 1, field.CustomAttributes);
+
                     var initialValue = field.InitialValue;
-                    if (initialValue != null)
+                    if (initialValue.Length > 0)
                     {
                         if (type.Name == AssemblyContext.ConstantPoolTypeName)
                         {
@@ -142,6 +149,18 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine($"{Indent(indent)}Methods:");
                 DumpMethods(type, result, 2);
             }
+        }
+
+        void PrintCustomAttributes(int nestedIndent, IEnumerable<CustomAttribute> customAttributes)
+        {
+            result.AppendLine($"{Indent(nestedIndent)}Custom attributes:");
+            foreach (var customAttribute in customAttributes)
+            {
+                var arguments = string.Join(", ", customAttribute.ConstructorArguments.Select(a => a.Value));
+                result.AppendLine($"{Indent(nestedIndent)}- {customAttribute.AttributeType.Name}({arguments})");
+            }
+
+            result.AppendLine();
         }
     }
 

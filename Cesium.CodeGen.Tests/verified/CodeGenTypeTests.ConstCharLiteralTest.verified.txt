@@ -10,7 +10,7 @@
       IL_0008: ret
 
   Type: <ConstantPool>
-  Types:
+  Nested types:
     Type: <ConstantPool>/<ConstantPoolItemType7>
     Pack: 1
     Size: 7
