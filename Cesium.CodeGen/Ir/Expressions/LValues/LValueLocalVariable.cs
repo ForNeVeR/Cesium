@@ -42,8 +42,15 @@ internal class LValueLocalVariable : ILValue
     public void EmitSetValue(IDeclarationScope scope, IExpression value)
     {
         value.EmitTo(scope);
-
-        scope.StLoc(_definition);
+        scope.Method.Body.Instructions.Add(_definition.Index switch
+        {
+            0 => Instruction.Create(OpCodes.Stloc_0),
+            1 => Instruction.Create(OpCodes.Stloc_1),
+            2 => Instruction.Create(OpCodes.Stloc_2),
+            3 => Instruction.Create(OpCodes.Stloc_3),
+            <= sbyte.MaxValue => Instruction.Create(OpCodes.Stloc_S, _definition),
+            _ => Instruction.Create(OpCodes.Stloc, _definition)
+        });
     }
 
     public TypeReference GetValueType() => _definition.VariableType;
