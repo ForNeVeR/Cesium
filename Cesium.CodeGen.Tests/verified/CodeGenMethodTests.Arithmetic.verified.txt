@@ -10,16 +10,16 @@
   IL_0009: ldloc.1
   IL_000a: ldc.i4.1
   IL_000b: add
-  IL_000c: stloc.s V_1
-  IL_000e: ldloc.1
-  IL_000f: ldc.i4.1
-  IL_0010: add
-  IL_0011: stloc.s V_1
-  IL_0013: ldloc.1
-  IL_0014: ldc.i4.2
-  IL_0015: mul
-  IL_0016: stloc.s V_1
-  IL_0018: ldloc.1
-  IL_0019: ldc.i4.2
-  IL_001a: add
-  IL_001b: ret
+  IL_000c: stloc.1
+  IL_000d: ldloc.1
+  IL_000e: ldc.i4.1
+  IL_000f: add
+  IL_0010: stloc.1
+  IL_0011: ldloc.1
+  IL_0012: ldc.i4.2
+  IL_0013: mul
+  IL_0014: stloc.1
+  IL_0015: ldloc.1
+  IL_0016: ldc.i4.2
+  IL_0017: add
+  IL_0018: ret
