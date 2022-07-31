@@ -2,7 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
+using Cesium.CodeGen.Extensions;
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
@@ -41,10 +41,29 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
 
     public override void EmitTo(IDeclarationScope scope)
     {
-        // TODO[#160]: check if operand types are compatible?
+        var leftType = Left.GetExpressionType(scope);
+        var rightType = Right.GetExpressionType(scope);
 
-        Left.EmitTo(scope);
-        Right.EmitTo(scope);
+        if ((!scope.TypeSystem.IsNumericOrBool(leftType) && !leftType.IsPointer)
+            || (!scope.TypeSystem.IsNumericOrBool(rightType) && !rightType.IsPointer))
+            throw new InvalidOperationException($"Unable to compare {leftType} to {rightType}");
+
+        if (!scope.TypeSystem.IsBool(leftType) && scope.TypeSystem.IsBool(rightType))
+        {
+            var commonType = scope.TypeSystem.GetCommonNumericType(leftType, rightType);
+
+            Left.EmitTo(scope);
+            EmitConversion(scope, leftType, commonType);
+
+            Right.EmitTo(scope);
+            EmitConversion(scope, rightType, commonType);
+        }
+        else
+        {
+            Left.EmitTo(scope);
+            Right.EmitTo(scope);
+        }
+
         scope.Method.Body.Instructions.Add(GetInstruction());
 
         Instruction GetInstruction() => Operator switch
