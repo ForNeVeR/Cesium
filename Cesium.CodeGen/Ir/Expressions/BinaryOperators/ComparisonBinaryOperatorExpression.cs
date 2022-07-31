@@ -44,8 +44,8 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
 
-        if ((!scope.TypeSystem.IsNumericOrBool(leftType) && !leftType.IsPointer)
-            || (!scope.TypeSystem.IsNumericOrBool(rightType) && !rightType.IsPointer))
+        if ((!scope.TypeSystem.IsNumeric(leftType) && !leftType.IsPointer)
+            || (!scope.TypeSystem.IsNumeric(rightType) && !rightType.IsPointer))
             throw new InvalidOperationException($"Unable to compare {leftType} to {rightType}");
 
         if (!scope.TypeSystem.IsBool(leftType) && scope.TypeSystem.IsBool(rightType))
