@@ -17,7 +17,7 @@ internal class PointerMemberAccessExpression : IExpression, ILValueExpression
         _memberIdentifier = memberIdentifier.ToIntermediate();
     }
 
-    private PointerMemberAccessExpression(IExpression expression, IExpression memberIdentifier)
+    internal PointerMemberAccessExpression(IExpression expression, IExpression memberIdentifier)
     {
         _expression = expression;
         _memberIdentifier = memberIdentifier;

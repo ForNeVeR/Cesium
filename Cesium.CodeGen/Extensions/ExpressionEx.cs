@@ -26,6 +26,7 @@ internal static class ExpressionEx
         Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
 
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
+        Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
 
         _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
