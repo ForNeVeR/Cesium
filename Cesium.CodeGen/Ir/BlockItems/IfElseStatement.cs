@@ -32,26 +32,33 @@ internal class IfElseStatement : IBlockItem
 
     public void EmitTo(IDeclarationScope scope)
     {
-        // TODO[#113]: when branch ends with ret opcode if can be optimized and not generate jmp label
+        var bodyProcessor = scope.Method.Body.GetILProcessor();
+        var ifFalseLabel = bodyProcessor.Create(OpCodes.Nop);
 
         _expression.EmitTo(scope);
-        var bodyProcessor = scope.Method.Body.GetILProcessor();
-        var elseStartLabel = bodyProcessor.Create(OpCodes.Nop);
-        bodyProcessor.Emit(OpCodes.Brfalse, elseStartLabel);
+        bodyProcessor.Emit(OpCodes.Brfalse, ifFalseLabel);
 
         _trueBranch.EmitTo(scope);
 
         if (_falseBranch == null)
         {
-            bodyProcessor.Append(elseStartLabel);
+            bodyProcessor.Append(ifFalseLabel);
             return;
         }
 
-        var statementEndLabel = bodyProcessor.Create(OpCodes.Nop);
-        bodyProcessor.Emit(OpCodes.Br, statementEndLabel);
+        if (_trueBranch.HasDefiniteReturn)
+        {
+            bodyProcessor.Append(ifFalseLabel);
+            _falseBranch.EmitTo(scope);
+        }
+        else
+        {
+            var statementEndLabel = bodyProcessor.Create(OpCodes.Nop);
+            bodyProcessor.Emit(OpCodes.Br, statementEndLabel);
 
-        bodyProcessor.Append(elseStartLabel);
-        _falseBranch?.EmitTo(scope);
-        bodyProcessor.Append(statementEndLabel);
+            bodyProcessor.Append(ifFalseLabel);
+            _falseBranch.EmitTo(scope);
+            bodyProcessor.Append(statementEndLabel);
+        }
     }
 }

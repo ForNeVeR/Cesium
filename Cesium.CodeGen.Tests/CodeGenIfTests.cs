@@ -13,14 +13,14 @@ public class CodeGenIfTests : CodeGenTestBase
     [Fact]
     public Task SimpleIfTest() => DoTest(@"int main()
 {
-    if (1) 
+    if (1)
         return 0;
 }");
 
     [Fact]
     public Task IfImplicitElseTest() => DoTest(@"int main()
 {
-    if (1) 
+    if (1)
         return 0;
     return 1;
 }");
@@ -28,7 +28,17 @@ public class CodeGenIfTests : CodeGenTestBase
     [Fact]
     public Task IfElseTest() => DoTest(@"int main()
 {
-    if (1) 
+    int a = 0;
+    if (1)
+        a = 1;
+    else
+        a = 2;
+}");
+
+    [Fact]
+    public Task IfElseReturnTest() => DoTest(@"int main()
+{
+    if (1)
         return 0;
     else
         return 1;
