@@ -7,24 +7,24 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class PointerMemberAccessExpression : IExpression, ILValueExpression
 {
-    private readonly IExpression _expression;
+    private readonly IExpression _target;
     private readonly IExpression _memberIdentifier;
 
     public PointerMemberAccessExpression(Ast.PointerMemberAccessExpression accessExpression)
     {
         var (expression, memberIdentifier) = accessExpression;
-        _expression = expression.ToIntermediate();
+        _target = expression.ToIntermediate();
         _memberIdentifier = memberIdentifier.ToIntermediate();
     }
 
-    internal PointerMemberAccessExpression(IExpression expression, IExpression memberIdentifier)
+    internal PointerMemberAccessExpression(IExpression target, IExpression memberIdentifier)
     {
-        _expression = expression;
+        _target = target;
         _memberIdentifier = memberIdentifier;
     }
 
     public IExpression Lower()
-        => new PointerMemberAccessExpression(_expression.Lower(), _memberIdentifier.Lower());
+        => new PointerMemberAccessExpression(_target.Lower(), _memberIdentifier.Lower());
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
@@ -35,13 +35,13 @@ internal class PointerMemberAccessExpression : IExpression, ILValueExpression
         if (_memberIdentifier is not IdentifierExpression memberIdentifier)
             throw new NotSupportedException($"\"{_memberIdentifier}\" is not a valid identifier");
 
-        var valueType = _expression.GetExpressionType(scope);
+        var valueType = _target.GetExpressionType(scope);
         var valueTypeDef = valueType.Resolve();
 
         try
         {
             var field = valueTypeDef.Fields.First(f => f?.Name == memberIdentifier.Identifier);
-            return new LValueField(_expression, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+            return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
         }
         catch (InvalidOperationException e)
         {

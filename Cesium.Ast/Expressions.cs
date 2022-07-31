@@ -14,7 +14,7 @@ public record ConstantExpression(IToken<CTokenType> Constant) : Expression;
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
 public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments) : Expression;
 public record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
-public record PointerMemberAccessExpression(Expression Function, IdentifierExpression Identifier) : Expression;
+public record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 
 // 6.5.3 Unary operators
 public record PrefixIncrementExpression(Expression Target) : Expression;

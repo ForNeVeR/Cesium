@@ -133,7 +133,7 @@
               "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
               "Left": {
                 "$type": "Cesium.Ast.PointerMemberAccessExpression, Cesium.Ast",
-                "Function": {
+                "Target": {
                   "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
                   "Constant": {
                     "Kind": "Identifier",

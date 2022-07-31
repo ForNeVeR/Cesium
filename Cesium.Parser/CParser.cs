@@ -96,9 +96,9 @@ public partial class CParser
 
     [Rule("postfix_expression: postfix_expression '->' Identifier")]
     private static Expression MakePointerMemberAccessExpression(
-        Expression function,
+        Expression target,
         IToken _,
-        IToken identifier) => new PointerMemberAccessExpression(function, new IdentifierExpression(identifier.Text));
+        IToken identifier) => new PointerMemberAccessExpression(target, new IdentifierExpression(identifier.Text));
 
     // TODO:
     // postfix-expression:
