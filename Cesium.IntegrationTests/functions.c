@@ -1,3 +1,4 @@
+void forward_declaration_void_1();
 void forward_declaration_void_2(void);
 
 void declaration_void(void)
@@ -7,6 +8,7 @@ void declaration_void(void)
 int foo()
 {
     declaration_void();
+    forward_declaration_void_1();
     forward_declaration_void_2();
     return 42;
 }
