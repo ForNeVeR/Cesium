@@ -32,7 +32,9 @@ internal abstract class BinaryOperatorExpression : IExpression
 
     protected void EmitConversion(IDeclarationScope scope, TypeReference exprType, TypeReference desiredType)
     {
-        if (exprType.IsEqualTo(desiredType))
+        if (exprType.IsEqualTo(desiredType)
+            || (scope.TypeSystem.IsBool(exprType) && scope.TypeSystem.IsInteger(desiredType))
+            || (scope.TypeSystem.IsBool(desiredType) && scope.TypeSystem.IsInteger(exprType)))
             return;
 
         var ts = scope.TypeSystem;
