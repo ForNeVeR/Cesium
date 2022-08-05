@@ -48,21 +48,13 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
             || (!scope.TypeSystem.IsNumeric(rightType) && !rightType.IsPointer))
             throw new InvalidOperationException($"Unable to compare {leftType} to {rightType}");
 
-        if (!scope.TypeSystem.IsBool(leftType) && scope.TypeSystem.IsBool(rightType))
-        {
-            var commonType = scope.TypeSystem.GetCommonNumericType(leftType, rightType);
+        var commonType = scope.TypeSystem.GetCommonNumericType(leftType, rightType);
 
-            Left.EmitTo(scope);
-            EmitConversion(scope, leftType, commonType);
+        Left.EmitTo(scope);
+        EmitConversion(scope, leftType, commonType);
 
-            Right.EmitTo(scope);
-            EmitConversion(scope, rightType, commonType);
-        }
-        else
-        {
-            Left.EmitTo(scope);
-            Right.EmitTo(scope);
-        }
+        Right.EmitTo(scope);
+        EmitConversion(scope, rightType, commonType);
 
         scope.Method.Body.Instructions.Add(GetInstruction());
 
