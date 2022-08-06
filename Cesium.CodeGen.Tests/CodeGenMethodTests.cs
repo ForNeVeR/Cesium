@@ -117,39 +117,39 @@ int main() { return foo(); }", "Function foo not defined.");
     public Task PrimitiveTypes() => DoTest(@"int main(void)
 {
     // basic
-    char c;
-    short s;
-    signed s1;
-    int i;
-    unsigned u;
-    long l;
-    float f;
-    double d;
+    char c = 0;
+    short s = 0;
+    signed s1 = 0;
+    int i = 0;
+    unsigned u = 0;
+    long l = 0;
+    float f = 0;
+    double d = 0;
 
     // unsigned
-    unsigned char uc;
-    unsigned short us;
-    unsigned short int usi;
-    unsigned int ui;
-    unsigned long ul;
-    unsigned long int uli;
-    unsigned long long ull;
-    unsigned long long int ulli;
+    unsigned char uc = 0;
+    unsigned short us = 0;
+    unsigned short int usi = 0;
+    unsigned int ui = 0;
+    unsigned long ul = 0;
+    unsigned long int uli = 0;
+    unsigned long long ull = 0;
+    unsigned long long int ulli = 0;
 
     // signed
-    signed char sc;
-    signed short ss;
-    short int shi;
-    signed short int ssi;
-    signed int si;
-    signed long sl;
-    long int li;
-    signed long int sli;
-    long long ll;
-    signed long long sll;
-    long long int lli;
-    signed long long int slli;
-    long double ld;
+    signed char sc = 0;
+    signed short ss = 0;
+    short int shi = 0;
+    signed short int ssi = 0;
+    signed int si = 0;
+    signed long sl = 0;
+    long int li = 0;
+    signed long int sli = 0;
+    long long ll = 0;
+    signed long long sll = 0;
+    long long int lli = 0;
+    signed long long int slli = 0;
+    long double ld = 0;
 
     return 0;
 }");
@@ -211,7 +211,7 @@ int main()
     public Task FunctionPtrTest() => DoTest(@"typedef void (*foo)(void);
 int main()
 {
-    foo unused;
+    foo unused = 0;
     return 0;
 }");
 
@@ -219,14 +219,14 @@ int main()
     public Task FunctionPtrWithParamsTest() => DoTest(@"typedef int (*foo)(int x);
 int main()
 {
-    foo unused;
+    foo unused = 0;
     return 0;
 }");
 
     [Fact]
     public Task ImplicitReturnAllowedForMain() => DoTest(@"int main()
 {
-    int unused;
+    int unused = 0;
 }");
 
     [Fact]
