@@ -13,7 +13,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
-      <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
     </ItemGroup>
 
     <ItemGroup>

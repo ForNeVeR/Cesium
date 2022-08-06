@@ -36,7 +36,9 @@ public abstract class CodeGenTestBase : VerifyTestBase
             new AssemblyNameDefinition("test", new Version()),
             ModuleKind.Console,
             targetRuntime,
-            new [] { typeof(Console).Assembly },
+            new [] { typeof(Console).Assembly.Location },
+            typeof(Math).Assembly.Location,
+            typeof(Cesium.Runtime.RuntimeHelpers).Assembly.Location,
             @namespace,
             globalTypeFqn);
 
