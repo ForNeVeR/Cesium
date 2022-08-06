@@ -1,8 +1,7 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Parser;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 
@@ -24,5 +23,5 @@ internal class StringConstant : IConstant
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
 
-    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Byte.MakePointerType(); // char*
+    public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.CharPtr; // char*
 }

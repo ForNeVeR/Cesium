@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -33,7 +34,7 @@ internal class IntegerConstant : IConstant
         });
     }
 
-    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Int32;
+    public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.Int;
 
     public override string ToString() => $"integer: {_value}";
 }

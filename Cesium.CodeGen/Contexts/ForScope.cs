@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -9,6 +10,7 @@ internal record ForScope(IDeclarationScope Parent) : IDeclarationScope
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
     public TypeSystem TypeSystem => Parent.TypeSystem;
+    public CTypeSystem CTypeSystem => Parent.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Parent.Functions;
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;

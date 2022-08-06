@@ -22,7 +22,7 @@ internal class ConstantExpression : IExpression
 
     public void EmitTo(IDeclarationScope scope) => _constant.EmitTo(scope);
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => _constant.GetConstantType(scope);
+    public TypeReference GetExpressionType(IDeclarationScope scope) => _constant.GetConstantType(scope).Resolve(scope.Context);
 
     public override string ToString() => $"{nameof(ConstantExpression)}: {_constant}";
 

@@ -9,6 +9,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
+    internal CTypeSystem CTypeSystem { get; } = new CTypeSystem();
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public TypeDefinition GlobalType => AssemblyContext.GlobalType;
 

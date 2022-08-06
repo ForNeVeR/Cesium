@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -20,7 +21,7 @@ internal class CharConstant : IConstant
         instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 
-    public TypeReference GetConstantType(IDeclarationScope scope) => scope.TypeSystem.Byte;
+    public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.Char;
 
     public override string ToString() => $"char: {_value}";
 

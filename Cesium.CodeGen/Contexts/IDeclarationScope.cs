@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -9,6 +10,7 @@ internal interface IDeclarationScope
     AssemblyContext AssemblyContext { get; }
     ModuleDefinition Module { get; }
     TypeSystem TypeSystem { get; }
+    CTypeSystem CTypeSystem { get; }
     IReadOnlyDictionary<string, FunctionInfo> Functions { get; }
     TranslationUnitContext Context { get; }
     MethodDefinition Method { get; }
