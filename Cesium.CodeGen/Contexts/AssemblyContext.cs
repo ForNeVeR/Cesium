@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.TopLevel;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
@@ -20,8 +21,8 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-    private readonly Dictionary<string, FieldDefinition> _globalFields = new();
-    internal IReadOnlyDictionary<string, FieldDefinition> GlobalFields => _globalFields;
+    private readonly Dictionary<string, IType> _globalFields = new();
+    internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
@@ -110,14 +111,27 @@ public class AssemblyContext
         }
     }
 
-    public FieldReference AddGlobalField(string name, TypeReference type)
+    internal void AddGlobalField(string name, IType type)
     {
         if (_globalFields.ContainsKey(name))
             throw new NotSupportedException($"Cannot add a duplicate global field named {name}.");
 
-        var field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type);
-        _globalFields.Add(name, field);
-        GlobalType.Fields.Add(field);
+        _globalFields.Add(name, type);
+    }
+
+    public FieldDefinition ResolveGlobalField(string name, TranslationUnitContext context)
+    {
+        if (!_globalFields.TryGetValue(name, out var type))
+        {
+            throw new NotSupportedException($"Cannot global field {name} not found.");
+        }
+
+        var field = GlobalType.Fields.FirstOrDefault(f => f.Name == name);
+        if (field == null)
+        {
+            field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type.Resolve(context));
+            GlobalType.Fields.Add(field);
+        }
 
         return field;
     }

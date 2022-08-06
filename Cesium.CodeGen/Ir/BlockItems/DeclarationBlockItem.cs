@@ -62,7 +62,6 @@ internal class DeclarationBlockItem : IBlockItem
         scopedDeclaration.Deconstruct(out var declarations);
         foreach (var (declaration, initializer) in declarations)
         {
-            var method = scope.Method;
             var (type, identifier, cliImportMemberName) = declaration;
 
             // TODO[#91]: A place to register whether {type} is const or not.
@@ -74,10 +73,7 @@ internal class DeclarationBlockItem : IBlockItem
                 throw new NotSupportedException(
                     $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
-            var typeReference = type.Resolve(scope.Context);
-            var variable = new VariableDefinition(typeReference);
-            method.Body.Variables.Add(variable);
-            scope.AddVariable(identifier, variable);
+            scope.AddVariable(identifier, type);
 
             switch (initializer)
             {
@@ -91,6 +87,7 @@ internal class DeclarationBlockItem : IBlockItem
                     break;
             }
 
+            var variable = scope.ResolveVariable(identifier);
             scope.StLoc(variable);
         }
     }

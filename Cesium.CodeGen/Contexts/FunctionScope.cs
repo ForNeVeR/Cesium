@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -13,9 +14,27 @@ internal record FunctionScope(TranslationUnitContext Context, MethodDefinition M
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
-    private readonly Dictionary<string, VariableDefinition> _variables = new();
-    public IReadOnlyDictionary<string, VariableDefinition> Variables => _variables;
-    public void AddVariable(string identifier, VariableDefinition variable) => _variables.Add(identifier, variable);
+    private readonly Dictionary<string, IType> _variables = new();
+    private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
+    public IReadOnlyDictionary<string, IType> Variables => _variables;
+    public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
+    public VariableDefinition ResolveVariable(string identifier)
+    {
+        if (!_variables.TryGetValue(identifier, out var variableType))
+        {
+            throw new InvalidOperationException($"Identifier {identifier} was not found in the {Method} scope");
+        }
+
+        if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
+        {
+            var typeReference = variableType.Resolve(Context);
+            variableDefinition = new VariableDefinition(typeReference);
+            Method.Body.Variables.Add(variableDefinition);
+            _variableDefinition.Add(identifier, variableDefinition);
+        }
+
+        return variableDefinition;
+    }
 
     private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
     public ParameterDefinition? GetParameter(string name)
