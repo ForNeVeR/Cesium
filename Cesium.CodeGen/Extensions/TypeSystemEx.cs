@@ -1,8 +1,8 @@
+using System.Runtime.Versioning;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
-using System.Runtime.Versioning;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -21,7 +21,6 @@ internal static class TypeSystemEx
         var typeName = components[0];
         var methodName = components[1];
 
-        // TODO[#161]: Method search should be implemented in Cecil, to not load the assemblies into the current process.
         var candidates = FindMethods(context.AssemblyContext.ImportAssemblies, typeName, methodName).ToList();
         var similarMethods = new List<(MethodDefinition, string)>();
         foreach (var candidate in candidates)
