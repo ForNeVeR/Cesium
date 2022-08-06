@@ -1,3 +1,7 @@
 ﻿System.Int32 <Module>::main()
+  Locals:
+    method System.Void *() V_0
   IL_0000: ldc.i4.0
-  IL_0001: ret
+  IL_0001: stloc.0
+  IL_0002: ldc.i4.0
+  IL_0003: ret

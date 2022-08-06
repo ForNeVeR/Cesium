@@ -125,7 +125,7 @@ void foo(void)
 
     [Fact]
     public Task TypeDefStructUsage() => DoTest(@"typedef struct { int x; } foo;
-int main(void) { foo x; return 0; }");
+int main(void) { foo x; x.x = 0; return 0; }");
 
     [Fact]
     public Task StructUsageWithPointerMemberAccessGet() => DoTest(@"typedef struct { int x; } foo;
@@ -165,7 +165,7 @@ int main(void) {}");
 
     [Fact]
     public Task BasicTypeDef() => DoTest(@"typedef int foo;
-int main(void) { foo x; return 0; }");
+int main(void) { foo x = 0; return 0; }");
 
     [Fact]
     public Task StructWithArray() => DoTest(@"typedef struct {
