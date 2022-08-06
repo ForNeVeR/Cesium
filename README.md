@@ -107,7 +107,7 @@ Run the unit tests using this shell command:
 $ dotnet test
 ```
 
-Run integration tests using this shell command ([PowerShell][powershell] is required):
+Run the integration tests using this shell command ([PowerShell][powershell] is required):
 
 ```console
 $ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
