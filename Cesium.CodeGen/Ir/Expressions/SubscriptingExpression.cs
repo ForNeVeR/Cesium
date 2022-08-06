@@ -32,13 +32,9 @@ internal class SubscriptingExpression : IExpression, ILValueExpression
 
     public ILValue Resolve(IDeclarationScope scope)
     {
-        switch (_expression) {
-            case IdentifierExpression identifier:
-                return new LValueArrayElement(identifier.Resolve(scope), _index);
-            case PointerMemberAccessExpression pointerMemberAccess:
-                return new LValueArrayElement(pointerMemberAccess.Resolve(scope), _index);
-            default:
-                throw new NotImplementedException($"Subscription supported only for IdentifierConstantExpression, but {_expression.GetType().Name} seen.");
-        }
+        if (_expression is not IdentifierExpression identifier)
+            throw new NotImplementedException("Subscription supported only for IdentifierConstantExpression");
+
+        return new LValueArrayElement(identifier.Resolve(scope), _index);
     }
 }
