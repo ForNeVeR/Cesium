@@ -5,7 +5,7 @@ Cesium is a fully managed C compiler for CLI platform (.NET).
 
 **What?** Cesium compiles standard C source code to a .NET assembly. No unmanaged/mixed mode (a-lá C++/CLI) code is generated; everything is fully managed (but may be unsafe).
 
-**Why?** C programs are very useful in the modern world, and solve practical tasks. At the same time, deploying C code alongside .NET code may be tricky (especially if your application supports multiple platforms). Cesium is designed to resolve the problems of C code deployment, and lift it to the managed state (so it is cross-platform in the same way the underlying CIL code it is compiled to).
+**Why?** C programs are very useful in the modern world and solve practical tasks. At the same time, deploying C code alongside .NET code may be tricky (especially if your application supports multiple platforms). Cesium is designed to resolve the problems of C code deployment, and lift it to the managed state (so it is cross-platform in the same way the underlying CIL code it is compiled to).
 
 Implementation Status
 ---------------------
@@ -28,11 +28,11 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
 
 **Have a question?** Welcome to [the discussions section][discussions]!
 
-**Looking to contribute?** Check [open issues with the "help wanted" label][issues.help-wanted]. Cesium is a big project which lives thanks to its contributors.
+**Looking to contribute?** Check [open issues with the "help-wanted" label][issues.help-wanted]. Cesium is a big project which lives thanks to its contributors.
 
 **Not sure where to contribute?** Check [open issues with the "good first issue" label][issues.good-first-issue].
 
-If you're interested in certain project area, check the per-area issue labels:
+If you're interested in certain project areas, check the per-area issue labels:
 - [`area:cil-interop`][issues.cil-interop]: issues related to CLI interop
 - [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
 - [`area:parser`][issues.parser]: issues related to C parsing

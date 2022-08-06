@@ -27,4 +27,4 @@ This should be kept in sync with section **6.7.2 Type Specifiers** of the actual
 | `double _Complex`                                                           | N/A             |
 | `long double _Complex`                                                      | N/A             |
 
-All pointer types are mapped to the CLI pointers of corresponding type.
+All pointer types are mapped to the CLI pointers of the corresponding type.
