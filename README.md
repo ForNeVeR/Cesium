@@ -61,6 +61,7 @@ Documentation
 
 - [C17 Language Standard Draft][c17-draft]
 
+- [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
 - [CLI-Related Language Extensions][docs.language-extensions]
 
@@ -96,13 +97,17 @@ $ mono ./out.exe # run with Mono
 
 ## Testing
 
-In order to test changes please run following for fast-cycle testing
+**Want to add new tests to Cesium?** Read a separate [document on tests][docs.tests].
+
+There are two kinds of tests in Cesium: unit tests and integration tests.
+
+Run the unit tests using this shell command:
 
 ```console
 $ dotnet test
 ```
 
-And if you want to run integration tests
+Run integration tests using this shell command ([PowerShell][powershell] is required):
 
 ```console
 $ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
@@ -110,7 +115,7 @@ $ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
 
 (don't pass `-NoBuild` if you want to automatically rebuild the compiler before running the integration tests)
 
-If you debug integration tests and want to run just single test
+If you debug integration tests and want to run just a single test, use this shell command:
 
 ```console
 pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fallback.c
@@ -128,6 +133,7 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
+[docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
 [issue.c17-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
@@ -145,5 +151,6 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
 [issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
+[powershell]: https://github.com/PowerShell/PowerShell
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
 [stdlib]: Cesium.Compiler/stdlib
