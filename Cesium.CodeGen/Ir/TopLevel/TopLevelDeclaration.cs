@@ -82,9 +82,10 @@ internal class TopLevelDeclaration : ITopLevelNode
         IType type,
         IExpression? initializer)
     {
-        var field = context.AssemblyContext.AddGlobalField(name, type.Resolve(context));
+        context.AssemblyContext.AddGlobalField(name, type);
         if (initializer != null)
         {
+            var field = context.AssemblyContext.ResolveGlobalField(name, context);
             var globalInitializerScope = context.GetInitializerScope();
             initializer.Lower().EmitTo(globalInitializerScope);
             globalInitializerScope.StSFld(field);

@@ -14,8 +14,10 @@ internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDef
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
-    public IReadOnlyDictionary<string, VariableDefinition> Variables => ImmutableDictionary<string, VariableDefinition>.Empty;
-    public void AddVariable(string identifier, VariableDefinition variable) =>
+    public IReadOnlyDictionary<string, IType> Variables => ImmutableDictionary<string, IType>.Empty;
+    public void AddVariable(string identifier, IType variable) =>
+        throw new NotSupportedException("Cannot add a variable into a global constructor scope");
+    public VariableDefinition ResolveVariable(string identifier) =>
         throw new NotSupportedException("Cannot add a variable into a global constructor scope");
 
     public ParameterDefinition? GetParameter(string name) => null;
