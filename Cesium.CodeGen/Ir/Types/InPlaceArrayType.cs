@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -35,7 +36,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
             {
                 ConstructorArguments =
                 {
-                    new CustomAttributeArgument(context.Module.ImportReference(typeof(Type)), itemType),
+                    new CustomAttributeArgument(context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type")), itemType),
                     new CustomAttributeArgument(context.TypeSystem.Int32, SizeInBytes)
                 }
             };

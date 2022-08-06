@@ -45,4 +45,21 @@ internal static class TypeDefinitionEx
             method.Parameters.Add(parameterDefinition);
         }
     }
+    public static TypeDefinition? GetType(this AssemblyDefinition assemblyDefinition, string typeName)
+    {
+        foreach (var module in assemblyDefinition.Modules)
+        {
+            var foundType = module.GetType(typeName);
+            if (foundType != null)
+            {
+                return foundType;
+            }
+        }
+
+        return null;
+    }
+    public static MethodDefinition FindMethod(this TypeDefinition typeDefinition, string methodName)
+    {
+        return typeDefinition.Methods.Single(method => method.Name == methodName);
+    }
 }

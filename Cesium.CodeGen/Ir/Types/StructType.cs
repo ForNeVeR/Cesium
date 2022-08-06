@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Mono.Cecil;
 
@@ -18,7 +19,7 @@ internal class StructType : IGeneratedType
             "",
             name,
             TypeAttributes.Sealed,
-            context.Module.ImportReference(typeof(ValueType)));
+            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
         context.Module.Types.Add(structType);
 
         foreach (var member in _members)

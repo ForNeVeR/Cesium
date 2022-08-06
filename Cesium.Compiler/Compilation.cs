@@ -50,15 +50,15 @@ internal static class Compilation
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
         var defaultImportAssemblies = new []
         {
-            typeof(Math).Assembly, // System.Runtime.dll
-            typeof(Console).Assembly, // System.Console.dll
-            typeof(Runtime.StdLibFunctions).Assembly
+            typeof(Console).Assembly.Location, // System.Console.dll
         };
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
             parsedModuleKind,
             targetRuntime,
             defaultImportAssemblies,
+            typeof(Math).Assembly.Location, // System.Runtime.dll
+            typeof(Runtime.StdLibFunctions).Assembly.Location, // Cesium runtime assembly
             @namespace,
             globalClassFQN);
     }

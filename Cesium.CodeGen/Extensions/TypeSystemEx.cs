@@ -1,8 +1,8 @@
-using System.Reflection;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
+using System.Runtime.Versioning;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -23,7 +23,7 @@ internal static class TypeSystemEx
 
         // TODO[#161]: Method search should be implemented in Cecil, to not load the assemblies into the current process.
         var candidates = FindMethods(context.AssemblyContext.ImportAssemblies, typeName, methodName).ToList();
-        var similarMethods = new List<(MethodInfo, string)>();
+        var similarMethods = new List<(MethodDefinition, string)>();
         foreach (var candidate in candidates)
         {
             if (Match(context, candidate, parametersInfo, returnType, similarMethods))
@@ -41,14 +41,14 @@ internal static class TypeSystemEx
         throw new NotSupportedException(errorMessage);
     }
 
-    private static IEnumerable<MethodInfo> FindMethods(IEnumerable<Assembly> assemblies, string typeName, string methodName)
+    private static IEnumerable<MethodDefinition> FindMethods(IEnumerable<AssemblyDefinition> assemblies, string typeName, string methodName)
     {
         return assemblies.SelectMany(assembly =>
         {
             var type = assembly.GetType(typeName);
             return type == null
-                ? Array.Empty<MethodInfo>()
-                : type.GetMethods().Where(m => m.Name == methodName);
+                ? Array.Empty<MethodDefinition>()
+                : type.Methods.Where(m => m.Name == methodName);
         });
     }
 
@@ -61,10 +61,10 @@ internal static class TypeSystemEx
     /// </summary>
     private static bool Match(
         TranslationUnitContext context,
-        MethodInfo method,
+        MethodDefinition method,
         ParametersInfo parameters,
         IType returnType,
-        List<(MethodInfo, string)> similarMethods)
+        List<(MethodDefinition, string)> similarMethods)
     {
         var declParamCount = parameters switch
         {
@@ -73,8 +73,8 @@ internal static class TypeSystemEx
             _ => parameters.Parameters.Count
         };
 
-        var methodParameters = method.GetParameters();
-        if (methodParameters.Length != declParamCount)
+        var methodParameters = method.Parameters;
+        if (methodParameters.Count != declParamCount)
         {
             return false;
         }
@@ -104,8 +104,7 @@ internal static class TypeSystemEx
         if (parameters.IsVarArg)
         {
             var lastSrcParam = methodParameters.Last();
-            // TODO[#161]: Should actually be imported to Cecil type universe, context.Module.ImportReference(typeof(ParamArrayAttribute))
-            var paramsAttrType = typeof(ParamArrayAttribute);
+            var paramsAttrType = context.GetParamArrayAttributeType();
             if (lastSrcParam.ParameterType.IsArray == false
                 || lastSrcParam.CustomAttributes.Any(x => x.AttributeType == paramsAttrType) == false)
             {
@@ -118,7 +117,7 @@ internal static class TypeSystemEx
         return true;
     }
 
-    private static string SimilarMethodsMessage(string name, List<(MethodInfo, string)> similarMethods)
+    private static string SimilarMethodsMessage(string name, List<(MethodDefinition, string)> similarMethods)
     {
         return $"Cannot find an appropriate overload for CLI-imported function {name}. Candidates:\n"
                + string.Join("\n", similarMethods.Select(pair =>
@@ -209,5 +208,38 @@ internal static class TypeSystemEx
                     return i;
             return null;
         }
+    }
+
+    public static TypeReference GetParamArrayAttributeType(this TranslationUnitContext context)
+    {
+        return context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ParamArrayAttribute"));
+    }
+
+    public static TypeDefinition GetRuntimeHelperType(this TranslationUnitContext context)
+    {
+        var runtimeHelpersType = context.AssemblyContext.CesiumRuntimeAssembly.GetType("Cesium.Runtime.RuntimeHelpers");
+        return runtimeHelpersType ?? throw new InvalidOperationException("Type Cesium.Runtime.RuntimeHelpers was not found in the Cesium runtime assembly.");
+    }
+
+    public static MethodReference GetRuntimeHelperMethod(this TranslationUnitContext context, string helperMethod)
+    {
+        var runtimeHelpersType = context.GetRuntimeHelperType();
+        var method = runtimeHelpersType.FindMethod(helperMethod);
+        if (method == null)
+        {
+            throw new InvalidOperationException($"RuntimeHelper {helperMethod} cannot be found.");
+        }
+
+        return context.Module.ImportReference(method);
+    }
+
+    public static MethodReference GetArrayCopyToMethod(this TranslationUnitContext context)
+    {
+        return context.Module.ImportReference(typeof(byte*[]).GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
+    }
+    public static MethodReference GetTargetFrameworkAttributeConstructor(this TranslationUnitContext context)
+    {
+        var constructor = typeof(TargetFrameworkAttribute).GetConstructor(new[] { typeof(string) });
+        return context.Module.ImportReference(constructor);
     }
 }

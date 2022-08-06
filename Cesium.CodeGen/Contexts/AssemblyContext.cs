@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.TopLevel;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -14,8 +14,10 @@ namespace Cesium.CodeGen.Contexts;
 public class AssemblyContext
 {
     internal AssemblyDefinition Assembly { get; }
+    internal AssemblyDefinition MscorlibAssembly { get; }
+    internal AssemblyDefinition CesiumRuntimeAssembly { get; }
     public ModuleDefinition Module { get; }
-    public Assembly[] ImportAssemblies { get; }
+    public AssemblyDefinition[] ImportAssemblies { get; }
     public TypeDefinition GlobalType { get; }
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
@@ -27,13 +29,15 @@ public class AssemblyContext
         AssemblyNameDefinition name,
         ModuleKind kind,
         TargetRuntimeDescriptor? targetRuntime,
-        Assembly[] importAssemblies,
+        string[] importAssemblies,
+        string mscorlibAssemblyLocation,
+        string cesiumRuntimeAssemblyLocation,
         string @namespace = "",
         string globalTypeFqn = "")
     {
         var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, @namespace, globalTypeFqn);
+        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, mscorlibAssemblyLocation, cesiumRuntimeAssemblyLocation, @namespace, globalTypeFqn);
 
         targetRuntime ??= TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
@@ -73,13 +77,17 @@ public class AssemblyContext
     private AssemblyContext(
         AssemblyDefinition assembly,
         ModuleDefinition module,
-        Assembly[] importAssemblies,
+        string[] importAssemblies,
+        string mscorlibAssemblyLocation,
+        string cesiumRuntimeAssemblyLocation,
         string @namespace = "",
         string globalTypeFqn = "")
     {
         Assembly = assembly;
         Module = module;
-        ImportAssemblies = importAssemblies;
+        MscorlibAssembly = AssemblyDefinition.ReadAssembly(mscorlibAssemblyLocation);
+        CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(cesiumRuntimeAssemblyLocation);
+        ImportAssemblies = importAssemblies.Select(assemblyLocation => AssemblyDefinition.ReadAssembly(assemblyLocation)).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
         _constantPool = new(
             () =>
             {
@@ -172,7 +180,7 @@ public class AssemblyContext
             "",
             stubStructTypeName,
             TypeAttributes.Sealed | TypeAttributes.ExplicitLayout | TypeAttributes.NestedPrivate,
-            Module.ImportReference(typeof(ValueType)))
+            Module.ImportReference(MscorlibAssembly.GetType("System.ValueType")))
         {
             PackingSize = 1,
             ClassSize = size

@@ -4,7 +4,6 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Runtime;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -149,10 +148,9 @@ internal class FunctionDefinition : ITopLevelNode
 
         var bytePtrType = context.TypeSystem.Byte.MakePointerType();
         var bytePtrArrayType = bytePtrType.MakeArrayType();
-        var argsToArgv = module.ImportReference(typeof(RuntimeHelpers).GetMethod("ArgsToArgv"));
-        var freeArgv = module.ImportReference(typeof(RuntimeHelpers).GetMethod("FreeArgv"));
-        var arrayCopyTo = module.ImportReference(typeof(byte*[])
-            .GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
+        var argsToArgv = context.GetRuntimeHelperMethod("ArgsToArgv");
+        var freeArgv = context.GetRuntimeHelperMethod("FreeArgv");
+        var arrayCopyTo = context.GetArrayCopyToMethod();
 
         var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
         syntheticEntrypoint.Body.Variables.Add(argC);
