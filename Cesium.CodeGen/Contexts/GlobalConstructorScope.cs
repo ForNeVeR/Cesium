@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -10,6 +11,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDef
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
+    public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
     public IReadOnlyDictionary<string, VariableDefinition> Variables => ImmutableDictionary<string, VariableDefinition>.Empty;

@@ -1,5 +1,5 @@
 using Cesium.CodeGen.Contexts;
-using Mono.Cecil;
+using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
@@ -7,5 +7,5 @@ internal interface IConstant
 {
     void EmitTo(IDeclarationScope scope);
 
-    TypeReference GetConstantType(IDeclarationScope scope);
+    IType GetConstantType(IDeclarationScope scope);
 }

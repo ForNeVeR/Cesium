@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -9,6 +10,7 @@ internal record FunctionScope(TranslationUnitContext Context, MethodDefinition M
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
     public TypeSystem TypeSystem => Context.TypeSystem;
+    public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
     private readonly Dictionary<string, VariableDefinition> _variables = new();

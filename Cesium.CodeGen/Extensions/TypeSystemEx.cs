@@ -52,6 +52,11 @@ internal static class TypeSystemEx
         });
     }
 
+    public static IType MakePointerType(this IType type)
+    {
+        return new Ir.Types.PointerType(type);
+    }
+
     /// <summary>
     /// <para>
     /// Returns <c>true</c> if the method completely matches the parameter set. Otherwise, returns <c>false</c>, and
