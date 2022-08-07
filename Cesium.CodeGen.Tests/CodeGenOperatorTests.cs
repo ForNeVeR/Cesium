@@ -14,5 +14,5 @@ public class CodeGenOperatorTests: CodeGenTestBase
     public Task AddIntToChar() => DoTest(@"int main() { int x = 1 + 'b'; }");
 
     [Fact]
-    public Task SubstractIntFromInt() => DoTest(@"int main() { int x = 2 - 1; }");
+    public Task SubtractIntFromInt() => DoTest(@"int main() { int x = 2 - 1; }");
 }

@@ -68,11 +68,11 @@ internal abstract class BinaryOperatorExpression : IExpression
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
     {
         "+" => BinaryOperator.Add,
-        "-" => BinaryOperator.Substract,
+        "-" => BinaryOperator.Subtract,
         "*" => BinaryOperator.Multiply,
         "=" => BinaryOperator.Assign,
         "+=" => BinaryOperator.AddAndAssign,
-        "-=" => BinaryOperator.SubstractAndAssign,
+        "-=" => BinaryOperator.SubtractAndAssign,
         "*=" => BinaryOperator.MultiplyAndAssign,
         "<<" => BinaryOperator.BitwiseLeftShift,
         ">>" => BinaryOperator.BitwiseRightShift,

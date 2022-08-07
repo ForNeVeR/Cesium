@@ -36,7 +36,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         var opcode = Operator switch
         {
             BinaryOperator.Add => OpCodes.Add,
-            BinaryOperator.Substract => OpCodes.Sub,
+            BinaryOperator.Subtract => OpCodes.Sub,
             BinaryOperator.Multiply => OpCodes.Mul,
             _ => throw new NotSupportedException($"Operator {Operator} is not arithmetic.")
         };

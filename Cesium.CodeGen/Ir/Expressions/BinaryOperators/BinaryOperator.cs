@@ -3,12 +3,12 @@ namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 public enum BinaryOperator
 {
     Add, // +
-    Substract, // -
+    Subtract, // -
     Multiply, // *
 
     Assign, // =
     AddAndAssign, // +=
-    SubstractAndAssign, // -=
+    SubtractAndAssign, // -=
     MultiplyAndAssign, // *=
 
     BitwiseLeftShift, // <<
@@ -38,7 +38,7 @@ public static class BinaryOperatorExtensions
 {
     public static bool IsArithmetic(this BinaryOperator op) =>
         op is BinaryOperator.Add
-           or BinaryOperator.Substract
+           or BinaryOperator.Subtract
            or BinaryOperator.Multiply;
 
     public static bool IsComparison(this BinaryOperator op) =>

@@ -27,7 +27,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
         {
             BinaryOperator.Assign => Right,
             BinaryOperator.AddAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Add, Right),
-            BinaryOperator.SubstractAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Substract, Right),
+            BinaryOperator.SubtractAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
             BinaryOperator.MultiplyAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
             BinaryOperator.BitwiseLeftShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
             BinaryOperator.BitwiseRightShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
