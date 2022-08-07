@@ -174,7 +174,13 @@ int main() { return foo(); }", "Function foo not defined.");
     public Task EqualToOperator() => DoTest(@"int main() { return 1 == 2; }");
 
     [Fact]
-    public Task EqualToOperatorBoolToIntConversion() => DoTest(@"int main() { return 2 == 2; }");
+    public Task EqualToOperatorTrueBoolToIntConversion() => DoTest(@"int main() { int x = 2 == 2; return x; }");
+
+    [Fact]
+    public Task EqualToOperatorFalseBoolToIntConversion() => DoTest(@"int main() { int x = 1 == 2; return x; }");
+
+    [Fact]
+    public Task IntToBoolConversion() => DoTest(@"int main() { int x = 5; if(x) return 1; return 0; }");
 
     [Fact]
     public Task NotEqualToOperator() => DoTest(@"int main() { return 1 != 2; }");

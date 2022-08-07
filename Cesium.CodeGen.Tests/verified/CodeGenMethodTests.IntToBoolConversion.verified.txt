@@ -1,0 +1,12 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Int32 V_0
+  IL_0000: ldc.i4.5
+  IL_0001: stloc.0
+  IL_0002: ldloc.0
+  IL_0003: brfalse IL_000a
+  IL_0008: ldc.i4.1
+  IL_0009: ret
+  IL_000a: nop
+  IL_000b: ldc.i4.0
+  IL_000c: ret
