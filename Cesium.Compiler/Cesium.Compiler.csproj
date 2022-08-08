@@ -31,4 +31,8 @@
         <Content Include="stdlib/*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="stdlib\math.h" />
+    </ItemGroup>
+
 </Project>
