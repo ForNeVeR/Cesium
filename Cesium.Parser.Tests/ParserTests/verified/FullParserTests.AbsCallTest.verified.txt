@@ -59,14 +59,10 @@
                     },
                     "Arguments": [
                       {
-                        "$type": "Cesium.Ast.UnaryOperatorExpression, Cesium.Ast",
-                        "Operator": "-",
-                        "Target": {
-                          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-                          "Constant": {
-                            "Kind": "IntLiteral",
-                            "Text": "42"
-                          }
+                        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                        "Constant": {
+                          "Kind": "IntLiteral",
+                          "Text": "-42"
                         }
                       }
                     ]

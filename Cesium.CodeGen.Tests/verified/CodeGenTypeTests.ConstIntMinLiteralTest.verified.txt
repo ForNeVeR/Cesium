@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      IL_0000: ldc.i4 -2147483648
+      IL_0005: ret

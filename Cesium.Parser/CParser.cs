@@ -9,6 +9,7 @@ using Yoakke.SynKit.Parser.Attributes;
 namespace Cesium.Parser;
 
 using ICToken = IToken<CTokenType>;
+using Range = Yoakke.SynKit.Text.Range;
 
 using ArgumentExpressionList = ImmutableArray<Expression>;
 using BlockItemList = ImmutableArray<IBlockItem>;
@@ -131,7 +132,9 @@ public partial class CParser
 
     [Rule("unary_expression: unary_operator unary_expression")]
     private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
-        new UnaryOperatorExpression(@operator.Text, target);
+        @operator.Kind == CTokenType.Subtract && target is ConstantExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
+        ? new ConstantExpression(MergeTokens(@operator, constantExpression.Constant))
+        : new UnaryOperatorExpression(@operator.Text, target);
 
     // unary-operator: one of
     //    & * + - !
@@ -925,4 +928,7 @@ public partial class CParser
 
         return ParseResult.Ok(declarationSpecifiers, offset);
     }
+
+    private static ICToken MergeTokens(ICToken token1, ICToken token2) =>
+        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Text + token2.Text, token2.Kind);
 }

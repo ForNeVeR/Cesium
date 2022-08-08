@@ -83,6 +83,12 @@ int main()
 }");
 
     [Fact]
+    public Task ConstIntMinLiteralTest() => DoTest(@"int main()
+{
+    return -2147483648;
+}");
+
+    [Fact]
     public Task ConstCharLiteralDeduplication() => DoTest(@"int main()
 {
     const char *test1 = ""hellow"";
