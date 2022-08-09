@@ -22,5 +22,5 @@ public enum CPreprocessorTokenType
     HeaderName,
 
     [Regex("[^ \t\v\f\r\n#]+")]
-    PreprocessingToken
+    PreprocessingToken,
 }

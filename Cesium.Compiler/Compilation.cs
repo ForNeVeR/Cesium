@@ -71,7 +71,8 @@ internal static class Compilation
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
         var preprocessorLexer = new CPreprocessorLexer(reader);
-        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext);
+        var definesContext = new InMemoryDefinesContext();
+        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
     }
 
