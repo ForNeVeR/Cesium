@@ -142,19 +142,24 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             {
                 var filePath = ConsumeNext(HeaderName).Text;
                 using var reader = await LookUpIncludeFile(filePath);
-                var tokens = ProcessInclude(reader);
+                var tokensList = new List<IToken<CPreprocessorTokenType>>();
+                await foreach (var token in ProcessInclude(reader))
+                {
+                    tokensList.Add(token);
+                }
 
                 bool hasRemaining;
                 while ((hasRemaining = enumerator.MoveNext())
                        && enumerator.Current is { Kind: WhiteSpace })
                 {
                     // eat remaining whitespace
+                    tokensList.Add(enumerator.Current);
                 }
 
                 if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
                     throw new PreprocessorException($"Invalid token after include path: {t.Kind} {t.Text}");
 
-                return tokens.ToList();
+                return tokensList;
             }
             case "error":
             {
@@ -221,12 +226,14 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
     };
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
     {
         var lexer = new CPreprocessorLexer(fileReader);
-        var stream = lexer.ToStream();
-        while (!stream.IsEnd)
-            yield return stream.Consume();
+        var subProcessor = new CPreprocessor(lexer, IncludeContext);
+        await foreach (var item in subProcessor.GetPreprocessingResults())
+        {
+            yield return item;
+        }
 
         yield return new Token<CPreprocessorTokenType>(new Range(), "\n", NewLine);
     }

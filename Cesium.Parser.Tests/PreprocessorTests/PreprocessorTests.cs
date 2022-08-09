@@ -36,6 +36,19 @@ int test()
 {
 }", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
+    [Fact]
+    public Task NestedIncludes() => DoTest(@"#include <foo.h>
+
+int test()
+{
+}", new() { ["foo.h"] = "#include <bar.h>", ["bar.h"] = "int bar = 0;" });
+
+    [Fact]
+    public Task NestedIncludes2() => DoTest(@"#include <foo.h>
+
+int test()
+{
+}", new() { ["foo.h"] = "#include <bar.h>", ["bar.h"] = "#include <baz.h>", ["baz.h"] = "int bar = 0;" });
 
     [Fact]
     public async Task ErrorMsg()
