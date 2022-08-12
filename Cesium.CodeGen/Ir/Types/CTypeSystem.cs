@@ -8,4 +8,5 @@ internal class CTypeSystem
     public IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
     public IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
     public IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
+    public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
 }
