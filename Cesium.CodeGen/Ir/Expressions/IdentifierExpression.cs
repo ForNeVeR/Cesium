@@ -73,6 +73,6 @@ internal class IdentifierExpression : IExpression, ILValueExpression
             return new LValueGlobalVariable(flobalField);
         }
 
-        throw new NotSupportedException($"Cannot find {Identifier} into variable, parameter of function.");
+        throw new NotSupportedException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");
     }
 }
