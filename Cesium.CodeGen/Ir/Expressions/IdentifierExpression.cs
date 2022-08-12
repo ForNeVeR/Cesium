@@ -1,9 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Expressions.LValues;
-using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -32,7 +30,7 @@ internal class IdentifierExpression : IExpression, ILValueExpression
 
     public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
-    public ILValue Resolve(IDeclarationScope scope)
+    public IValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         scope.Functions.TryGetValue(Identifier, out FunctionInfo? fun);
@@ -61,16 +59,14 @@ internal class IdentifierExpression : IExpression, ILValueExpression
         
         if (fun is not null)
         {
-            var functionType = new FunctionType(fun.Parameters, fun.ReturnType);
-            var variableDefinition = new VariableDefinition(functionType.ResolvePointer(scope.Context));
-            return new LValueLocalVariable(variableDefinition);
-
+            var functionPointerValue = new FunctionPointerValue(fun.MethodReference);
+            return functionPointerValue;
         }
 
         if (globalType != null)
         {
-            var flobalField = scope.Context.AssemblyContext.ResolveGlobalField(Identifier, scope.Context);
-            return new LValueGlobalVariable(flobalField);
+            var globalField = scope.Context.AssemblyContext.ResolveGlobalField(Identifier, scope.Context);
+            return new LValueGlobalVariable(globalField);
         }
 
         throw new NotSupportedException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");

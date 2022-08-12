@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.CodeGen.Ir.Expressions.LValues;
 using Mono.Cecil;
 using ArithmeticBinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.ArithmeticBinaryOperatorExpression;
 using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
@@ -45,7 +46,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
         if (Operator != BinaryOperator.Assign)
             throw new NotSupportedException($"Operator {Operator} should've been lowered before emitting.");
 
-        _target.Resolve(scope).EmitSetValue(scope, Right);
+        ((ILValue)_target.Resolve(scope)).EmitSetValue(scope, Right);
     }
 
     // `x = v` expression returns type of x (and v)

@@ -30,11 +30,11 @@ internal class SubscriptingExpression : IExpression, ILValueExpression
 
     public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
-    public ILValue Resolve(IDeclarationScope scope)
+    public IValue Resolve(IDeclarationScope scope)
     {
         if (_expression is not IdentifierExpression identifier)
             throw new NotImplementedException("Subscription supported only for IdentifierConstantExpression");
 
-        return new LValueArrayElement(identifier.Resolve(scope), _index);
+        return new LValueArrayElement((ILValue)identifier.Resolve(scope), _index);
     }
 }
