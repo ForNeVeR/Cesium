@@ -33,6 +33,11 @@ internal class UnaryOperatorExpression : IExpression
             case UnaryOperator.AddressOf:
                 EmitGetAddress(scope, _target);
                 break;
+            case UnaryOperator.LogicalNot:
+                _target.EmitTo(scope);
+                scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ceq));
+                break;
             default:
                 _target.EmitTo(scope);
                 scope.Method.Body.Instructions.Add(GetInstruction());
@@ -65,6 +70,7 @@ internal class UnaryOperatorExpression : IExpression
     private static UnaryOperator GetOperatorKind(string @operator) => @operator switch
     {
         "-" => UnaryOperator.Negation,
+        "!" => UnaryOperator.LogicalNot,
         "~" => UnaryOperator.BitwiseNot,
         "&" => UnaryOperator.AddressOf,
         _ => throw new NotSupportedException($"Unary operator not supported, yet: {@operator}."),

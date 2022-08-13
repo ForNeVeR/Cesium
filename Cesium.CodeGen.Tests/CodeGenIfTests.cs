@@ -43,4 +43,12 @@ public class CodeGenIfTests : CodeGenTestBase
     else
         return 1;
 }");
+
+    [Fact]
+    public Task IfNegationTest() => DoTest(@"int main()
+{
+    int a = 0;
+    if (!1)
+        a = 1;
+}");
 }
