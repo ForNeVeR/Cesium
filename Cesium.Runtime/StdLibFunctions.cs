@@ -9,4 +9,9 @@ public unsafe static class StdLibFunctions
     {
         return Math.Abs(value);
     }
+
+    public static void Exit(int exitCode)
+    {
+        RuntimeHelpers.Exit(exitCode);
+    }
 }

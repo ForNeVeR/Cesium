@@ -152,6 +152,7 @@ internal class FunctionDefinition : ITopLevelNode
         var bytePtrArrayType = bytePtrType.MakeArrayType();
         var argsToArgv = context.GetRuntimeHelperMethod("ArgsToArgv");
         var freeArgv = context.GetRuntimeHelperMethod("FreeArgv");
+        var exit = context.GetRuntimeHelperMethod("Exit");
         var arrayCopyTo = context.GetArrayCopyToMethod();
 
         var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
@@ -220,6 +221,8 @@ internal class FunctionDefinition : ITopLevelNode
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
         }
         instructions.Add(atExitLdLocExitCode);
+        instructions.Add(Instruction.Create(OpCodes.Call, exit)); // exit(exitCode)
+        instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Ret));
         return syntheticEntrypoint;
     }

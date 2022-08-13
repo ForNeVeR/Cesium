@@ -37,4 +37,6 @@ System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
   IL_002f: ldloc.1
   IL_0030: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
   IL_0035: ldloc.s V_4
-  IL_0037: ret
+  IL_0037: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_003c: ldloc.s V_4
+  IL_003e: ret

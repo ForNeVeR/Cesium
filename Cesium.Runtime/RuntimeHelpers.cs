@@ -48,4 +48,9 @@ public static unsafe class RuntimeHelpers
             Marshal.FreeHGlobal((IntPtr)argv[i]);
         }
     }
+
+    public static void Exit(int exitCode)
+    {
+        System.Environment.Exit(exitCode);
+    }
 }
