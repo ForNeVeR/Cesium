@@ -24,7 +24,7 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
   - [x] CIL code generator: basics are ready, new features get added
   - [ ] [PDB support][issue.pdb]: none
 - [ ] [Standard library][stdlib]: a very few functions are supported
-- [ ] [.NET SDK][issue.sdk]: none
+- [ ] [.NET SDK][issue.sdk]: none (but planned!)
 
 **Have a question?** Welcome to [the discussions section][discussions]!
 
@@ -40,7 +40,7 @@ If you're interested in certain project areas, check the per-area issue labels:
 - [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
 - [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
 
-### Sneak peek
+### Sneak Peek
 
 Currently, Cesium is able to compile a "Hello, world" C17 example to a .NET assembly:
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 }
 ```
 
-The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete.
+The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
 
 Documentation
 -------------
@@ -84,7 +84,7 @@ $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
 
-## Optional parameters
+### Optional Parameters
 
 - `--framework <framework>`: specifies the target framework, defaults to `Net`
   - `NetFramework` for .NET Framework
@@ -96,7 +96,8 @@ $ mono ./out.exe # run with Mono
   - `Windows`: doesn't get detected, so it's only possible to select manually
   - `NetModule`: is a rudiment from Cecil, not supported
 
-## Testing
+Testing
+-------
 
 **Want to add new tests to Cesium?** Read a separate [document on tests][docs.tests].
 
@@ -144,7 +145,7 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [issue.pdb]: https://github.com/ForNeVeR/Cesium/issues/79
 [issue.preprocessor]: https://github.com/ForNeVeR/Cesium/issues/77
 [issue.sdk]: https://github.com/ForNeVeR/Cesium/issues/80
-[issues.cil-interop]: https://github.com/ForNeVeR/Cesium/issues?q=is%3Aissue+is%3Aopen+label%3Aarea%3Acil-interop
+[issues.cil-interop]: https://github.com/ForNeVeR/Cesium/labels/area%3Acil-interop
 [issues.compiler]: https://github.com/ForNeVeR/Cesium/labels/area%3Acompiler
 [issues.good-first-issue]: https://github.com/ForNeVeR/Cesium/labels/good-first-issue
 [issues.help-wanted]: https://github.com/ForNeVeR/Cesium/labels/status%3Ahelp-wanted
