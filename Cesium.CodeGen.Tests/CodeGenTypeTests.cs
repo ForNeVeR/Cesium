@@ -184,4 +184,11 @@ typedef int (*foo_t)(int);
 int main(void) {
     foo_t x = &foo;
 }");
+
+    [Fact]
+    public void NonExistingStructMember() => DoesNotCompile(@"typedef struct { int x; } foo;
+int main(void) {
+    foo x;
+    return x.nonExisting;
+}", "\"foo\" has no member named \"nonExisting\"");
 }
