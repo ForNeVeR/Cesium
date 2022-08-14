@@ -3,14 +3,14 @@ using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace Cesium.CodeGen.Ir.Expressions.LValues;
+namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal class LValueArrayElement : ILValue
 {
-    private readonly ILValue _array;
+    private readonly IValue _array;
     private readonly IExpression _index;
 
-    public LValueArrayElement(ILValue array, IExpression index)
+    public LValueArrayElement(IValue array, IExpression index)
     {
         _array = array;
         _index = index;

@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -24,14 +25,14 @@ internal class UnaryOperatorExpression : IExpression
         _target = target.ToIntermediate();
     }
 
-    public virtual IExpression Lower() => new UnaryOperatorExpression(_operator, _target.Lower());
+    public IExpression Lower() => new UnaryOperatorExpression(_operator, _target.Lower());
 
-    public virtual void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IDeclarationScope scope)
     {
         switch (_operator)
         {
             case UnaryOperator.AddressOf:
-                EmitGetAddress(scope, _target);
+                EmitGetAddress(_target);
                 break;
             default:
                 _target.EmitTo(scope);
@@ -46,12 +47,16 @@ internal class UnaryOperatorExpression : IExpression
             _ => throw new NotSupportedException($"Unsupported unary operator: {_operator}.")
         };
 
-        void EmitGetAddress(IDeclarationScope scope, IExpression target)
+        void EmitGetAddress(IExpression target)
         {
-            if (target is not ILValueExpression expression)
-                throw new NotSupportedException($"lvalue required as '&' operand");
+            if (target is not IValueExpression expression)
+                throw new NotSupportedException($"Required a value expression to get address, got {target} instead.");
 
-            expression.Resolve(scope).EmitGetAddress(scope);
+            var value = expression.Resolve(scope);
+            if (value is not ILValue lvalue)
+                throw new NotSupportedException($"Required an lvalue to get address, got {value} instead.");
+
+            lvalue.EmitGetAddress(scope);
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
         }
     }
