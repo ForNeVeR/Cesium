@@ -1,11 +1,11 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Expressions.LValues;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class SubscriptingExpression : IExpression, ILValueExpression
+internal class SubscriptingExpression : IExpression, IValueExpression
 {
     private readonly IExpression _expression;
     private readonly IExpression _index;
@@ -35,6 +35,6 @@ internal class SubscriptingExpression : IExpression, ILValueExpression
         if (_expression is not IdentifierExpression identifier)
             throw new NotImplementedException("Subscription supported only for IdentifierConstantExpression");
 
-        return new LValueArrayElement((ILValue)identifier.Resolve(scope), _index);
+        return new LValueArrayElement(identifier.Resolve(scope), _index);
     }
 }

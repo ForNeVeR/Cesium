@@ -3,7 +3,7 @@ using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace Cesium.CodeGen.Ir.Expressions.LValues;
+namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal class LValueLocalVariable : ILValue
 {

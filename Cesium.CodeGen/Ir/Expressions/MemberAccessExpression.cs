@@ -1,10 +1,11 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class MemberAccessExpression : IExpression, ILValueExpression
+internal class MemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
     private readonly IExpression _memberIdentifier;

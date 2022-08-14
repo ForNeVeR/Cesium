@@ -2,7 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Mono.Cecil;
 
-namespace Cesium.CodeGen.Ir.Expressions.LValues
+namespace Cesium.CodeGen.Ir.Expressions.Values
 {
     internal class LValueGlobalVariable : ILValue
     {

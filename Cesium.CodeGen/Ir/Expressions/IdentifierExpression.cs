@@ -1,12 +1,12 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
-using Cesium.CodeGen.Ir.Expressions.LValues;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IdentifierExpression : IExpression, ILValueExpression
+internal class IdentifierExpression : IExpression, IValueExpression
 {
     public string Identifier { get; }
 
@@ -56,7 +56,7 @@ internal class IdentifierExpression : IExpression, ILValueExpression
         {
             return new LValueParameter(par);
         }
-        
+
         if (fun is not null)
         {
             var functionPointerValue = new FunctionPointerValue(fun.MethodReference);
