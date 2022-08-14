@@ -54,7 +54,6 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 case Hash:
                     if (newLine)
                     {
-                        // TODO[#239]: Recursive processing
                         foreach (var t in await ProcessDirective(ReadDirectiveLine(token, stream)))
                             yield return t;
 
