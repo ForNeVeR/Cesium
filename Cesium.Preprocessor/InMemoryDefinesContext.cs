@@ -1,6 +1,6 @@
 namespace Cesium.Preprocessor;
 
-public class InMemoryDefinesContext : IDefinesContext
+public class InMemoryDefinesContext : IMacroContext
 {
     private readonly Dictionary<string, string?> defines;
 
@@ -9,12 +9,12 @@ public class InMemoryDefinesContext : IDefinesContext
         defines = initialDefines == null ? new Dictionary<string, string?>() : new Dictionary<string, string?>(initialDefines);
     }
 
-    public void Define(string macro, string? replacement)
+    public void DefineMacro(string macro, string? replacement)
     {
         defines[macro] = replacement;
     }
 
-    public bool TryGetDefine(string macro, out string? macroReplacement)
+    public bool TryResolveMacro(string macro, out string? macroReplacement)
     {
         return defines.TryGetValue(macro, out macroReplacement);
     }
