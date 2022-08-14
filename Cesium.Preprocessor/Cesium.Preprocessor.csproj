@@ -10,4 +10,8 @@
       <PackageReference Include="Yoakke.SynKit.Lexer.Generator" Version="2022.2.14-2.21.20-nightly" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
+    </ItemGroup>
+
 </Project>

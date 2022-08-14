@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
+using Cesium.Core.Exceptions;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
@@ -43,7 +43,7 @@ internal class CharConstant : IConstant
             'v' => '\v',
             'x' => (char)int.Parse(text.AsSpan(2), System.Globalization.NumberStyles.AllowHexSpecifier),
             > '0' and < '9' => (char)Convert.ToInt32(text.Substring(2), 8),
-            _ => throw new InvalidOperationException($"Unknown escape sequence '{text}'"),
+            _ => throw new CompilationException($"Unknown escape sequence '{text}'"),
         };
     }
 }

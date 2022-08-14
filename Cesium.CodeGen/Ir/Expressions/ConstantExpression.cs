@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
@@ -34,7 +35,7 @@ internal class ConstantExpression : IExpression
             CTokenType.IntLiteral => new IntegerConstant(constant.Text),
             CTokenType.CharLiteral => new CharConstant(constant.Text),
             CTokenType.StringLiteral => new StringConstant(constant),
-            _ => throw new NotSupportedException($"Constant of kind {constant.Kind} is not supported.")
+            _ => throw new WipException(228, $"Constant of kind {constant.Kind} is not supported.")
         };
     }
 }

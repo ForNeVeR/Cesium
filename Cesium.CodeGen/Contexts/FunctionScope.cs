@@ -1,8 +1,8 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -22,7 +22,7 @@ internal record FunctionScope(TranslationUnitContext Context, MethodDefinition M
     {
         if (!_variables.TryGetValue(identifier, out var variableType))
         {
-            throw new InvalidOperationException($"Identifier {identifier} was not found in the {Method} scope");
+            throw new CompilationException($"Identifier {identifier} was not found in the {Method} scope");
         }
 
         if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))

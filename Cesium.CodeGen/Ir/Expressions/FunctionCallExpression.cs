@@ -22,7 +22,8 @@ internal class FunctionCallExpression : IExpression
         var (function, arguments) = expression;
         var functionExpression = function.ToIntermediate();
         _function = functionExpression as IdentifierExpression
-                    ?? throw new NotImplementedException(
+                    ?? throw new WipException(
+                        229,
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
         _arguments = (IList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
                      ?? Array.Empty<IExpression>();
@@ -48,7 +49,7 @@ internal class FunctionCallExpression : IExpression
     {
         var functionName = _function.Identifier;
         var callee = scope.Functions.GetValueOrDefault(functionName)
-                     ?? throw new NotSupportedException($"Function \"{functionName}\" was not found.");
+                     ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
         return callee.ReturnType.Resolve(scope.Context);
     }
 }

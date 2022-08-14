@@ -34,7 +34,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
             BinaryOperator.BitwiseOrAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
             BinaryOperator.BitwiseAndAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
             BinaryOperator.BitwiseXorAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
-            _ => throw new NotImplementedException($"Assignment operator not supported, yet: {Operator}.")
+            _ => throw new WipException(226, $"Assignment operator not supported, yet: {Operator}.")
         };
 
         return new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, rightExpanded.Lower());
@@ -47,7 +47,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
 
         var value = _target.Resolve(scope);
         if (value is not ILValue lvalue)
-            throw new NotSupportedException($"Not an lvalue: {value}.");
+            throw new CompilationException($"Not an lvalue: {value}.");
 
         lvalue.EmitSetValue(scope, Right);
     }

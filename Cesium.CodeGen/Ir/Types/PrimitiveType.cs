@@ -87,7 +87,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => typeSystem.Int64,
             PrimitiveTypeKind.LongDouble => typeSystem.Double,
 
-            _ => throw new NotImplementedException($"Primitive type not supported, yet: {Kind}.")
+            _ => throw new AssertException($"Primitive type not supported: {Kind}.")
         };
     }
 

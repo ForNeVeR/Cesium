@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Cesium.Core.Exceptions;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
 using static Cesium.Preprocessor.CPreprocessorTokenType;
@@ -78,7 +79,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     break;
 
                 default:
-                    throw new NotSupportedException($"Illegal token {token.Kind} {token.Text}.");
+                    throw new PreprocessorException($"Illegal token {token.Kind} {token.Text}.");
             }
         }
     }
@@ -118,7 +119,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             }
 
             if (!moved)
-                throw new NotSupportedException(
+                throw new PreprocessorException(
                     "Preprocessing directive too short at line " +
                     $"{line?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
 
@@ -126,7 +127,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             if (allowedTypes.Contains(token.Kind)) return enumerator.Current;
 
             var expectedTypeString = string.Join(" or ", allowedTypes);
-            throw new NotSupportedException(
+            throw new PreprocessorException(
                 $"Cannot process preprocessor directive: expected {expectedTypeString}, " +
                 $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
         }
@@ -151,7 +152,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 }
 
                 if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
-                    throw new NotSupportedException($"Invalid token after include path: {t.Kind} {t.Text}");
+                    throw new PreprocessorException($"Invalid token after include path: {t.Kind} {t.Text}");
 
                 return tokens.ToList();
             }
@@ -167,7 +168,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             case "define":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool moved;   
+                bool moved;
                 while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: WhiteSpace })
                 {
                     // Skip any whitespace in between tokens.
@@ -179,7 +180,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     moved = false;
                     sb = new StringBuilder(enumerator.Current.Text);
                     while ((moved = enumerator.MoveNext()) && enumerator.Current is not { Kind: NewLine })
-                    {                        
+                    {
                         sb.Append(enumerator.Current.Text);
                     }
                 }
@@ -207,7 +208,8 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             default:
-                throw new NotSupportedException(
+                throw new WipException(
+                    77,
                     $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
         }
     }

@@ -1,5 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.TopLevel;
+using Cesium.Core.Exceptions;
 using FunctionDefinition = Cesium.CodeGen.Ir.TopLevel.FunctionDefinition;
 
 namespace Cesium.CodeGen.Extensions;
@@ -11,6 +12,6 @@ public static class TranslationUnitEx
         {
             Ast.FunctionDefinition func => new FunctionDefinition(func),
             Ast.SymbolDeclaration sym => new TopLevelDeclaration(sym),
-            _ => throw new NotImplementedException($"Declaration not supported: {x}.")
+            _ => throw new WipException(212, $"Declaration not supported: {x}.")
         }));
 }

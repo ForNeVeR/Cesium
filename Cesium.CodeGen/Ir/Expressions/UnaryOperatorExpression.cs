@@ -60,7 +60,7 @@ internal class UnaryOperatorExpression : IExpression
 
             var value = expression.Resolve(scope);
             if (value is not IAddressableValue aValue)
-                throw new NotSupportedException($"Required an addressable value to get address, got {value} instead.");
+                throw new CompilationException($"Required an addressable value to get address, got {value} instead.");
 
             aValue.EmitGetAddress(scope);
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));

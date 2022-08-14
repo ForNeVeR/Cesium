@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -33,7 +34,7 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public IValue Resolve(IDeclarationScope scope)
     {
         if (_expression is not IdentifierExpression identifier)
-            throw new NotImplementedException("Subscription supported only for IdentifierConstantExpression");
+            throw new WipException(230, "Subscription supported only for IdentifierConstantExpression");
 
         return new LValueArrayElement(identifier.Resolve(scope), _index);
     }

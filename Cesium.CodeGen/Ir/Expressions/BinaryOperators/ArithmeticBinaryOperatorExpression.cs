@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -11,7 +12,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         : base(left, @operator, right)
     {
         if (!Operator.IsArithmetic())
-            throw new NotSupportedException($"Internal error: operator {Operator} is not arithmetic.");
+            throw new AssertException($"Operator {Operator} is not arithmetic.");
     }
 
     public ArithmeticBinaryOperatorExpression(Ast.ArithmeticBinaryOperatorExpression expression)
@@ -38,7 +39,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.Add => OpCodes.Add,
             BinaryOperator.Subtract => OpCodes.Sub,
             BinaryOperator.Multiply => OpCodes.Mul,
-            _ => throw new NotSupportedException($"Operator {Operator} is not arithmetic.")
+            _ => throw new AssertException($"Operator {Operator} is not arithmetic.")
         };
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
     }

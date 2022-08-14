@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.TopLevel;
+using Cesium.Core.Exceptions;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -19,8 +20,8 @@ internal static class BlockItemEx
         Ast.ExpressionStatement s => new ExpressionStatement(s),
         Ast.IfElseStatement s => new IfElseStatement(s),
         Ast.ForStatement s => new ForStatement(s),
-        Ast.BreakStatement _ => new BreakStatement(),
+        Ast.BreakStatement => new BreakStatement(),
         Ast.AmbiguousBlockItem a => new AmbiguousBlockItem(a),
-        _ => throw new NotImplementedException($"Statement not supported, yet: {blockItem}.")
+        _ => throw new WipException(206, $"Statement not supported, yet: {blockItem}.")
     };
 }

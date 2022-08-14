@@ -34,7 +34,7 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
     public IValue Resolve(IDeclarationScope scope)
     {
         if (_memberIdentifier is not IdentifierExpression memberIdentifier)
-            throw new NotSupportedException($"\"{_memberIdentifier}\" is not a valid identifier");
+            throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
 
         var valueType = _target.GetExpressionType(scope);
         var valueTypeDef = valueType.Resolve();

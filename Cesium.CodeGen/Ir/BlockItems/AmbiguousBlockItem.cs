@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
+using Cesium.Core.Exceptions;
 using Yoakke.SynKit.C.Syntax;
 using Range = Yoakke.SynKit.Text.Range;
 
@@ -40,18 +41,18 @@ internal class AmbiguousBlockItem : IBlockItem
         else if (!isValidVariableDeclaration && isValidFunctionCall)
             EmitFunctionCall(scope);
         else if (!isValidVariableDeclaration && !isValidFunctionCall)
-            throw new NotSupportedException(
+            throw new CompilationException(
                 $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
                 " but wasn't resolved to be either.");
         else if (isValidVariableDeclaration && isValidFunctionCall)
-            throw new NotSupportedException(
+            throw new CompilationException(
                 $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
                 $" but it's ambiguous which it is, since both a function and a type of name {_item1} exist.");
     }
 
     private void EmitVariableDeclaration(IDeclarationScope scope)
     {
-        throw new NotImplementedException("Ambiguous variable declarations aren't supported, yet.");
+        throw new WipException(213, "Ambiguous variable declarations aren't supported, yet.");
     }
 
     private void EmitFunctionCall(IDeclarationScope scope)

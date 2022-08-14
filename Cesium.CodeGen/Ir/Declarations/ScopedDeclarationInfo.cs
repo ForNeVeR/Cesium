@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.Core.Exceptions;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -14,7 +15,7 @@ internal interface IScopedDeclarationInfo
     {
         var (specifiers, initDeclarators) = declaration;
         if (initDeclarators == null)
-            throw new NotSupportedException($"Symbol declaration has no init declarators: {declaration}.");
+            throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
         if (specifiers.Length > 0 && specifiers[0] is StorageClassSpecifier { Name: "typedef" })
         {
@@ -32,7 +33,7 @@ internal interface IScopedDeclarationInfo
         {
             var (declarator, initializer) = d;
             if (initializer != null)
-                throw new NotSupportedException($"Initializer is not supported for a typedef.");
+                throw new CompilationException($"Initializer is not supported for a typedef.");
 
             return LocalDeclarationInfo.Of(specifiers, declarator);
         }).ToList();
@@ -61,7 +62,7 @@ internal interface IScopedDeclarationInfo
         {
             null => null,
             AssignmentInitializer ai => ai.Expression.ToIntermediate(),
-            _ => throw new NotImplementedException($"Object initializer not supported, yet: {initializer}.")
+            _ => throw new WipException(225, $"Object initializer not supported, yet: {initializer}.")
         };
         return new InitializableDeclarationInfo(declarationInfo, expression);
     }

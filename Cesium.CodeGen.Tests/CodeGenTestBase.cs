@@ -56,12 +56,10 @@ public abstract class CodeGenTestBase : VerifyTestBase
             var parser = new CParser(lexer);
             var translationUnit = parser.ParseTranslationUnit();
             if (translationUnit.IsError)
-            {
-                throw new InvalidOperationException(translationUnit.GetErrorString());
-            }
+                throw new ParseException(translationUnit.GetErrorString() ?? "Unknown parse error");
 
             if (parser.TokenStream.Peek().Kind != CTokenType.End)
-                throw new Exception($"Excessive output after the end of a translation unit at {lexer.Position}.");
+                throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
             context.EmitTranslationUnit(translationUnit.Ok.Value.ToIntermediate());
         }

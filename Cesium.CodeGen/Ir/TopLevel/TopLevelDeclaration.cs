@@ -42,7 +42,7 @@ internal class TopLevelDeclaration : ITopLevelNode
         {
             var (type, identifier, cliImportMemberName) = declaration;
             if (identifier == null)
-                throw new NotSupportedException($"Unnamed global symbol of type {type} is not supported.");
+                throw new CompilationException($"Unnamed global symbol of type {type} is not supported.");
 
             if (cliImportMemberName != null)
             {
@@ -60,7 +60,7 @@ internal class TopLevelDeclaration : ITopLevelNode
             if (type is FunctionType functionType)
             {
                 if (initializer != null)
-                    throw new NotSupportedException(
+                    throw new CompilationException(
                         $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
                 EmitFunctionDeclaration(context, identifier, functionType);
@@ -138,7 +138,7 @@ internal class TopLevelDeclaration : ITopLevelNode
         {
             var (type, identifier, cliImportMemberName) = typeDef;
             if (identifier == null)
-                throw new NotSupportedException($"Anonymous typedef not supported: {type}.");
+                throw new CompilationException($"Anonymous typedef not supported: {type}.");
 
             if (cliImportMemberName != null)
                 throw new CompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");

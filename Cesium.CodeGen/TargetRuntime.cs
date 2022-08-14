@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen;
@@ -40,7 +41,7 @@ public record TargetRuntimeDescriptor(
                 ("System.Runtime", new byte[] { 0xb0, 0x3f, 0x5f, 0x7f, 0x11, 0xd5, 0x0a, 0x3a }),
             SystemAssemblyKind.NetStandard =>
                 ("netstandard", new byte[] { 0xb0, 0x3f, 0x5f, 0x7f, 0x11, 0xd5, 0x0a, 0x3a }),
-            _ => throw new Exception($"Unknown assembly kind: {Kind}")
+            _ => throw new CompilationException($"Unknown assembly kind: {Kind}")
         };
         return new AssemblyNameReference(assemblyName, SystemLibraryVersion)
         {
@@ -55,7 +56,7 @@ public record TargetRuntimeDescriptor(
             SystemAssemblyKind.MsCorLib => ".NETFramework",
             SystemAssemblyKind.SystemRuntime => ".NETCoreApp",
             SystemAssemblyKind.NetStandard => ".NETStandard",
-            _ => throw new Exception($"Unknown target runtime kind: {Kind}")
+            _ => throw new CompilationException($"Unknown target runtime kind: {Kind}")
         } + $",Version=v{TargetFrameworkVersion}";
 
         var constructor = typeof(TargetFrameworkAttribute).GetConstructor(new[] { typeof(string) });

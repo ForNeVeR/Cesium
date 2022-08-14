@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
@@ -16,7 +17,7 @@ internal class FunctionValue : IAddressableValue
 
     public void EmitGetValue(IDeclarationScope scope)
     {
-        throw new NotImplementedException("Cannot directly get a value of a function, yet.");
+        throw new WipException(227, "Cannot directly get a value of a function, yet.");
     }
 
     public void EmitGetAddress(IDeclarationScope scope)

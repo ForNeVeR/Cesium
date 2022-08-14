@@ -1,8 +1,10 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Cesium.CodeGen.Extensions;
+
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
@@ -11,7 +13,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         : base(left, @operator, right)
     {
         if (!Operator.IsComparison())
-            throw new NotSupportedException($"Internal error: operator {Operator} is not comparison.");
+            throw new AssertException($"Operator {Operator} is not comparison.");
     }
 
     public ComparisonBinaryOperatorExpression(Ast.ComparisonBinaryOperatorExpression expression)
@@ -46,7 +48,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
 
         if ((!scope.TypeSystem.IsNumeric(leftType) && !leftType.IsPointer)
             || (!scope.TypeSystem.IsNumeric(rightType) && !rightType.IsPointer))
-            throw new InvalidOperationException($"Unable to compare {leftType} to {rightType}");
+            throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
         var commonType = scope.TypeSystem.GetCommonNumericType(leftType, rightType);
 
@@ -63,7 +65,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.GreaterThan => Instruction.Create(OpCodes.Cgt),
             BinaryOperator.LessThan => Instruction.Create(OpCodes.Clt),
             BinaryOperator.EqualTo => Instruction.Create(OpCodes.Ceq),
-            _ => throw new NotSupportedException($"Unsupported binary operator: {Operator}.")
+            _ => throw new AssertException($"Unsupported binary operator: {Operator}.")
         };
     }
 

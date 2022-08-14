@@ -1,5 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
@@ -25,7 +26,7 @@ internal record LocalDeclarationInfo(
         {
             var (typeQualifiers, childPointer) = pointer;
             if (typeQualifiers != null || childPointer != null)
-                throw new NotImplementedException($"Complex pointer type is not supported, yet: {pointer}.");
+                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
 
             type = new PointerType(type);
         }
@@ -48,7 +49,7 @@ internal record LocalDeclarationInfo(
             {
                 case SimpleTypeSpecifier ts:
                     if (type != null)
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Unsupported type definition after already resolved type {type}: {ts}.");
 
                     type = ProcessSimpleTypeSpecifiers(ts, specifiers, ref i);
@@ -56,7 +57,7 @@ internal record LocalDeclarationInfo(
 
                 case NamedTypeSpecifier nt:
                     if (type != null)
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Unsupported type name after already resolved type {type}: {nt}.");
 
                     nt.Deconstruct(out var typeName);
@@ -68,51 +69,51 @@ internal record LocalDeclarationInfo(
                     {
                         case "const":
                             if (isConst)
-                                throw new NotSupportedException(
+                                throw new CompilationException(
                                     $"Multiple const specifiers: {string.Join(", ", specifiers)}.");
                             isConst = true;
                             break;
                         default:
-                            throw new NotSupportedException($"Type qualifier {tq} is not supported, yet.");
+                            throw new WipException(216, $"Type qualifier {tq} is not supported, yet.");
                     }
 
                     break;
 
                 case CliImportSpecifier cis:
                     if (cliImportMemberName != null)
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Multiple CLI import specifiers on a declaration among {string.Join(", ", specifiers)}.");
 
                     cliImportMemberName = cis.MemberName;
                     break;
 
                 case StorageClassSpecifier { Name: "typedef" }:
-                    throw new NotSupportedException($"typedef not expected: {string.Join(", ", specifiers)}.");
+                    throw new CompilationException($"typedef not expected: {string.Join(", ", specifiers)}.");
 
                 case StructOrUnionSpecifier typeSpecifier:
                 {
                     if (type != null)
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Cannot update type {type} with a struct specifier {typeSpecifier}.");
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
                     if (complexTypeKind != ComplexTypeKind.Struct)
-                        throw new NotImplementedException($"Complex type kind not supported, yet: {complexTypeKind}.");
+                        throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
 
                     if (identifier != null)
-                        throw new NotImplementedException($"Named structures aren't supported, yet: {identifier}.");
+                        throw new WipException(218, $"Named structures aren't supported, yet: {identifier}.");
 
                     type = new StructType(GetTypeMemberDeclarations(structDeclarations));
                     break;
                 }
 
                 default:
-                    throw new NotImplementedException($"Declaration specifier {specifier} isn't supported, yet.");
+                    throw new WipException(219, $"Declaration specifier {specifier} isn't supported, yet.");
             }
         }
 
         if (type == null)
-            throw new NotSupportedException(
+            throw new CompilationException(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
@@ -131,7 +132,8 @@ internal record LocalDeclarationInfo(
                 {
                     var (_, identifiers) = list;
                     if (identifiers != null)
-                        throw new NotImplementedException(
+                        throw new WipException(
+                            220,
                             "Non-empty identifier list inside of a direct declarator is not supported, yet:" +
                             $" {string.Join(", ", identifiers)}");
 
@@ -144,7 +146,7 @@ internal record LocalDeclarationInfo(
 
                 case IdentifierDirectDeclarator identifierD:
                     if (identifier != null)
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Second identifier \"{identifierD.Identifier}\" given for the declaration \"{identifier}\".");
                     identifier = identifierD.Identifier;
                     break;
@@ -157,7 +159,8 @@ internal record LocalDeclarationInfo(
                 case ArrayDirectDeclarator array:
                     var (_, typeQualifiers, sizeExpr) = array;
                     if (typeQualifiers != null)
-                        throw new NotImplementedException(
+                        throw new WipException(
+                            221,
                             $"Array type qualifiers aren't supported, yet: {string.Join(", ", typeQualifiers)}");
 
                     // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
@@ -168,7 +171,7 @@ internal record LocalDeclarationInfo(
                         if (sizeExpr is not ConstantExpression constantExpression ||
                             constantExpression.Constant.Kind != CTokenType.IntLiteral ||
                             !int.TryParse(constantExpression.Constant.Text, out var size))
-                            throw new NotSupportedException($"Array size specifier is not integer {sizeExpr}.");
+                            throw new CompilationException($"Array size specifier is not integer {sizeExpr}.");
 
                         type = new InPlaceArrayType(type, size);
                     }
@@ -182,7 +185,8 @@ internal record LocalDeclarationInfo(
                     {
                         var (nestedTypeQualifiers, nestedChildPointer) = nestedPointer;
                         if (nestedTypeQualifiers != null || nestedChildPointer != null)
-                            throw new NotImplementedException(
+                            throw new WipException(
+                                222,
                                 $"Nested pointer of kind {nestedPointer} is not supported, yet.");
 
                         type = new PointerType(type);
@@ -192,12 +196,12 @@ internal record LocalDeclarationInfo(
                     if (nestedDirectDeclarator is IdentifierDirectDeclarator idd)
                     {
                         if (idd.Base != null)
-                            throw new NotSupportedException(
+                            throw new CompilationException(
                                 $"Not supported nested direct declarator with base: {idd}.");
 
                         idd.Deconstruct(out var nestedIdentifier);
                         if (identifier != null && nestedIdentifier != null)
-                            throw new NotSupportedException(
+                            throw new CompilationException(
                                 $"Identifier conflict: nested identifier \"{nestedIdentifier}\"" +
                                 $" tries to override \"{identifier}.\"");
 
@@ -205,13 +209,13 @@ internal record LocalDeclarationInfo(
                     }
                     else
                     {
-                        throw new NotSupportedException(
+                        throw new CompilationException(
                             $"Not supported nested direct declarator: {nestedDirectDeclarator}.");
                     }
 
                     break;
 
-                default: throw new NotImplementedException($"Direct declarator not supported, yet: {currentDirectDeclarator}.");
+                default: throw new WipException(223, $"Direct declarator not supported, yet: {currentDirectDeclarator}.");
             }
 
             currentDirectDeclarator = currentDirectDeclarator.Base;
@@ -227,7 +231,7 @@ internal record LocalDeclarationInfo(
         {
             var (specifiersQualifiers, declarators) = memberDeclarator;
             if (declarators == null)
-                throw new NotSupportedException(
+                throw new CompilationException(
                     "Empty declarator list on a struct member declaration:" +
                     $"{string.Join(", ", specifiersQualifiers)}.");
 
@@ -299,7 +303,8 @@ internal record LocalDeclarationInfo(
                 ("long", null, null, null) => PrimitiveTypeKind.Long,
                 ("float", null, null, null) => PrimitiveTypeKind.Float,
                 ("double", null, null, null) => PrimitiveTypeKind.Double,
-                _ => throw new NotImplementedException(
+                _ => throw new WipException(
+                    224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
             });
     }

@@ -45,7 +45,8 @@ internal record ParameterInfo(IType Type, string? Name)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
         if (abstractDeclarator != null)
-            throw new NotImplementedException(
+            throw new WipException(
+                234,
                 $"Parameter with abstract declarator is not supported, yet: {declaration}.");
 
         var (type, identifier, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);

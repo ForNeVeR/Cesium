@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Extensions;
@@ -31,7 +32,7 @@ internal static class TypeDefinitionEx
         var (parameters, isVoid, isVarArg) = parametersInfo;
         if (isVoid) return;
         if (isVarArg)
-            throw new NotImplementedException($"VarArg functions not supported, yet: {method.Name}.");
+            throw new WipException(196, $"VarArg functions not supported, yet: {method.Name}.");
 
         // TODO[#87]: Process empty (non-void) parameter list.
 
@@ -60,6 +61,7 @@ internal static class TypeDefinitionEx
     }
     public static MethodDefinition FindMethod(this TypeDefinition typeDefinition, string methodName)
     {
-        return typeDefinition.Methods.SingleOrDefault(method => method.Name == methodName) ?? throw new InvalidOperationException($"Cannot find method {methodName} on type {typeDefinition.FullName}");
+        return typeDefinition.Methods.SingleOrDefault(method => method.Name == methodName)
+               ?? throw new CompilationException($"Cannot find method {methodName} on type {typeDefinition.FullName}");
     }
 }

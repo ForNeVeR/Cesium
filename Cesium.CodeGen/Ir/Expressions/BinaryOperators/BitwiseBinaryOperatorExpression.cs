@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -11,7 +12,7 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
         : base(left, @operator, right)
     {
         if (!Operator.IsBitwise())
-            throw new NotSupportedException($"Internal error: operator {Operator} is not bitwise.");
+            throw new AssertException($"Operator {Operator} is not bitwise.");
     }
 
     public BitwiseBinaryOperatorExpression(Ast.BitwiseBinaryOperatorExpression expression)
@@ -33,7 +34,7 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.BitwiseXor => OpCodes.Xor,
             BinaryOperator.BitwiseLeftShift => OpCodes.Shl,
             BinaryOperator.BitwiseRightShift => OpCodes.Shr,
-            _ => throw new NotSupportedException($"Operator {Operator} is not bitwise.")
+            _ => throw new AssertException($"Operator {Operator} is not bitwise.")
         };
 
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
@@ -43,11 +44,11 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
     {
         var leftType = Left.GetExpressionType(scope);
         if (!scope.TypeSystem.IsInteger(leftType))
-            throw new NotSupportedException($"Left operand of '{Operator}' is not of integer type: {Left}");
+            throw new CompilationException($"Left operand of '{Operator}' is not of integer type: {Left}");
 
         var rightType = Right.GetExpressionType(scope);
         if (!scope.TypeSystem.IsInteger(rightType))
-            throw new NotSupportedException($"Right operand of '{Operator}' is not of integer type: {Right}");
+            throw new CompilationException($"Right operand of '{Operator}' is not of integer type: {Right}");
 
         return leftType;
     }

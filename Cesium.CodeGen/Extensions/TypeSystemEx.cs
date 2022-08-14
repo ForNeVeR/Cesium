@@ -189,18 +189,18 @@ internal static class TypeSystemEx
             return unsignedTypes[Math.Max(aUnsignedRank.Value, bUnsignedRank.Value)];
 
         if (aSignedRank == null && aUnsignedRank == null)
-            throw new NotSupportedException($"Left operand of type {a.Name} is not numeric.");
+            throw new AssertException($"Left operand of type {a.Name} is not numeric.");
 
         if (bSignedRank == null && bUnsignedRank == null)
-            throw new NotSupportedException($"Right operand of type {b.Name} is not numeric.");
+            throw new AssertException($"Right operand of type {b.Name} is not numeric.");
 
         // Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand,
         // then the operand with signed integer type is converted to the type of the operand with unsigned integer type.
         // Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type,
         // then the operand with unsigned integer type is converted to the type of the operand with signed integer type.
 
-        var unsignedRank = aUnsignedRank ?? bUnsignedRank ?? throw new Exception("Not possible");
-        var signedRank = aSignedRank ?? bSignedRank ?? throw new Exception("Not possible");
+        var unsignedRank = aUnsignedRank ?? bUnsignedRank ?? throw new AssertException("Not possible");
+        var signedRank = aSignedRank ?? bSignedRank ?? throw new AssertException("Not possible");
 
         return unsignedRank >= signedRank
             ? unsignedTypes[unsignedRank]
@@ -226,7 +226,7 @@ internal static class TypeSystemEx
     public static TypeDefinition GetRuntimeHelperType(this TranslationUnitContext context)
     {
         var runtimeHelpersType = context.AssemblyContext.CesiumRuntimeAssembly.GetType("Cesium.Runtime.RuntimeHelpers");
-        return runtimeHelpersType ?? throw new InvalidOperationException("Type Cesium.Runtime.RuntimeHelpers was not found in the Cesium runtime assembly.");
+        return runtimeHelpersType ?? throw new AssertException("Type Cesium.Runtime.RuntimeHelpers was not found in the Cesium runtime assembly.");
     }
 
     public static MethodReference GetRuntimeHelperMethod(this TranslationUnitContext context, string helperMethod)
@@ -235,7 +235,7 @@ internal static class TypeSystemEx
         var method = runtimeHelpersType.FindMethod(helperMethod);
         if (method == null)
         {
-            throw new InvalidOperationException($"RuntimeHelper {helperMethod} cannot be found.");
+            throw new AssertException($"RuntimeHelper {helperMethod} cannot be found.");
         }
 
         return context.Module.ImportReference(method);

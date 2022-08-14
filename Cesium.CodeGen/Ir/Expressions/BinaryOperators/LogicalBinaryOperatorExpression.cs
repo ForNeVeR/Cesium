@@ -11,7 +11,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         : base(left, @operator, right)
     {
         if(!Operator.IsLogical())
-            throw new AssertException($"Internal error: operator {Operator} is not logical.");
+            throw new AssertException($"Operator {Operator} is not logical.");
     }
 
     public LogicalBinaryOperatorExpression(Ast.LogicalBinaryOperatorExpression expression)

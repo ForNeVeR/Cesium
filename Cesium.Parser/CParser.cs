@@ -5,12 +5,11 @@ using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 using Yoakke.SynKit.Parser.Attributes;
+using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Parser;
 
 using ICToken = IToken<CTokenType>;
-using Range = Yoakke.SynKit.Text.Range;
-
 using ArgumentExpressionList = ImmutableArray<Expression>;
 using BlockItemList = ImmutableArray<IBlockItem>;
 using DeclarationSpecifiers = ImmutableArray<IDeclarationSpecifier>;
@@ -136,13 +135,12 @@ public partial class CParser
         ? new ConstantExpression(MergeTokens(@operator, constantExpression.Constant))
         : new UnaryOperatorExpression(@operator.Text, target);
 
-    // unary-operator: one of
-    //    & * + - !
+    [Rule("unary_operator: '&'")]
+    // TODO: [Rule("unary_operator: '*'")]
+    // TODO: [Rule("unary_operator: '+'")]
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
-    [Rule("unary_operator: '&'")]
-    // TODO: [Rule("unary_operator: '*'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
     // TODO: 6.5.4 Cast operators

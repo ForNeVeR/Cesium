@@ -86,7 +86,7 @@ public class AssemblyContext
         Module = module;
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(mscorlibAssemblyLocation);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(cesiumRuntimeAssemblyLocation);
-        ImportAssemblies = importAssemblies.Select(assemblyLocation => AssemblyDefinition.ReadAssembly(assemblyLocation)).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
+        ImportAssemblies = importAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
         _constantPool = new(
             () =>
             {
@@ -120,7 +120,7 @@ public class AssemblyContext
     internal void AddGlobalField(string name, IType type)
     {
         if (_globalFields.ContainsKey(name))
-            throw new NotSupportedException($"Cannot add a duplicate global field named {name}.");
+            throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
 
         _globalFields.Add(name, type);
     }
@@ -129,7 +129,7 @@ public class AssemblyContext
     {
         if (!_globalFields.TryGetValue(name, out var type))
         {
-            throw new NotSupportedException($"Cannot global field {name} not found.");
+            throw new CompilationException($"Cannot find a global field \"{name}\".");
         }
 
         var field = GlobalType.Fields.FirstOrDefault(f => f.Name == name);

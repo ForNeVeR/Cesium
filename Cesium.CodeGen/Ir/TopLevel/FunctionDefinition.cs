@@ -31,7 +31,8 @@ internal class FunctionDefinition : ITopLevelNode
         _name = name ?? throw new AssertException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)
-            throw new NotImplementedException(
+            throw new WipException(
+                231,
                 $"Non-empty declaration list for a function is not yet supported: {string.Join(", ", declarations)}.");
 
         if (cliImportMemberName != null)

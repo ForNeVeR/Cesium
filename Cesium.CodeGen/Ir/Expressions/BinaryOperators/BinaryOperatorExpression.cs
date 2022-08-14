@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -39,7 +40,7 @@ internal abstract class BinaryOperatorExpression : IExpression
 
         var ts = scope.TypeSystem;
         if(!ts.IsNumeric(exprType))
-            throw new NotSupportedException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
+            throw new CompilationException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
 
         if(desiredType.Equals(ts.SByte))
             Add(OpCodes.Conv_I1);
@@ -62,7 +63,7 @@ internal abstract class BinaryOperatorExpression : IExpression
         else if (desiredType.Equals(ts.Double))
             Add(OpCodes.Conv_R8);
         else
-            throw new NotSupportedException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
+            throw new CompilationException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
 
         void Add(OpCode op) => scope.Method.Body.Instructions.Add(Instruction.Create(op));
     }
@@ -94,6 +95,6 @@ internal abstract class BinaryOperatorExpression : IExpression
         "!=" => BinaryOperator.NotEqualTo,
         "&&" => BinaryOperator.LogicalAnd,
         "||" => BinaryOperator.LogicalOr,
-        _ => throw new NotImplementedException($"Binary operator not supported, yet: {@operator}.")
+        _ => throw new WipException(226, $"Binary operator not supported, yet: {@operator}.")
     };
 }

@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.Core.Exceptions;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Extensions;
@@ -29,6 +30,6 @@ internal static class ExpressionEx
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
 
-        _ => throw new NotImplementedException($"Expression not supported, yet: {ex}."),
+        _ => throw new WipException(208, $"Expression not supported, yet: {ex}."),
     };
 }

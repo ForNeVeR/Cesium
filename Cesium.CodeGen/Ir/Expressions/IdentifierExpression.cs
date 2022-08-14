@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
@@ -14,7 +15,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
     {
         var constant = expression.Constant;
         if (expression.Constant.Kind != CTokenType.Identifier)
-            throw new NotSupportedException($"Constant kind not supported: {expression.Constant.Kind}.");
+            throw new CompilationException($"Constant kind not supported: {expression.Constant.Kind}.");
 
         Identifier = constant.Text;
     }
@@ -38,13 +39,13 @@ internal class IdentifierExpression : IExpression, IValueExpression
         scope.Context.AssemblyContext.GlobalFields.TryGetValue(Identifier, out var globalType);
 
         if (var is not null && par is not null)
-            throw new NotSupportedException($"Variable {Identifier} is both available as a local and as a function parameter.");
+            throw new CompilationException($"Variable {Identifier} is both available as a local and as a function parameter.");
 
         if (var is not null && fun is not null)
-            throw new NotSupportedException($"Variable {Identifier} is both available as a local and as a function name.");
+            throw new CompilationException($"Variable {Identifier} is both available as a local and as a function name.");
 
         if (fun is not null && par is not null)
-            throw new NotSupportedException($"Variable {Identifier} is both available as a function name and as a function parameter.");
+            throw new CompilationException($"Variable {Identifier} is both available as a function name and as a function parameter.");
 
         if (var is not null)
         {
@@ -68,6 +69,6 @@ internal class IdentifierExpression : IExpression, IValueExpression
             return new LValueGlobalVariable(globalField);
         }
 
-        throw new NotSupportedException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");
+        throw new CompilationException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");
     }
 }

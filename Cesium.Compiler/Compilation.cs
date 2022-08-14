@@ -46,7 +46,7 @@ internal static class Compilation
         {
             ".exe" => ModuleKind.Console,
             ".dll" => ModuleKind.Dll,
-            var o => throw new Exception($"Unknown file extension: {o}. \"modulekind\" is not specified.")
+            var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
         };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
         var defaultImportAssemblies = new []

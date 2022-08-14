@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -29,7 +30,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         {
             var fixedBufferCtor = typeof(FixedBufferAttribute).GetConstructor(new[] { typeof(Type), typeof(int) });
             if (fixedBufferCtor == null)
-                throw new NotSupportedException(
+                throw new AssertException(
                     "Cannot find a constructor with signature (Type, Int32) in type FixedBufferAttribute.");
 
             return new CustomAttribute(context.Module.ImportReference(fixedBufferCtor))
@@ -46,7 +47,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
     public void EmitInitializer(IDeclarationScope scope)
     {
         if (Base is not PrimitiveType)
-            throw new NotImplementedException($"Array of complex type specifiers aren't supported, yet: {Base}");
+            throw new WipException(232, $"Array of complex type specifiers aren't supported, yet: {Base}");
 
         var arraySizeInBytes = SizeInBytes;
 

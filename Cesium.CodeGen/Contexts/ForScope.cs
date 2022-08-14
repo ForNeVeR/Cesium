@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -16,7 +17,7 @@ internal record ForScope(IDeclarationScope Parent) : IDeclarationScope
     public MethodDefinition Method => Parent.Method;
     public IReadOnlyDictionary<string, IType> Variables => Parent.Variables; // no declarations for `for` now, so pass parent variables
     public void AddVariable(string identifier, IType variable) =>
-        throw new NotImplementedException("Variable addition into a for loop scope is not implemented, yet.");
+        throw new WipException(205, "Variable addition into a for loop scope is not implemented, yet.");
     public VariableDefinition ResolveVariable(string identifier) => Parent.ResolveVariable(identifier); // no declarations for `for` now, so pass parent variables
 
     public ParameterDefinition? GetParameter(string name) => Parent.GetParameter(name);

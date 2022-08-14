@@ -3,7 +3,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil.Cil;
+using Cesium.Core.Exceptions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -37,7 +37,7 @@ internal class DeclarationBlockItem : IBlockItem
                             .ToList()));
             }
             case TypeDefDeclaration: return this;
-            default: throw new NotSupportedException($"Unknown kind of declaration: {_declaration}.");
+            default: throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
         }
     }
 
@@ -53,7 +53,7 @@ internal class DeclarationBlockItem : IBlockItem
                 EmitTypeDef(declaration);
                 break;
             default:
-                throw new NotSupportedException($"Unknown kind of declaration: {_declaration}.");
+                throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
         }
     }
 
@@ -67,10 +67,10 @@ internal class DeclarationBlockItem : IBlockItem
             // TODO[#91]: A place to register whether {type} is const or not.
 
             if (identifier == null)
-                throw new NotSupportedException("An anonymous local declaration isn't supported.");
+                throw new CompilationException("An anonymous local declaration isn't supported.");
 
             if (cliImportMemberName != null)
-                throw new NotSupportedException(
+                throw new CompilationException(
                     $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
             scope.AddVariable(identifier, type);
@@ -93,5 +93,5 @@ internal class DeclarationBlockItem : IBlockItem
     }
 
     private static void EmitTypeDef(TypeDefDeclaration declaration) =>
-        throw new NotImplementedException($"typedef is not supported at block level, yet: {declaration}.");
+        throw new WipException(214, $"typedef is not supported at block level, yet: {declaration}.");
 }
