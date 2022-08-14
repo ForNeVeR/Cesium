@@ -37,11 +37,11 @@ int test()
 }", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
     [Fact]
-    public Task IncludeTrailingWhiltespacesIgnored() => DoTest(@"#include <foo.h>     
+    public Task IncludeTrailingWhiltespacesIgnored() => DoTest($@"#include <foo.h>{"\t\t\t" /*Make whitespaces visible here */}
 #include <bar.h>
 int test()
-{
-}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
+{{
+}}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
     [Fact]
     public Task NestedIncludes() => DoTest(@"#include <foo.h>
