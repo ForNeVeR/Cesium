@@ -12,5 +12,5 @@ public record NamedType(string TypeName) : IType
 
     // explicit impl while Size not implemented
     public override string ToString()
-        => $"PointerType {{ TypeName = {TypeName} }}";
+        => $"NamedType {{ TypeName = {TypeName} }}";
 }
