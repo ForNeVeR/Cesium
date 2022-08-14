@@ -7,7 +7,7 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IDefinesContext DefinesContext)
+public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext DefinesContext)
 {
     private bool IncludeTokens = true;
     public async Task<string> ProcessSource()
@@ -184,20 +184,20 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     }
                 }
 
-                DefinesContext.Define(identifier, sb?.ToString());
+                DefinesContext.DefineMacro(identifier, sb?.ToString());
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifdef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool includeTokens = DefinesContext.TryGetDefine(identifier, out var macroReplacement);
+                bool includeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
                 IncludeTokens = includeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool donotIncludeTokens = DefinesContext.TryGetDefine(identifier, out var macroReplacement);
+                bool donotIncludeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
                 IncludeTokens = !donotIncludeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
