@@ -8,5 +8,5 @@ typedef int (*foo_t)(int x);
 int main(void)
 {
     foo_t x = &foo;
-    return 40;
+    return 42;
 }
