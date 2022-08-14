@@ -17,7 +17,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
-        <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
+        <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj">
+            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+            <OutputItemType>Content</OutputItemType>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Targets>Build</Targets>
+        </ProjectReference>
         <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
         <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
     </ItemGroup>

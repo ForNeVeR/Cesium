@@ -53,13 +53,14 @@ internal static class Compilation
         {
             typeof(Console).Assembly.Location, // System.Console.dll
         };
+        var cesiumRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
             parsedModuleKind,
             targetRuntime,
             defaultImportAssemblies,
             typeof(Math).Assembly.Location, // System.Runtime.dll
-            typeof(Runtime.StdLibFunctions).Assembly.Location, // Cesium runtime assembly
+            cesiumRuntime,
             @namespace,
             globalClassFqn);
     }
