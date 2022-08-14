@@ -53,10 +53,10 @@ internal class UnaryOperatorExpression : IExpression
                 throw new NotSupportedException($"Required a value expression to get address, got {target} instead.");
 
             var value = expression.Resolve(scope);
-            if (value is not ILValue lvalue)
-                throw new NotSupportedException($"Required an lvalue to get address, got {value} instead.");
+            if (value is not IAddressableValue aValue)
+                throw new NotSupportedException($"Required an addressable value to get address, got {value} instead.");
 
-            lvalue.EmitGetAddress(scope);
+            aValue.EmitGetAddress(scope);
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
         }
     }

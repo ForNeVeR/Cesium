@@ -9,8 +9,15 @@ internal interface IValue
     TypeReference GetValueType();
 }
 
-internal interface ILValue : IValue
+/// <remarks>
+/// This is different from <see cref="ILValue"/> because functions are not lvalues but still can be addressed.
+/// </remarks>
+internal interface IAddressableValue : IValue
 {
     void EmitGetAddress(IDeclarationScope scope);
+}
+
+internal interface ILValue : IAddressableValue
+{
     void EmitSetValue(IDeclarationScope scope, IExpression value);
 }
