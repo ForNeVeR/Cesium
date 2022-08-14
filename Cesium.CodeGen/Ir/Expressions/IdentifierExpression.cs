@@ -59,8 +59,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (fun is not null)
         {
-            var functionPointerValue = new FunctionPointerValue(fun.MethodReference);
-            return functionPointerValue;
+            return new FunctionValue(fun.MethodReference);
         }
 
         if (globalType != null)
