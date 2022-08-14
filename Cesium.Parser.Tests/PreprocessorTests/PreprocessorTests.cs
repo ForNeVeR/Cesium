@@ -37,6 +37,13 @@ int test()
 }", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
     [Fact]
+    public Task IncludeTrailingWhiltespacesIgnored() => DoTest(@"#include <foo.h>     
+#include <bar.h>
+int test()
+{
+}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
+
+    [Fact]
     public Task NestedIncludes() => DoTest(@"#include <foo.h>
 
 int test()
