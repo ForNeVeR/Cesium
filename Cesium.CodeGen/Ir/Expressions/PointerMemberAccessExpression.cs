@@ -39,7 +39,7 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
         var valueTypeDef = valueType.Resolve();
 
         var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
-                    ?? throw new NotSupportedException(
+                    ?? throw new CesiumCompilationException(
                         $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
         return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
     }
