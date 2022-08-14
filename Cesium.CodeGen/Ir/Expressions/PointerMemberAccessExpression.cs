@@ -1,11 +1,11 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Expressions.LValues;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class PointerMemberAccessExpression : IExpression, ILValueExpression
+internal class PointerMemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
     private readonly IExpression _memberIdentifier;
@@ -30,7 +30,7 @@ internal class PointerMemberAccessExpression : IExpression, ILValueExpression
 
     public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
-    public ILValue Resolve(IDeclarationScope scope)
+    public IValue Resolve(IDeclarationScope scope)
     {
         if (_memberIdentifier is not IdentifierExpression memberIdentifier)
             throw new NotSupportedException($"\"{_memberIdentifier}\" is not a valid identifier");
@@ -38,16 +38,9 @@ internal class PointerMemberAccessExpression : IExpression, ILValueExpression
         var valueType = _target.GetExpressionType(scope);
         var valueTypeDef = valueType.Resolve();
 
-        try
-        {
-            var field = valueTypeDef.Fields.First(f => f?.Name == memberIdentifier.Identifier);
-            return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new NotSupportedException(
-                $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"",
-                e);
-        }
+        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
+                    ?? throw new NotSupportedException(
+                        $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
+        return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
     }
 }

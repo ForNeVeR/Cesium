@@ -60,6 +60,6 @@ internal static class TypeDefinitionEx
     }
     public static MethodDefinition FindMethod(this TypeDefinition typeDefinition, string methodName)
     {
-        return typeDefinition.Methods.Single(method => method.Name == methodName);
+        return typeDefinition.Methods.SingleOrDefault(method => method.Name == methodName) ?? throw new InvalidOperationException($"Cannot find method {methodName} on type {typeDefinition.FullName}");
     }
 }

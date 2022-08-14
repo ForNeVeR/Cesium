@@ -140,7 +140,7 @@ public partial class CParser
     //    & * + - !
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
-    // TODO: [Rule("unary_operator: '!'")]
+    [Rule("unary_operator: '!'")]
     [Rule("unary_operator: '&'")]
     // TODO: [Rule("unary_operator: '*'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;

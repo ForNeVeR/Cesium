@@ -177,4 +177,18 @@ int main(void) { foo x = 0; return 0; }");
     public Task StructWithArray() => DoTest(@"typedef struct {
     int x[4];
 } foo;");
+
+    [Fact]
+    public Task FunctionPointer() => DoTest(@"void foo(int) {}
+typedef int (*foo_t)(int);
+int main(void) {
+    foo_t x = &foo;
+}");
+
+    [Fact]
+    public void NonExistingStructMember() => DoesNotCompile(@"typedef struct { int x; } foo;
+int main(void) {
+    foo x;
+    return x.nonExisting;
+}", "\"foo\" has no member named \"nonExisting\"");
 }

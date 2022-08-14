@@ -7,8 +7,9 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext)
+public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext DefinesContext)
 {
+    private bool IncludeTokens = true;
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -35,12 +36,18 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
 
                 case WhiteSpace:
                 case Comment:
-                    yield return token;
+                    if (IncludeTokens)
+                    {
+                        yield return token;
+                    }
                     break;
 
                 case NewLine:
                     newLine = true;
-                    yield return token;
+                    if (IncludeTokens)
+                    {
+                        yield return token;
+                    }
                     break;
 
                 case Hash:
@@ -64,7 +71,10 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 case HeaderName:
                 case PreprocessingToken:
                     newLine = false;
-                    yield return token;
+                    if (IncludeTokens)
+                    {
+                        yield return token;
+                    }
                     break;
 
                 default:
@@ -153,6 +163,48 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     errorText.Append(enumerator.Current.Text);
                 }
                 throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
+            }
+            case "define":
+            {
+                var identifier = ConsumeNext(PreprocessingToken).Text;
+                bool moved;   
+                while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: WhiteSpace })
+                {
+                    // Skip any whitespace in between tokens.
+                }
+
+                StringBuilder? sb = null;
+                if (enumerator.Current is not { Kind: NewLine })
+                {
+                    moved = false;
+                    sb = new StringBuilder(enumerator.Current.Text);
+                    while ((moved = enumerator.MoveNext()) && enumerator.Current is not { Kind: NewLine })
+                    {                        
+                        sb.Append(enumerator.Current.Text);
+                    }
+                }
+
+                DefinesContext.DefineMacro(identifier, sb?.ToString());
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "ifdef":
+            {
+                var identifier = ConsumeNext(PreprocessingToken).Text;
+                bool includeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
+                IncludeTokens = includeTokens;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "ifndef":
+            {
+                var identifier = ConsumeNext(PreprocessingToken).Text;
+                bool donotIncludeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
+                IncludeTokens = !donotIncludeTokens;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "endif":
+            {
+                IncludeTokens = true;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             default:
                 throw new NotSupportedException(

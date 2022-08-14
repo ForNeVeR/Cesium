@@ -5,11 +5,12 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null)
+    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, string?>? defines = null)
     {
         var lexer = new CPreprocessorLexer(source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
-        var preprocessor = new CPreprocessor(lexer, includeContext);
+        var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, string?>());
+        var preprocessor = new CPreprocessor(lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         await Verify(result, GetSettings());
     }
@@ -46,4 +47,19 @@ int test()
         Assert.Equal(@"Error: ""Error message"" test", err.Message);
     }
 
+    [Fact]
+    public Task IfDefinedLiteral() => DoTest(
+@"#define foo main
+#ifdef foo
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfNotDefinedLiteral() => DoTest(
+@"#define foo main
+#ifndef foo
+int foo() { return 0; }
+#endif
+");
 }

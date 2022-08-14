@@ -1,24 +1,23 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Mono.Cecil;
-using ArithmeticBinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.ArithmeticBinaryOperatorExpression;
-using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class AssignmentExpression : BinaryOperatorExpression
 {
-    private readonly ILValueExpression _target;
+    private readonly IValueExpression _target;
 
     internal AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
-        _target = left as ILValueExpression ?? throw new CesiumAssertException($"Not an lvalue: {left}.");
+        _target = left as IValueExpression ?? throw new CesiumAssertException($"Not a value expression: {left}.");
     }
 
     public AssignmentExpression(Ast.AssignmentExpression expression) : base(expression)
     {
-        _target = Left as ILValueExpression ?? throw new CesiumAssertException($"Not an lvalue: {Left}.");
+        _target = Left as IValueExpression ?? throw new CesiumAssertException($"Not a value expression: {Left}.");
     }
 
     public override IExpression Lower()
@@ -45,7 +44,11 @@ internal class AssignmentExpression : BinaryOperatorExpression
         if (Operator != BinaryOperator.Assign)
             throw new CesiumAssertException($"Operator {Operator} should've been lowered before emitting.");
 
-        _target.Resolve(scope).EmitSetValue(scope, Right);
+        var value = _target.Resolve(scope);
+        if (value is not ILValue lvalue)
+            throw new NotSupportedException($"Not an lvalue: {value}.");
+
+        lvalue.EmitSetValue(scope, Right);
     }
 
     // `x = v` expression returns type of x (and v)

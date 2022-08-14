@@ -95,4 +95,7 @@ if (1)
 
     [Fact]
     public Task AddressOfInParens() => DoTest("(&x)->x = 42;");
+
+    [Fact]
+    public Task NotFuncCall() => DoTest("if (!test()) return 1;");
 }

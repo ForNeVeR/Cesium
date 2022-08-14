@@ -106,7 +106,7 @@ if (Test-Path $OutDir) {
 New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
 
-$allTestCases = Get-ChildItem "$TestCaseDir/*.c" -Exclude "*.ignore.c"
+$allTestCases = Get-ChildItem "$TestCaseDir/*.c" -Exclude "*.ignore.c" -Recurse
 
 if (!$NoBuild) {
     buildCompiler
@@ -123,18 +123,25 @@ if ($TestCaseName) {
         $failedTests += $testCase
     }
 } else {
-    Write-Host "Running tests for $($allTestCases.Count) cases."
+    Write-Host -ForegroundColor White "Running tests for $($allTestCases.Count) cases."
     foreach ($testCase in $allTestCases) {
+        $currentTestName = [IO.Path]::GetRelativePath($TestCaseDir, $testCase)
+        Write-Host -ForegroundColor White "# $currentTestName"
+
         if (validateTestCase $testCase) {
-            Write-Host "$($testCase): ok."
+            Write-Host -ForegroundColor Green "$($currentTestName): ok."
         } else {
-            Write-Host "$($testCase): failed."
+            Write-Host -ForegroundColor Red "$($currentTestName): failed."
             $failedTests += $testCase
         }
+
+        Write-Host ''
     }
 }
 
 if ($failedTests.Count -gt 0) {
     $testNames = $failedTests -join "`n"
     throw "Errors in the following $($failedTests.Count) tests: $testNames"
+} else {
+    Write-Host -ForegroundColor Green "$($allTestCases.Count) tests have been executed successfully."
 }

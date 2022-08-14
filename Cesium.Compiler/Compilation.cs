@@ -71,7 +71,8 @@ internal static class Compilation
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
         var preprocessorLexer = new CPreprocessorLexer(reader);
-        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext);
+        var definesContext = new InMemoryDefinesContext();
+        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
     }
 
@@ -102,7 +103,7 @@ internal static class Compilation
         var translationUnit = translationUnitParseError.Ok.Value;
 
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
-            throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
+            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
 
         context.EmitTranslationUnit(translationUnit.ToIntermediate());
     }

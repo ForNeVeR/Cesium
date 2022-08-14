@@ -4,5 +4,6 @@ public enum UnaryOperator
 {
     Negation, // -
     BitwiseNot, // ~
+    LogicalNot, // !
     AddressOf, // &
 }

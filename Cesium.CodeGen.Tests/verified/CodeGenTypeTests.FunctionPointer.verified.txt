@@ -1,0 +1,14 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::foo(System.Int32)
+      IL_0000: ret
+
+    System.Int32 <Module>::main()
+      Locals:
+        method System.Int32 *(System.Int32) V_0
+      IL_0000: ldftn System.Void <Module>::foo(System.Int32)
+      IL_0006: conv.u
+      IL_0007: stloc.0
+      IL_0008: ldc.i4.0
+      IL_0009: ret
