@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.TopLevel;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Extensions;
 

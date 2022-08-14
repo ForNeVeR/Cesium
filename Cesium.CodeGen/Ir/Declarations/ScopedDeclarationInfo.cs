@@ -1,7 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 

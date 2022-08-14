@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;

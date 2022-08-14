@@ -1,7 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;

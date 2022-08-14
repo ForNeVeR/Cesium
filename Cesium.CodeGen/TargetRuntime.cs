@@ -1,5 +1,5 @@
 using System.Runtime.Versioning;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen;

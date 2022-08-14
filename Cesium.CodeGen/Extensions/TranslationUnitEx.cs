@@ -1,6 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.TopLevel;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using FunctionDefinition = Cesium.CodeGen.Ir.TopLevel.FunctionDefinition;
 
 namespace Cesium.CodeGen.Extensions;

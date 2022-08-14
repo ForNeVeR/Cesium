@@ -1,7 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Expressions.Values;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 

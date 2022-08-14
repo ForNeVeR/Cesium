@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Cesium.Parser;
 using Mono.Cecil.Cil;
 using Yoakke.SynKit.C.Syntax;

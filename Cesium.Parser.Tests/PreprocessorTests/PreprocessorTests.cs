@@ -1,3 +1,4 @@
+using Cesium.Core;
 using Cesium.Preprocessor;
 using Cesium.Test.Framework;
 

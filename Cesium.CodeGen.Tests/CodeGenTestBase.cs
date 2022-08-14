@@ -1,7 +1,7 @@
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;

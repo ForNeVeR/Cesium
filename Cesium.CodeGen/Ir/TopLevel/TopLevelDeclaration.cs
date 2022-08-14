@@ -4,7 +4,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
 

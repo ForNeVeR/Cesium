@@ -1,4 +1,4 @@
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Tests;
 

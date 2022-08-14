@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Range = Yoakke.SynKit.Text.Range;
 

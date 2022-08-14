@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;

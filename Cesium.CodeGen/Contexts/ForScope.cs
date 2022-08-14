@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 

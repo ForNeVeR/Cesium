@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Extensions;

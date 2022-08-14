@@ -1,4 +1,4 @@
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 

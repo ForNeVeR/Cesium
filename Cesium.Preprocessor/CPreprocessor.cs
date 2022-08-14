@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
 using static Cesium.Preprocessor.CPreprocessorTokenType;

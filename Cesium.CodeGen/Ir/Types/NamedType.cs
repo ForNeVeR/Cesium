@@ -1,5 +1,5 @@
 using Cesium.CodeGen.Contexts;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;

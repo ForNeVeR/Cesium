@@ -4,7 +4,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;

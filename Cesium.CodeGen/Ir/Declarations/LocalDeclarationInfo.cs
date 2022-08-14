@@ -1,6 +1,6 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core.Exceptions;
+using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
