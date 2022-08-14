@@ -8,7 +8,7 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext DefinesContext)
+public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
     private bool IncludeTokens = true;
     public async Task<string> ProcessSource()
@@ -188,20 +188,20 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                     }
                 }
 
-                DefinesContext.DefineMacro(identifier, sb?.ToString());
+                MacroContext.DefineMacro(identifier, sb?.ToString());
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifdef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool includeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
+                bool includeTokens = MacroContext.TryResolveMacro(identifier, out var macroReplacement);
                 IncludeTokens = includeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool donotIncludeTokens = DefinesContext.TryResolveMacro(identifier, out var macroReplacement);
+                bool donotIncludeTokens = MacroContext.TryResolveMacro(identifier, out var macroReplacement);
                 IncludeTokens = !donotIncludeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
@@ -227,7 +227,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
     {
         var lexer = new CPreprocessorLexer(fileReader);
-        var subProcessor = new CPreprocessor(lexer, IncludeContext);
+        var subProcessor = new CPreprocessor(lexer, IncludeContext, MacroContext);
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;
