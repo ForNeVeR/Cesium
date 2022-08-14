@@ -2,6 +2,7 @@ using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
@@ -18,10 +19,10 @@ internal static class Compilation
         TargetRuntimeDescriptor targetRuntime,
         ModuleKind? moduleKind = null,
         string @namespace = "",
-        string globalClassFQN = "")
+        string globalClassFqn = "")
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace, globalClassFQN);
+        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace, globalClassFqn);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -39,7 +40,7 @@ internal static class Compilation
         TargetRuntimeDescriptor targetRuntime,
         ModuleKind? moduleKind = null,
         string @namespace = "",
-        string globalClassFQN = "")
+        string globalClassFqn = "")
     {
         var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
         {
@@ -60,7 +61,7 @@ internal static class Compilation
             typeof(Math).Assembly.Location, // System.Runtime.dll
             typeof(Runtime.StdLibFunctions).Assembly.Location, // Cesium runtime assembly
             @namespace,
-            globalClassFQN);
+            globalClassFqn);
     }
 
     private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)

@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -49,13 +50,13 @@ internal class UnaryOperatorExpression : IExpression
         {
             UnaryOperator.Negation => Instruction.Create(OpCodes.Neg),
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
-            _ => throw new CesiumWipException(197, $"Unsupported unary operator: {_operator}.")
+            _ => throw new WipException(197, $"Unsupported unary operator: {_operator}.")
         };
 
         void EmitGetAddress(IExpression target)
         {
             if (target is not IValueExpression expression)
-                throw new CesiumCompilationException($"Required a value expression to get address, got {target} instead.");
+                throw new CompilationException($"Required a value expression to get address, got {target} instead.");
 
             var value = expression.Resolve(scope);
             if (value is not IAddressableValue aValue)
@@ -78,6 +79,6 @@ internal class UnaryOperatorExpression : IExpression
         "!" => UnaryOperator.LogicalNot,
         "~" => UnaryOperator.BitwiseNot,
         "&" => UnaryOperator.AddressOf,
-        _ => throw new CesiumWipException(197, $"Unary operator not supported, yet: {@operator}."),
+        _ => throw new WipException(197, $"Unary operator not supported, yet: {@operator}."),
     };
 }

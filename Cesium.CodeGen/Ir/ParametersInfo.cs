@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 
 namespace Cesium.CodeGen.Ir;
 
@@ -25,11 +26,11 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
         else isVoid = false;
 
         if (isVoid && hasEllipsis)
-            throw new CesiumCompilationException(
+            throw new CompilationException(
                 $"Cannot declare both void and ellipsis in the same parameter type list: {parameters}.");
 
         if (parameterList.IsEmpty)
-            throw new CesiumAssertException($"Impossible: empty parameter list: {parameters}.");
+            throw new AssertException($"Impossible: empty parameter list: {parameters}.");
 
         return new ParametersInfo(
             isVoid ? Array.Empty<ParameterInfo>() : parameterList.Select(ParameterInfo.Of).ToList(),
@@ -50,7 +51,7 @@ internal record ParameterInfo(IType Type, string? Name)
         var (type, identifier, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
 
         if (cliImportMemberName != null)
-            throw new CesiumCompilationException("CLI import specifier isn't supported for a parameter.");
+            throw new CompilationException("CLI import specifier isn't supported for a parameter.");
 
         return new ParameterInfo(type, identifier);
     }

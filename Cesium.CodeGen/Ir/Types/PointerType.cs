@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
@@ -14,7 +15,7 @@ internal record PointerType(IType Base) : IType
         return Base.Resolve(context).MakePointerType();
     }
 
-    public virtual int SizeInBytes => throw new CesiumWipException(132, "Could not calculate size yet.");
+    public virtual int SizeInBytes => throw new WipException(132, "Could not calculate size yet.");
 
     // explicit impl while Size not implemented
     public override string ToString()

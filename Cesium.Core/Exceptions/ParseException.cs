@@ -1,4 +1,4 @@
-namespace Cesium.Parser;
+namespace Cesium.Core.Exceptions;
 
 public class ParseException : CesiumException
 {

@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -39,7 +40,7 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
         var valueTypeDef = valueType.Resolve();
 
         var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
-                    ?? throw new CesiumCompilationException(
+                    ?? throw new CompilationException(
                         $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
         return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
     }

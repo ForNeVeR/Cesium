@@ -2,6 +2,7 @@ using System.Runtime.Versioning;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Extensions;
@@ -16,7 +17,7 @@ internal static class TypeSystemEx
     {
         var components = memberName.Split("::", 2);
         if (components.Length != 2)
-            throw new CesiumCompilationException($"Invalid CLI member name: {memberName}.");
+            throw new CompilationException($"Invalid CLI member name: {memberName}.");
 
         var typeName = components[0];
         var methodName = components[1];
@@ -37,7 +38,7 @@ internal static class TypeSystemEx
             ? $"Cannot find CLI-imported member {methodDisplayName}."
             : SimilarMethodsMessage(methodDisplayName, similarMethods);
 
-        throw new CesiumCompilationException(errorMessage);
+        throw new CompilationException(errorMessage);
     }
 
     private static IEnumerable<MethodDefinition> FindMethods(IEnumerable<AssemblyDefinition> assemblies, string typeName, string methodName)

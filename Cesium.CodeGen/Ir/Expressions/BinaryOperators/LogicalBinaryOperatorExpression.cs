@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -10,7 +11,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         : base(left, @operator, right)
     {
         if(!Operator.IsLogical())
-            throw new CesiumAssertException($"Internal error: operator {Operator} is not logical.");
+            throw new AssertException($"Internal error: operator {Operator} is not logical.");
     }
 
     public LogicalBinaryOperatorExpression(Ast.LogicalBinaryOperatorExpression expression)
@@ -31,7 +32,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
                 EmitLogicalOr(scope);
                 return;
             default:
-                throw new CesiumAssertException($"Operator {Operator} is not binary logical operator");
+                throw new AssertException($"Operator {Operator} is not binary logical operator");
         }
     }
 

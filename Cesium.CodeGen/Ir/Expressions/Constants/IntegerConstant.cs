@@ -1,6 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
+using Cesium.Core.Exceptions;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
@@ -12,7 +12,7 @@ internal class IntegerConstant : IConstant
     public IntegerConstant(string value)
     {
         if (!int.TryParse(value, out _value))
-            throw new CesiumCompilationException($"Cannot parse an integer literal: {value}.");
+            throw new CompilationException($"Cannot parse an integer literal: {value}.");
     }
 
     public void EmitTo(IDeclarationScope scope)

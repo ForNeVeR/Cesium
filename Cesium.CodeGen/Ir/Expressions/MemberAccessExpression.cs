@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -28,9 +29,9 @@ internal class MemberAccessExpression : IExpression, IValueExpression
             new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower()),
             _memberIdentifier.Lower());
 
-    public void EmitTo(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
+    public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
+    public TypeReference GetExpressionType(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
-    public IValue Resolve(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
+    public IValue Resolve(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 }

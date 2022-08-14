@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -128,7 +129,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => 8,
             PrimitiveTypeKind.LongDouble => 8,
 
-            _ => throw new CesiumAssertException($"Could not calculate size for {Kind}."),
+            _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };
 
     public override string ToString()

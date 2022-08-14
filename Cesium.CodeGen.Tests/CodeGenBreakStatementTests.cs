@@ -1,3 +1,5 @@
+using Cesium.Core.Exceptions;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenBreakStatementTests : CodeGenTestBase
@@ -17,7 +19,7 @@ public class CodeGenBreakStatementTests : CodeGenTestBase
 }");
 
     [Fact]
-    public Task BreakNotInFor() => Assert.ThrowsAsync<CesiumCompilationException>(
+    public Task BreakNotInFor() => Assert.ThrowsAsync<CompilationException>(
         () => DoTest(@"int main()
 {
     break;

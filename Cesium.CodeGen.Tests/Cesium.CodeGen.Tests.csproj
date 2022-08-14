@@ -23,6 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
+      <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
       <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
       <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />

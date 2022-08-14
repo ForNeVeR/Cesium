@@ -64,6 +64,7 @@ Documentation
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
 - [CLI-Related Language Extensions][docs.language-extensions]
+- [Exceptions in the Compiler Code][docs.exceptions]
 
 - [License (MIT)][docs.license]
 
@@ -131,6 +132,7 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
+[docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
 [docs.tests]: docs/tests.md

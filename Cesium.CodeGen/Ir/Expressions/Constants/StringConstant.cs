@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Cesium.Parser;
 using Mono.Cecil.Cil;
 using Yoakke.SynKit.C.Syntax;
@@ -13,7 +14,7 @@ internal class StringConstant : IConstant
     public StringConstant(IToken<CTokenType> token)
     {
         if (token.Kind != CTokenType.StringLiteral)
-            throw new CesiumAssertException($"Not supported token kind for a string constant: {token.Kind}.");
+            throw new AssertException($"Not supported token kind for a string constant: {token.Kind}.");
         _value = token.UnwrapStringLiteral();
     }
 

@@ -4,11 +4,9 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.TopLevel;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using FieldAttributes = Mono.Cecil.FieldAttributes;
-using MethodAttributes = Mono.Cecil.MethodAttributes;
-using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -60,7 +58,7 @@ public class AssemblyContext
     {
         foreach (var (name, function) in Functions)
         {
-            if (!function.IsDefined) throw new CesiumCompilationException($"Function {name} not defined.");
+            if (!function.IsDefined) throw new CompilationException($"Function {name} not defined.");
         }
 
         FinishGlobalInitializer();

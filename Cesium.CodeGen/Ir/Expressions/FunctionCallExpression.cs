@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -38,7 +39,7 @@ internal class FunctionCallExpression : IExpression
 
         var functionName = _function.Identifier;
         var callee = scope.Functions.GetValueOrDefault(functionName)
-                     ?? throw new CesiumCompilationException($"Function \"{functionName}\" was not found.");
+                     ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
     }

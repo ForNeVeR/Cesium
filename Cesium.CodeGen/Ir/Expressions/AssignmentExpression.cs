@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -12,12 +13,12 @@ internal class AssignmentExpression : BinaryOperatorExpression
     internal AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
-        _target = left as IValueExpression ?? throw new CesiumAssertException($"Not a value expression: {left}.");
+        _target = left as IValueExpression ?? throw new AssertException($"Not a value expression: {left}.");
     }
 
     public AssignmentExpression(Ast.AssignmentExpression expression) : base(expression)
     {
-        _target = Left as IValueExpression ?? throw new CesiumAssertException($"Not a value expression: {Left}.");
+        _target = Left as IValueExpression ?? throw new AssertException($"Not a value expression: {Left}.");
     }
 
     public override IExpression Lower()
@@ -42,7 +43,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
     public override void EmitTo(IDeclarationScope scope)
     {
         if (Operator != BinaryOperator.Assign)
-            throw new CesiumAssertException($"Operator {Operator} should've been lowered before emitting.");
+            throw new AssertException($"Operator {Operator} should've been lowered before emitting.");
 
         var value = _target.Resolve(scope);
         if (value is not ILValue lvalue)

@@ -1,6 +1,7 @@
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core.Exceptions;
 using Cesium.Parser;
 using Cesium.Test.Framework;
 using Mono.Cecil;
@@ -27,7 +28,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
 
     protected static void DoesNotCompile(string source, string expectedMessage)
     {
-        DoesNotCompile<CesiumCompilationException>(source, expectedMessage);
+        DoesNotCompile<CompilationException>(source, expectedMessage);
     }
 
     protected static void DoesNotCompile<T>(string source, string expectedMessage) where T : CesiumException
@@ -43,7 +44,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             targetRuntime,
             new [] { typeof(Console).Assembly.Location },
             typeof(Math).Assembly.Location,
-            typeof(Cesium.Runtime.RuntimeHelpers).Assembly.Location,
+            typeof(Runtime.RuntimeHelpers).Assembly.Location,
             @namespace,
             globalTypeFqn);
 

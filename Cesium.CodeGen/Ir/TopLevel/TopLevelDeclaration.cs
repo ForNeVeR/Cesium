@@ -4,6 +4,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core.Exceptions;
 
 namespace Cesium.CodeGen.Ir.TopLevel;
 
@@ -27,7 +28,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 EmitTypeDef(context, declaration);
                 break;
             default:
-                throw new CesiumAssertException($"Unknown kind of declaration: {_declaration}.");
+                throw new AssertException($"Unknown kind of declaration: {_declaration}.");
         }
     }
 
@@ -46,11 +47,11 @@ internal class TopLevelDeclaration : ITopLevelNode
             if (cliImportMemberName != null)
             {
                 if (initializer != null)
-                    throw new CesiumCompilationException(
+                    throw new CompilationException(
                         $"Initializer expression for a CLI import isn't supported: {initializer}.");
 
                 if (type is not FunctionType cliFunction)
-                    throw new CesiumCompilationException($"CLI initializer should be a function for identifier {identifier}.");
+                    throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
 
                 EmitCliImportDeclaration(context, identifier, cliFunction, cliImportMemberName);
                 continue;
@@ -72,7 +73,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 continue;
             }
 
-            throw new CesiumWipException(75, $"Declaration not supported, yet: {declaration}.");
+            throw new WipException(75, $"Declaration not supported, yet: {declaration}.");
         }
     }
 
@@ -100,7 +101,7 @@ internal class TopLevelDeclaration : ITopLevelNode
     {
         var (parametersInfo, returnType) = functionType;
         if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
-            throw new CesiumCompilationException($"Empty parameter list is not allowed for CLI-imported function {name}.");
+            throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {name}.");
 
         var method = context.MethodLookup(memberName, parametersInfo, returnType);
         context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
@@ -140,7 +141,7 @@ internal class TopLevelDeclaration : ITopLevelNode
                 throw new NotSupportedException($"Anonymous typedef not supported: {type}.");
 
             if (cliImportMemberName != null)
-                throw new CesiumCompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");
+                throw new CompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");
 
             if (type is IGeneratedType t)
                 context.GenerateType(t, identifier);

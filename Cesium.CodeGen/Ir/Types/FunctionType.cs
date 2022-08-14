@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.Core.Exceptions;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
@@ -6,7 +7,7 @@ namespace Cesium.CodeGen.Ir.Types;
 internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context) =>
-        throw new CesiumAssertException($"Function type {this} cannot be directly expressed in the byte code.");
+        throw new AssertException($"Function type {this} cannot be directly expressed in the byte code.");
 
     public TypeReference ResolvePointer(TranslationUnitContext context)
     {
@@ -23,7 +24,7 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
                     "but has parameters or declared as vararg.");
 
             if (isVarArg)
-                throw new CesiumWipException(196, $"A pointer to a vararg function is not implemented, yet: {this}.");
+                throw new WipException(196, $"A pointer to a vararg function is not implemented, yet: {this}.");
 
             foreach (var (type, name) in parameterInfos)
             {
@@ -37,7 +38,7 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
         return pointer;
     }
 
-    public int SizeInBytes => throw new CesiumAssertException($"Function type {this} has no defined size.");
+    public int SizeInBytes => throw new AssertException($"Function type {this} has no defined size.");
 
     public override string ToString() =>
         $"FunctionType {{ {nameof(Parameters)} = {Parameters}, {nameof(ReturnType)} = {ReturnType} }}";
