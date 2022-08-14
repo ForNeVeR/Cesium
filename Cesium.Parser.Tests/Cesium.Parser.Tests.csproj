@@ -42,11 +42,4 @@
       </None>
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="PreprocessorTests\verified\PreprocessorTests.NestedIncludes2.verified.txt">
-        <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0])</ParentFile>
-        <DependentUpon>%(ParentFile).cs</DependentUpon>
-      </None>
-    </ItemGroup>
-
 </Project>

@@ -153,7 +153,6 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                        && enumerator.Current is { Kind: WhiteSpace })
                 {
                     // eat remaining whitespace
-                    tokensList.Add(enumerator.Current);
                 }
 
                 if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
