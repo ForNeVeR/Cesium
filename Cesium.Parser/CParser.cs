@@ -71,7 +71,7 @@ public partial class CParser
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
 
-    // TODO:
+    // TODO[#207]:
     // primary-expression:
     //     generic-selection
 
@@ -100,7 +100,7 @@ public partial class CParser
         IToken _,
         IToken identifier) => new PointerMemberAccessExpression(target, new IdentifierExpression(identifier.Text));
 
-    // TODO:
+    // TODO[#207]:
     // postfix-expression:
     //     postfix-expression ++
     //     postfix-expression -
@@ -117,7 +117,7 @@ public partial class CParser
         IToken _,
         Expression expression) => prev.Add(expression);
 
-    // TODO: 6.5.3 Unary operators
+    // TODO[#207]: 6.5.3 Unary operators
     // unary-expression:
     //    postfix-expression
     //    ++ unary-expression
@@ -136,14 +136,14 @@ public partial class CParser
         : new UnaryOperatorExpression(@operator.Text, target);
 
     [Rule("unary_operator: '&'")]
-    // TODO: [Rule("unary_operator: '*'")]
-    // TODO: [Rule("unary_operator: '+'")]
+    // TODO[#207]: [Rule("unary_operator: '*'")]
+    // TODO[#207]: [Rule("unary_operator: '+'")]
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
-    // TODO: 6.5.4 Cast operators
+    // TODO[#207]: 6.5.4 Cast operators
 
     // 6.5.5 Multiplicative operators
     [Rule("multiplicative_expression: multiplicative_expression '*' cast_expression")]
@@ -203,7 +203,7 @@ public partial class CParser
     private static Expression MakeLogicalOrExpression(Expression a, ICToken @operator, Expression b) =>
         new LogicalBinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO: 6.5.15 Conditional operator
+    // TODO[#207]: 6.5.15 Conditional operator
 
     // 6.5.16 Assignment operators
     [Rule("assignment_expression: unary_expression assignment_operator assignment_expression")]
@@ -226,9 +226,9 @@ public partial class CParser
     private static IToken MakeAssignmentOperator(IToken token) => token;
 
     // 6.5.17 Comma operator
-    // TODO: [Rule("expression: expression ',' assignment_expression")]
+    // TODO[#207]: [Rule("expression: expression ',' assignment_expression")]
 
-    // TODO: 6.6 Constant expressions
+    // TODO[#207]: 6.6 Constant expressions
 
     // 6.7 Declarations
 
@@ -309,8 +309,8 @@ public partial class CParser
     [Rule("declaration_specifier: type_qualifier")]
     private static IDeclarationSpecifier MakeDeclarationSpecifier(IDeclarationSpecifier specifier) => specifier;
 
-    // TODO: [Rule("declaration_specifier: function_specifier")]
-    // TODO: [Rule("declaration_specifier: alignment_specifier")]
+    // TODO[#207]: [Rule("declaration_specifier: function_specifier")]
+    // TODO[#207]: [Rule("declaration_specifier: alignment_specifier")]
 
     [Rule("init_declarator_list: init_declarator")]
     private static InitDeclaratorList MakeInitDeclaratorList(InitDeclarator declarator) =>
@@ -331,7 +331,7 @@ public partial class CParser
     [Rule("storage_class_specifier: 'typedef'")]
     private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
 
-    // TODO:
+    // TODO[#211]:
     // storage-class-specifier:
     //     extern
     //     static
@@ -353,13 +353,13 @@ public partial class CParser
     [Rule("type_specifier: '_Complex'")]
     private static ITypeSpecifier MakeSimpleTypeSpecifier(ICToken specifier) => new SimpleTypeSpecifier(specifier.Text);
 
-    // TODO: [Rule("type_specifier: atomic_type_specifier")]
+    // TODO[#211]: [Rule("type_specifier: atomic_type_specifier")]
 
     [Rule("type_specifier: struct_or_union_specifier")]
     private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
         structOrUnionSpecifier;
 
-    // TODO: [Rule("type_specifier: enum_specifier")]
+    // TODO[#211]: [Rule("type_specifier: enum_specifier")]
 
     [Rule("type_specifier: typedef_name")]
     private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
@@ -375,11 +375,11 @@ public partial class CParser
         StructDeclarationList structDeclarationList,
         IToken __) => new(structOrUnion, identifier?.Text, structDeclarationList);
 
-    // TODO: struct-or-union-specifier: struct-or-union identifier
+    // TODO[#211]: struct-or-union-specifier: struct-or-union identifier
 
     [Rule("struct_or_union: 'struct'")]
     private static ComplexTypeKind MakeStructComplexTypeKind(IToken _) => ComplexTypeKind.Struct;
-    // TODO: struct-or-union: union
+    // TODO[#211]: struct-or-union: union
 
     [Rule("struct_declaration_list: struct_declaration")]
     private static StructDeclarationList MakeStructDeclarationList(StructDeclaration structDeclaration) =>
@@ -435,7 +435,7 @@ public partial class CParser
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
 
-    // TODO: struct-declaration: static_assert-declaration
+    // TODO[#211]: struct-declaration: static_assert-declaration
 
     // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
     // implementation. Get rid of this, eventually.
@@ -452,7 +452,7 @@ public partial class CParser
     [Rule("specifier_qualifier_list_item: type_qualifier")]
     private static ISpecifierQualifierListItem MakeSpecifierQualifierListItem(ISpecifierQualifierListItem item) => item;
 
-    // TODO: specifier-qualifier-list: alignment-specifier specifier-qualifier-list?
+    // TODO[#211]: specifier-qualifier-list: alignment-specifier specifier-qualifier-list?
 
     [Rule("struct_declarator_list: struct_declarator")]
     private static StructDeclaratorList MakeStructDeclaratorList(StructDeclarator structDeclarator) =>
@@ -467,11 +467,11 @@ public partial class CParser
     [Rule("struct_declarator: declarator")]
     private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new StructDeclarator(declarator);
 
-    // TODO: struct-declarator: declarator? : constant-expression
+    // TODO[#211]: struct-declarator: declarator? : constant-expression
 
-    // TODO: 6.7.2.2 Enumeration specifiers
-    // TODO: 6.7.2.3 Tags
-    // TODO: 6.7.2.4 Atomic type specifiers
+    // TODO[#211]: 6.7.2.2 Enumeration specifiers
+    // TODO[#211]: 6.7.2.3 Tags
+    // TODO[#211]: 6.7.2.4 Atomic type specifiers
 
     // 6.7.3 Type qualifiers
     [Rule("type_qualifier: 'const'")]
@@ -480,8 +480,8 @@ public partial class CParser
     [Rule("type_qualifier: '_Atomic'")]
     private static TypeQualifier MakeTypeQualifier(ICToken name) => new(name.Text);
 
-    // TODO: 6.7.4 Function specifiers
-    // TODO: 6.7.5 Alignment specifier
+    // TODO[#211]: 6.7.4 Function specifiers
+    // TODO[#211]: 6.7.5 Alignment specifier
 
     // 6.7.6 Declarators
     [Rule("declarator: pointer? direct_declarator")]
@@ -503,9 +503,9 @@ public partial class CParser
         TypeQualifierList? typeQualifiers,
         Expression? expression,
         IToken __) => new ArrayDirectDeclarator(@base, typeQualifiers, expression);
-    // TODO: direct_declarator: direct_declarator [ static type_qualifier_list? assignment_expression ]
-    // TODO: direct_declarator: direct_declarator [ type_qualifier_list static assignment_expression ]
-    // TODO: direct_declarator: direct_declarator [ type_qualifier_list? * ]
+    // TODO[#211]: direct_declarator: direct_declarator [ static type_qualifier_list? assignment_expression ]
+    // TODO[#211]: direct_declarator: direct_declarator [ type_qualifier_list static assignment_expression ]
+    // TODO[#211]: direct_declarator: direct_declarator [ type_qualifier_list? * ]
 
     [Rule("direct_declarator: direct_declarator '(' parameter_type_list ')'")]
     private static IDirectDeclarator MakeDirectDeclarator(
@@ -586,7 +586,7 @@ public partial class CParser
 
     // 6.7.7 Type names
 
-    // TODO:
+    // TODO[#211]:
     // type-name:
     //     specifier-qualifier-list abstract-declarator?
 
@@ -627,7 +627,7 @@ public partial class CParser
         Expression? assignmentExpression,
         IToken __) => new ArrayDirectAbstractDeclarator(@base, typeQualifierList, assignmentExpression);
 
-    // TODO:
+    // TODO[#211]:
     // direct-abstract-declarator:
     //     direct-abstract-declarator? [ static type-qualifier-list? assignment-expression ]
     //     direct-abstract-declarator? [ type-qualifier-list static assignment-expression ]
@@ -644,7 +644,7 @@ public partial class CParser
     private static AssignmentInitializer MakeInitializer(Expression assignmentExpression) =>
         new(assignmentExpression);
 
-    // TODO:
+    // TODO[#211]:
     // initializer:
     //     { initializer-list }
     //     { initializer-list , }
@@ -660,10 +660,10 @@ public partial class CParser
     //     [ constant-expression ]
     //     . identifier
 
-    // TODO: 6.7.10 Static assertions
+    // TODO[#211]: 6.7.10 Static assertions
 
     // 6.8 Statements and blocks
-    // TODO: [Rule("statement: labeled_statement")]
+    // TODO[#210]: [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
     [Rule("statement: expression_statement")]
     [Rule("statement: selection_statement")]
@@ -671,7 +671,7 @@ public partial class CParser
     [Rule("statement: jump_statement")]
     private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
 
-    // TODO: 6.8.1 Labeled statements
+    // TODO[#210]: 6.8.1 Labeled statements
     // 6.8.2 Compound statement
     [Rule("compound_statement: '{' block_item_list? '}'")]
     private static CompoundStatement MakeCompoundStatement(ICToken _, BlockItemList? block, ICToken __) =>
@@ -713,9 +713,9 @@ public partial class CParser
         IBlockItem falseBranch)
         // TODO[#115]: These direct casts should't be necessary. They are here because of the "lexer hack".
         => new(expression, (Statement)trueBranch, (Statement)falseBranch);
-    // TODO: 6.8.4 Selection statements switch
+    // TODO[#210]: 6.8.4 Selection statements switch
 
-    // TODO: 6.8.5 Iteration statements
+    // TODO[#210]: 6.8.5 Iteration statements
     [Rule("iteration_statement: 'for' '(' expression? ';' expression? ';' expression? ')' statement")]
     private static ForStatement MakeForStatement(
         ICToken _,
@@ -808,11 +808,11 @@ public partial class CParser
         // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
         declarations.Add((Declaration)newDeclaration);
 
-    // TODO: 6.9.2 External object definitions
+    // TODO[#78]: 6.9.2 External object definitions
 
     // 6.10 Preprocessing directives
 
-    // TODO:
+    // TODO[#77]:
     // preprocessing-file:
     //     group?
     // group:
@@ -863,15 +863,15 @@ public partial class CParser
     // new-line:
     //     the new-line character
 
-    // TODO: 6.10.1 Conditional inclusion
-    // TODO: 6.10.2 Source file inclusion
-    // TODO: 6.10.3 Macro replacement
-    // TODO: 6.10.4 Line control
-    // TODO: 6.10.5 Error directive
-    // TODO: 6.10.6 Pragma directive
-    // TODO: 6.10.7 Null directive
-    // TODO: 6.10.8 Predefined macro names
-    // TODO: 6.10.9 Pragma operator
+    // TODO[#77]: 6.10.1 Conditional inclusion
+    // TODO[#77]: 6.10.2 Source file inclusion
+    // TODO[#77]: 6.10.3 Macro replacement
+    // TODO[#77]: 6.10.4 Line control
+    // TODO[#77]: 6.10.5 Error directive
+    // TODO[#77]: 6.10.6 Pragma directive
+    // TODO[#77]: 6.10.7 Null directive
+    // TODO[#77]: 6.10.8 Predefined macro names
+    // TODO[#77]: 6.10.9 Pragma operator
 
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {

@@ -11,7 +11,7 @@ public static class TokenExtensions
         if (token.Kind != CTokenType.StringLiteral)
             throw new ParseException($"Non-string literal token: {token.Kind} {token.Text}");
 
-        // TODO: More thorough unwrap for more literal types.
+        // TODO[#235]: More thorough unwrap for more literal types.
         return token.Text.Trim('"');
     }
 }

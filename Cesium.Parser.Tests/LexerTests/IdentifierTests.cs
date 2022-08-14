@@ -30,7 +30,7 @@ public class IdentifierTests : LexerTestBase
         yield return new object[] { "main&" };
         yield return new object[] { "9G" };
 
-        // TODO: This is valid tests which cannot be expressed in Yoakke
+        // TODO[#237]: This is valid tests which cannot be expressed in Yoakke
         //yield return new object[] { "extremely_long_identifier_of_more_then_31_character" };
     }
 

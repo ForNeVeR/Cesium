@@ -265,7 +265,7 @@ internal record LocalDeclarationInfo(
             return typeName;
         }).ToList();
 
-        // todo when c#11 is released replace to list pattern matching
+        // TODO[#236]: when C#11 is released, replace this using list pattern matching.
         var p1 = typeNames.FirstOrDefault();
         var p2 = typeNames.Skip(1).FirstOrDefault();
         var p3 = typeNames.Skip(2).FirstOrDefault();
