@@ -5,7 +5,7 @@ Cesium is a fully managed C compiler for CLI platform (.NET).
 
 **What?** Cesium compiles standard C source code to a .NET assembly. No unmanaged/mixed mode (a-lá C++/CLI) code is generated; everything is fully managed (but may be unsafe).
 
-**Why?** C programs are very useful in the modern world and solve practical tasks. At the same time, deploying C code alongside .NET code may be tricky (especially if your application supports multiple platforms). Cesium is designed to resolve the problems of C code deployment, and lift it to the managed state (so it is cross-platform in the same way the underlying CIL code it is compiled to).
+**Why?** C programs are very useful in the modern world and solve practical tasks. At the same time, deploying C code alongside .NET code may be tricky (especially if your application supports multiple platforms). Cesium is designed to resolve the problems of C code deployment, and lift it to the managed state (so it is cross-platform in the same way as the underlying CIL code it is compiled to).
 
 Implementation Status
 ---------------------
@@ -19,7 +19,7 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
 - [ ] [C17 standard compatibility][issue.c17-standard]: poor
   - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
   - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
-  - [ ] [Parser][issue.parser]: supports about 20% of the language syntax
+  - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
 - [ ] **Compiler**
   - [x] CIL code generator: basics are ready, new features get added
   - [ ] [PDB support][issue.pdb]: none
