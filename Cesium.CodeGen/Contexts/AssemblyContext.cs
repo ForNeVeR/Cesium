@@ -60,7 +60,7 @@ public class AssemblyContext
     {
         foreach (var (name, function) in Functions)
         {
-            if (!function.IsDefined) throw new NotSupportedException($"Function {name} not defined.");
+            if (!function.IsDefined) throw new CesiumCompilationException($"Function {name} not defined.");
         }
 
         FinishGlobalInitializer();

@@ -17,7 +17,7 @@ public class CodeGenBreakStatementTests : CodeGenTestBase
 }");
 
     [Fact]
-    public Task BreakNotInFor() => Assert.ThrowsAsync<InvalidOperationException>(
+    public Task BreakNotInFor() => Assert.ThrowsAsync<CesiumCompilationException>(
         () => DoTest(@"int main()
 {
     break;

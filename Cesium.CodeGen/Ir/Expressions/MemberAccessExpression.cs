@@ -28,9 +28,9 @@ internal class MemberAccessExpression : IExpression, ILValueExpression
             new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower()),
             _memberIdentifier.Lower());
 
-    public void EmitTo(IDeclarationScope scope) => throw new NotSupportedException("Should be lowered");
+    public void EmitTo(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => throw new NotSupportedException("Should be lowered");
+    public TypeReference GetExpressionType(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
 
-    public ILValue Resolve(IDeclarationScope scope) => throw new NotSupportedException("Should be lowered");
+    public ILValue Resolve(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
 }

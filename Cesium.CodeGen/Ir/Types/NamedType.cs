@@ -6,7 +6,7 @@ namespace Cesium.CodeGen.Ir.Types;
 public record NamedType(string TypeName) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context) =>
-        context.GetTypeReference(TypeName) ?? throw new NotSupportedException($"Type not found: {TypeName}.");
+        context.GetTypeReference(TypeName) ?? throw new CesiumCompilationException($"Type not found: {TypeName}.");
 
     public int SizeInBytes => throw new NotImplementedException($"Could not calculate size for {TypeName} yet.");
 

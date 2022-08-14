@@ -13,7 +13,7 @@ internal class StringConstant : IConstant
     public StringConstant(IToken<CTokenType> token)
     {
         if (token.Kind != CTokenType.StringLiteral)
-            throw new NotSupportedException($"Not supported token kind for a string constant: {token.Kind}.");
+            throw new CesiumAssertException($"Not supported token kind for a string constant: {token.Kind}.");
         _value = token.UnwrapStringLiteral();
     }
 

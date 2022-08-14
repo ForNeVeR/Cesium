@@ -38,7 +38,7 @@ internal class FunctionCallExpression : IExpression
 
         var functionName = _function.Identifier;
         var callee = scope.Functions.GetValueOrDefault(functionName)
-                     ?? throw new NotSupportedException($"Function \"{functionName}\" was not found.");
+                     ?? throw new CesiumCompilationException($"Function \"{functionName}\" was not found.");
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
     }

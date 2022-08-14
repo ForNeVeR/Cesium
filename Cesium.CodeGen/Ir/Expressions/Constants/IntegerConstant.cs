@@ -12,7 +12,7 @@ internal class IntegerConstant : IConstant
     public IntegerConstant(string value)
     {
         if (!int.TryParse(value, out _value))
-            throw new NotSupportedException($"Cannot parse an integer literal: {value}.");
+            throw new CesiumCompilationException($"Cannot parse an integer literal: {value}.");
     }
 
     public void EmitTo(IDeclarationScope scope)

@@ -26,15 +26,15 @@ internal class FunctionDefinition : ITopLevelNode
         var (specifiers, declarator, declarations, astStatement) = function;
         var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
         _functionType = type as FunctionType
-                        ?? throw new NotSupportedException($"Function of not a function type: {type}.");
-        _name = name ?? throw new NotSupportedException($"Function without name: {function}.");
+                        ?? throw new CesiumAssertException($"Function of not a function type: {type}.");
+        _name = name ?? throw new CesiumAssertException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)
             throw new NotImplementedException(
                 $"Non-empty declaration list for a function is not yet supported: {string.Join(", ", declarations)}.");
 
         if (cliImportMemberName != null)
-            throw new NotSupportedException($"CLI import specifier on a function declaration: {function}.");
+            throw new CesiumCompilationException($"CLI import specifier on a function declaration: {function}.");
         _statement = astStatement.ToIntermediate();
     }
 
@@ -43,12 +43,12 @@ internal class FunctionDefinition : ITopLevelNode
         var (parameters, returnType) = _functionType;
         var resolvedReturnType = returnType.Resolve(context);
         if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
-            throw new NotSupportedException(
+            throw new CesiumCompilationException(
                 $"Invalid return type for the {_name} function: " +
                 $"int expected, got {returnType}.");
 
         if (IsMain && parameters?.IsVarArg == true)
-            throw new NotSupportedException($"Variable arguments for the {_name} function aren't supported.");
+            throw new CesiumWipException(196, $"Variable arguments for the {_name} function aren't supported.");
 
         var declaration = context.Functions.GetValueOrDefault(_name);
         declaration?.VerifySignatureEquality(_name, parameters, returnType);
@@ -57,11 +57,11 @@ internal class FunctionDefinition : ITopLevelNode
         {
             null => context.GlobalType.DefineMethod(context, _name, resolvedReturnType, parameters),
             { MethodReference: MethodDefinition md } => md,
-            _ => throw new NotSupportedException($"Function {_name} already defined as immutable.")
+            _ => throw new CesiumCompilationException($"Function {_name} already defined as immutable.")
         };
 
         if (declaration?.IsDefined == true)
-            throw new NotSupportedException($"Double definition of function {_name}.");
+            throw new CesiumCompilationException($"Double definition of function {_name}.");
 
         if (declaration == null)
             context.Functions.Add(_name, new FunctionInfo(parameters, returnType, method, IsDefined: true));
@@ -77,7 +77,7 @@ internal class FunctionDefinition : ITopLevelNode
             var assembly = context.Assembly;
             var currentEntryPoint = assembly.EntryPoint;
             if (currentEntryPoint != null)
-                throw new NotSupportedException(
+                throw new CesiumCompilationException(
                     $"Function {_name} cannot override existing entry point for assembly {assembly}.");
 
             assembly.EntryPoint = entryPoint;
@@ -97,10 +97,10 @@ internal class FunctionDefinition : ITopLevelNode
         if (isVoid) return false; // supported, no synthetic entry point required
 
         if (isVarArg)
-            throw new NotImplementedException($"Variable arguments for the {_name} function aren't supported, yet.");
+            throw new CesiumWipException(196, $"Variable arguments for the {_name} function aren't supported, yet.");
 
         if (parameterList.Count != 2)
-            throw new NotSupportedException(
+            throw new CesiumCompilationException(
                 $"Invalid parameter count for the {_name} function: " +
                 $"2 expected, got {parameterList.Count}.");
 
@@ -116,7 +116,7 @@ internal class FunctionDefinition : ITopLevelNode
             }) isValid = false;
 
         if (!isValid)
-            throw new NotSupportedException(
+            throw new CesiumCompilationException(
                 $"Invalid parameter types for the {_name} function: " +
                 "int, char*[] expected.");
 
@@ -240,7 +240,7 @@ internal class FunctionDefinition : ITopLevelNode
             }
             else
             {
-                throw new NotSupportedException($"Function {scope.Method.Name} has no return statement.");
+                throw new CesiumCompilationException($"Function {scope.Method.Name} has no return statement.");
             }
         }
     }

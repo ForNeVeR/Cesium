@@ -128,7 +128,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => 8,
             PrimitiveTypeKind.LongDouble => 8,
 
-            _ => throw new NotImplementedException($"Could not calculate size for {Kind}."),
+            _ => throw new CesiumAssertException($"Could not calculate size for {Kind}."),
         };
 
     public override string ToString()

@@ -43,13 +43,13 @@ internal class UnaryOperatorExpression : IExpression
         {
             UnaryOperator.Negation => Instruction.Create(OpCodes.Neg),
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
-            _ => throw new NotSupportedException($"Unsupported unary operator: {_operator}.")
+            _ => throw new CesiumWipException(197, $"Unsupported unary operator: {_operator}.")
         };
 
         void EmitGetAddress(IDeclarationScope scope, IExpression target)
         {
             if (target is not ILValueExpression expression)
-                throw new NotSupportedException($"lvalue required as '&' operand");
+                throw new CesiumCompilationException($"lvalue required as '&' operand");
 
             expression.Resolve(scope).EmitGetAddress(scope);
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
@@ -67,6 +67,6 @@ internal class UnaryOperatorExpression : IExpression
         "-" => UnaryOperator.Negation,
         "~" => UnaryOperator.BitwiseNot,
         "&" => UnaryOperator.AddressOf,
-        _ => throw new NotSupportedException($"Unary operator not supported, yet: {@operator}."),
+        _ => throw new CesiumWipException(197, $"Unary operator not supported, yet: {@operator}."),
     };
 }

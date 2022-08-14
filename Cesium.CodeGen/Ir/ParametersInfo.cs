@@ -25,11 +25,11 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
         else isVoid = false;
 
         if (isVoid && hasEllipsis)
-            throw new NotSupportedException(
+            throw new CesiumCompilationException(
                 $"Cannot declare both void and ellipsis in the same parameter type list: {parameters}.");
 
         if (parameterList.IsEmpty)
-            throw new NotSupportedException($"Impossible: empty parameter list: {parameters}.");
+            throw new CesiumAssertException($"Impossible: empty parameter list: {parameters}.");
 
         return new ParametersInfo(
             isVoid ? Array.Empty<ParameterInfo>() : parameterList.Select(ParameterInfo.Of).ToList(),
@@ -50,7 +50,7 @@ internal record ParameterInfo(IType Type, string? Name)
         var (type, identifier, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
 
         if (cliImportMemberName != null)
-            throw new NotSupportedException("CLI import specifier isn't supported for a parameter.");
+            throw new CesiumCompilationException("CLI import specifier isn't supported for a parameter.");
 
         return new ParameterInfo(type, identifier);
     }

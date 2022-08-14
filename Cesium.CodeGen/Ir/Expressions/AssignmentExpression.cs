@@ -13,12 +13,12 @@ internal class AssignmentExpression : BinaryOperatorExpression
     internal AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
-        _target = left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {left}.");
+        _target = left as ILValueExpression ?? throw new CesiumAssertException($"Not an lvalue: {left}.");
     }
 
     public AssignmentExpression(Ast.AssignmentExpression expression) : base(expression)
     {
-        _target = Left as ILValueExpression ?? throw new NotSupportedException($"Not an lvalue: {Left}.");
+        _target = Left as ILValueExpression ?? throw new CesiumAssertException($"Not an lvalue: {Left}.");
     }
 
     public override IExpression Lower()
@@ -43,7 +43,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
     public override void EmitTo(IDeclarationScope scope)
     {
         if (Operator != BinaryOperator.Assign)
-            throw new NotSupportedException($"Operator {Operator} should've been lowered before emitting.");
+            throw new CesiumAssertException($"Operator {Operator} should've been lowered before emitting.");
 
         _target.Resolve(scope).EmitSetValue(scope, Right);
     }

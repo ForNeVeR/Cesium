@@ -29,7 +29,7 @@ internal class PrefixIncrementExpression : IExpression
         );
     }
 
-    public void EmitTo(IDeclarationScope scope) => throw new NotSupportedException("Should be lowered");
+    public void EmitTo(IDeclarationScope scope) => throw new CesiumAssertException("Should be lowered");
 
     public TypeReference GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 }

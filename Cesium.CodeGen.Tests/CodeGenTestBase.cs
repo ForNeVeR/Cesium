@@ -27,7 +27,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
 
     protected static void DoesNotCompile(string source, string expectedMessage)
     {
-        var ex = Assert.Throws<NotSupportedException>(() => GenerateAssembly(default, source));
+        DoesNotCompile<CesiumCompilationException>(source, expectedMessage);
+    }
+
+    protected static void DoesNotCompile<T>(string source, string expectedMessage) where T : CesiumException
+    {
+        var ex = Assert.Throws<T>(() => GenerateAssembly(default, source));
         Assert.Contains(expectedMessage, ex.Message);
     }
 

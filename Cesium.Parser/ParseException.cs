@@ -1,8 +1,8 @@
 namespace Cesium.Parser;
 
-public class ParseException : Exception
+public class ParseException : CesiumException
 {
-    public ParseException(string? message) : base(message)
+    public ParseException(string message) : base(message)
     {
     }
 }

@@ -16,7 +16,7 @@ internal static class TypeSystemEx
     {
         var components = memberName.Split("::", 2);
         if (components.Length != 2)
-            throw new NotSupportedException($"Invalid CLI member name: {memberName}.");
+            throw new CesiumCompilationException($"Invalid CLI member name: {memberName}.");
 
         var typeName = components[0];
         var methodName = components[1];
@@ -37,7 +37,7 @@ internal static class TypeSystemEx
             ? $"Cannot find CLI-imported member {methodDisplayName}."
             : SimilarMethodsMessage(methodDisplayName, similarMethods);
 
-        throw new NotSupportedException(errorMessage);
+        throw new CesiumCompilationException(errorMessage);
     }
 
     private static IEnumerable<MethodDefinition> FindMethods(IEnumerable<AssemblyDefinition> assemblies, string typeName, string methodName)

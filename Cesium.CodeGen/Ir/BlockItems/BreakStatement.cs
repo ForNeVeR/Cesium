@@ -10,7 +10,7 @@ internal class BreakStatement : IBlockItem
     public void EmitTo(IDeclarationScope scope)
     {
         if (scope is not ForScope forScope)
-            throw new InvalidOperationException("Can't break not from for statement");
+            throw new CesiumCompilationException("Can't break not from for statement");
 
         var endInstruction = scope.Method.Body.GetILProcessor().Create(OpCodes.Nop);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Br, endInstruction));
