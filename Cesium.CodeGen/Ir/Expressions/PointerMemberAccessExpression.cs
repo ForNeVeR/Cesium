@@ -38,16 +38,9 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
         var valueType = _target.GetExpressionType(scope);
         var valueTypeDef = valueType.Resolve();
 
-        try
-        {
-            var field = valueTypeDef.Fields.First(f => f?.Name == memberIdentifier.Identifier);
-            return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new NotSupportedException(
-                $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"",
-                e);
-        }
+        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
+                    ?? throw new NotSupportedException(
+                        $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
+        return new LValueField(_target, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
     }
 }
