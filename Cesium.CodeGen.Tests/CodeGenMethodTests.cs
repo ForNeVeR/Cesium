@@ -73,7 +73,7 @@ int main()
     [Fact] public Task Parameter1Get() => DoTest("int foo(int x){ return x + 1; }");
     [Fact] public Task Parameter5Get() => DoTest("int foo(int a, int b, int c, int d, int e){ return e + 1; }");
     [Fact] public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
-    [Fact] public Task FloatConstTest() => DoTest("int main() { float x = 1.5; return 42; }");
+    [Fact] public Task DoubleConstTest() => DoTest("int main() { double x = 1.5; return 42; }");
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
 
