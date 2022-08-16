@@ -11,6 +11,7 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
 
+[UseCulture("")]
 public abstract class CodeGenTestBase : VerifyTestBase
 {
     protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
