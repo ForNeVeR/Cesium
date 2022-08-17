@@ -1,8 +1,8 @@
+using System.Globalization;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
+using Cesium.Core;
 using Mono.Cecil.Cil;
-using System.Globalization;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
@@ -13,7 +13,7 @@ internal class DoubleConstant : IConstant
     public DoubleConstant(string value)
     {
         if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out _value))
-            throw new NotSupportedException($"Cannot parse an double literal: {value}.");
+            throw new CompilationException($"Cannot parse a double literal: {value}.");
     }
 
     public void EmitTo(IDeclarationScope scope)
