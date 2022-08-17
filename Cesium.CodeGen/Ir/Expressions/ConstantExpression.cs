@@ -35,7 +35,7 @@ internal class ConstantExpression : IExpression
             CTokenType.IntLiteral => new IntegerConstant(constant.Text),
             CTokenType.CharLiteral => new CharConstant(constant.Text),
             CTokenType.StringLiteral => new StringConstant(constant),
-            CTokenType.FloatLiteral => new DoubleConstant(constant.Text),
+            CTokenType.FloatLiteral => new FloatingPointConstant(constant.Text),
             _ => throw new WipException(228, $"Constant of kind {constant.Kind} is not supported.")
         };
     }

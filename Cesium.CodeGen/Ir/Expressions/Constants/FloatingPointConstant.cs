@@ -6,11 +6,11 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class DoubleConstant : IConstant
+internal class FloatingPointConstant : IConstant
 {
     private readonly double _value;
 
-    public DoubleConstant(string value)
+    public FloatingPointConstant(string value)
     {
         if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out _value))
             throw new CompilationException($"Cannot parse a double literal: {value}.");
@@ -18,6 +18,7 @@ internal class DoubleConstant : IConstant
 
     public void EmitTo(IDeclarationScope scope)
     {
+        // TODO[#248]: This should support `float` as well.
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, _value));
     }
 
