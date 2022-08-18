@@ -1,0 +1,4 @@
+﻿#define XXX 123
+int test()
+{
+}

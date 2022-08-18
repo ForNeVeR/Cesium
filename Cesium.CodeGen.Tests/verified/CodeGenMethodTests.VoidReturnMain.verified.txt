@@ -1,0 +1,13 @@
+﻿System.Void <Module>::main()
+  IL_0000: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
+  Locals:
+    System.Int32 V_0
+  IL_0000: call System.Void <Module>::main()
+  IL_0005: ldc.i4.0
+  IL_0006: stloc.s V_0
+  IL_0008: ldloc.s V_0
+  IL_000a: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_000f: ldloc.s V_0
+  IL_0011: ret

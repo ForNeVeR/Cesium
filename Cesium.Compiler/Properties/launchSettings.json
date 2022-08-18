@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Hello": {
+        "commandName": "Project",
+        "commandLineArgs": "..\\..\\..\\..\\Cesium.IntegrationTests\\hello.c --out ..\\..\\..\\..\\Cesium.IntegrationTests\\bin\\hello.exe"
+    }
+  }
+}

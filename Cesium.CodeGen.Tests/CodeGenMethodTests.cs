@@ -61,9 +61,9 @@ int main()
 
     [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
+    [Fact] public Task VoidReturnMain() => DoTest("void main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
-    [Fact] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
     [Fact] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
     [Fact]
     public void VarArgMainDoesNotCompile2() => DoesNotCompile<WipException>(

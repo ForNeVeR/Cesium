@@ -44,10 +44,6 @@ internal class FunctionDefinition : ITopLevelNode
     {
         var (parameters, returnType) = _functionType;
         var resolvedReturnType = returnType.Resolve(context);
-        if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
-            throw new CompilationException(
-                $"Invalid return type for the {_name} function: " +
-                $"int expected, got {returnType}.");
 
         if (IsMain && parameters?.IsVarArg == true)
             throw new WipException(196, $"Variable arguments for the {_name} function aren't supported.");
@@ -73,8 +69,7 @@ internal class FunctionDefinition : ITopLevelNode
         var scope = new FunctionScope(context, method);
         if (IsMain)
         {
-            var isSyntheticEntryPointRequired = ValidateMainParameters();
-            var entryPoint = isSyntheticEntryPointRequired ? GenerateSyntheticEntryPoint(context, method) : method;
+            var entryPoint = GenerateSyntheticEntryPoint(context, method);
 
             var assembly = context.Assembly;
             var currentEntryPoint = assembly.EntryPoint;
@@ -88,15 +83,27 @@ internal class FunctionDefinition : ITopLevelNode
         EmitCode(context, scope);
     }
 
-    /// <remarks><see cref="GenerateSyntheticEntryPoint"/></remarks>
-    /// <returns>Whether the synthetic entry point should be generated.</returns>
-    private bool ValidateMainParameters()
+    /// <summary>
+    /// One of the standard signatures for the main function is <code>int main(int argc, char *argv[])</code>. This
+    /// isn't directly supported by the CLI infrastructure, so we'll have to emit a synthetic entrypoint for this case,
+    /// which will accept a managed string array and prepare the arguments for the C function.
+    /// </summary>
+    /// <returns>A synthetic entrypoint method created.</returns>
+    private MethodDefinition GenerateSyntheticEntryPoint(
+        TranslationUnitContext context,
+        MethodReference userEntrypoint)
     {
         if (_functionType.Parameters == null)
-            return false; // TODO[#87]: Decide whether this is normal or not.
+        {
+            // TODO[#87]: Decide whether this is normal or not.
+            return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
+        }
 
         var (parameterList, isVoid, isVarArg) = _functionType.Parameters;
-        if (isVoid) return false; // supported, no synthetic entry point required
+        if (isVoid)
+        {
+            return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
+        }
 
         if (isVarArg)
             throw new WipException(196, $"Variable arguments for the {_name} function aren't supported, yet.");
@@ -122,22 +129,15 @@ internal class FunctionDefinition : ITopLevelNode
                 $"Invalid parameter types for the {_name} function: " +
                 "int, char*[] expected.");
 
-        return true;
+        return GenerateSyntheticEntryPointStrArray(context, userEntrypoint);
     }
 
-    /// <summary>
-    /// One of the standard signatures for the main function is <code>int main(int argc, char *argv[])</code>. This
-    /// isn't directly supported by the CLI infrastructure, so we'll have to emit a synthetic entrypoint for this case,
-    /// which will accept a managed string array and prepare the arguments for the C function.
-    /// </summary>
-    /// <returns>A synthetic entrypoint method created.</returns>
-    private MethodDefinition GenerateSyntheticEntryPoint(
+    private MethodDefinition GenerateSyntheticEntryPointStrArray(
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {
-        var module = context.Module;
         var syntheticEntrypoint = new MethodDefinition(
-            "<SyntheticEntrypoint>",
+            "<SyntheticEntrypoint>StrArray",
             MethodAttributes.Public | MethodAttributes.Static,
             context.TypeSystem.Int32)
         {
@@ -227,20 +227,59 @@ internal class FunctionDefinition : ITopLevelNode
         return syntheticEntrypoint;
     }
 
+    private MethodDefinition GenerateSyntheticEntryPointSimple(
+        TranslationUnitContext context,
+        MethodReference userEntrypoint)
+    {
+        var syntheticEntrypoint = new MethodDefinition(
+            "<SyntheticEntrypoint>",
+            MethodAttributes.Public | MethodAttributes.Static,
+            context.TypeSystem.Int32)
+        {
+            Parameters =
+            {
+                new ParameterDefinition("args", ParameterAttributes.None, context.TypeSystem.String.MakeArrayType())
+            }
+        };
+        context.ModuleType.Methods.Add(syntheticEntrypoint);
+
+        var exit = context.GetRuntimeHelperMethod("Exit");
+
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
+        syntheticEntrypoint.Body.Variables.Add(exitCode);
+
+        var instructions = syntheticEntrypoint.Body.Instructions;
+
+        // exitCode = userEntrypoint();
+        instructions.Add(Instruction.Create(OpCodes.Call, userEntrypoint));
+        if (userEntrypoint.ReturnType == context.TypeSystem.Void)
+        {
+            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+        }
+
+        instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
+        instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
+
+        instructions.Add(Instruction.Create(OpCodes.Call, exit)); // exit(exitCode)
+        instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
+        instructions.Add(Instruction.Create(OpCodes.Ret));
+        return syntheticEntrypoint;
+    }
+
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         _statement.EmitTo(scope);
         if ((_statement as IBlockItem).HasDefiniteReturn == false)
         {
-            if (IsMain)
+            if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
+            {
+                var instructions = scope.Method.Body.Instructions;
+                instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
+            else if (IsMain)
             {
                 var instructions = scope.Method.Body.Instructions;
                 instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-                instructions.Add(Instruction.Create(OpCodes.Ret));
-            }
-            else if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
-            {
-                var instructions = scope.Method.Body.Instructions;
                 instructions.Add(Instruction.Create(OpCodes.Ret));
             }
             else
