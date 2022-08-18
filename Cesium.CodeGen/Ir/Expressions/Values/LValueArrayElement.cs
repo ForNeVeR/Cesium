@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -20,7 +21,7 @@ internal class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
 
-        var (loadOp, _) = PrimitiveTypeInfo.Opcodes[GetElementType().Name];
+        var (loadOp, _) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
         scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
@@ -33,15 +34,23 @@ internal class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
         value.EmitTo(scope);
-        var (_, storeOp) = PrimitiveTypeInfo.Opcodes[GetElementType().Name];
+        var (_, storeOp) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
         scope.Method.Body.GetILProcessor().Emit(storeOp);
     }
 
-    public TypeReference GetValueType()
+    public IType GetValueType()
         => _array.GetValueType();
 
-    private TypeReference GetElementType()
-        => GetValueType().GetElementType();
+    private PrimitiveType GetElementType()
+    {
+        InPlaceArrayType? type = GetValueType() as InPlaceArrayType;
+        if (type == null)
+        {
+            throw new AssertException("Array type expected.");
+        }
+
+        return (PrimitiveType)type.Base;
+    }
 
     private void EmitPointerMoveToElement(IDeclarationScope scope)
     {
@@ -49,7 +58,7 @@ internal class LValueArrayElement : ILValue
         _index.EmitTo(scope);
         var method = scope.Method.Body.GetILProcessor();
         method.Emit(OpCodes.Conv_I);
-        var elementSize = PrimitiveTypeInfo.Size[GetElementType().Name];
+        var elementSize = PrimitiveTypeInfo.Size[GetElementType().Kind];
         method.Emit(OpCodes.Ldc_I4, elementSize);
         method.Emit(OpCodes.Mul);
         method.Emit(OpCodes.Add);

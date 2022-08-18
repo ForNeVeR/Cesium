@@ -21,5 +21,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDef
     public VariableDefinition ResolveVariable(string identifier) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
-    public ParameterDefinition? GetParameter(string name) => null;
+    public IType? TryGetParameter(string name) => null;
+    public ParameterDefinition ResolveParameter(string name) =>
+        throw new AssertException("Cannot resolve parameter from the global constructor scope");
 }

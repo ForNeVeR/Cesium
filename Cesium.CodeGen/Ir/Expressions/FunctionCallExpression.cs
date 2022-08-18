@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -45,11 +46,11 @@ internal class FunctionCallExpression : IExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
     }
 
-    public TypeReference GetExpressionType(IDeclarationScope scope)
+    public IType GetExpressionType(IDeclarationScope scope)
     {
         var functionName = _function.Identifier;
         var callee = scope.Functions.GetValueOrDefault(functionName)
                      ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
-        return callee.ReturnType.Resolve(scope.Context);
+        return callee.ReturnType;
     }
 }

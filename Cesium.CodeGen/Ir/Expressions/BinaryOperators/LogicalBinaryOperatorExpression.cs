@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -36,7 +37,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         }
     }
 
-    public override TypeReference GetExpressionType(IDeclarationScope scope) => scope.TypeSystem.Boolean;
+    public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
 
     private void EmitLogicalAnd(IDeclarationScope scope)
     {

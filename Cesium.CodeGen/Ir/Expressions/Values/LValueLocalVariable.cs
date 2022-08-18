@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -8,9 +9,11 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal class LValueLocalVariable : ILValue
 {
     private readonly VariableDefinition _definition;
+    private readonly IType _variableType;
 
-    public LValueLocalVariable(VariableDefinition definition)
+    public LValueLocalVariable(IType variableType, VariableDefinition definition)
     {
+        _variableType = variableType;
         _definition = definition;
     }
 
@@ -45,5 +48,5 @@ internal class LValueLocalVariable : ILValue
         scope.StLoc(_definition);
     }
 
-    public TypeReference GetValueType() => _definition.VariableType;
+    public IType GetValueType() => _variableType;
 }

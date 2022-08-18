@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 
@@ -32,5 +33,5 @@ internal class PrefixIncrementExpression : IExpression
 
     public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
+    public IType GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 }

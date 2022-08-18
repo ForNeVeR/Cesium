@@ -138,35 +138,31 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
 
 internal static class PrimitiveTypeInfo
 {
-    internal static readonly Dictionary<string, int> Size = new()
+    internal static readonly Dictionary<PrimitiveTypeKind, int> Size = new()
     {
-        { "Byte", 1 },
-        { "SByte", 1 },
-        { "Boolean", 1 },
-        { "Int16", 2 },
-        { "UInt16", 2 },
-        { "Char", 2 },
-        { "Int32", 4 },
-        { "UInt32", 4 },
-        { "Single", 4 },
-        { "Int64", 8 },
-        { "UInt64", 8 },
-        { "Double", 8 },
+        { PrimitiveTypeKind.Char, 1 },
+        { PrimitiveTypeKind.SignedChar, 1 },
+        { PrimitiveTypeKind.Short, 2 },
+        { PrimitiveTypeKind.UnsignedShort, 2 },
+        { PrimitiveTypeKind.Int, 4 },
+        { PrimitiveTypeKind.UnsignedInt, 4 },
+        { PrimitiveTypeKind.Float, 4 },
+        { PrimitiveTypeKind.Long, 8 },
+        { PrimitiveTypeKind.UnsignedLong, 8 },
+        { PrimitiveTypeKind.Double, 8 },
     };
 
-    internal static readonly Dictionary<string, (OpCode load, OpCode store)> Opcodes = new()
+    internal static readonly Dictionary<PrimitiveTypeKind, (OpCode load, OpCode store)> Opcodes = new()
     {
-        { "Byte", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
-        { "SByte", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
-        { "Boolean", (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
-        { "Int16", (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
-        { "UInt16", (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
-        { "Char", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
-        { "Int32", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
-        { "UInt32", (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
-        { "Single", (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
-        { "Int64", (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
-        { "UInt64", (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
-        { "Double", (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
+        { PrimitiveTypeKind.Char, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { PrimitiveTypeKind.SignedChar, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { PrimitiveTypeKind.Short, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
+        { PrimitiveTypeKind.UnsignedShort, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
+        { PrimitiveTypeKind.Int, (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
+        { PrimitiveTypeKind.UnsignedInt, (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
+        { PrimitiveTypeKind.Float, (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
+        { PrimitiveTypeKind.Long, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
+        { PrimitiveTypeKind.UnsignedLong, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
+        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
     };
 }

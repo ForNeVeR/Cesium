@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record FunctionScope(TranslationUnitContext Context, MethodDefinition Method) : IDeclarationScope
+internal record FunctionScope(TranslationUnitContext Context, FunctionInfo FunctionInfo, MethodDefinition Method) : IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
@@ -35,15 +35,16 @@ internal record FunctionScope(TranslationUnitContext Context, MethodDefinition M
 
         return variableDefinition;
     }
+    public IType? TryGetParameter(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name)?.Type;
 
     private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
-    public ParameterDefinition? GetParameter(string name)
+    public ParameterDefinition ResolveParameter(string name)
     {
         if (_parameterCache.TryGetValue(name, out var parameter))
             return parameter;
 
-        parameter = Method.Parameters.FirstOrDefault(p => p.Name == name);
-        if (parameter != null) _parameterCache.Add(name, parameter);
+        parameter = Method.Parameters.FirstOrDefault(p => p.Name == name) ?? throw new AssertException($"Cannot resolve parameter with name name {name}");
+        _parameterCache.Add(name, parameter);
         return parameter;
     }
 }

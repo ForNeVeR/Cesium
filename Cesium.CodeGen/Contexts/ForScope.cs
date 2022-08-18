@@ -20,7 +20,8 @@ internal record ForScope(IDeclarationScope Parent) : IDeclarationScope
         throw new WipException(205, "Variable addition into a for loop scope is not implemented, yet.");
     public VariableDefinition ResolveVariable(string identifier) => Parent.ResolveVariable(identifier); // no declarations for `for` now, so pass parent variables
 
-    public ParameterDefinition? GetParameter(string name) => Parent.GetParameter(name);
+    public ParameterDefinition ResolveParameter(string name) => Parent.ResolveParameter(name);
+    public IType? TryGetParameter(string name) => Parent.TryGetParameter(name);
 
     public Instruction? EndInstruction { get; set; }
 }

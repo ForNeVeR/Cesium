@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -28,42 +29,42 @@ internal abstract class BinaryOperatorExpression : IExpression
     }
 
     public abstract IExpression Lower();
-    public abstract TypeReference GetExpressionType(IDeclarationScope scope);
+    public abstract IType GetExpressionType(IDeclarationScope scope);
     public abstract void EmitTo(IDeclarationScope scope);
 
-    protected void EmitConversion(IDeclarationScope scope, TypeReference exprType, TypeReference desiredType)
+    protected void EmitConversion(IDeclarationScope scope, IType exprType, IType desiredType)
     {
         if (exprType.IsEqualTo(desiredType)
-            || (scope.TypeSystem.IsBool(exprType) && scope.TypeSystem.IsInteger(desiredType))
-            || (scope.TypeSystem.IsBool(desiredType) && scope.TypeSystem.IsInteger(exprType)))
+            || (scope.CTypeSystem.IsBool(exprType) && scope.CTypeSystem.IsInteger(desiredType))
+            || (scope.CTypeSystem.IsBool(desiredType) && scope.CTypeSystem.IsInteger(exprType)))
             return;
 
-        var ts = scope.TypeSystem;
+        var ts = scope.CTypeSystem;
         if(!ts.IsNumeric(exprType))
-            throw new CompilationException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
+            throw new CompilationException($"Conversion from {exprType} to {desiredType} is not supported.");
 
-        if(desiredType.Equals(ts.SByte))
+        if(desiredType.Equals(ts.SignedChar))
             Add(OpCodes.Conv_I1);
-        else if(desiredType.Equals(ts.Int16))
+        else if(desiredType.Equals(ts.Short))
             Add(OpCodes.Conv_I2);
-        else if(desiredType.Equals(ts.Int32))
+        else if(desiredType.Equals(ts.Int))
             Add(OpCodes.Conv_I4);
-        else if(desiredType.Equals(ts.Int64))
+        else if(desiredType.Equals(ts.Long))
             Add(OpCodes.Conv_I8);
-        else if(desiredType.Equals(ts.Byte))
+        else if(desiredType.Equals(ts.Char))
             Add(OpCodes.Conv_U1);
-        else if(desiredType.Equals(ts.UInt16))
+        else if(desiredType.Equals(ts.UnsignedShort))
             Add(OpCodes.Conv_U2);
-        else if(desiredType.Equals(ts.UInt32))
+        else if(desiredType.Equals(ts.UnsignedInt))
             Add(OpCodes.Conv_U4);
-        else if(desiredType.Equals(ts.UInt64))
+        else if(desiredType.Equals(ts.UnsignedLong))
             Add(OpCodes.Conv_U8);
-        else if(desiredType.Equals(ts.Single))
+        else if(desiredType.Equals(ts.Float))
             Add(OpCodes.Conv_R4);
         else if (desiredType.Equals(ts.Double))
             Add(OpCodes.Conv_R8);
         else
-            throw new CompilationException($"Conversion from {exprType.Name} to {desiredType.Name} is not supported.");
+            throw new CompilationException($"Conversion from {exprType} to {desiredType} is not supported.");
 
         void Add(OpCode op) => scope.Method.Body.Instructions.Add(Instruction.Create(op));
     }

@@ -17,5 +17,6 @@ internal interface IDeclarationScope
     IReadOnlyDictionary<string, IType> Variables { get; }
     void AddVariable(string identifier, IType variable);
     VariableDefinition ResolveVariable(string identifier);
-    ParameterDefinition? GetParameter(string name);
+    IType? TryGetParameter(string name);
+    ParameterDefinition ResolveParameter(string name);
 }

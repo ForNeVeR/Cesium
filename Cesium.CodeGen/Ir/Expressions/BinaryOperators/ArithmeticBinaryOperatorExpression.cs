@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -44,11 +45,11 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
     }
 
-    public override TypeReference GetExpressionType(IDeclarationScope scope)
+    public override IType GetExpressionType(IDeclarationScope scope)
     {
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
 
-        return scope.TypeSystem.GetCommonNumericType(leftType, rightType);
+        return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
     }
 }

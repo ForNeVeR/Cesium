@@ -1,15 +1,18 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values
 {
     internal class LValueGlobalVariable : ILValue
     {
+        private readonly IType _type;
         private readonly FieldDefinition _definition;
 
-        public LValueGlobalVariable(FieldDefinition definition)
+        public LValueGlobalVariable(IType type, FieldDefinition definition)
         {
+            _type = type;
             _definition = definition;
         }
 
@@ -25,6 +28,6 @@ namespace Cesium.CodeGen.Ir.Expressions.Values
             scope.StSFld(_definition);
         }
 
-        public TypeReference GetValueType() => _definition.FieldType;
+        public IType GetValueType() => _type;
     }
 }

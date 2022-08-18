@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -40,14 +41,14 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
     }
 
-    public override TypeReference GetExpressionType(IDeclarationScope scope)
+    public override IType GetExpressionType(IDeclarationScope scope)
     {
         var leftType = Left.GetExpressionType(scope);
-        if (!scope.TypeSystem.IsInteger(leftType))
+        if (!scope.CTypeSystem.IsInteger(leftType))
             throw new CompilationException($"Left operand of '{Operator}' is not of integer type: {Left}");
 
         var rightType = Right.GetExpressionType(scope);
-        if (!scope.TypeSystem.IsInteger(rightType))
+        if (!scope.CTypeSystem.IsInteger(rightType))
             throw new CompilationException($"Right operand of '{Operator}' is not of integer type: {Right}");
 
         return leftType;

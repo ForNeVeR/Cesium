@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 
@@ -29,7 +30,7 @@ internal class SubscriptingExpression : IExpression, IValueExpression
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
     public IValue Resolve(IDeclarationScope scope)
     {

@@ -1,8 +1,8 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
@@ -46,11 +46,11 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
 
-        if ((!scope.TypeSystem.IsNumeric(leftType) && !leftType.IsPointer)
-            || (!scope.TypeSystem.IsNumeric(rightType) && !rightType.IsPointer))
+        if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not PointerType)
+            || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
             throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
-        var commonType = scope.TypeSystem.GetCommonNumericType(leftType, rightType);
+        var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
 
         Left.EmitTo(scope);
         EmitConversion(scope, leftType, commonType);
@@ -69,5 +69,5 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         };
     }
 
-    public override TypeReference GetExpressionType(IDeclarationScope scope) => scope.TypeSystem.Boolean;
+    public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
 }

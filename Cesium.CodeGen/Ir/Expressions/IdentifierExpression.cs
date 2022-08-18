@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
@@ -29,13 +30,13 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
     public IValue Resolve(IDeclarationScope scope)
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         scope.Functions.TryGetValue(Identifier, out FunctionInfo? fun);
-        var par = scope.GetParameter(Identifier);
+        var par = scope.TryGetParameter(Identifier);
         scope.Context.AssemblyContext.GlobalFields.TryGetValue(Identifier, out var globalType);
 
         if (var is not null && par is not null)
@@ -50,23 +51,24 @@ internal class IdentifierExpression : IExpression, IValueExpression
         if (var is not null)
         {
             var variableDefinition = scope.ResolveVariable(Identifier);
-            return new LValueLocalVariable(variableDefinition);
+            return new LValueLocalVariable(var, variableDefinition);
         }
 
         if (par is not null)
         {
-            return new LValueParameter(par);
+            var parameterInfo = scope.ResolveParameter(Identifier);
+            return new LValueParameter(par, parameterInfo);
         }
 
         if (fun is not null)
         {
-            return new FunctionValue(fun.MethodReference);
+            return new FunctionValue(fun, fun.MethodReference);
         }
 
         if (globalType != null)
         {
             var globalField = scope.Context.AssemblyContext.ResolveGlobalField(Identifier, scope.Context);
-            return new LValueGlobalVariable(globalField);
+            return new LValueGlobalVariable(globalType, globalField);
         }
 
         throw new CompilationException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");

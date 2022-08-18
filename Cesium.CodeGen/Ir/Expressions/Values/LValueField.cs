@@ -1,4 +1,6 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
+using Microsoft.VisualBasic.FileIO;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -8,10 +10,12 @@ internal class LValueField : ILValue
 {
     private readonly IExpression _expression;
     private readonly FieldReference _field;
+    private readonly IType _fieldType;
 
-    public LValueField(IExpression expression, FieldReference field)
+    public LValueField(IExpression expression, IType fieldType, FieldReference field)
     {
         _expression = expression;
+        _fieldType = fieldType;
         _field = field;
     }
 
@@ -34,5 +38,5 @@ internal class LValueField : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, _field));
     }
 
-    public TypeReference GetValueType() => _field.FieldType;
+    public IType GetValueType() => _fieldType;
 }

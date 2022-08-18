@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -7,8 +8,10 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal class LValueParameter : ILValue
 {
     private readonly ParameterDefinition _definition;
-    public LValueParameter(ParameterDefinition definition)
+    private readonly IType _type;
+    public LValueParameter(IType type, ParameterDefinition definition)
     {
+        _type = type;
         _definition = definition;
     }
 
@@ -41,5 +44,5 @@ internal class LValueParameter : ILValue
         });
     }
 
-    public TypeReference GetValueType() => _definition.ParameterType;
+    public IType GetValueType() => _type;
 }

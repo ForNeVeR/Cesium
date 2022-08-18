@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 
@@ -31,7 +32,7 @@ internal class MemberAccessExpression : IExpression, IValueExpression
 
     public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
-    public TypeReference GetExpressionType(IDeclarationScope scope) => throw new AssertException("Should be lowered");
+    public IType GetExpressionType(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
     public IValue Resolve(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 }

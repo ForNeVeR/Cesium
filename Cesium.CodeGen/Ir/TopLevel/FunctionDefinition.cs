@@ -66,11 +66,14 @@ internal class FunctionDefinition : ITopLevelNode
             throw new CompilationException($"Double definition of function {_name}.");
 
         if (declaration == null)
-            context.Functions.Add(_name, new FunctionInfo(parameters, returnType, method, IsDefined: true));
+        {
+            declaration = new FunctionInfo(parameters, returnType, method, IsDefined: true);
+            context.Functions.Add(_name, declaration);
+        }
         else
             context.Functions[_name] = declaration with { IsDefined = true };
 
-        var scope = new FunctionScope(context, method);
+        var scope = new FunctionScope(context, declaration, method);
         if (IsMain)
         {
             var entryPoint = GenerateSyntheticEntryPoint(context, method);

@@ -134,32 +134,33 @@ internal static class TypeSystemEx
     }
 
     public static bool IsEqualTo(this TypeReference a, TypeReference b) => a.FullName == b.FullName;
+    public static bool IsEqualTo(this IType a, IType b) => a.Equals(b);
 
-    public static bool IsSignedInteger(this TypeSystem ts, TypeReference t)
+    public static bool IsSignedInteger(this CTypeSystem ts, IType t)
     {
-        return t.IsEqualTo(ts.SByte)
-            || t.IsEqualTo(ts.Int16)
-            || t.IsEqualTo(ts.Int32)
-            || t.IsEqualTo(ts.Int64);
+        return t.IsEqualTo(ts.SignedChar)
+            || t.IsEqualTo(ts.Short)
+            || t.IsEqualTo(ts.Int)
+            || t.IsEqualTo(ts.Long);
     }
 
-    public static bool IsUnsignedInteger(this TypeSystem ts, TypeReference t)
+    public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
     {
-        return t.IsEqualTo(ts.Boolean)
-            || t.IsEqualTo(ts.Byte)
-            || t.IsEqualTo(ts.UInt16)
-            || t.IsEqualTo(ts.UInt32)
-            || t.IsEqualTo(ts.UInt64);
+        return t.IsEqualTo(ts.Bool)
+            || t.IsEqualTo(ts.Char)
+            || t.IsEqualTo(ts.UnsignedShort)
+            || t.IsEqualTo(ts.UnsignedInt)
+            || t.IsEqualTo(ts.UnsignedLong);
     }
 
-    public static bool IsFloatingPoint(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Single);
-    public static bool IsInteger(this TypeSystem ts, TypeReference t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this TypeSystem ts, TypeReference t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
-    public static bool IsBool(this TypeSystem ts, TypeReference t) => t.IsEqualTo(ts.Boolean);
+    public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
+    public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
+    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
+    public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Bool);
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
-    public static TypeReference GetCommonNumericType(this TypeSystem ts, TypeReference a, TypeReference b)
+    public static IType GetCommonNumericType(this CTypeSystem ts, IType a, IType b)
     {
         // First, if the corresponding real type of either operand is (long) double,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is (long) double.
@@ -168,13 +169,13 @@ internal static class TypeSystemEx
 
         // Otherwise, if the corresponding real type of either operand is float,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
-        if (a.IsEqualTo(ts.Single) || b.IsEqualTo(ts.Single))
-            return ts.Single;
+        if (a.IsEqualTo(ts.Float) || b.IsEqualTo(ts.Float))
+            return ts.Float;
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] {ts.SByte, ts.Int16, ts.Int32, ts.Int64};
-        var unsignedTypes = new[] {ts.Boolean, ts.Byte, ts.UInt16, ts.UInt32, ts.UInt64};
+        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
+        var unsignedTypes = new[] {ts.Bool, ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
@@ -189,10 +190,10 @@ internal static class TypeSystemEx
             return unsignedTypes[Math.Max(aUnsignedRank.Value, bUnsignedRank.Value)];
 
         if (aSignedRank == null && aUnsignedRank == null)
-            throw new AssertException($"Left operand of type {a.Name} is not numeric.");
+            throw new AssertException($"Left operand of type {a} is not numeric.");
 
         if (bSignedRank == null && bUnsignedRank == null)
-            throw new AssertException($"Right operand of type {b.Name} is not numeric.");
+            throw new AssertException($"Right operand of type {b} is not numeric.");
 
         // Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand,
         // then the operand with signed integer type is converted to the type of the operand with unsigned integer type.
@@ -209,7 +210,7 @@ internal static class TypeSystemEx
         // Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type.
         // ^^ this doesn't seem to be possible with .NET types, because: Byte.MaxValue < Int16.MaxValue, UInt16.MaxValue < Int32.MaxValue, etc.
 
-        int? RankOf(TypeReference t, TypeReference[] family)
+        int? RankOf(IType t, IType[] family)
         {
             for(var i = 0; i < family.Length; i++)
                 if (t.IsEqualTo(family[i]))
