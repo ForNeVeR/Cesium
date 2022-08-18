@@ -141,7 +141,7 @@ internal class FunctionDefinition : ITopLevelNode
         MethodReference userEntrypoint)
     {
         var syntheticEntrypoint = new MethodDefinition(
-            "<SyntheticEntrypoint>StrArray",
+            "<SyntheticEntrypoint>",
             MethodAttributes.Public | MethodAttributes.Static,
             context.TypeSystem.Int32)
         {
