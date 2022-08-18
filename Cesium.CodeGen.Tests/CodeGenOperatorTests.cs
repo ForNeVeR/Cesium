@@ -10,7 +10,7 @@ public class CodeGenOperatorTests: CodeGenTestBase
         return VerifyMethods(moduleType);
     }
 
-    [Fact]
+    [Fact(Skip = "Implicit casts should be part of IR in order to restore this test.")]
     public Task AddIntToChar() => DoTest(@"int main() { int x = 1 + 'b'; }");
 
     [Fact]
