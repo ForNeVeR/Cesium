@@ -13,8 +13,6 @@ internal class CTypeSystem
     public IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
     public IType Long { get; } = new PrimitiveType(PrimitiveTypeKind.Long);
     public IType UnsignedLong { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedLong);
-    public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
-    public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
     public IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
     public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
