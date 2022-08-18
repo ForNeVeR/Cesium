@@ -1,7 +1,7 @@
 ﻿Module: Primary
   Type: <Module>
   Methods:
-    System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
+    System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
         System.Int32 V_0
       IL_0000: call System.Int32 MyNameSpace.TestClass::main()

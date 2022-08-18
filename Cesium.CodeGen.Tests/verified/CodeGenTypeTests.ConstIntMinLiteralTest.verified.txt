@@ -5,7 +5,7 @@
       IL_0000: ldc.i4 -2147483648
       IL_0005: ret
 
-    System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
+    System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
         System.Int32 V_0
       IL_0000: call System.Int32 <Module>::main()

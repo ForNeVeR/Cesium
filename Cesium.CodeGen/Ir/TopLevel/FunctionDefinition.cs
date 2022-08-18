@@ -238,13 +238,7 @@ internal class FunctionDefinition : ITopLevelNode
         var syntheticEntrypoint = new MethodDefinition(
             "<SyntheticEntrypoint>",
             MethodAttributes.Public | MethodAttributes.Static,
-            context.TypeSystem.Int32)
-        {
-            Parameters =
-            {
-                new ParameterDefinition("args", ParameterAttributes.None, context.TypeSystem.String.MakeArrayType())
-            }
-        };
+            context.TypeSystem.Int32);
         context.ModuleType.Methods.Add(syntheticEntrypoint);
 
         var exit = context.GetRuntimeHelperMethod("Exit");

@@ -16,7 +16,7 @@ System.Int32 <Module>::main()
   IL_000e: ldc.i4.0
   IL_000f: ret
 
-System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
+System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
     System.Int32 V_0
   IL_0000: call System.Int32 <Module>::main()
