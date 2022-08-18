@@ -44,6 +44,10 @@ internal class FunctionDefinition : ITopLevelNode
     {
         var (parameters, returnType) = _functionType;
         var resolvedReturnType = returnType.Resolve(context);
+        if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
+            throw new CompilationException(
+                $"Invalid return type for the {_name} function: " +
+                $"int expected, got {returnType}.");
 
         if (IsMain && parameters?.IsVarArg == true)
             throw new WipException(196, $"Variable arguments for the {_name} function aren't supported.");
@@ -252,11 +256,6 @@ internal class FunctionDefinition : ITopLevelNode
 
         // exitCode = userEntrypoint();
         instructions.Add(Instruction.Create(OpCodes.Call, userEntrypoint));
-        if (userEntrypoint.ReturnType == context.TypeSystem.Void)
-        {
-            instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-        }
-
         instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
 
