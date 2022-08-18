@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -21,7 +22,7 @@ internal record ForScope(IDeclarationScope Parent) : IDeclarationScope
     public VariableDefinition ResolveVariable(string identifier) => Parent.ResolveVariable(identifier); // no declarations for `for` now, so pass parent variables
 
     public ParameterDefinition ResolveParameter(string name) => Parent.ResolveParameter(name);
-    public IType? TryGetParameter(string name) => Parent.TryGetParameter(name);
+    public ParameterInfo? GetParameterInfo(string name) => Parent.GetParameterInfo(name);
 
     public Instruction? EndInstruction { get; set; }
 }

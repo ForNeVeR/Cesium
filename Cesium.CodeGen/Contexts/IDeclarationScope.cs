@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -17,6 +18,6 @@ internal interface IDeclarationScope
     IReadOnlyDictionary<string, IType> Variables { get; }
     void AddVariable(string identifier, IType variable);
     VariableDefinition ResolveVariable(string identifier);
-    IType? TryGetParameter(string name);
+    ParameterInfo? GetParameterInfo(string name);
     ParameterDefinition ResolveParameter(string name);
 }

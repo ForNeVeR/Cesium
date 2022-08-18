@@ -8,10 +8,10 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal class LValueParameter : ILValue
 {
     private readonly ParameterDefinition _definition;
-    private readonly IType _type;
-    public LValueParameter(IType type, ParameterDefinition definition)
+    private readonly ParameterInfo _parameterInfo;
+    public LValueParameter(ParameterInfo parameterInfo, ParameterDefinition definition)
     {
-        _type = type;
+        _parameterInfo = parameterInfo;
         _definition = definition;
     }
 
@@ -44,5 +44,5 @@ internal class LValueParameter : ILValue
         });
     }
 
-    public IType GetValueType() => _type;
+    public IType GetValueType() => _parameterInfo.Type;
 }

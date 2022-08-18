@@ -36,7 +36,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
     {
         scope.Variables.TryGetValue(Identifier, out var var);
         scope.Functions.TryGetValue(Identifier, out FunctionInfo? fun);
-        var par = scope.TryGetParameter(Identifier);
+        var par = scope.GetParameterInfo(Identifier);
         scope.Context.AssemblyContext.GlobalFields.TryGetValue(Identifier, out var globalType);
 
         if (var is not null && par is not null)

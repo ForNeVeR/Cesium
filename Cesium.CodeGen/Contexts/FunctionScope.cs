@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -35,7 +36,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
         return variableDefinition;
     }
-    public IType? TryGetParameter(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name)?.Type;
+    public ParameterInfo? GetParameterInfo(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name);
 
     private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
     public ParameterDefinition ResolveParameter(string name)

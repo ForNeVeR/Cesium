@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -21,7 +22,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDef
     public VariableDefinition ResolveVariable(string identifier) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
-    public IType? TryGetParameter(string name) => null;
+    public ParameterInfo? GetParameterInfo(string name) => null;
     public ParameterDefinition ResolveParameter(string name) =>
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
 }
