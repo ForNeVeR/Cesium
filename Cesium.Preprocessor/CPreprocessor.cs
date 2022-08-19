@@ -70,8 +70,8 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 case DoubleHash:
                 case HeaderName:
                 case Separator:
-                case LeftParent:
-                case RightParent:
+                case LeftParen:
+                case RightParen:
                     newLine = false;
                     if (IncludeTokens)
                     {
