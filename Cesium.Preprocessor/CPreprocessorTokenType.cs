@@ -28,8 +28,8 @@ public enum CPreprocessorTokenType
     Separator,
 
     [Token("(")]
-    LeftParent,
+    LeftParen,
 
     [Token(")")]
-    RightParent,
+    RightParen,
 }
