@@ -83,4 +83,22 @@ int foo() { return 0; }
 int foo() { return 0; }
 #endif
 ");
+
+    [Fact]
+    public Task ReplaceSeparatedIdentifier() => DoTest(
+@"#define foo int
+foo main() { return 0; }
+");
+
+    [Fact]
+    public Task ReplaceNumber() => DoTest(
+@"#define foo 0
+int main() { return foo; }
+");
+
+    [Fact]
+    public Task ReplaceFunctionParameter() => DoTest(
+@"#define foo 0
+int main() { return abs(foo); }
+");
 }

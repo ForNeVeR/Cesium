@@ -69,11 +69,27 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 case Error:
                 case DoubleHash:
                 case HeaderName:
-                case PreprocessingToken:
+                case Separator:
+                case LeftParent:
+                case RightParent:
                     newLine = false;
                     if (IncludeTokens)
                     {
                         yield return token;
+                    }
+                    break;
+                case PreprocessingToken:
+                    newLine = false;
+                    if (IncludeTokens)
+                    {
+                        if (MacroContext.TryResolveMacro(token.Text, out var tokenReplacement))
+                        {
+                            yield return new Token<CPreprocessorTokenType>(token.Range, tokenReplacement, token.Kind);
+                        }
+                        else
+                        {
+                            yield return token;
+                        }
                     }
                     break;
 

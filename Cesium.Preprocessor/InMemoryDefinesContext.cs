@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Cesium.Preprocessor;
 
 public class InMemoryDefinesContext : IMacroContext
@@ -14,7 +16,7 @@ public class InMemoryDefinesContext : IMacroContext
         defines[macro] = replacement;
     }
 
-    public bool TryResolveMacro(string macro, out string? macroReplacement)
+    public bool TryResolveMacro(string macro, [NotNullWhen(true)]out string? macroReplacement)
     {
         return defines.TryGetValue(macro, out macroReplacement);
     }
