@@ -35,7 +35,12 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public IValue Resolve(IDeclarationScope scope)
     {
         if (_expression is not IdentifierExpression identifier)
-            throw new WipException(230, "Subscription supported only for IdentifierConstantExpression");
+        {
+            if (_expression is not IValueExpression IValueExpresssion)
+                throw new CompilationException($"{_expression} is not IValueExpression");
+
+            return IValueExpresssion.Resolve(scope);
+        }
 
         return new LValueArrayElement(identifier.Resolve(scope), _index);
     }
