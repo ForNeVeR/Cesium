@@ -31,17 +31,14 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
-
+    
     public IValue Resolve(IDeclarationScope scope)
     {
-        if (_expression is not IdentifierExpression identifier)
+        return _expression switch
         {
-            if (_expression is not IValueExpression IValueExpresssion)
-                throw new CompilationException($"{_expression} is not IValueExpression");
-
-            return IValueExpresssion.Resolve(scope);
-        }
-
-        return new LValueArrayElement(identifier.Resolve(scope), _index);
+            IdentifierExpression identifier => new LValueArrayElement(identifier.Resolve(scope), _index),
+            IValueExpression valueExpression => valueExpression.Resolve(scope),
+            _ => throw new CompilationException($"{_expression} is not a value expression"),
+        };
     }
 }
