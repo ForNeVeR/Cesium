@@ -109,13 +109,19 @@ int console_read(void);
 int console_read(void) { return 0; }", "Function console_read already defined as immutable.");
 
     [Fact]
+    public void DifferentCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Beep"")
+void console_beep(void);
+__cli_import(""System.Console::Clear"")
+void console_beep(void);", "Function console_beep already defined as as CLI-import with System.Void System.Console::Beep().");
+
+    [Fact]
     public void CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
 int console_read(void);
 __cli_import(""System.Console::Read"")
 int console_read(void);");
 
     [Fact]
-    public void CanHaveTwoFucntionDeclarations() => DoTest(@"
+    public void CanHaveTwoFunctionDeclarations() => DoTest(@"
 int console_read(void);
 
 int console_read(void);

@@ -112,6 +112,10 @@ internal class TopLevelDeclaration : ITopLevelNode
         }
 
         cliImportFunctionInfo.VerifySignatureEquality(name, existingDeclaration.Parameters, existingDeclaration.ReturnType);
+        if (!cliImportFunctionInfo.MethodReference.FullName.Equals(existingDeclaration.MethodReference.FullName))
+        {
+            throw new CompilationException($"Function {name} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
+        }
     }
 
     private static void EmitFunctionDeclaration(
