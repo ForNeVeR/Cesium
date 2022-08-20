@@ -17,12 +17,15 @@ internal static class Compilation
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
         TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null,
-        string @namespace = "",
-        string globalClassFqn = "")
+        ModuleKind? moduleKind,
+        string corelibAssembly,
+        string cesiumRuntime,
+        IList<string> defaultImportAssemblies,
+        string @namespace,
+        string globalClassFqn)
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace, globalClassFqn);
+        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, corelibAssembly, cesiumRuntime, defaultImportAssemblies, @namespace, globalClassFqn);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -38,9 +41,12 @@ internal static class Compilation
     private static AssemblyContext CreateAssembly(
         string outputFilePath,
         TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null,
-        string @namespace = "",
-        string globalClassFqn = "")
+        ModuleKind? moduleKind,
+        string corelibAssembly,
+        string cesiumRuntime,
+        IList<string> defaultImportAssemblies,
+        string @namespace,
+        string globalClassFqn)
     {
         var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
         {
@@ -49,17 +55,12 @@ internal static class Compilation
             var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
         };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
-        var defaultImportAssemblies = new []
-        {
-            typeof(Console).Assembly.Location, // System.Console.dll
-        };
-        var cesiumRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
             parsedModuleKind,
             targetRuntime,
             defaultImportAssemblies,
-            typeof(Math).Assembly.Location, // System.Runtime.dll
+            corelibAssembly,
             cesiumRuntime,
             @namespace,
             globalClassFqn);

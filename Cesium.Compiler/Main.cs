@@ -26,7 +26,10 @@ return await parserResult.MapResult(async args =>
             _ => TargetRuntimeDescriptor.Net60
         };
 
-        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, args.Namespace, args.GlobalClass);
+        var cesiumRuntime = args.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
+        var defaultImportsAssembly = args.DefaultImportAssemblies ?? Array.Empty<string>();
+        var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
+        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, corelibAssembly, cesiumRuntime, defaultImportsAssembly, args.Namespace, args.GlobalClass);
     },
     _ =>
     {
