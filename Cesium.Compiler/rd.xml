@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Directives>
+    <Application>
+        <Assembly Name="Cesium.Compiler">
+            <Type Name="Cesium.Compiler.Arguments" Dynamic="Required All" />
+        </Assembly>
+    </Application>
+</Directives>

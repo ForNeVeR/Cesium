@@ -36,4 +36,13 @@ public class Arguments
     [Option("globalclass", HelpText = "Sets default global class instead of \"<Module>\"")]
     public string GlobalClass { get; init; } = "";
 
+    [Option("import", HelpText = "Provides path to assemblies which would be added as references automatically into resulting executable.")]
+    public IList<string> DefaultImportAssemblies { get; init; } = null!;
+
+    [Option("corelib", HelpText = "Sets path to CoreLib assembly")]
+    public string? CoreLib { get; init; }
+
+    [Option("runtime", HelpText = "Sets path to Cesium C Runtime assembly")]
+    public string? CesiumCRuntime { get; init; }
+
 }

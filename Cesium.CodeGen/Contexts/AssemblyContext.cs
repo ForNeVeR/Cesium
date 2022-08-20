@@ -28,7 +28,7 @@ public class AssemblyContext
         AssemblyNameDefinition name,
         ModuleKind kind,
         TargetRuntimeDescriptor? targetRuntime,
-        string[] importAssemblies,
+        IList<string> importAssemblies,
         string mscorlibAssemblyLocation,
         string cesiumRuntimeAssemblyLocation,
         string @namespace = "",
@@ -76,7 +76,7 @@ public class AssemblyContext
     private AssemblyContext(
         AssemblyDefinition assembly,
         ModuleDefinition module,
-        string[] importAssemblies,
+        IList<string> importAssemblies,
         string mscorlibAssemblyLocation,
         string cesiumRuntimeAssemblyLocation,
         string @namespace = "",
