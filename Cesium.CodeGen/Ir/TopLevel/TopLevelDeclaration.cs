@@ -104,7 +104,14 @@ internal class TopLevelDeclaration : ITopLevelNode
             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {name}.");
 
         var method = context.MethodLookup(memberName, parametersInfo, returnType);
-        context.Functions.Add(name, new FunctionInfo(parametersInfo, returnType, method, IsDefined: true));
+        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, method, IsDefined: true);
+        if (!context.Functions.TryGetValue(name, out var existingDeclaration))
+        {
+            context.Functions.Add(name, cliImportFunctionInfo);
+            return;
+        }
+
+        cliImportFunctionInfo.VerifySignatureEquality(name, existingDeclaration.Parameters, existingDeclaration.ReturnType);
     }
 
     private static void EmitFunctionDeclaration(

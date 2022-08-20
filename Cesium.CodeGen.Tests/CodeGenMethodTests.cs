@@ -109,6 +109,20 @@ int console_read(void);
 int console_read(void) { return 0; }", "Function console_read already defined as immutable.");
 
     [Fact]
+    public void CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
+int console_read(void);
+__cli_import(""System.Console::Read"")
+int console_read(void);");
+
+    [Fact]
+    public void CanHaveTwoFucntionDeclarations() => DoTest(@"
+int console_read(void);
+
+int console_read(void);
+
+int console_read(void) { return 0; }");
+
+    [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
 int console_read() { return 2; }", "Double definition of function console_read.");
 
