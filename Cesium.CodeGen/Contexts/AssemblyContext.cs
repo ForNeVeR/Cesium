@@ -26,19 +26,13 @@ public class AssemblyContext
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
-        ModuleKind kind,
-        TargetRuntimeDescriptor? targetRuntime,
-        IList<string> importAssemblies,
-        string mscorlibAssemblyLocation,
-        string cesiumRuntimeAssemblyLocation,
-        string @namespace = "",
-        string globalTypeFqn = "")
+        CompilationOptions compilationOptions)
     {
-        var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", kind);
+        var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", compilationOptions.ModuleKind);
         var module = assembly.MainModule;
-        var assemblyContext = new AssemblyContext(assembly, module, importAssemblies, mscorlibAssemblyLocation, cesiumRuntimeAssemblyLocation, @namespace, globalTypeFqn);
+        var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
-        targetRuntime ??= TargetRuntimeDescriptor.Net60;
+        var targetRuntime = compilationOptions.TargetRuntime ?? TargetRuntimeDescriptor.Net60;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
@@ -76,28 +70,24 @@ public class AssemblyContext
     private AssemblyContext(
         AssemblyDefinition assembly,
         ModuleDefinition module,
-        IList<string> importAssemblies,
-        string mscorlibAssemblyLocation,
-        string cesiumRuntimeAssemblyLocation,
-        string @namespace = "",
-        string globalTypeFqn = "")
+        CompilationOptions compilationOptions)
     {
         Assembly = assembly;
         Module = module;
-        MscorlibAssembly = AssemblyDefinition.ReadAssembly(mscorlibAssemblyLocation);
-        CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(cesiumRuntimeAssemblyLocation);
-        ImportAssemblies = importAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
+        MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
+        CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
+        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
         _constantPool = new(
             () =>
             {
-                var type = new TypeDefinition(@namespace, ConstantPoolTypeName, TypeAttributes.Sealed, module.TypeSystem.Object);
+                var type = new TypeDefinition(compilationOptions.Namespace, ConstantPoolTypeName, TypeAttributes.Sealed, module.TypeSystem.Object);
                 module.Types.Add(type);
                 return type;
             });
 
-        if (!string.IsNullOrWhiteSpace(globalTypeFqn))
+        if (!string.IsNullOrWhiteSpace(compilationOptions.GlobalClassFqn))
         {
-            var fqnComponents = globalTypeFqn.Split('.');
+            var fqnComponents = compilationOptions.GlobalClassFqn.Split('.');
             var typeName = fqnComponents[^1];
             var typeNamespace = string.Join('.', fqnComponents.SkipLast(1));
 

@@ -1,8 +1,10 @@
 using System.Reflection;
 using Cesium.CodeGen;
 using Cesium.Compiler;
+using Cesium.Core;
 using CommandLine;
 using CommandLine.Text;
+using Mono.Cecil;
 
 var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
 
@@ -29,7 +31,14 @@ return await parserResult.MapResult(async args =>
         var cesiumRuntime = args.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         var defaultImportsAssembly = args.DefaultImportAssemblies ?? Array.Empty<string>();
         var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
-        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, corelibAssembly, cesiumRuntime, defaultImportsAssembly, args.Namespace, args.GlobalClass);
+        var moduleKind = args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
+        {
+            ".exe" => ModuleKind.Console,
+            ".dll" => ModuleKind.Dll,
+            var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
+        };
+        var compilationOptions = new CompilationOptions(targetRuntime, moduleKind, corelibAssembly, cesiumRuntime, defaultImportsAssembly, args.Namespace, args.GlobalClass);
+        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>
     {

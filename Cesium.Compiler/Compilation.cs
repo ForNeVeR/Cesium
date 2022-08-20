@@ -16,16 +16,10 @@ internal static class Compilation
     public static async Task<int> Compile(
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind,
-        string corelibAssembly,
-        string cesiumRuntime,
-        IList<string> defaultImportAssemblies,
-        string @namespace,
-        string globalClassFqn)
+        CompilationOptions compilationOptions)
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, corelibAssembly, cesiumRuntime, defaultImportAssemblies, @namespace, globalClassFqn);
+        var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -33,37 +27,17 @@ internal static class Compilation
             await GenerateCode(assemblyContext, inputFilePath);
         }
 
-        SaveAssembly(assemblyContext, targetRuntime.Kind, outputFilePath);
+        SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath);
 
         return 0;
     }
 
-    private static AssemblyContext CreateAssembly(
-        string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind,
-        string corelibAssembly,
-        string cesiumRuntime,
-        IList<string> defaultImportAssemblies,
-        string @namespace,
-        string globalClassFqn)
+    private static AssemblyContext CreateAssembly(string outputFilePath, CompilationOptions compilationOptions)
     {
-        var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
-        {
-            ".exe" => ModuleKind.Console,
-            ".dll" => ModuleKind.Dll,
-            var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
-        };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
-            parsedModuleKind,
-            targetRuntime,
-            defaultImportAssemblies,
-            corelibAssembly,
-            cesiumRuntime,
-            @namespace,
-            globalClassFqn);
+            compilationOptions);
     }
 
     private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
