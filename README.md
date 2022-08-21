@@ -125,6 +125,17 @@ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fal
 
 where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folder.
 
+Publishing
+----------
+
+For producing standalone compiler executable run
+
+```shell
+dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-contained
+```
+
+Then navigate to `Cesium.Compiler\bin\Debug\net6.0\win-x64\publish\` and that's your Cesium.
+
 Code Quality (Experimental)
 ------------
 
