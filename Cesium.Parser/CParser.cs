@@ -121,6 +121,7 @@ public partial class CParser
     // unary-expression:
     //    postfix-expression
     //    ++ unary-expression
+    //    * unary-expression
     //    unary-operator cast-expression
     //    sizeof unary-expression
     //    sizeof ( type-name )
@@ -129,6 +130,10 @@ public partial class CParser
     private static Expression MakePrefixIncrementExpression(ICToken _, Expression target) =>
         new PrefixIncrementExpression(target);
 
+    [Rule("unary_expression: '*' unary_expression")]
+    private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
+        new IndirectionExpression(target);
+
     [Rule("unary_expression: unary_operator unary_expression")]
     private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
         @operator.Kind == CTokenType.Subtract && target is ConstantExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
@@ -136,7 +141,6 @@ public partial class CParser
         : new UnaryOperatorExpression(@operator.Text, target);
 
     [Rule("unary_operator: '&'")]
-    // TODO[#207]: [Rule("unary_operator: '*'")]
     // TODO[#207]: [Rule("unary_operator: '+'")]
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]

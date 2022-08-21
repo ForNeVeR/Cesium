@@ -6,4 +6,5 @@ public enum UnaryOperator
     BitwiseNot, // ~
     LogicalNot, // !
     AddressOf, // &
+    Indirection, // *
 }

@@ -59,6 +59,12 @@ int main()
     [Fact]
     public Task AddressOfTest() => DoTest("int main() { int x; int *y = &x; }");
 
+    [Fact]
+    public Task IndirectionGetTest() => DoTest("int foo (int *x) { return *x; }");
+
+    [Fact]
+    public Task IndirectionSetTest() => DoTest("void foo (int *x) { *x = 42; }");
+
     [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");

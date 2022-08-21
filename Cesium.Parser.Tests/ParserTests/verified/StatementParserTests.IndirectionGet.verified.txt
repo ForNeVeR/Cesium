@@ -1,0 +1,24 @@
+﻿{
+  "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
+  "Expression": {
+    "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
+    "Left": {
+      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "Constant": {
+        "Kind": "Identifier",
+        "Text": "x"
+      }
+    },
+    "Operator": "=",
+    "Right": {
+      "$type": "Cesium.Ast.IndirectionExpression, Cesium.Ast",
+      "Target": {
+        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "Constant": {
+          "Kind": "Identifier",
+          "Text": "y"
+        }
+      }
+    }
+  }
+}

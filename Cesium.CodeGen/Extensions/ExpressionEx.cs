@@ -17,6 +17,7 @@ internal static class ExpressionEx
 
         // Unary operators:
         Ast.PrefixIncrementExpression e => new PrefixIncrementExpression(e),
+        Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
 
         // Binary operators:
