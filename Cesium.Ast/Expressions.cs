@@ -19,6 +19,7 @@ public record PointerMemberAccessExpression(Expression Target, IdentifierExpress
 // 6.5.3 Unary operators
 public record PrefixIncrementExpression(Expression Target) : Expression;
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
+public record IndirectionExpression(Expression Target) : Expression;
 
 // 6.5.5–6.5.15: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
