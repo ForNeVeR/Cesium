@@ -226,6 +226,11 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 IncludeTokens = true;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
+            case "else":
+            {
+                IncludeTokens = !IncludeTokens;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
             default:
                 throw new WipException(
                     77,
