@@ -77,6 +77,27 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfElseLiteral() => DoTest(
+@"#define foo main
+#ifndef foo
+int myfoo() { return 0; }
+#else
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task NestedIfDefined() => DoTest(
+@"#define foo main
+#ifdef foo
+int foo() { return 0; }
+#ifdef xfoo
+int foo() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
     public Task IfNotDefinedLiteral() => DoTest(
 @"#define foo main
 #ifndef foo
