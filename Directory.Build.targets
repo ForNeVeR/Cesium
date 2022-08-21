@@ -1,0 +1,16 @@
+<Project>
+    <Target Name="PublishApp" Condition="'$(MSBuildThisFileDirectory)Cesium.Compiler\Cesium.Compiler.csproj' == '$(MSBuildProjectFullPath)'">
+        <PropertyGroup>
+            <_ResultDir>$(MSBuildThisFileDirectory)artifacts\bin\Compiler\</_ResultDir>
+            <TargetRuntimeIdentifier>win-x64</TargetRuntimeIdentifier>
+            <TargetPlatformTarget>x64</TargetPlatformTarget>
+        </PropertyGroup>
+
+        <MSBuild Projects="$(MSBuildThisFileDirectory)Cesium.Compiler\Cesium.Compiler.csproj" Targets="Restore"
+                 Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRuntimeIdentifier);PlatformTarget=$(TargetPlatformTarget)" />
+        <MSBuild Projects="$(MSBuildThisFileDirectory)Cesium.Compiler\Cesium.Compiler.csproj" Targets="Publish"
+                 Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRuntimeIdentifier);PlatformTarget=$(TargetPlatformTarget);PublishDir=$(_ResultDir)" />
+        <MSBuild Projects="$(MSBuildThisFileDirectory)Cesium.Runtime\Cesium.Runtime.csproj" Targets="Build"
+                 Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRuntimeIdentifier);PlatformTarget=$(TargetPlatformTarget);OutputPath=$(_ResultDir)" />
+    </Target>
+</Project>

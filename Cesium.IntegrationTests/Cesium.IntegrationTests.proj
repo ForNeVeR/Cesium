@@ -5,6 +5,17 @@
         <Content Include="Run-Tests.ps1" />
     </ItemGroup>
 
+    <!-- This allow run restore on project when use MSBuild task without warning -->
+    <Target Name="_IsProjectRestoreSupported"
+          Returns="@(_ValidProjectsForRestore)">
+
+        <ItemGroup>
+            <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+        </ItemGroup>
+    </Target>
+    <Target Name="Restore" />
     <Target Name="Build" />
     <Target Name="VSTest" />
+
+    <Import Project="../Directory.Build.targets" />
 </Project>
