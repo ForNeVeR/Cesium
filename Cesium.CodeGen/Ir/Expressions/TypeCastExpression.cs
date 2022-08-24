@@ -45,6 +45,8 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_R4);
         else if (_targetType.Equals(ts.Double))
             Add(OpCodes.Conv_R8);
+        else if (_targetType is PointerType || _targetType.Equals(ts.NativeInt))
+            Add(OpCodes.Conv_I);
         else
             throw new AssertException($"Conversion from {expressionType} to {_targetType} is not supported.");
 

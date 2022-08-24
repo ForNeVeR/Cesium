@@ -19,6 +19,7 @@ internal class CTypeSystem
     public IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
     public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
+    public IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
 
     public bool IsConversionAvailable(IType type, IType targetType)
     {
@@ -81,6 +82,8 @@ internal class CTypeSystem
         else if (targetType.Equals(Float))
             return true;
         else if (targetType.Equals(Double))
+            return true;
+        else if (targetType.Equals(NativeInt) || targetType is PointerType)
             return true;
         else
             throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");

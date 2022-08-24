@@ -15,6 +15,11 @@ internal class IntegerConstant : IConstant
             throw new CompilationException($"Cannot parse an integer literal: {value}.");
     }
 
+    public IntegerConstant(int value)
+    {
+        _value = value;
+    }
+
     public void EmitTo(IDeclarationScope scope)
     {
         scope.Method.Body.Instructions.Add(_value switch

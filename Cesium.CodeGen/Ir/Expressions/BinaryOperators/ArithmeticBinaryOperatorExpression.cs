@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -27,6 +28,33 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         var right = Right.Lower(scope);
         var leftType = left.GetExpressionType(scope);
         var rightType = right.GetExpressionType(scope);
+        ValidateTypeOperations(leftType, rightType);
+        if (leftType is PointerType || rightType is PointerType)
+        {
+            if (leftType is PointerType leftPointerType)
+            {
+                right = new TypeCastExpression(
+                    scope.CTypeSystem.NativeInt,
+                    new ArithmeticBinaryOperatorExpression(
+                        new ConstantExpression(new IntegerConstant(leftPointerType.Base.SizeInBytes)),
+                        BinaryOperator.Multiply,
+                        right));
+
+                return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+            }
+
+            if (rightType is PointerType rightPointerType)
+            {
+                left = new TypeCastExpression(
+                    scope.CTypeSystem.NativeInt,
+                    new ArithmeticBinaryOperatorExpression(
+                        new ConstantExpression(new IntegerConstant(rightPointerType.Base.SizeInBytes)),
+                        BinaryOperator.Multiply,
+                        left));
+
+                return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+            }
+        }
 
         var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
         if (!leftType.IsEqualTo(commonType))
@@ -63,7 +91,42 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
     {
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
+        ValidateTypeOperations(leftType, rightType);
+
+        if (leftType is PointerType || rightType is PointerType)
+        {
+            if (leftType is PointerType)
+            {
+                return leftType;
+            }
+
+            return rightType;
+        }
 
         return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+    }
+
+    private void ValidateTypeOperations(IType leftType, IType rightType)
+    {
+        if (leftType is PointerType || rightType is PointerType)
+        {
+            if (Operator == BinaryOperator.Multiply)
+            {
+                throw new CompilationException("Operator '*' does not suported on pointer types");
+            }
+
+            if (leftType is PointerType && rightType is PointerType)
+            {
+                if (Operator == BinaryOperator.Add)
+                {
+                    throw new CompilationException("Operator '+': cannot add two pointers");
+                }
+
+                if (Operator == BinaryOperator.Subtract)
+                {
+                    throw new WipException(260, "Pointer substraction not implemented.");
+                }
+            }
+        }
     }
 }
