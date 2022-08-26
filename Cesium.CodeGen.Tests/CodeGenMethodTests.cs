@@ -83,6 +83,9 @@ int main()
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
 
+    [Fact] public Task MultiDeclarationWithStruct() => DoTest(@"typedef struct { int x; } foo;
+int main() { foo x,x2; x2.x=0; }");
+
     [Fact] public Task UninitializedVariable() => DoTest("int main() { int x; return 0; }");
 
     [Fact]

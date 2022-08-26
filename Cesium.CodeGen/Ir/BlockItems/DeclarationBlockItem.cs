@@ -78,7 +78,7 @@ internal class DeclarationBlockItem : IBlockItem
             switch (initializer)
             {
                 case null when type is not InPlaceArrayType:
-                    return;
+                    continue;
                 case null when type is InPlaceArrayType arrayType:
                     arrayType.EmitInitializer(scope);
                     break;
