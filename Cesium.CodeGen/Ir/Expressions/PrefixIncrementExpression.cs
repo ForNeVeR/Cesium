@@ -4,7 +4,6 @@ using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 

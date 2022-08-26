@@ -3,7 +3,6 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
