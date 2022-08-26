@@ -1,6 +1,5 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
