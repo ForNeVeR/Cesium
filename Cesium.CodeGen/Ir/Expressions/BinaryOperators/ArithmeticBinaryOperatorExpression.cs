@@ -124,7 +124,8 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
 
                 if (Operator == BinaryOperator.Subtract)
                 {
-                    throw new WipException(260, "Pointer substraction not implemented.");
+                    throw new WipException(260, "Pointer subtraction not implemented.");
+
                 }
             }
         }
