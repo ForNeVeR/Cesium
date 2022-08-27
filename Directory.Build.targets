@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup Label="Build">
+        <PackageOutputPath Condition="'$(IsShippingPackage)' == 'true'">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
+        <PackageOutputPath Condition="'$(IsShippingPackage)' != 'true'">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
+    </PropertyGroup>
+</Project>

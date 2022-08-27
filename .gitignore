@@ -9,3 +9,5 @@ obj/
 *.runtimeconfig.json
 *.received.txt
 *.user
+*.binlog
+artifacts/

@@ -35,4 +35,9 @@
         <RdXmlFile Include="rd.xml" />
     </ItemGroup>
 
+    <Target Name="PublishZip" AfterTargets="Build">
+        <MakeDir Directories="$(ArtifactsShippingPackagesDir)" />
+        <ZipDirectory SourceDirectory="$(OutputPath)" DestinationFile="$(ArtifactsShippingPackagesDir)cesium-$(Version).zip" Overwrite="true" />
+    </Target>
+
 </Project>
