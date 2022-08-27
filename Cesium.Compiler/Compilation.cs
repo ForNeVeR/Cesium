@@ -100,7 +100,7 @@ internal static class Compilation
 
         // Prevent copying of the Cesium.Runtime if compile in same directory as compiler.
         var outputExecutablePathFullPath = GetNormalizedFullPath(outputExecutablePath);
-        var compilerPathFullPath = GetNormalizedFullPath(AppContext.BaseDirectory);
+        var compilerPathFullPath = GetNormalizedFullPath(Path.GetDirectoryName(compilerRuntimeDll) ?? Environment.CurrentDirectory);
         if (outputExecutablePathFullPath != compilerPathFullPath)
         {
             File.Copy(compilerRuntimeDll, applicationRuntime, true);
