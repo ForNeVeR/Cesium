@@ -99,9 +99,7 @@ internal static class Compilation
         var applicationRuntime = Path.Combine(outputExecutablePath, "Cesium.Runtime.dll");
 
         // Prevent copying of the Cesium.Runtime if compile in same directory as compiler.
-        var outputExecutablePathFullPath = GetNormalizedFullPath(outputExecutablePath);
-        var compilerPathFullPath = GetNormalizedFullPath(Path.GetDirectoryName(compilerRuntimeDll) ?? Environment.CurrentDirectory);
-        if (outputExecutablePathFullPath != compilerPathFullPath)
+        if (!string.Equals(Path.GetFullPath(compilerRuntimeDll), Path.GetFullPath(applicationRuntime), StringComparison.InvariantCultureIgnoreCase))
         {
             File.Copy(compilerRuntimeDll, applicationRuntime, true);
         }
@@ -112,16 +110,5 @@ internal static class Compilation
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
             File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet6());
         }
-    }
-
-    private static string GetNormalizedFullPath(string path)
-    {
-        var fullPath = Path.GetFullPath(path, Environment.CurrentDirectory);
-        if (!Path.EndsInDirectorySeparator(fullPath))
-        {
-            fullPath += Path.DirectorySeparatorChar;
-        }
-
-        return fullPath;
     }
 }
