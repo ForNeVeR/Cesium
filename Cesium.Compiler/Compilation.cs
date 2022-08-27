@@ -27,7 +27,7 @@ internal static class Compilation
             await GenerateCode(assemblyContext, inputFilePath);
         }
 
-        SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath);
+        SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath, compilationOptions.CesiumRuntime);
 
         return 0;
     }
@@ -88,16 +88,23 @@ internal static class Compilation
     private static void SaveAssembly(
         AssemblyContext context,
         SystemAssemblyKind targetFrameworkKind,
-        string outputFilePath)
+        string outputFilePath,
+        string compilerRuntimeDll)
     {
         context.VerifyAndGetAssembly().Write(outputFilePath);
 
         // This part should go to Cesium.SDK eventually together with
         // runtimeconfig.json generation
-        var compilerRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         var outputExecutablePath = Path.GetDirectoryName(outputFilePath) ?? Environment.CurrentDirectory;
         var applicationRuntime = Path.Combine(outputExecutablePath, "Cesium.Runtime.dll");
-        File.Copy(compilerRuntime, applicationRuntime, true);
+
+        // Prevent copying of the Cesium.Runtime if compile in same directory as compiler.
+        var outputExecutablePathFullPath = GetNormalizedFullPath(outputExecutablePath);
+        var compilerPathFullPath = GetNormalizedFullPath(AppContext.BaseDirectory);
+        if (outputExecutablePathFullPath != compilerPathFullPath)
+        {
+            File.Copy(compilerRuntimeDll, applicationRuntime, true);
+        }
 
         if (context.Module.Kind == ModuleKind.Console && targetFrameworkKind == SystemAssemblyKind.SystemRuntime)
         {
@@ -105,5 +112,16 @@ internal static class Compilation
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
             File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet6());
         }
+    }
+
+    private static string GetNormalizedFullPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path, Environment.CurrentDirectory);
+        if (!Path.EndsInDirectorySeparator(fullPath))
+        {
+            fullPath += Path.DirectorySeparatorChar;
+        }
+
+        return fullPath;
     }
 }
