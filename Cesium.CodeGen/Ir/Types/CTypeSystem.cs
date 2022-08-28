@@ -1,4 +1,7 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.Core;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -16,4 +19,72 @@ internal class CTypeSystem
     public IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
     public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
+
+    public bool IsConversionAvailable(IType type, IType targetType)
+    {
+        if (type.IsEqualTo(targetType)
+            || (this.IsBool(type) && this.IsInteger(targetType))
+            || (this.IsBool(targetType) && this.IsInteger(type)))
+            return true;
+
+        if (!this.IsNumeric(type))
+            return false;
+
+        if (targetType.Equals(SignedChar))
+            return true;
+        else if (targetType.Equals(Short))
+            return true;
+        else if (targetType.Equals(Int))
+            return true;
+        else if (targetType.Equals(Long))
+            return true;
+        else if (targetType.Equals(Char))
+            return true;
+        else if (targetType.Equals(UnsignedShort))
+            return true;
+        else if (targetType.Equals(UnsignedInt))
+            return true;
+        else if (targetType.Equals(UnsignedLong))
+            return true;
+        else if (targetType.Equals(Float))
+            return true;
+        else if (targetType.Equals(Double))
+            return true;
+        else
+            return false;
+    }
+
+    internal bool IsConversionRequired(IType type, IType targetType)
+    {
+        if (type.IsEqualTo(targetType)
+            || (this.IsBool(type) && this.IsInteger(targetType))
+            || (this.IsBool(targetType) && this.IsInteger(type)))
+            return false;
+
+        if (!this.IsNumeric(type))
+            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
+
+        if (targetType.Equals(SignedChar))
+            return true;
+        else if (targetType.Equals(Short))
+            return true;
+        else if (targetType.Equals(Int))
+            return true;
+        else if (targetType.Equals(Long))
+            return true;
+        else if (targetType.Equals(Char))
+            return true;
+        else if (targetType.Equals(UnsignedShort))
+            return true;
+        else if (targetType.Equals(UnsignedInt))
+            return true;
+        else if (targetType.Equals(UnsignedLong))
+            return true;
+        else if (targetType.Equals(Float))
+            return true;
+        else if (targetType.Equals(Double))
+            return true;
+        else
+            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
+    }
 }

@@ -31,17 +31,12 @@ internal abstract class BinaryOperatorExpression : IExpression
     public abstract IType GetExpressionType(IDeclarationScope scope);
     public abstract void EmitTo(IDeclarationScope scope);
 
-    protected void EmitConversion(IDeclarationScope scope, IType exprType, IType desiredType)
+    internal static void EmitConversion(IDeclarationScope scope, IType exprType, IType desiredType)
     {
-        if (exprType.IsEqualTo(desiredType)
-            || (scope.CTypeSystem.IsBool(exprType) && scope.CTypeSystem.IsInteger(desiredType))
-            || (scope.CTypeSystem.IsBool(desiredType) && scope.CTypeSystem.IsInteger(exprType)))
+        if (!scope.CTypeSystem.IsConversionRequired(exprType, desiredType))
             return;
 
         var ts = scope.CTypeSystem;
-        if(!ts.IsNumeric(exprType))
-            throw new CompilationException($"Conversion from {exprType} to {desiredType} is not supported.");
-
         if(desiredType.Equals(ts.SignedChar))
             Add(OpCodes.Conv_I1);
         else if(desiredType.Equals(ts.Short))
@@ -63,7 +58,7 @@ internal abstract class BinaryOperatorExpression : IExpression
         else if (desiredType.Equals(ts.Double))
             Add(OpCodes.Conv_R8);
         else
-            throw new CompilationException($"Conversion from {exprType} to {desiredType} is not supported.");
+            throw new AssertException($"Conversion from {exprType} to {desiredType} is not supported.");
 
         void Add(OpCode op) => scope.Method.Body.Instructions.Add(Instruction.Create(op));
     }

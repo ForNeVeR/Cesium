@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -83,7 +84,20 @@ internal class DeclarationBlockItem : IBlockItem
                     arrayType.EmitInitializer(scope);
                     break;
                 default:
-                    initializer?.EmitTo(scope);
+                    var initialierExpression = initializer;
+                    if (initialierExpression != null)
+                    {
+                        // This should be part of lowering process
+                        // But because lowering process does not have access to type-system, I place this bandaid.
+                        // also I do think that during lowering process initalizer expression should be extracted into separate
+                        // AssignmentExpression, so we do not duplicate this conversion logic everywhere.
+                        if (scope.CTypeSystem.IsConversionAvailable(initialierExpression.GetExpressionType(scope), type))
+                        {
+                            initialierExpression = new TypeCastExpression(type, initialierExpression);
+                        }
+                    }
+
+                    initialierExpression?.EmitTo(scope);
                     break;
             }
 

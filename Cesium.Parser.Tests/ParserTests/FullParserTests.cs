@@ -95,6 +95,14 @@ int main()
 }");
 
     [Fact]
+    public Task FloatingPointLiteral() => DoTest(@"int main()
+{
+    float f1 = 1.0;
+    float f2 = 1.0f;
+    long doubld ld1 = 1.0l;
+}");
+
+    [Fact]
     public Task NegationTest() => DoTest("void foo() { int x = -42; }");
 
     [Fact]

@@ -37,7 +37,9 @@ internal class AssignmentExpression : BinaryOperatorExpression
             _ => throw new WipException(226, $"Assignment operator not supported, yet: {Operator}.")
         };
 
-        return new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, rightExpanded.Lower());
+        IExpression left = Left.Lower();
+        IExpression right = rightExpanded.Lower();
+        return new AssignmentExpression(left, BinaryOperator.Assign, right);
     }
 
     public override void EmitTo(IDeclarationScope scope)
@@ -49,7 +51,14 @@ internal class AssignmentExpression : BinaryOperatorExpression
         if (value is not ILValue lvalue)
             throw new CompilationException($"Not an lvalue: {value}.");
 
-        lvalue.EmitSetValue(scope, Right);
+        var right = Right;
+        IType leftType = Left.GetExpressionType(scope);
+        if (scope.CTypeSystem.IsConversionAvailable(right.GetExpressionType(scope), leftType))
+        {
+            right = new TypeCastExpression(leftType, right);
+        }
+
+        lvalue.EmitSetValue(scope, right);
     }
 
     // `x = v` expression returns type of x (and v)
