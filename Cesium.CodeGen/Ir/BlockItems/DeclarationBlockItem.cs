@@ -84,20 +84,20 @@ internal class DeclarationBlockItem : IBlockItem
                     arrayType.EmitInitializer(scope);
                     break;
                 default:
-                    var initialierExpression = initializer;
-                    if (initialierExpression != null)
+                    var initializerExpression = initializer;
+                    if (initializerExpression != null)
                     {
                         // This should be part of lowering process
                         // But because lowering process does not have access to type-system, I place this bandaid.
-                        // also I do think that during lowering process initalizer expression should be extracted into separate
+                        // also I do think that during lowering process initializer expression should be extracted into separate
                         // AssignmentExpression, so we do not duplicate this conversion logic everywhere.
-                        if (scope.CTypeSystem.IsConversionAvailable(initialierExpression.GetExpressionType(scope), type))
+                        if (scope.CTypeSystem.IsConversionAvailable(initializerExpression.GetExpressionType(scope), type))
                         {
-                            initialierExpression = new TypeCastExpression(type, initialierExpression);
+                            initializerExpression = new TypeCastExpression(type, initializerExpression);
                         }
                     }
 
-                    initialierExpression?.EmitTo(scope);
+                    initializerExpression?.EmitTo(scope);
                     break;
             }
 
