@@ -28,7 +28,7 @@ internal class IfElseStatement : IBlockItem
 
     bool IBlockItem.HasDefiniteReturn => _trueBranch.HasDefiniteReturn && _falseBranch?.HasDefiniteReturn == true;
 
-    public IBlockItem Lower() => new IfElseStatement(_expression.Lower(), _trueBranch.Lower(), _falseBranch?.Lower());
+    public IBlockItem Lower(IDeclarationScope scope) => new IfElseStatement(_expression.Lower(scope), _trueBranch.Lower(scope), _falseBranch?.Lower(scope));
 
     public void EmitTo(IDeclarationScope scope)
     {

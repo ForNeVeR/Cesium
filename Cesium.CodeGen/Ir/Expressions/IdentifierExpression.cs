@@ -25,7 +25,12 @@ internal class IdentifierExpression : IExpression, IValueExpression
         Identifier = expression.Identifier;
     }
 
-    public IExpression Lower() => this;
+    public IdentifierExpression(string identifier)
+    {
+        Identifier = identifier;
+    }
+
+    public IExpression Lower(IDeclarationScope scope) => this;
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 

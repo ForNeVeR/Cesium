@@ -36,12 +36,12 @@ internal class ForStatement : IBlockItem
         _body = body;
     }
 
-    public IBlockItem Lower()
+    public IBlockItem Lower(IDeclarationScope scope)
         => new ForStatement(
-            _initExpression?.Lower(),
-            _testExpression.Lower(),
-            _updateExpression?.Lower(),
-            _body.Lower());
+            _initExpression?.Lower(scope),
+            _testExpression.Lower(scope),
+            _updateExpression?.Lower(scope),
+            _body.Lower(scope));
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
 

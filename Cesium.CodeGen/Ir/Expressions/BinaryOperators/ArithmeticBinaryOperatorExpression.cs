@@ -3,6 +3,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
@@ -20,19 +21,33 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
     {
     }
 
-    public override IExpression Lower() => new ArithmeticBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public override IExpression Lower(IDeclarationScope scope)
+    {
+        var left = Left.Lower(scope);
+        var right = Right.Lower(scope);
+        var leftType = left.GetExpressionType(scope);
+        var rightType = right.GetExpressionType(scope);
+
+        var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        if (!leftType.IsEqualTo(commonType))
+        {
+            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(leftType, commonType));
+            left = new TypeCastExpression(commonType, left).Lower(scope);
+        }
+
+        if (!rightType.IsEqualTo(commonType))
+        {
+            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(rightType, commonType));
+            right = new TypeCastExpression(commonType, right).Lower(scope);
+        }
+
+        return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+    }
 
     public override void EmitTo(IDeclarationScope scope)
     {
-        var type = GetExpressionType(scope);
-        var leftType = Left.GetExpressionType(scope);
-        var rightType = Right.GetExpressionType(scope);
-
         Left.EmitTo(scope);
-        EmitConversion(scope, leftType, type);
-
         Right.EmitTo(scope);
-        EmitConversion(scope, rightType, type);
 
         var opcode = Operator switch
         {

@@ -6,7 +6,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class BreakStatement : IBlockItem
 {
-    public IBlockItem Lower() => this;
+    public IBlockItem Lower(IDeclarationScope scope) => this;
 
     public void EmitTo(IDeclarationScope scope)
     {

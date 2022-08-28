@@ -20,7 +20,7 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
     {
     }
 
-    public override IExpression Lower() => new BitwiseBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public override IExpression Lower(IDeclarationScope scope) => new BitwiseBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
 
     public override void EmitTo(IDeclarationScope scope)
     {

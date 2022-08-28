@@ -21,7 +21,7 @@ internal class DeclarationBlockItem : IBlockItem
     {
     }
 
-    public IBlockItem Lower()
+    public IBlockItem Lower(IDeclarationScope scope)
     {
         switch (_declaration)
         {
@@ -33,7 +33,7 @@ internal class DeclarationBlockItem : IBlockItem
                         items.Select(d =>
                             {
                                 var (itemDeclaration, initializer) = d;
-                                return new InitializableDeclarationInfo(itemDeclaration, initializer?.Lower());
+                                return new InitializableDeclarationInfo(itemDeclaration, initializer?.Lower(scope));
                             })
                             .ToList()));
             }
@@ -91,7 +91,9 @@ internal class DeclarationBlockItem : IBlockItem
                         // But because lowering process does not have access to type-system, I place this bandaid.
                         // also I do think that during lowering process initializer expression should be extracted into separate
                         // AssignmentExpression, so we do not duplicate this conversion logic everywhere.
-                        if (scope.CTypeSystem.IsConversionAvailable(initializerExpression.GetExpressionType(scope), type))
+                        var initializerType = initializerExpression.GetExpressionType(scope);
+                        if (scope.CTypeSystem.IsConversionAvailable(initializerType, type)
+                            && !initializerType.Equals(type))
                         {
                             initializerExpression = new TypeCastExpression(type, initializerExpression);
                         }

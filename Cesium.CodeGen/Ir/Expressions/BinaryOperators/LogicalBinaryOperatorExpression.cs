@@ -19,7 +19,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
     {
     }
 
-    public override IExpression Lower() => new LogicalBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public override IExpression Lower(IDeclarationScope scope) => new LogicalBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
 
     public override void EmitTo(IDeclarationScope scope)
     {

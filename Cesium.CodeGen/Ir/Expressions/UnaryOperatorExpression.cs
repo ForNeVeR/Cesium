@@ -26,7 +26,7 @@ internal class UnaryOperatorExpression : IExpression
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower() => new UnaryOperatorExpression(_operator, _target.Lower());
+    public IExpression Lower(IDeclarationScope scope) => new UnaryOperatorExpression(_operator, _target.Lower(scope));
 
     public void EmitTo(IDeclarationScope scope)
     {

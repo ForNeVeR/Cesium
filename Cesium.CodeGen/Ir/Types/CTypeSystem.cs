@@ -56,9 +56,7 @@ internal class CTypeSystem
 
     internal bool IsConversionRequired(IType type, IType targetType)
     {
-        if (type.IsEqualTo(targetType)
-            || (this.IsBool(type) && this.IsInteger(targetType))
-            || (this.IsBool(targetType) && this.IsInteger(type)))
+        if (type.IsEqualTo(targetType))
             return false;
 
         if (!this.IsNumeric(type))

@@ -175,7 +175,7 @@ internal static class TypeSystemEx
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
-        var unsignedTypes = new[] {ts.Bool, ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);

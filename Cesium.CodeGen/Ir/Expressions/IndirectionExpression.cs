@@ -21,7 +21,7 @@ internal class IndirectionExpression : IExpression, IValueExpression
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower() => new IndirectionExpression(_target.Lower());
+    public IExpression Lower(IDeclarationScope scope) => new IndirectionExpression(_target.Lower(scope));
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 

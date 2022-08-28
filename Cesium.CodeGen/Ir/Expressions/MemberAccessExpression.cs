@@ -24,10 +24,10 @@ internal class MemberAccessExpression : IExpression, IValueExpression
         _memberIdentifier = memberIdentifier;
     }
 
-    public IExpression Lower()
+    public IExpression Lower(IDeclarationScope scope)
         => new PointerMemberAccessExpression(
-            new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower()),
-            _memberIdentifier.Lower());
+            new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower(scope)),
+            _memberIdentifier.Lower(scope));
 
     public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 

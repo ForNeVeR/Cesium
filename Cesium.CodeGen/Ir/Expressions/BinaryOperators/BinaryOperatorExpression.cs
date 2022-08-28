@@ -27,41 +27,9 @@ internal abstract class BinaryOperatorExpression : IExpression
         Right = right.ToIntermediate();
     }
 
-    public abstract IExpression Lower();
+    public abstract IExpression Lower(IDeclarationScope scope);
     public abstract IType GetExpressionType(IDeclarationScope scope);
     public abstract void EmitTo(IDeclarationScope scope);
-
-    internal static void EmitConversion(IDeclarationScope scope, IType exprType, IType desiredType)
-    {
-        if (!scope.CTypeSystem.IsConversionRequired(exprType, desiredType))
-            return;
-
-        var ts = scope.CTypeSystem;
-        if(desiredType.Equals(ts.SignedChar))
-            Add(OpCodes.Conv_I1);
-        else if(desiredType.Equals(ts.Short))
-            Add(OpCodes.Conv_I2);
-        else if(desiredType.Equals(ts.Int))
-            Add(OpCodes.Conv_I4);
-        else if(desiredType.Equals(ts.Long))
-            Add(OpCodes.Conv_I8);
-        else if(desiredType.Equals(ts.Char))
-            Add(OpCodes.Conv_U1);
-        else if(desiredType.Equals(ts.UnsignedShort))
-            Add(OpCodes.Conv_U2);
-        else if(desiredType.Equals(ts.UnsignedInt))
-            Add(OpCodes.Conv_U4);
-        else if(desiredType.Equals(ts.UnsignedLong))
-            Add(OpCodes.Conv_U8);
-        else if(desiredType.Equals(ts.Float))
-            Add(OpCodes.Conv_R4);
-        else if (desiredType.Equals(ts.Double))
-            Add(OpCodes.Conv_R8);
-        else
-            throw new AssertException($"Conversion from {exprType} to {desiredType} is not supported.");
-
-        void Add(OpCode op) => scope.Method.Body.Instructions.Add(Instruction.Create(op));
-    }
 
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
     {

@@ -29,9 +29,9 @@ internal class FunctionCallExpression : IExpression
                      ?? Array.Empty<IExpression>();
     }
 
-    public IExpression Lower() => new FunctionCallExpression(
-        (IdentifierExpression)_function.Lower(),
-        _arguments.Select(a => a.Lower()).ToList());
+    public IExpression Lower(IDeclarationScope scope) => new FunctionCallExpression(
+        (IdentifierExpression)_function.Lower(scope),
+        _arguments.Select(a => a.Lower(scope)).ToList());
 
     public void EmitTo(IDeclarationScope scope)
     {

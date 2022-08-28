@@ -16,9 +16,9 @@ internal class PrefixIncrementExpression : IExpression
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower()
+    public IExpression Lower(IDeclarationScope scope)
     {
-        var target = _target.Lower();
+        var target = _target.Lower(scope);
         return new AssignmentExpression(
             target,
             BinaryOperator.Assign,

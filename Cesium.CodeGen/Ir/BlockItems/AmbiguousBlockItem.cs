@@ -24,7 +24,7 @@ internal class AmbiguousBlockItem : IBlockItem
         (_item1, _item2) = item;
     }
 
-    public IBlockItem Lower() => this;
+    public IBlockItem Lower(IDeclarationScope scope) => this;
 
     public void EmitTo(IDeclarationScope scope)
     {
@@ -67,6 +67,6 @@ internal class AmbiguousBlockItem : IBlockItem
             ImmutableArray.Create<Expression>(new ConstantExpression(argumentToken))
         ));
         var realNode = new ExpressionStatement(functionCallExpression);
-        realNode.Lower().EmitTo(scope);
+        realNode.Lower(scope).EmitTo(scope);
     }
 }

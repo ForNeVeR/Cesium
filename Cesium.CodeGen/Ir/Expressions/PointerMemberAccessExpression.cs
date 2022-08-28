@@ -25,8 +25,8 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
         _memberIdentifier = memberIdentifier;
     }
 
-    public IExpression Lower()
-        => new PointerMemberAccessExpression(_target.Lower(), _memberIdentifier.Lower());
+    public IExpression Lower(IDeclarationScope scope)
+        => new PointerMemberAccessExpression(_target.Lower(scope), _memberIdentifier.Lower(scope));
 
     public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
 
