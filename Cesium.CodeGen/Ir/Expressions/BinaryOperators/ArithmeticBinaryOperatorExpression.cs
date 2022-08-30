@@ -91,7 +91,6 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
     {
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
-        ValidateTypeOperations(leftType, rightType);
 
         if (leftType is PointerType || rightType is PointerType)
         {
