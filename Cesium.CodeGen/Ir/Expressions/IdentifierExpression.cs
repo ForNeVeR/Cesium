@@ -21,8 +21,8 @@ internal class IdentifierExpression : IExpression, IValueExpression
     }
 
     public IdentifierExpression(Ast.IdentifierExpression expression)
+        : this(expression.Identifier)
     {
-        Identifier = expression.Identifier;
     }
 
     public IdentifierExpression(string identifier)
