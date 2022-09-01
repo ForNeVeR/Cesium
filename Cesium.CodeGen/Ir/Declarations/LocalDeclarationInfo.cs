@@ -103,7 +103,7 @@ internal record LocalDeclarationInfo(
                     if (identifier != null)
                         throw new WipException(218, $"Named structures aren't supported, yet: {identifier}.");
 
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations));
+                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList());
                     break;
                 }
 

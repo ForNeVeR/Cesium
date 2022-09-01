@@ -8,11 +8,12 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal class StructType : IGeneratedType
 {
-    private readonly IEnumerable<LocalDeclarationInfo> _members;
-    public StructType(IEnumerable<LocalDeclarationInfo> members)
+    public StructType(IReadOnlyList<LocalDeclarationInfo> members)
     {
-        _members = members;
+        Members = members;
     }
+
+    internal IReadOnlyList<LocalDeclarationInfo> Members { get; }
 
     public TypeDefinition Emit(string name, TranslationUnitContext context)
     {
@@ -23,7 +24,7 @@ internal class StructType : IGeneratedType
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
         context.Module.Types.Add(structType);
 
-        foreach (var member in _members)
+        foreach (var member in Members)
         {
             var (type, identifier, cliImportMemberName) = member;
             if (identifier == null)
