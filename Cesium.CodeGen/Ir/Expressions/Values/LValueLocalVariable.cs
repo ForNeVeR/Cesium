@@ -7,18 +7,20 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal class LValueLocalVariable : ILValue
 {
-    private readonly VariableDefinition _definition;
     private readonly IType _variableType;
+    private readonly string _name;
+    private VariableDefinition? _definition;
 
-    public LValueLocalVariable(IType variableType, VariableDefinition definition)
+    public LValueLocalVariable(IType variableType, string name)
     {
         _variableType = variableType;
-        _definition = definition;
+        _name = name;
     }
 
-    public void EmitGetValue(IDeclarationScope scope)
+    public void EmitGetValue(IEmitScope scope)
     {
-        scope.Method.Body.Instructions.Add(_definition.Index switch
+        var variable = GetVariableDefinition(scope);
+        scope.Method.Body.Instructions.Add(variable.Index switch
         {
             0 => Instruction.Create(OpCodes.Ldloc_0),
             1 => Instruction.Create(OpCodes.Ldloc_1),
@@ -29,11 +31,12 @@ internal class LValueLocalVariable : ILValue
         });
     }
 
-    public void EmitGetAddress(IDeclarationScope scope)
+    public void EmitGetAddress(IEmitScope scope)
     {
+        var variable = GetVariableDefinition(scope);
         scope.Method.Body.Instructions.Add(
             Instruction.Create(
-                _definition.Index <= sbyte.MaxValue
+                variable.Index <= sbyte.MaxValue
                     ? OpCodes.Ldloca_S
                     : OpCodes.Ldloca,
                 _definition
@@ -41,11 +44,23 @@ internal class LValueLocalVariable : ILValue
         );
     }
 
-    public void EmitSetValue(IDeclarationScope scope, IExpression value)
+    public void EmitSetValue(IEmitScope scope, IExpression value)
     {
+        var variable = GetVariableDefinition(scope);
         value.EmitTo(scope);
-        scope.StLoc(_definition);
+        scope.StLoc(variable);
     }
 
     public IType GetValueType() => _variableType;
+
+    private VariableDefinition GetVariableDefinition(IEmitScope scope)
+    {
+        if (_definition != null)
+        {
+            return _definition;
+        }
+
+        _definition = scope.ResolveVariable(_name);
+        return _definition;
+    }
 }

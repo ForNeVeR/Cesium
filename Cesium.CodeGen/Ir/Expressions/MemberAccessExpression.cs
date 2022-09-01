@@ -29,7 +29,7 @@ internal class MemberAccessExpression : IExpression, IValueExpression
             new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower(scope)),
             _memberIdentifier.Lower(scope));
 
-    public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 

@@ -30,7 +30,7 @@ internal class PrefixIncrementExpression : IExpression
         );
     }
 
-    public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 }

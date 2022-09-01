@@ -18,7 +18,7 @@ internal sealed class TypeCastExpression : IExpression
         _expression = expression;
     }
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         _expression.EmitTo(scope);
         var expressionType = _expression.GetExpressionType(scope);

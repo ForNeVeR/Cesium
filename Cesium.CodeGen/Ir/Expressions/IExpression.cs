@@ -6,6 +6,6 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal interface IExpression
 {
     IExpression Lower(IDeclarationScope scope);
-    void EmitTo(IDeclarationScope scope);
+    void EmitTo(IEmitScope scope);
     IType GetExpressionType(IDeclarationScope scope);
 }

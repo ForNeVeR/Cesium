@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record FunctionScope(TranslationUnitContext Context, FunctionInfo FunctionInfo, MethodDefinition Method) : IDeclarationScope
+internal record FunctionScope(TranslationUnitContext Context, FunctionInfo FunctionInfo, MethodDefinition Method) : IEmitScope
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
@@ -18,6 +18,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     private readonly Dictionary<string, IType> _variables = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
     public IReadOnlyDictionary<string, IType> Variables => _variables;
+    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
     public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
     public VariableDefinition ResolveVariable(string identifier)
     {

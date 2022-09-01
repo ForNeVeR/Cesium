@@ -7,5 +7,5 @@ internal interface IBlockItem
     bool HasDefiniteReturn => false;
 
     IBlockItem Lower(IDeclarationScope scope);
-    void EmitTo(IDeclarationScope scope);
+    void EmitTo(IEmitScope scope);
 }

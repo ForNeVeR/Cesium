@@ -50,7 +50,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
         return new AssignmentExpression(left, BinaryOperator.Assign, right);
     }
 
-    public override void EmitTo(IDeclarationScope scope)
+    public override void EmitTo(IEmitScope scope)
     {
         if (Operator != BinaryOperator.Assign)
             throw new AssertException($"Operator {Operator} should've been lowered before emitting.");

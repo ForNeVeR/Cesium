@@ -5,7 +5,7 @@ namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
 internal interface IConstant
 {
-    void EmitTo(IDeclarationScope scope);
+    void EmitTo(IEmitScope scope);
 
     IType GetConstantType(IDeclarationScope scope);
 }

@@ -66,7 +66,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         };
     }
 
-    public override void EmitTo(IDeclarationScope scope)
+    public override void EmitTo(IEmitScope scope)
     {
         Left.EmitTo(scope);
         Right.EmitTo(scope);

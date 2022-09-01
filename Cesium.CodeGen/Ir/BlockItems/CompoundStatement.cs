@@ -21,7 +21,7 @@ internal class CompoundStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope) => this; // since actual lowering of child items is done on emit, anyway
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         foreach (var item in _items)
         {

@@ -23,7 +23,7 @@ internal class IndirectionExpression : IExpression, IValueExpression
 
     public IExpression Lower(IDeclarationScope scope) => new IndirectionExpression(_target.Lower(scope));
 
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => Resolve(scope).EmitGetValue(scope);
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 

@@ -22,7 +22,7 @@ internal class ConstantExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope) => this;
 
-    public void EmitTo(IDeclarationScope scope) => _constant.EmitTo(scope);
+    public void EmitTo(IEmitScope scope) => _constant.EmitTo(scope);
 
     public IType GetExpressionType(IDeclarationScope scope) => _constant.GetConstantType(scope);
 

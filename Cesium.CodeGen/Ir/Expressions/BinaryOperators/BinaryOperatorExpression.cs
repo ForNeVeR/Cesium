@@ -29,7 +29,7 @@ internal abstract class BinaryOperatorExpression : IExpression
 
     public abstract IExpression Lower(IDeclarationScope scope);
     public abstract IType GetExpressionType(IDeclarationScope scope);
-    public abstract void EmitTo(IDeclarationScope scope);
+    public abstract void EmitTo(IEmitScope scope);
 
     private static BinaryOperator GetOperatorKind(string @operator) => @operator switch
     {

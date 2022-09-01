@@ -15,7 +15,7 @@ internal class FloatingPointConstant : IConstant
         _isFloat = isFloat;
     }
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         if (_isFloat)
         {

@@ -6,10 +6,10 @@ namespace Cesium.CodeGen.Extensions;
 
 internal static class CodeGenEx
 {
-    private static void AddInstruction(this IDeclarationScope scope, Instruction instruction) =>
+    private static void AddInstruction(this IEmitScope scope, Instruction instruction) =>
         scope.Method.Body.Instructions.Add(instruction);
 
-    public static void StLoc(this IDeclarationScope scope, VariableDefinition variable)
+    public static void StLoc(this IEmitScope scope, VariableDefinition variable)
     {
         scope.AddInstruction(variable.Index switch
         {
@@ -22,22 +22,22 @@ internal static class CodeGenEx
         });
     }
 
-    public static void LdSFld(this IDeclarationScope scope, FieldReference field)
+    public static void LdSFld(this IEmitScope scope, FieldReference field)
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldsfld, field));
     }
 
-    public static void LdSFldA(this IDeclarationScope scope, FieldReference field)
+    public static void LdSFldA(this IEmitScope scope, FieldReference field)
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldsflda, field));
     }
 
-    public static void StSFld(this IDeclarationScope scope, FieldReference field)
+    public static void StSFld(this IEmitScope scope, FieldReference field)
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Stsfld, field));
     }
 
-    public static void LdFtn(this IDeclarationScope scope, MethodReference method)
+    public static void LdFtn(this IEmitScope scope, MethodReference method)
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldftn, method));
     }

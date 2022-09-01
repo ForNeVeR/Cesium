@@ -18,7 +18,7 @@ internal class StringConstant : IConstant
         _value = token.UnwrapStringLiteral();
     }
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         var fieldReference = scope.AssemblyContext.GetConstantPoolReference(_value);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
