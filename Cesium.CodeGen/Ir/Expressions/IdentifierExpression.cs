@@ -32,7 +32,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
     public IExpression Lower(IDeclarationScope scope) => this;
 
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => Resolve(scope).EmitGetValue(scope);
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 
@@ -41,7 +41,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
         scope.Variables.TryGetValue(Identifier, out var var);
         scope.Functions.TryGetValue(Identifier, out FunctionInfo? fun);
         var par = scope.GetParameterInfo(Identifier);
-        scope.Context.AssemblyContext.GlobalFields.TryGetValue(Identifier, out var globalType);
+        scope.GlobalFields.TryGetValue(Identifier, out var globalType);
 
         if (var is not null && par is not null)
             throw new CompilationException($"Variable {Identifier} is both available as a local and as a function parameter.");
@@ -54,14 +54,12 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (var is not null)
         {
-            var variableDefinition = scope.ResolveVariable(Identifier);
-            return new LValueLocalVariable(var, variableDefinition);
+            return new LValueLocalVariable(var, Identifier);
         }
 
         if (par is not null)
         {
-            var parameterInfo = scope.ResolveParameter(Identifier);
-            return new LValueParameter(par, parameterInfo);
+            return new LValueParameter(par);
         }
 
         if (fun is not null)
@@ -71,8 +69,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (globalType != null)
         {
-            var globalField = scope.Context.AssemblyContext.ResolveGlobalField(Identifier, scope.Context);
-            return new LValueGlobalVariable(globalType, globalField);
+            return new LValueGlobalVariable(globalType, Identifier);
         }
 
         throw new CompilationException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");

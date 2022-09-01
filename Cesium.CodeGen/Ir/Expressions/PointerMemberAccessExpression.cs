@@ -28,9 +28,9 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
     public IExpression Lower(IDeclarationScope scope)
         => new PointerMemberAccessExpression(_target.Lower(scope), _memberIdentifier.Lower(scope));
 
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => Resolve(scope).EmitGetValue(scope);
 
-    public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 
     public IValue Resolve(IDeclarationScope scope)
     {
@@ -38,12 +38,6 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
             throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
 
         var valueType = _target.GetExpressionType(scope);
-        var valueTypeReference = valueType.Resolve(scope.Context);
-        var valueTypeDef = valueTypeReference.Resolve();
-
-        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
-                    ?? throw new CompilationException(
-                        $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
-        return new LValueField(_target, valueType, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+        return new LValueField(_target, valueType, memberIdentifier.Identifier);
     }
 }

@@ -30,7 +30,7 @@ internal class IfElseStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope) => new IfElseStatement(_expression.Lower(scope), _trueBranch.Lower(scope), _falseBranch?.Lower(scope));
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
         var ifFalseLabel = bodyProcessor.Create(OpCodes.Nop);

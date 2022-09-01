@@ -20,7 +20,7 @@ internal class IntegerConstant : IConstant
         _value = value;
     }
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         scope.Method.Body.Instructions.Add(_value switch
         {

@@ -44,7 +44,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         }
     }
 
-    public void EmitInitializer(IDeclarationScope scope)
+    public void EmitInitializer(IEmitScope scope)
     {
         if (Base is not PrimitiveType)
             throw new WipException(232, $"Array of complex type specifiers aren't supported, yet: {Base}");

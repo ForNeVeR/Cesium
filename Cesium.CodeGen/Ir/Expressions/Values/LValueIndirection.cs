@@ -16,16 +16,16 @@ internal class LValueIndirection : ILValue
         _pointerType = pointerType;
     }
 
-    public void EmitGetValue(IDeclarationScope scope)
+    public void EmitGetValue(IEmitScope scope)
     {
         _pointerExpression.EmitTo(scope);
         var (load, _) = GetOpcodes(_pointerType);
         scope.Method.Body.Instructions.Add(Instruction.Create(load));
     }
 
-    public void EmitGetAddress(IDeclarationScope scope) => _pointerExpression.EmitTo(scope);
+    public void EmitGetAddress(IEmitScope scope) => _pointerExpression.EmitTo(scope);
 
-    public void EmitSetValue(IDeclarationScope scope, IExpression value)
+    public void EmitSetValue(IEmitScope scope, IExpression value)
     {
         _pointerExpression.EmitTo(scope);
         value.EmitTo(scope);

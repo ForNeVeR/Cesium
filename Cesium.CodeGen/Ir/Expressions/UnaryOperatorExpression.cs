@@ -28,7 +28,7 @@ internal class UnaryOperatorExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope) => new UnaryOperatorExpression(_operator, _target.Lower(scope));
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         switch (_operator)
         {

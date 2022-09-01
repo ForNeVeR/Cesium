@@ -45,7 +45,7 @@ internal class ForStatement : IBlockItem
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
 
-    public void EmitTo(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         var forScope = new ForScope(scope);
 
