@@ -53,14 +53,6 @@ internal class LValueLocalVariable : ILValue
 
     public IType GetValueType() => _variableType;
 
-    private VariableDefinition GetVariableDefinition(IEmitScope scope)
-    {
-        if (_definition != null)
-        {
-            return _definition;
-        }
-
-        _definition = scope.ResolveVariable(_name);
-        return _definition;
-    }
+    private VariableDefinition GetVariableDefinition(IEmitScope scope) =>
+        _definition ??= scope.ResolveVariable(_name);
 }
