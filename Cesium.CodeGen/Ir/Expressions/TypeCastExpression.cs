@@ -21,8 +21,6 @@ internal sealed class TypeCastExpression : IExpression
     public void EmitTo(IEmitScope scope)
     {
         _expression.EmitTo(scope);
-        var expressionType = _expression.GetExpressionType(scope);
-        Debug.Assert(scope.CTypeSystem.IsConversionRequired(expressionType, _targetType));
 
         var ts = scope.CTypeSystem;
         if (_targetType.Equals(ts.SignedChar))
@@ -48,7 +46,7 @@ internal sealed class TypeCastExpression : IExpression
         else if (_targetType is PointerType || _targetType.Equals(ts.NativeInt))
             Add(OpCodes.Conv_I);
         else
-            throw new AssertException($"Conversion from {expressionType} to {_targetType} is not supported.");
+            throw new AssertException($"Type {_targetType} is not supported.");
 
         void Add(OpCode op) => scope.Method.Body.Instructions.Add(Instruction.Create(op));
     }

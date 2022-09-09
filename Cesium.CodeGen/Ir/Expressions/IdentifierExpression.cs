@@ -30,9 +30,12 @@ internal class IdentifierExpression : IExpression, IValueExpression
         Identifier = identifier;
     }
 
-    public IExpression Lower(IDeclarationScope scope) => this;
+    public IExpression Lower(IDeclarationScope scope)
+    {
+        return new GetValueExpression(Resolve(scope));
+    }
 
-    public void EmitTo(IEmitScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 

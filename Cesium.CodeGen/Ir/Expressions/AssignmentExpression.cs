@@ -47,20 +47,14 @@ internal class AssignmentExpression : BinaryOperatorExpression
             right = new TypeCastExpression(leftType, right);
         }
 
-        return new AssignmentExpression(left, BinaryOperator.Assign, right);
-    }
-
-    public override void EmitTo(IEmitScope scope)
-    {
-        if (Operator != BinaryOperator.Assign)
-            throw new AssertException($"Operator {Operator} should've been lowered before emitting.");
-
-        var value = _target.Resolve(scope);
+        var value = ((IValueExpression)left).Resolve(scope);
         if (value is not ILValue lvalue)
             throw new CompilationException($"Not an lvalue: {value}.");
 
-        lvalue.EmitSetValue(scope, Right);
+        return new SetValueExpression(lvalue, right);
     }
+
+    public override void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     // `x = v` expression returns type of x (and v)
     // e.g `int x; int y; x = (y = 10);`

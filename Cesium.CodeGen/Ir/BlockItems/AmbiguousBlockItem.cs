@@ -24,23 +24,15 @@ internal class AmbiguousBlockItem : IBlockItem
         (_item1, _item2) = item;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => this;
-
-    public void EmitTo(IEmitScope scope)
+    public IBlockItem Lower(IDeclarationScope scope)
     {
         // Check if this can be a valid variable declaration:
-        var typeReference = scope.Context.GetTypeReference(_item1);
-        var isValidVariableDeclaration = typeReference != null;
+        var isValidVariableDeclaration = scope.Variables.TryGetValue(_item1, out _);
 
         // Check if this can be a function call:
         var function = scope.Functions.GetValueOrDefault(_item1);
         var isValidFunctionCall = function != null;
-
-        if (isValidVariableDeclaration && !isValidFunctionCall)
-            EmitVariableDeclaration(scope);
-        else if (!isValidVariableDeclaration && isValidFunctionCall)
-            EmitFunctionCall(scope);
-        else if (!isValidVariableDeclaration && !isValidFunctionCall)
+        if (!isValidVariableDeclaration && !isValidFunctionCall)
             throw new CompilationException(
                 $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
                 " but wasn't resolved to be either.");
@@ -48,14 +40,22 @@ internal class AmbiguousBlockItem : IBlockItem
             throw new CompilationException(
                 $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
                 $" but it's ambiguous which it is, since both a function and a type of name {_item1} exist.");
+
+        if (isValidFunctionCall)
+        {
+            return CreateFuctionCallStatement(scope);
+
+        }
+
+        return this;
     }
 
-    private void EmitVariableDeclaration(IEmitScope scope)
+    public void EmitTo(IEmitScope scope)
     {
         throw new WipException(213, "Ambiguous variable declarations aren't supported, yet.");
     }
 
-    private void EmitFunctionCall(IEmitScope scope)
+    private IBlockItem CreateFuctionCallStatement(IDeclarationScope scope)
     {
         CToken CreateFakeToken(string id) => new(new Range(), id, new Range(), id, CTokenType.Identifier);
 
@@ -67,6 +67,6 @@ internal class AmbiguousBlockItem : IBlockItem
             ImmutableArray.Create<Expression>(new ConstantExpression(argumentToken))
         ));
         var realNode = new ExpressionStatement(functionCallExpression);
-        realNode.Lower(scope).EmitTo(scope);
+        return realNode.Lower(scope);
     }
 }

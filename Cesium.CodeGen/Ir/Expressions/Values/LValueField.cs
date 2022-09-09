@@ -51,7 +51,7 @@ internal class LValueField : ILValue
             return _field;
         }
 
-        var valueType = _expression.GetExpressionType(scope);
+        var valueType = _fieldType;
         var valueTypeReference = valueType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
 

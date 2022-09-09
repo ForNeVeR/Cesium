@@ -25,9 +25,12 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     }
 
     public IExpression Lower(IDeclarationScope scope)
-        => new SubscriptingExpression(_expression.Lower(scope), _index.Lower(scope));
+    {
+        var lowered = new SubscriptingExpression(_expression, _index.Lower(scope));
+        return new GetValueExpression(lowered.Resolve(scope));
+    }
 
-    public void EmitTo(IEmitScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
 

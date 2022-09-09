@@ -19,13 +19,16 @@ internal class CompoundStatement : IBlockItem
 
     bool IBlockItem.HasDefiniteReturn => _items.Any(x => x.HasDefiniteReturn);
 
-    public IBlockItem Lower(IDeclarationScope scope) => this; // since actual lowering of child items is done on emit, anyway
+    public IBlockItem Lower(IDeclarationScope scope)
+    {
+        return new CompoundStatement(_items.Select(blockItem => blockItem.Lower(scope)).ToList());
+    }
 
     public void EmitTo(IEmitScope scope)
     {
         foreach (var item in _items)
         {
-            item.Lower(scope).EmitTo(scope);
+            item.EmitTo(scope);
         }
     }
 }

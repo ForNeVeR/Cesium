@@ -26,15 +26,29 @@ internal class UnaryOperatorExpression : IExpression
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower(IDeclarationScope scope) => new UnaryOperatorExpression(_operator, _target.Lower(scope));
+    public IExpression Lower(IDeclarationScope scope)
+    {
+        if (_operator == UnaryOperator.AddressOf)
+        {
+            if (_target is not IValueExpression expression)
+                throw new CompilationException($"Required a value expression to get address, got {_target} instead.");
+
+            var value = expression.Resolve(scope);
+            if (value is not IAddressableValue aValue)
+                throw new CompilationException($"Required an addressable value to get address, got {value} instead.");
+
+            return new GetAddressValueExpression(aValue);
+        }
+
+        return new UnaryOperatorExpression(_operator, _target.Lower(scope));
+    }
 
     public void EmitTo(IEmitScope scope)
     {
         switch (_operator)
         {
             case UnaryOperator.AddressOf:
-                EmitGetAddress(_target);
-                break;
+                throw new AssertException("Should be lowered");
             case UnaryOperator.LogicalNot:
                 _target.EmitTo(scope);
                 scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
@@ -52,19 +66,6 @@ internal class UnaryOperatorExpression : IExpression
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
             _ => throw new WipException(197, $"Unsupported unary operator: {_operator}.")
         };
-
-        void EmitGetAddress(IExpression target)
-        {
-            if (target is not IValueExpression expression)
-                throw new CompilationException($"Required a value expression to get address, got {target} instead.");
-
-            var value = expression.Resolve(scope);
-            if (value is not IAddressableValue aValue)
-                throw new CompilationException($"Required an addressable value to get address, got {value} instead.");
-
-            aValue.EmitGetAddress(scope);
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
-        }
     }
 
     public IType GetExpressionType(IDeclarationScope scope) => _operator switch

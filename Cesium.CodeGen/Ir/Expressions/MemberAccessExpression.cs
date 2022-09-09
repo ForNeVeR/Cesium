@@ -9,25 +9,21 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal class MemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
-    private readonly IExpression _memberIdentifier;
+    private readonly IdentifierExpression _memberIdentifier;
 
     public MemberAccessExpression(Ast.MemberAccessExpression accessExpression)
     {
-        var (expression, memberIdentifier) = accessExpression;
+        var (expression, memberAst) = accessExpression;
         _target = expression.ToIntermediate();
-        _memberIdentifier = memberIdentifier.ToIntermediate();
-    }
-
-    private MemberAccessExpression(IExpression target, IExpression memberIdentifier)
-    {
-        _target = target;
+        if (memberAst.ToIntermediate() is not IdentifierExpression memberIdentifier)
+            throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
         _memberIdentifier = memberIdentifier;
     }
 
     public IExpression Lower(IDeclarationScope scope)
         => new PointerMemberAccessExpression(
-            new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower(scope)),
-            _memberIdentifier.Lower(scope));
+            new UnaryOperatorExpression(UnaryOperator.AddressOf, _target.Lower(scope)).Lower(scope),
+            _memberIdentifier).Lower(scope);
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 

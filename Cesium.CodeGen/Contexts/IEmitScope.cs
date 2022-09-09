@@ -1,10 +1,12 @@
 namespace Cesium.CodeGen.Contexts;
 
+using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-internal interface IEmitScope : IDeclarationScope
+internal interface IEmitScope
 {
+    CTypeSystem CTypeSystem { get; }
     MethodDefinition Method { get; }
     AssemblyContext AssemblyContext { get; }
     ModuleDefinition Module { get; }

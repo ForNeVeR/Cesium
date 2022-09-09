@@ -8,7 +8,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDefinition Method) : IEmitScope
+internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDefinition Method) : IEmitScope, IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;

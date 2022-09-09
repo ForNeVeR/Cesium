@@ -25,17 +25,40 @@ internal class DeclarationBlockItem : IBlockItem
     {
         switch (_declaration)
         {
-            case ScopedIdentifierDeclaration declaration:
+            case ScopedIdentifierDeclaration scopedDeclaration:
             {
-                declaration.Deconstruct(out var items);
-                return new DeclarationBlockItem(
-                    new ScopedIdentifierDeclaration(
-                        items.Select(d =>
-                            {
-                                var (itemDeclaration, initializer) = d;
-                                return new InitializableDeclarationInfo(itemDeclaration, initializer?.Lower(scope));
-                            })
-                            .ToList()));
+                scopedDeclaration.Deconstruct(out var items);
+                List<InitializableDeclarationInfo> newItems = new List<InitializableDeclarationInfo>();
+                foreach (var (declaration, initializer) in items)
+                {
+                    var (type, identifier, cliImportMemberName) = declaration;
+
+                    // TODO[#91]: A place to register whether {type} is const or not.
+
+                    if (identifier == null)
+                        throw new CompilationException("An anonymous local declaration isn't supported.");
+
+                    if (cliImportMemberName != null)
+                        throw new CompilationException(
+                            $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
+
+                    scope.AddVariable(identifier, type);
+
+                    var initializerExpression = initializer;
+                    if (initializerExpression != null)
+                    {
+                        var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
+                        if (scope.CTypeSystem.IsConversionAvailable(initializerType, type)
+                            && !initializerType.Equals(type))
+                        {
+                            initializerExpression = new TypeCastExpression(type, initializerExpression);
+                        }
+                    }
+
+                    newItems.Add(new InitializableDeclarationInfo(declaration, initializerExpression?.Lower(scope)));
+                }
+
+                return new DeclarationBlockItem(new ScopedIdentifierDeclaration(newItems));
             }
             case TypeDefDeclaration: return this;
             default: throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
@@ -63,19 +86,7 @@ internal class DeclarationBlockItem : IBlockItem
         scopedDeclaration.Deconstruct(out var declarations);
         foreach (var (declaration, initializer) in declarations)
         {
-            var (type, identifier, cliImportMemberName) = declaration;
-
-            // TODO[#91]: A place to register whether {type} is const or not.
-
-            if (identifier == null)
-                throw new CompilationException("An anonymous local declaration isn't supported.");
-
-            if (cliImportMemberName != null)
-                throw new CompilationException(
-                    $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
-
-            scope.AddVariable(identifier, type);
-
+            var (type, identifier, _) = declaration;
             switch (initializer)
             {
                 case null when type is not InPlaceArrayType:
@@ -84,26 +95,11 @@ internal class DeclarationBlockItem : IBlockItem
                     arrayType.EmitInitializer(scope);
                     break;
                 default:
-                    var initializerExpression = initializer;
-                    if (initializerExpression != null)
-                    {
-                        // This should be part of lowering process
-                        // But because lowering process does not have access to type-system, I place this bandaid.
-                        // also I do think that during lowering process initializer expression should be extracted into separate
-                        // AssignmentExpression, so we do not duplicate this conversion logic everywhere.
-                        var initializerType = initializerExpression.GetExpressionType(scope);
-                        if (scope.CTypeSystem.IsConversionAvailable(initializerType, type)
-                            && !initializerType.Equals(type))
-                        {
-                            initializerExpression = new TypeCastExpression(type, initializerExpression);
-                        }
-                    }
-
-                    initializerExpression?.EmitTo(scope);
+                    initializer?.EmitTo(scope);
                     break;
             }
 
-            var variable = scope.ResolveVariable(identifier);
+            var variable = scope.ResolveVariable(identifier!);
             scope.StLoc(variable);
         }
     }

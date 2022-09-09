@@ -27,7 +27,7 @@ internal class PrefixIncrementExpression : IExpression
                 BinaryOperator.Add,
                 new ConstantExpression(new IntegerConstant("1"))
             )
-        );
+        ).Lower(scope);
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");

@@ -264,8 +264,9 @@ internal class FunctionDefinition : ITopLevelNode
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
-        _statement.EmitTo(scope);
-        if ((_statement as IBlockItem).HasDefiniteReturn == false)
+        var statement = _statement.Lower(scope);
+        statement.EmitTo(scope);
+        if (statement.HasDefiniteReturn == false)
         {
             if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
             {
