@@ -15,13 +15,13 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
 
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
-    private IEmitScope? _initializerScope;
+    private GlobalConstructorScope? _initializerScope;
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have
     /// its own set of definitions and thus its own initializer scope built around the same method body.
     /// </remarks>
-    internal IEmitScope GetInitializerScope() =>
+    internal GlobalConstructorScope GetInitializerScope() =>
         _initializerScope ??= new GlobalConstructorScope(this, AssemblyContext.GetGlobalInitializer());
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
