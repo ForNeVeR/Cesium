@@ -39,8 +39,9 @@ public class AssemblyContext
         return assemblyContext;
     }
 
-    public void EmitTranslationUnit(IEnumerable<ITopLevelNode> nodes)
+    public void EmitTranslationUnit(Ast.TranslationUnit translationUnit)
     {
+        IEnumerable<ITopLevelNode> nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this);
         foreach (var node in nodes)
             node.EmitTo(context);

@@ -5,7 +5,7 @@ using FunctionDefinition = Cesium.CodeGen.Ir.TopLevel.FunctionDefinition;
 
 namespace Cesium.CodeGen.Extensions;
 
-public static class TranslationUnitEx
+internal static class TranslationUnitEx
 {
     public static IEnumerable<ITopLevelNode> ToIntermediate(this TranslationUnit translationUnit) =>
         translationUnit.Declarations.Select(x => (ITopLevelNode)(x switch

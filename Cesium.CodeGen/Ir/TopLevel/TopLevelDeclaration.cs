@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -24,8 +25,10 @@ internal class TopLevelDeclaration : ITopLevelNode
             case ScopedIdentifierDeclaration declaration:
                 EmitScopedIdentifier(context, declaration);
                 break;
-            case TypeDefDeclaration declaration:
-                EmitTypeDef(context, declaration);
+            case TypeDefDeclaration:
+                var declarationBlockItem = new DeclarationBlockItem(_declaration);
+                GlobalConstructorScope scope = context.GetInitializerScope();
+                declarationBlockItem.Lower(scope).EmitTo(scope);
                 break;
             default:
                 throw new AssertException($"Unknown kind of declaration: {_declaration}.");
@@ -140,24 +143,5 @@ internal class TopLevelDeclaration : ITopLevelNode
             parametersInfo);
 
         context.Functions.Add(identifier, new FunctionInfo(parametersInfo, returnType, method));
-    }
-
-    private static void EmitTypeDef(TranslationUnitContext context, TypeDefDeclaration declaration)
-    {
-        declaration.Deconstruct(out var types);
-        foreach (var typeDef in types)
-        {
-            var (type, identifier, cliImportMemberName) = typeDef;
-            if (identifier == null)
-                throw new CompilationException($"Anonymous typedef not supported: {type}.");
-
-            if (cliImportMemberName != null)
-                throw new CompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");
-
-            if (type is IGeneratedType t)
-                context.GenerateType(t, identifier);
-            else
-               context.AddPlainType(type, identifier);
-        }
     }
 }

@@ -82,7 +82,7 @@ internal static class Compilation
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
             throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
 
-        context.EmitTranslationUnit(translationUnit.ToIntermediate());
+        context.EmitTranslationUnit(translationUnit);
     }
 
     private static void SaveAssembly(

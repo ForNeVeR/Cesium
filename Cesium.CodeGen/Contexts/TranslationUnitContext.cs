@@ -22,7 +22,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
     /// its own set of definitions and thus its own initializer scope built around the same method body.
     /// </remarks>
     internal GlobalConstructorScope GetInitializerScope() =>
-        _initializerScope ??= new GlobalConstructorScope(this, AssemblyContext.GetGlobalInitializer());
+        _initializerScope ??= new GlobalConstructorScope(this);
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
     private readonly Dictionary<string, TypeReference> _types = new();

@@ -11,7 +11,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class DeclarationBlockItem : IBlockItem
 {
     private readonly IScopedDeclarationInfo _declaration;
-    private DeclarationBlockItem(IScopedDeclarationInfo declaration)
+    internal DeclarationBlockItem(IScopedDeclarationInfo declaration)
     {
         _declaration = declaration;
     }
@@ -60,7 +60,8 @@ internal class DeclarationBlockItem : IBlockItem
 
                 return new DeclarationBlockItem(new ScopedIdentifierDeclaration(newItems));
             }
-            case TypeDefDeclaration: return this;
+            case TypeDefDeclaration typeDefDeclaration:
+                return new TypeDefBlockItem(typeDefDeclaration);
             default: throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
         }
     }
@@ -74,8 +75,7 @@ internal class DeclarationBlockItem : IBlockItem
                 EmitScopedIdentifier(scope, declaration);
                 break;
             case TypeDefDeclaration declaration:
-                EmitTypeDef(declaration);
-                break;
+                throw new AssertException("Should be lowered");
             default:
                 throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
         }
@@ -103,7 +103,4 @@ internal class DeclarationBlockItem : IBlockItem
             scope.StLoc(variable);
         }
     }
-
-    private static void EmitTypeDef(TypeDefDeclaration declaration) =>
-        throw new WipException(214, $"typedef is not supported at block level, yet: {declaration}.");
 }

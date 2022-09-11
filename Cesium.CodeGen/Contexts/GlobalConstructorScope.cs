@@ -8,11 +8,14 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDefinition Method) : IEmitScope, IDeclarationScope
+internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
 {
+    private MethodDefinition? _method;
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
+
+    public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
