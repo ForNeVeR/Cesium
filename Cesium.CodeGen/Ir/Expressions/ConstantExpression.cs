@@ -1,8 +1,8 @@
+using System.Globalization;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using System.Globalization;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -37,7 +37,7 @@ internal class ConstantExpression : IExpression
             CTokenType.CharLiteral => new CharConstant(constant.Text),
             CTokenType.StringLiteral => new StringConstant(constant),
             CTokenType.FloatLiteral => ParseFloatingPoint(constant.Text),
-            _ => throw new WipException(228, $"Constant of kind {constant.Kind} is not supported.")
+            _ => throw new AssertException($"Not a literal: {constant.Kind}.")
         };
     }
 
