@@ -16,11 +16,6 @@ internal class TypeDefBlockItem : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return this;
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
         _declaration.Deconstruct(out var types);
         foreach (var typeDef in types)
         {
@@ -31,10 +26,20 @@ internal class TypeDefBlockItem : IBlockItem
             if (cliImportMemberName != null)
                 throw new CompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");
 
+            scope.AddTypeDefinition(identifier, type);
+        }
+
+        return this;
+    }
+
+    public void EmitTo(IEmitScope scope)
+    {
+        _declaration.Deconstruct(out var types);
+        foreach (var typeDef in types)
+        {
+            var (type, identifier, _) = typeDef;
             if (type is IGeneratedType t)
-                scope.Context.GenerateType(t, identifier);
-            else
-                scope.Context.AddPlainType(type, identifier);
+                scope.Context.GenerateType(identifier!, t);
         }
     }
 }
