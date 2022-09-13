@@ -7,9 +7,10 @@ namespace Cesium.CodeGen.Ir.Types;
 public record NamedType(string TypeName) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context) =>
-        context.GetTypeReference(TypeName) ?? throw new CompilationException($"Type not found: {TypeName}.");
+        throw new AssertException($"Type {TypeName} was never resolved.");
 
-    public int SizeInBytes => throw new WipException(232, $"Could not calculate size for {TypeName} yet.");
+    public int SizeInBytes =>
+        throw new AssertException($"Type {TypeName} was never resolved.");
 
     // explicit impl while Size not implemented
     public override string ToString()

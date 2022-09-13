@@ -1,5 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts;
@@ -25,17 +27,44 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
         _initializerScope ??= new GlobalConstructorScope(this);
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
-    private readonly Dictionary<string, TypeReference> _types = new();
+    private readonly Dictionary<string, IType> _types = new();
 
-    internal void GenerateType(IGeneratedType type, string name)
+    internal void GenerateType(string name, IGeneratedType type)
     {
         var typeReference = type.Emit(name, this);
         _generatedTypes.Add(type, typeReference);
-        _types.Add(name, typeReference);
     }
 
-    internal void AddPlainType(IType type, string name) => _types.Add(name, type.Resolve(this));
+    internal void AddTypeDefinition(string name, IType type) => _types.Add(name, type);
+
+    internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
+
+    internal IType DisambiguateType(IType type)
+    {
+        if (type is NamedType namedType)
+        {
+            return _types.GetValueOrDefault(namedType.TypeName) ?? throw new CompilationException($"Cannot resolve type {namedType.TypeName}");
+        }
+
+        if (type is Ir.Types.PointerType pointerType)
+        {
+            return new Ir.Types.PointerType(DisambiguateType(pointerType.Base));
+        }
+
+        if (type is InPlaceArrayType arrayType)
+        {
+            return new InPlaceArrayType(DisambiguateType(arrayType.Base), arrayType.Size);
+        }
+
+        if (type is StructType structType)
+        {
+            var members = structType.Members.Select(structMember => new LocalDeclarationInfo(DisambiguateType(structMember.Type), structMember.Identifier, structMember.CliImportMemberName)).ToList();
+            return new StructType(members);
+        }
+
+        return type;
+    }
 
     internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
-    internal TypeReference? GetTypeReference(string typeName) => _types.GetValueOrDefault(typeName);
+    internal TypeReference? GetTypeReference(string typeName) => _types.GetValueOrDefault(typeName)?.Resolve(this);
 }
