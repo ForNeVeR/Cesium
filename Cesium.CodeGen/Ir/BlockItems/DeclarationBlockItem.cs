@@ -42,7 +42,7 @@ internal class DeclarationBlockItem : IBlockItem
                         throw new CompilationException(
                             $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
-                    type = scope.DisambiguateType(type);
+                    type = scope.ResolveType(type);
                     scope.AddVariable(identifier, type);
 
                     var initializerExpression = initializer;
@@ -63,7 +63,7 @@ internal class DeclarationBlockItem : IBlockItem
             }
             case TypeDefDeclaration typeDefDeclaration:
                 typeDefDeclaration.Deconstruct(out var types);
-                var resolvedTypes = types.Select(declaration => new LocalDeclarationInfo(scope.DisambiguateType(declaration.Type), declaration.Identifier, declaration.CliImportMemberName)).ToList();
+                var resolvedTypes = types.Select(declaration => new LocalDeclarationInfo(scope.ResolveType(declaration.Type), declaration.Identifier, declaration.CliImportMemberName)).ToList();
                 return new TypeDefBlockItem(new TypeDefDeclaration(resolvedTypes)).Lower(scope);
             default: throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
         }
