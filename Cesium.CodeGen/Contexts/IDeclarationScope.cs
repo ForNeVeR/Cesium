@@ -11,6 +11,12 @@ internal interface IDeclarationScope
     IReadOnlyDictionary<string, IType> Variables { get; }
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
     void AddVariable(string identifier, IType variable);
+    /// <summary>
+    /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
+    /// </summary>
+    /// <param name="type">Type which should be resolved.</param>
+    /// <returns>A <see cref="IType"/> which fully resolves.</returns>
+    /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
     IType ResolveType(IType type);
     void AddTypeDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);

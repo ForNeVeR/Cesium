@@ -29,6 +29,8 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     public ParameterInfo? GetParameterInfo(string name) => null;
     public ParameterDefinition ResolveParameter(string name) =>
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
-    public IType ResolveType(IType type) => Context.DisambiguateType(type);
+
+    /// <inheritdoc />
+    public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => Context.AddTypeDefinition(identifier, type);
 }
