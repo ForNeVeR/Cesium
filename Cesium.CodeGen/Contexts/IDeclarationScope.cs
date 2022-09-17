@@ -11,7 +11,7 @@ internal interface IDeclarationScope
     IReadOnlyDictionary<string, IType> Variables { get; }
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
     void AddVariable(string identifier, IType variable);
-    IType DisambiguateType(IType type);
+    IType ResolveType(IType type);
     void AddTypeDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);
 }
