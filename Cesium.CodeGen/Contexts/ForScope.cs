@@ -25,6 +25,7 @@ internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public ParameterInfo? GetParameterInfo(string name) => ((IDeclarationScope)Parent).GetParameterInfo(name);
 
     public Instruction? EndInstruction { get; set; }
-    public IType ResolveType(IType type) => Context.DisambiguateType(type);
+    /// <inheritdoc />
+    public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
 }

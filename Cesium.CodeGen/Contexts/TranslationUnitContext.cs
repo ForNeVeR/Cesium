@@ -39,7 +39,13 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
 
     internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
 
-    internal IType DisambiguateType(IType type)
+    /// <summary>
+    /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
+    /// </summary>
+    /// <param name="type">Type which should be resolved.</param>
+    /// <returns>A <see cref="IType"/> which fully resolves.</returns>
+    /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
+    internal IType ResolveType(IType type)
     {
         if (type is NamedType namedType)
         {
@@ -48,17 +54,17 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
 
         if (type is Ir.Types.PointerType pointerType)
         {
-            return new Ir.Types.PointerType(DisambiguateType(pointerType.Base));
+            return new Ir.Types.PointerType(ResolveType(pointerType.Base));
         }
 
         if (type is InPlaceArrayType arrayType)
         {
-            return new InPlaceArrayType(DisambiguateType(arrayType.Base), arrayType.Size);
+            return new InPlaceArrayType(ResolveType(arrayType.Base), arrayType.Size);
         }
 
         if (type is StructType structType)
         {
-            var members = structType.Members.Select(structMember => new LocalDeclarationInfo(DisambiguateType(structMember.Type), structMember.Identifier, structMember.CliImportMemberName)).ToList();
+            var members = structType.Members.Select(structMember => new LocalDeclarationInfo(ResolveType(structMember.Type), structMember.Identifier, structMember.CliImportMemberName)).ToList();
             return new StructType(members);
         }
 
