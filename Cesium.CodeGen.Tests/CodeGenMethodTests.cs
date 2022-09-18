@@ -217,20 +217,6 @@ int main() { return foo(); }", "Function foo not defined.");
     public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
 
     [Fact]
-    public Task ArrayAssignment() => DoTest(@"int main() {
-    int a[10];
-    a[1] = 2;
-    return a[1];
- }");
-
-    [Fact]
-    public Task ArrayAddressOf() => DoTest(@"int main() {
-    int a[10];
-    int *x = &a[2];
-    return 0;
- }");
-
-    [Fact]
     public Task AmbiguousCallTest() => DoTest(@"
 int abs(int x) { return x; }
 void exit(int x) { }
