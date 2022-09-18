@@ -303,6 +303,7 @@ internal record LocalDeclarationInfo(
                 ("long", null, null, null) => PrimitiveTypeKind.Long,
                 ("float", null, null, null) => PrimitiveTypeKind.Float,
                 ("double", null, null, null) => PrimitiveTypeKind.Double,
+                ("__nint", null, null, null) => PrimitiveTypeKind.NativeInt,
                 _ => throw new WipException(
                     224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
