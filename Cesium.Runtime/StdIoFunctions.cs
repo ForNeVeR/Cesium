@@ -45,6 +45,8 @@ public unsafe static class StdIoFunctions
                     Console.Write(Unmarshal((byte*)(IntPtr)varargs[consumedArgs]));
                     consumedArgs++;
                     break;
+                default:
+                    throw new FormatException($"Format specifier {formatSpecifier} is not supported");
             }
 
             currentPosition = formatStartPosition + 2;
