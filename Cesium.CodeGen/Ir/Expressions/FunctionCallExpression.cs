@@ -4,6 +4,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -46,8 +47,29 @@ internal class FunctionCallExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
-        foreach (var argument in _arguments)
+        var explicitParametersCount = _callee!.Parameters?.Parameters.Count ?? 0;
+        foreach (var argument in _arguments.Take(explicitParametersCount))
             argument.EmitTo(scope);
+
+        if (_callee!.Parameters?.IsVarArg == true)
+        {
+            scope.AddInstruction(OpCodes.Ldc_I4, _arguments.Count - explicitParametersCount);
+            scope.AddInstruction(OpCodes.Newarr, scope.Context.TypeSystem.Object);
+            for (var i = 0; i < _arguments.Count - explicitParametersCount; i++)
+            {
+                var argument = _arguments[i + explicitParametersCount];
+                scope.AddInstruction(OpCodes.Dup);
+                scope.AddInstruction(OpCodes.Ldc_I4, i);
+                argument.EmitTo(scope);
+                var intPtrDefinition = scope.Context.TypeSystem.IntPtr.Resolve();
+                var explicitConversionToPointer = intPtrDefinition.GetMethods()
+                    .First(d => d.Name == "op_Explicit" && d.Parameters[0].ParameterType.IsPointer);
+                var importedReference = scope.AssemblyContext.Module.ImportReference(explicitConversionToPointer);
+                scope.AddInstruction(OpCodes.Call, importedReference);
+                scope.AddInstruction(OpCodes.Box, scope.Context.TypeSystem.IntPtr);
+                scope.AddInstruction(OpCodes.Stelem_Ref);
+            }
+        }
 
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");

@@ -110,10 +110,15 @@ internal static class TypeSystemEx
         {
             var lastSrcParam = methodParameters.Last();
             var paramsAttrType = context.GetParamArrayAttributeType();
-            if (lastSrcParam.ParameterType.IsArray == false
-                || lastSrcParam.CustomAttributes.Any(x => x.AttributeType == paramsAttrType) == false)
+            if (lastSrcParam.ParameterType.IsArray == false)
             {
-                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source."));
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an array."));
+                return false;
+            }
+
+            if (lastSrcParam.CustomAttributes.Any(x => x.AttributeType.IsEqualTo(paramsAttrType)) == false)
+            {
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter has not {paramsAttrType}"));
                 return false;
             }
         }

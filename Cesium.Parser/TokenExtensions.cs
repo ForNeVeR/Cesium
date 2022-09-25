@@ -12,6 +12,6 @@ public static class TokenExtensions
             throw new ParseException($"Non-string literal token: {token.Kind} {token.Text}");
 
         // TODO[#235]: More thorough unwrap for more literal types.
-        return token.Text.Trim('"');
+        return token.Text.Trim('"').Replace("\\n", "\n");
     }
 }

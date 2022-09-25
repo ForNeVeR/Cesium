@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     float myFloatNum = 5.99;   // Floating point number
     char myLetter = 'D';       // Character
 
+    printf("%s\n", "myNum");
     // Print variables
     //printf("%d\n", myNum);
     //printf("%f\n", myFloatNum);

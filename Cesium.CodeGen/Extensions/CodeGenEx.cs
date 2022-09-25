@@ -8,6 +8,14 @@ internal static class CodeGenEx
 {
     private static void AddInstruction(this IEmitScope scope, Instruction instruction) =>
         scope.Method.Body.Instructions.Add(instruction);
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode));
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode, int value) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode, TypeReference value) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode, MethodReference value) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
 
     public static void StLoc(this IEmitScope scope, VariableDefinition variable)
     {
