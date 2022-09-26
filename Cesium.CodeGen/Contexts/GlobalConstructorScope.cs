@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
-using System.Reflection.Emit;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
@@ -18,12 +19,21 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
-    public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
+    public bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo)
+    {
+        return Context.Functions.TryGetValue(identifier, out functionInfo);
+    }
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
     public IReadOnlyDictionary<string, IType> Variables => ImmutableDictionary<string, IType>.Empty;
     public void AddVariable(string identifier, IType variable) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
+
+    public bool TryGetVariable(string identifier, [NotNullWhen(true)] out IType? type)
+    {
+        type = null;
+        return false;
+    }
     public VariableDefinition ResolveVariable(string identifier) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
