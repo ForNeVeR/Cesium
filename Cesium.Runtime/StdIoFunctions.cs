@@ -45,6 +45,19 @@ public unsafe static class StdIoFunctions
                     Console.Write(Unmarshal((byte*)((long*)varargs)[consumedArgs]));
                     consumedArgs++;
                     break;
+                case 'c':
+                    Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    consumedArgs++;
+                    break;
+                case 'd':
+                    Console.Write((int)((long*)varargs)[consumedArgs]);
+                    consumedArgs++;
+                    break;
+                case 'f':
+                    var floatNumber = ((double*)varargs)[consumedArgs];
+                    Console.Write(floatNumber.ToString("F6"));
+                    consumedArgs++;
+                    break;
                 default:
                     throw new FormatException($"Format specifier {formatSpecifier} is not supported");
             }

@@ -4,16 +4,20 @@
 int main(int argc, char *argv[])
 {
     printf("test");
-    // Create variables
-    int myNum = 5;             // Integer (whole number)
-    float myFloatNum = 5.99;   // Floating point number
-    char myLetter = 'D';       // Character
 
     printf("%s\n", "myNum");
+
     // Print variables
-    //printf("%d\n", myNum);
-    //printf("%f\n", myFloatNum);
-    //printf("%c\n", myLetter);
+    int intValue = 5;
+    printf("%d\n", intValue);
+
+    float floatValue = 5.99;
+    printf("%f\n", floatValue);
+    double doubleValue = 2.04;
+    printf("%f\n", doubleValue);
+
+    char myLetter = 'D';
+    printf("%c\n%c", myLetter, '1');
 
     return 42;
 }
