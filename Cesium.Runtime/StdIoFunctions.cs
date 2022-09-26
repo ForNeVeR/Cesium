@@ -24,7 +24,7 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static void PrintF(byte* str, params object[] varargs)
+    public static void PrintF(byte* str, void* varargs)
     {
         var formatString = Unmarshal(str);
         if (formatString == null)
@@ -42,7 +42,7 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case 's':
-                    Console.Write(Unmarshal((byte*)(IntPtr)varargs[consumedArgs]));
+                    Console.Write(Unmarshal((byte*)((long*)varargs)[consumedArgs]));
                     consumedArgs++;
                     break;
                 default:
