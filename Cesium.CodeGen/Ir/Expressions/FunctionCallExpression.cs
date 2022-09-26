@@ -39,10 +39,36 @@ internal class FunctionCallExpression : IExpression
         var functionName = _function.Identifier;
         var callee = scope.Functions.GetValueOrDefault(functionName)
                      ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
+        int firstVarArgArgument = 0;
+        if (callee.Parameters is { } parameters)
+        {
+            if (parameters.IsVarArg)
+            {
+                firstVarArgArgument = parameters.Parameters.Count;
+            }
+        }
+
         return new FunctionCallExpression(
             _function,
             callee,
-            _arguments.Select(a => a.Lower(scope)).ToList());
+            _arguments.Select((a, index) =>
+            {
+                if (index >= firstVarArgArgument)
+                {
+                    var expressionType = a.GetExpressionType(scope);
+                    if (expressionType.Equals(scope.CTypeSystem.Float))
+                    {
+                        // Seems to be float always use float-point registers and as such we need to covert to double.
+                        return new TypeCastExpression(scope.CTypeSystem.Double, a.Lower(scope));
+                    }
+                    else
+                    {
+                        return a.Lower(scope);
+                    }
+                }
+
+                return a.Lower(scope);
+            }).ToList());
     }
 
     public void EmitTo(IEmitScope scope)
@@ -81,7 +107,6 @@ internal class FunctionCallExpression : IExpression
                 scope.AddInstruction(OpCodes.Ldc_I4, i * 8);
                 scope.AddInstruction(OpCodes.Add);
                 argument.EmitTo(scope);
-                scope.AddInstruction(OpCodes.Conv_I);
                 scope.AddInstruction(OpCodes.Stind_I);
             }
 
