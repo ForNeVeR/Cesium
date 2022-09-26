@@ -38,31 +38,48 @@ public unsafe static class StdIoFunctions
         while (formatStartPosition >= 0)
         {
             Console.Write(formatString.Substring(currentPosition, formatStartPosition - currentPosition));
-            var formatSpecifier = formatString[formatStartPosition + 1];
+            int addition = 1;
+            string formatSpecifier = formatString[formatStartPosition + addition].ToString();
+            if (formatString[formatStartPosition + addition] == 'l')
+            {
+                addition++;
+                formatSpecifier += formatString[formatStartPosition + addition].ToString();
+            }
+
             switch (formatSpecifier)
             {
-                case 's':
+                case "s":
                     Console.Write(Unmarshal((byte*)((long*)varargs)[consumedArgs]));
                     consumedArgs++;
                     break;
-                case 'c':
+                case "c":
                     Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
                     consumedArgs++;
                     break;
-                case 'd':
+                case "d":
                     Console.Write((int)((long*)varargs)[consumedArgs]);
                     consumedArgs++;
                     break;
-                case 'f':
+                case "u":
+                case "lu":
+                    Console.Write((uint)((long*)varargs)[consumedArgs]);
+                    consumedArgs++;
+                    break;
+                case "f":
                     var floatNumber = ((double*)varargs)[consumedArgs];
                     Console.Write(floatNumber.ToString("F6"));
+                    consumedArgs++;
+                    break;
+                case "p":
+                    nint pointerValue = ((nint*)varargs)[consumedArgs];
+                    Console.Write(pointerValue.ToString("X"));
                     consumedArgs++;
                     break;
                 default:
                     throw new FormatException($"Format specifier {formatSpecifier} is not supported");
             }
 
-            currentPosition = formatStartPosition + 2;
+            currentPosition = formatStartPosition + addition + 1;
             formatStartPosition = formatString.IndexOf('%', currentPosition);
         }
 
