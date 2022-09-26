@@ -108,17 +108,22 @@ internal static class TypeSystemEx
 
         if (parameters.IsVarArg)
         {
-            var lastSrcParam = methodParameters.Last();
-            var paramsAttrType = context.GetParamArrayAttributeType();
-            if (lastSrcParam.ParameterType.IsArray == false)
+            if (parameters.Parameters.Count + 1 != method.Parameters.Count)
             {
-                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an array."));
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Count of parameters does not match."));
                 return false;
             }
 
-            if (lastSrcParam.CustomAttributes.Any(x => x.AttributeType.IsEqualTo(paramsAttrType)) == false)
+            var lastSrcParam = methodParameters.Last();
+            if (lastSrcParam.ParameterType is not Mono.Cecil.PointerType pointerType)
             {
-                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter has not {paramsAttrType}"));
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an pointer type."));
+                return false;
+            }
+
+            if (!pointerType.ElementType.IsEqualTo(context.TypeSystem.Void))
+            {
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an void*."));
                 return false;
             }
         }
@@ -222,11 +227,6 @@ internal static class TypeSystemEx
                     return i;
             return null;
         }
-    }
-
-    public static TypeReference GetParamArrayAttributeType(this TranslationUnitContext context)
-    {
-        return context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ParamArrayAttribute"));
     }
 
     public static TypeDefinition GetRuntimeHelperType(this TranslationUnitContext context)

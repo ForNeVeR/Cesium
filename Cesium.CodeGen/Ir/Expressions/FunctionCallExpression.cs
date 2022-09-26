@@ -53,21 +53,27 @@ internal class FunctionCallExpression : IExpression
 
         if (_callee!.Parameters?.IsVarArg == true)
         {
-            scope.AddInstruction(OpCodes.Ldc_I4, _arguments.Count - explicitParametersCount);
-            scope.AddInstruction(OpCodes.Newarr, scope.Context.TypeSystem.Object);
-            for (var i = 0; i < _arguments.Count - explicitParametersCount; i++)
+            // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
+            var varArgParametersCount = _arguments.Count - explicitParametersCount;
+            if (varArgParametersCount == 0)
+            {
+                scope.AddInstruction(OpCodes.Ldc_I4_0);
+            }
+            else
+            {
+                scope.AddInstruction(OpCodes.Ldc_I4, varArgParametersCount * 8);
+                scope.AddInstruction(OpCodes.Localloc);
+            }
+
+            for (var i = 0; i < varArgParametersCount; i++)
             {
                 var argument = _arguments[i + explicitParametersCount];
                 scope.AddInstruction(OpCodes.Dup);
-                scope.AddInstruction(OpCodes.Ldc_I4, i);
+                scope.AddInstruction(OpCodes.Ldc_I4, i * 8);
+                scope.AddInstruction(OpCodes.Add);
                 argument.EmitTo(scope);
-                var intPtrDefinition = scope.Context.TypeSystem.IntPtr.Resolve();
-                var explicitConversionToPointer = intPtrDefinition.GetMethods()
-                    .First(d => d.Name == "op_Explicit" && d.Parameters[0].ParameterType.IsPointer);
-                var importedReference = scope.AssemblyContext.Module.ImportReference(explicitConversionToPointer);
-                scope.AddInstruction(OpCodes.Call, importedReference);
-                scope.AddInstruction(OpCodes.Box, scope.Context.TypeSystem.IntPtr);
-                scope.AddInstruction(OpCodes.Stelem_Ref);
+                scope.AddInstruction(OpCodes.Conv_I);
+                scope.AddInstruction(OpCodes.Stind_I);
             }
         }
 
