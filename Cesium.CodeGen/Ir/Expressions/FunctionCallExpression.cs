@@ -47,14 +47,13 @@ internal class FunctionCallExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
+        VariableDefinition? varArgBuffer = null;
         var explicitParametersCount = _callee!.Parameters?.Parameters.Count ?? 0;
-        foreach (var argument in _arguments.Take(explicitParametersCount))
-            argument.EmitTo(scope);
-
+        var varArgParametersCount = _arguments.Count - explicitParametersCount;
         if (_callee!.Parameters?.IsVarArg == true)
         {
             // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
-            var varArgParametersCount = _arguments.Count - explicitParametersCount;
+            // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
             if (varArgParametersCount == 0)
             {
                 scope.AddInstruction(OpCodes.Ldc_I4_0);
@@ -65,16 +64,28 @@ internal class FunctionCallExpression : IExpression
                 scope.AddInstruction(OpCodes.Localloc);
             }
 
+            varArgBuffer = new VariableDefinition(scope.Context.TypeSystem.Void.MakePointerType());
+            scope.Method.Body.Variables.Add(varArgBuffer);
+            scope.AddInstruction(OpCodes.Stloc, varArgBuffer);
+        }
+
+        foreach (var argument in _arguments.Take(explicitParametersCount))
+            argument.EmitTo(scope);
+
+        if (_callee!.Parameters?.IsVarArg == true)
+        {
             for (var i = 0; i < varArgParametersCount; i++)
             {
                 var argument = _arguments[i + explicitParametersCount];
-                scope.AddInstruction(OpCodes.Dup);
+                scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
                 scope.AddInstruction(OpCodes.Ldc_I4, i * 8);
                 scope.AddInstruction(OpCodes.Add);
                 argument.EmitTo(scope);
                 scope.AddInstruction(OpCodes.Conv_I);
                 scope.AddInstruction(OpCodes.Stind_I);
             }
+
+            scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
         }
 
         var functionName = _function.Identifier;
