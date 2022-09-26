@@ -2,16 +2,18 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
 internal interface IDeclarationScope
 {
     CTypeSystem CTypeSystem { get; }
-    IReadOnlyDictionary<string, FunctionInfo> Functions { get; }
-    IReadOnlyDictionary<string, IType> Variables { get; }
+    bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo);
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
     void AddVariable(string identifier, IType variable);
+    bool TryGetVariable(string identifier, [NotNullWhen(true)]out IType? type);
+
     /// <summary>
     /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
     /// </summary>

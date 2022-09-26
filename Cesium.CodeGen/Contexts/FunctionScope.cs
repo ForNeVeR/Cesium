@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -14,13 +15,22 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public TypeSystem TypeSystem => Context.TypeSystem;
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
+    public bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo)
+    {
+        return Context.Functions.TryGetValue(identifier, out functionInfo);
+    }
 
     private readonly Dictionary<string, IType> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
-    public IReadOnlyDictionary<string, IType> Variables => _variables;
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
     public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
+
+    public bool TryGetVariable(string identifier, [NotNullWhen(true)] out IType? type)
+    {
+        return _variables.TryGetValue(identifier, out type);
+    }
+
     public VariableDefinition ResolveVariable(string identifier)
     {
         if (!_variables.TryGetValue(identifier, out var variableType))

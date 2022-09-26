@@ -37,8 +37,12 @@ internal class FunctionCallExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var functionName = _function.Identifier;
-        var callee = scope.Functions.GetValueOrDefault(functionName)
-                     ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
+        scope.TryGetFunctionInfo(functionName, out var callee);
+        if (callee is null)
+        {
+            throw new CompilationException($"Function \"{functionName}\" was not found.");
+        }
+
         int firstVarArgArgument = 0;
         if (callee.Parameters?.IsVarArg == true)
         {
