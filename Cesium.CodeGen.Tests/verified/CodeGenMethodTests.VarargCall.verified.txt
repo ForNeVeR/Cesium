@@ -1,0 +1,43 @@
+﻿System.Void <Module>::console_read(System.Int32 arg, System.Void* varargs)
+  IL_0000: ret
+
+System.Void <Module>::test()
+  Locals:
+    System.Void* V_0
+    System.Void* V_1
+    System.Void* V_2
+  IL_0000: ldc.i4 8
+  IL_0005: localloc
+  IL_0007: stloc V_0
+  IL_000b: ldc.i4.5
+  IL_000c: ldloc V_0
+  IL_0010: ldc.i4 0
+  IL_0015: add
+  IL_0016: ldc.i4.s 32
+  IL_0018: stind.i
+  IL_0019: ldloc V_0
+  IL_001d: call System.Void <Module>::console_read(System.Int32,System.Void*)
+  IL_0022: ldc.i4 8
+  IL_0027: localloc
+  IL_0029: stloc V_1
+  IL_002d: ldc.i4.5
+  IL_002e: ldloc V_1
+  IL_0032: ldc.i4 0
+  IL_0037: add
+  IL_0038: ldc.r4 2.21
+  IL_003d: conv.r8
+  IL_003e: stind.i
+  IL_003f: ldloc V_1
+  IL_0043: call System.Void <Module>::console_read(System.Int32,System.Void*)
+  IL_0048: ldc.i4 8
+  IL_004d: localloc
+  IL_004f: stloc V_2
+  IL_0053: ldc.i4.5
+  IL_0054: ldloc V_2
+  IL_0058: ldc.i4 0
+  IL_005d: add
+  IL_005e: ldc.r8 67.44
+  IL_0067: stind.i
+  IL_0068: ldloc V_2
+  IL_006c: call System.Void <Module>::console_read(System.Int32,System.Void*)
+  IL_0071: ret
