@@ -137,6 +137,34 @@ void test()
 }");
 
     [Fact]
+    public void ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
+
+void console_read()
+{
+}");
+
+    [Fact]
+    public void ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
+
+void console_read()
+{
+}");
+
+    [Fact]
+    public void ExplicitVarargDeclarationShouldHaveExplicitDefinition() => DoesNotCompile(@"void console_read(int x, ...);
+
+void console_read(int x)
+{
+}", "Function console_read declared with varargs but defined without varargs.");
+
+    [Fact]
+    public void ExplicitVarargDefinitionShouldHaveExplicitDeclaration() => DoesNotCompile(@"void console_read(int x);
+
+void console_read(int x, ...)
+{
+}", "Function console_read declared without varargs but defined with varargs.");
+
+    [Fact]
     public void CanHaveTwoFunctionDeclarations() => DoTest(@"
 int console_read(void);
 

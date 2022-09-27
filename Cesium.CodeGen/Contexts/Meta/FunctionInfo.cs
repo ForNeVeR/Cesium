@@ -17,15 +17,17 @@ internal record FunctionInfo(
             throw new CompilationException(
                 $"Incorrect return type for function {name} declared as {ReturnType}: {returnType}.");
 
-        if (Parameters?.IsVarArg == true && parameters?.IsVarArg != true)
+        var declaredWithVarargs = Parameters?.IsVarArg == true;
+        var definedWithVarargs = parameters?.IsVarArg == true;
+        if (declaredWithVarargs && !definedWithVarargs)
             throw new CompilationException(
                 $"Function {name} declared with varargs but defined without varargs.");
 
-        if (Parameters?.IsVarArg != true && parameters?.IsVarArg == true)
+        if (!declaredWithVarargs && definedWithVarargs)
             throw new CompilationException(
                 $"Function {name} declared without varargs but defined with varargs.");
 
-        if (Parameters?.IsVarArg != parameters?.IsVarArg)
+        if (declaredWithVarargs != definedWithVarargs)
             throw new CompilationException(
                 $"Var arg declarations does not matched for functionn {name}.");
 
