@@ -40,12 +40,9 @@ internal class FunctionCallExpression : IExpression
         var callee = scope.Functions.GetValueOrDefault(functionName)
                      ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
         int firstVarArgArgument = 0;
-        if (callee.Parameters is { } parameters)
+        if (callee.Parameters?.IsVarArg == true)
         {
-            if (parameters.IsVarArg)
-            {
-                firstVarArgArgument = parameters.Parameters.Count;
-            }
+            firstVarArgArgument = callee.Parameters.Parameters.Count;
         }
 
         return new FunctionCallExpression(
