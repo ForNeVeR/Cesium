@@ -123,6 +123,20 @@ __cli_import(""System.Console::Read"")
 int console_read(void);");
 
     [Fact]
+    public void VarargCall() => DoTest(@"void console_read(int arg, ...);
+
+void console_read(int arg, ...)
+{
+}
+
+void test()
+{
+    console_read(5, 32);
+    console_read(5, 2.21f);
+    console_read(5, 67.44);
+}");
+
+    [Fact]
     public void CanHaveTwoFunctionDeclarations() => DoTest(@"
 int console_read(void);
 
