@@ -7,16 +7,21 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class TypeDefBlockItem : IBlockItem
 {
-    private readonly TypeDefDeclaration _declaration;
+    private readonly ICollection<LocalDeclarationInfo> types;
 
     public TypeDefBlockItem(TypeDefDeclaration declaration)
     {
-        _declaration = declaration;
+        declaration.Deconstruct(out types);
+    }
+
+    public TypeDefBlockItem(ICollection<LocalDeclarationInfo> types)
+    {
+        this.types = types;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        _declaration.Deconstruct(out var types);
+        List<LocalDeclarationInfo> list = new List<LocalDeclarationInfo>();
         foreach (var typeDef in types)
         {
             var (type, identifier, cliImportMemberName) = typeDef;
@@ -26,15 +31,16 @@ internal class TypeDefBlockItem : IBlockItem
             if (cliImportMemberName != null)
                 throw new CompilationException($"typedef for CLI import not supported: {cliImportMemberName}.");
 
+            type = scope.ResolveType(type);
             scope.AddTypeDefinition(identifier, type);
+            list.Add(new LocalDeclarationInfo(type, identifier, cliImportMemberName));
         }
 
-        return this;
+        return new TypeDefBlockItem(list);
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        _declaration.Deconstruct(out var types);
         foreach (var typeDef in types)
         {
             var (type, identifier, _) = typeDef;

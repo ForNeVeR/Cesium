@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.TopLevel;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -41,10 +40,12 @@ public class AssemblyContext
 
     public void EmitTranslationUnit(Ast.TranslationUnit translationUnit)
     {
-        IEnumerable<ITopLevelNode> nodes = translationUnit.ToIntermediate();
+        var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this);
+        var scope = context.GetInitializerScope();
+        nodes = nodes.Select(node => node.Lower(scope));
         foreach (var node in nodes)
-            node.EmitTo(context);
+            node.EmitTo(scope);
     }
 
     /// <summary>Do final code generation tasks, analogous to linkage.</summary>
