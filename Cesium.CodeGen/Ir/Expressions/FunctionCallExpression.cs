@@ -75,6 +75,7 @@ internal class FunctionCallExpression : IExpression
         var varArgParametersCount = _arguments.Count - explicitParametersCount;
         if (_callee!.Parameters?.IsVarArg == true)
         {
+            // TODO: See https://github.com/ForNeVeR/Cesium/issues/285
             // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
             // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
             if (varArgParametersCount == 0)
