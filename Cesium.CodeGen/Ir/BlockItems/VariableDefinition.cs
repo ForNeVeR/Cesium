@@ -7,29 +7,29 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class VariableDefinition : IBlockItem
 {
-    private readonly string identifier;
-    private readonly IType type;
-    private readonly IExpression? initializer;
+    private readonly string _identifier;
+    private readonly IType _type;
+    private readonly IExpression? _initializer;
 
     public VariableDefinition(string identifier, IType type, IExpression? initializer)
     {
-        this.identifier = identifier;
-        this.type = type;
-        this.initializer = initializer;
+        _identifier = identifier;
+        _type = type;
+        _initializer = initializer;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new VariableDefinition(identifier, scope.ResolveType(type), initializer?.Lower(scope));
+        return new VariableDefinition(_identifier, scope.ResolveType(_type), _initializer?.Lower(scope));
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        scope.AssemblyContext.AddGlobalField(identifier, type);
-        if (initializer != null)
+        scope.AssemblyContext.AddGlobalField(_identifier, _type);
+        if (_initializer != null)
         {
-            var field = scope.AssemblyContext.ResolveGlobalField(identifier, scope.Context);
-            initializer.EmitTo(scope);
+            var field = scope.AssemblyContext.ResolveGlobalField(_identifier, scope.Context);
+            _initializer.EmitTo(scope);
             scope.StSFld(field);
         }
     }
