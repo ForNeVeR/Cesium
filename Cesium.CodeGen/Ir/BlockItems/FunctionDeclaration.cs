@@ -14,9 +14,9 @@ internal class FunctionDeclaration : IBlockItem
 
     public FunctionDeclaration(string identifier, FunctionType functionType, string? cliImportMemberName)
     {
-        this._identifier = identifier;
-        this._functionType = functionType;
-        this._cliImportMemberName = cliImportMemberName;
+        _identifier = identifier;
+        _functionType = functionType;
+        _cliImportMemberName = cliImportMemberName;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
