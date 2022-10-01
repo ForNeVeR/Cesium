@@ -19,7 +19,9 @@ public unsafe static class StdIoFunctions
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
+#pragma warning disable CS0219
             const int EOF = -1; // TODO[#155]: Extract to some common place.
+#pragma warning restore CS0219
             // return EOF; // TODO[#156]: Uncomment
         }
     }
