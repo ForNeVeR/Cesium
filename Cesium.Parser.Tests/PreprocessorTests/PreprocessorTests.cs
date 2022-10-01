@@ -122,4 +122,20 @@ int main() { return foo; }
 @"#define foo 0
 int main() { return abs(foo); }
 ");
+
+    [Fact]
+    public Task IfExpressionDefinedLiteral() => DoTest(
+@"#define mycondition
+#if mycondition
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionEqualsLiteral() => DoTest(
+@"#define mycondition 1
+#if mycondition == 1
+int foo() { return 0; }
+#endif
+");
 }
