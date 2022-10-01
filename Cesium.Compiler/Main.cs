@@ -42,16 +42,21 @@ return await parserResult.MapResult(async args =>
     },
     _ =>
     {
-        DisplayHelp(parserResult);
+        string helpText = PrepareHelpText(parserResult);
+        Console.WriteLine(helpText);
         return Task.FromResult(-1);
     });
 
-static void DisplayHelp<T>(ParserResult<T> result)
+static string PrepareHelpText<T>(ParserResult<T> result)
 {
+    if (result is NotParsed<T> notParsed && notParsed.Errors.IsVersion())
+        return HelpText.AutoBuild(result);
+
     var helpText = HelpText.AutoBuild(result, h =>
     {
         h.AddEnumValuesToHelpText = true;
         return HelpText.DefaultParsingErrorsHandler(result, h);
     }, e => e);
-    Console.WriteLine(helpText);
+
+    return helpText;
 }
