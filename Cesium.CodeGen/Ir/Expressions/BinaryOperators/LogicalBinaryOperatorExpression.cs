@@ -48,7 +48,7 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         bodyProcessor.Emit(OpCodes.Beq, fastExitLabel);
 
         Right.EmitTo(scope);
-        bodyProcessor.Emit(OpCodes.Ldc_I4_0);
+        bodyProcessor.Emit(OpCodes.Ldc_I4_1);
         bodyProcessor.Emit(OpCodes.Ceq);
 
         var exitLabel = bodyProcessor.Create(OpCodes.Nop);
@@ -64,14 +64,10 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
         var fastExitLabel = bodyProcessor.Create(OpCodes.Ldc_I4_1);
 
         Left.EmitTo(scope);
-        bodyProcessor.Emit(OpCodes.Ldc_I4_0);
-        bodyProcessor.Emit(OpCodes.Ceq);
         bodyProcessor.Emit(OpCodes.Ldc_I4_1);
         bodyProcessor.Emit(OpCodes.Beq, fastExitLabel);
 
         Right.EmitTo(scope);
-        bodyProcessor.Emit(OpCodes.Ldc_I4_0);
-        bodyProcessor.Emit(OpCodes.Ceq);
         bodyProcessor.Emit(OpCodes.Ldc_I4_1);
         bodyProcessor.Emit(OpCodes.Ceq);
 

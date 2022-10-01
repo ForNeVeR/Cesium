@@ -3,7 +3,7 @@
   IL_0001: ldc.i4.0
   IL_0002: beq IL_0010
   IL_0007: ldc.i4.2
-  IL_0008: ldc.i4.0
+  IL_0008: ldc.i4.1
   IL_0009: ceq
   IL_000b: br IL_0011
   IL_0010: ldc.i4.0
