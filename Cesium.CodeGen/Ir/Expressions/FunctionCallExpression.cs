@@ -80,7 +80,7 @@ internal class FunctionCallExpression : IExpression
             // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
             if (varArgParametersCount == 0)
             {
-                scope.AddInstruction(OpCodes.Ldc_I4_0);
+                scope.AddInstruction(OpCodes.Ldnull);
             }
             else
             {
