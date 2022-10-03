@@ -29,16 +29,17 @@ public static class TokenExtensions
 
         // numeric escape sequences
         result = Regex.Replace(result, @"\\([0-7]{3})", m =>
-            Convert.ToChar(Convert.ToUInt32(m.Groups[1].Value, 8)).ToString());
+            char.ConvertFromUtf32(Convert.ToInt32(m.Groups[1].Value, 8)));
 
-        result = Regex.Replace(result, @"\\x([0-9a-fA-F]{2})", m =>
-            Convert.ToChar(Convert.ToUInt32(m.Groups[1].Value, 16)).ToString());
+        result = Regex.Replace(result, @"\\[xX]([0-9a-fA-F]{2})", m =>
+            char.ConvertFromUtf32(Convert.ToInt32("0x" + m.Groups[1].Value, 16)));
 
-        //todo: universal character names
+        //universal character names
+        result = Regex.Replace(result, @"\\u([0-9a-fA-F]{4})", m =>
+            char.ConvertFromUtf32(Convert.ToInt32("0x" + m.Groups[1].Value, 16)));
 
-        //result = Regex.Replace(result, @"(\\u[0-9a-fA-F]{4})", "$1");
-
-        //result = Regex.Replace(result, @"(\\U[0-9a-fA-F]{8})", "$1");
+        result = Regex.Replace(result, @"\\U([0-9a-fA-F]{8})", m =>
+            char.ConvertFromUtf32(Convert.ToInt32("0x" + m.Groups[1].Value, 16)));
 
         return result;
     }
