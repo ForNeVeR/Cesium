@@ -28,7 +28,7 @@ public static class TokenExtensions
             .Replace("\\v", "\v");
 
         // numeric escape sequences
-        result = Regex.Replace(result, @"\\([0-7]{3})", m =>
+        result = Regex.Replace(result, @"\\([0-7]{1,3})", m =>
             char.ConvertFromUtf32(Convert.ToInt32(m.Groups[1].Value, 8)));
 
         result = Regex.Replace(result, @"\\[xX]([0-9a-fA-F]{2})", m =>
