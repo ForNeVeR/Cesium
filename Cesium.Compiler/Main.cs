@@ -30,7 +30,7 @@ return await parserResult.MapResult(async args =>
 
         var cesiumRuntime = args.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         var defaultImportsAssembly = args.DefaultImportAssemblies ?? Array.Empty<string>();
-#pragma warning disable IL3000
+#pragma warning disable IL3000 Automatic discovery of corelib is fallback option, if tooling do not pass that parameter
         var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
 #pragma warning restore IL3000
         var moduleKind = args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
