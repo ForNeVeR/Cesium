@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
 
     printf("\x06");
     printf("\x28");
+    // TODO[#296]: Uncomment this.
     // printf("\xF0");
     // printf("\xFF");
 
