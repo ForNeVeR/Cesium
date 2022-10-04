@@ -1,9 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
 
-    <PropertyGroup>
-        <NoWarn>NU1503</NoWarn>
-    </PropertyGroup>
-
     <ItemGroup>
         <Content Include="**/*.c" />
         <Content Include="**/*.h" />
