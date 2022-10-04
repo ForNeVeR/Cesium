@@ -95,6 +95,14 @@ function validateTestCase($testCase) {
     $true
 }
 
+function formatCount($count, $singular, $plural) {
+    if ($count -eq 1) {
+        return "$count $singular"
+    } else {
+        return "$count $plural"
+    }
+}
+
 Write-Host "Cleaning up $ObjDir and $OutDir."
 if (Test-Path $ObjDir) {
     Remove-Item -Recurse $ObjDir
@@ -106,23 +114,24 @@ if (Test-Path $OutDir) {
 New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
 
-$allTestCases = Get-ChildItem "$TestCaseDir/*.c" -Exclude "*.ignore.c" -Recurse
-
 if (!$NoBuild) {
     buildCompiler
 }
 
+$successfulTests = @()
 $failedTests = @()
 if ($TestCaseName) {
     Write-Host "Running tests for single case $TestCaseName."
     $testCase = "$TestCaseDir/$TestCaseName"
     if (validateTestCase $testCase) {
         Write-Host "$($testCase): ok."
+        $successfulTests += $testCase
     } else {
         Write-Host "$($testCase): failed."
         $failedTests += $testCase
     }
 } else {
+    $allTestCases = Get-ChildItem "$TestCaseDir/*.c" -Exclude "*.ignore.c" -Recurse
     Write-Host -ForegroundColor White "Running tests for $($allTestCases.Count) cases."
     foreach ($testCase in $allTestCases) {
         $currentTestName = [IO.Path]::GetRelativePath($TestCaseDir, $testCase)
@@ -130,6 +139,7 @@ if ($TestCaseName) {
 
         if (validateTestCase $testCase) {
             Write-Host -ForegroundColor Green "$($currentTestName): ok."
+            $successfulTests += $testCase
         } else {
             Write-Host -ForegroundColor Red "$($currentTestName): failed."
             $failedTests += $testCase
@@ -141,7 +151,7 @@ if ($TestCaseName) {
 
 if ($failedTests.Count -gt 0) {
     $testNames = $failedTests -join "`n"
-    throw "Errors in the following $($failedTests.Count) tests: $testNames"
+    throw "Errors in the following $(formatCount $failedTests.Count "test" "tests"): $testNames"
 } else {
-    Write-Host -ForegroundColor Green "$($allTestCases.Count) tests have been executed successfully."
+    Write-Host -ForegroundColor Green "$(formatCount $successfulTests.Count "test has" "tests have") been executed successfully."
 }
