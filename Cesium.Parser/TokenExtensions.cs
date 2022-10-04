@@ -13,19 +13,58 @@ public static class TokenExtensions
         if (token.Kind != CTokenType.StringLiteral)
             throw new ParseException($"Non-string literal token: {token.Kind} {token.Text}");
 
+        var result = token.Text.Trim('"');
+
         // simple escape sequences
-        var result = token.Text.Trim('"')
-            .Replace("\\'", "\'")
-            .Replace("\\\"", "\"")
-            .Replace("\\?", "?")
-            .Replace("\\\\", "\\")
-            .Replace("\\a", "\a")
-            .Replace("\\b", "\b")
-            .Replace("\\f", "\f")
-            .Replace("\\n", "\n")
-            .Replace("\\r", "\r")
-            .Replace("\\t", "\t")
-            .Replace("\\v", "\v");
+        var builder = new StringBuilder(result.Length);
+        for (int i = 0; i < result.Length; ++i)
+        {
+            if (result.ElementAt(i) == '\\' && i < result.Length - 1)
+            {
+                switch (result.ElementAt(i + 1))
+                {
+                    case '\'':
+                    case '\"':
+                    case '?':
+                    case '\\':
+                        builder.Append(result.ElementAt(i + 1));
+                        break;
+                    case 'a':
+                        builder.Append('\a');
+                        break;
+                    case 'b':
+                        builder.Append('\b');
+                        break;
+                    case 'f':
+                        builder.Append('\f');
+                        break;
+                    case 'n':
+                        builder.Append('\n');
+                        break;
+                    case 'r':
+                        builder.Append('\r');
+                        break;
+                    case 't':
+                        builder.Append('\t');
+                        break;
+                    case 'v':
+                        builder.Append('\v');
+                        break;
+                    default:
+                        // todo: maybe smarter handling of this edge case with errors/warnings
+                        builder.Append("\\");
+                        --i; // don't skip next
+                        break;
+                }
+
+                ++i; // skip next
+            }
+            else
+            {
+                builder.Append(result.ElementAt(i));
+            }
+        }
+        result = builder.ToString();
 
         // numeric escape sequences
         result = Regex.Replace(result, @"\\([0-7]{1,3})", m =>
