@@ -140,8 +140,24 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfExpressionEqualsSkippedIfNotMetLiteral() => DoTest(
+@"#define mycondition 0
+#if mycondition == 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task IfExpressionNotEqualsLiteral() => DoTest(
 @"#define mycondition 2
+#if mycondition != 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionNotEqualsSkippedIfNotMetLiteral() => DoTest(
+@"#define mycondition 1
 #if mycondition != 1
 int foo() { return 0; }
 #endif
