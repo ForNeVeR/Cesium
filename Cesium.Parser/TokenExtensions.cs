@@ -51,7 +51,7 @@ public static class TokenExtensions
                         builder.Append('\v');
                         break;
                     default:
-                        // todo: maybe smarter handling of this edge case with errors/warnings
+                        // TODO[#295]: maybe smarter handling of this edge case with errors/warnings
                         builder.Append("\\");
                         --i; // don't skip next
                         break;
