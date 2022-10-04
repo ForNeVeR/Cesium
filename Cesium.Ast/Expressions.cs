@@ -21,7 +21,7 @@ public record PrefixIncrementExpression(Expression Target) : Expression;
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
 
-// 6.5.5–6.5.15: Various binary operators
+// 6.5.5–6.5.14: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
 public record LogicalBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
     : BinaryOperatorExpression(Left, Operator, Right);
@@ -31,6 +31,10 @@ public record BitwiseBinaryOperatorExpression(Expression Left, string Operator, 
     : BinaryOperatorExpression(Left, Operator, Right);
 public record ComparisonBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
     : BinaryOperatorExpression(Left, Operator, Right);
+
+// 6.5.15: Conditional operator
+public record ConditionalExpression(Expression Condition, Expression TrueExpression, Expression FalseExpression)
+    : Expression;
 
 // 6.5.16 Assignment operators
 public record AssignmentExpression(Expression Left, string Operator, Expression Right)

@@ -207,7 +207,10 @@ public partial class CParser
     private static Expression MakeLogicalOrExpression(Expression a, ICToken @operator, Expression b) =>
         new LogicalBinaryOperatorExpression(a, @operator.Text, b);
 
-    // TODO[#207]: 6.5.15 Conditional operator
+    // 6.5.15 Conditional operator
+    [Rule("conditional_expression: logical_OR_expression '?' expression ':' conditional_expression")]
+    private static Expression MakeConditionalExpression(Expression a, ICToken _, Expression b, ICToken __, Expression c) =>
+        new ConditionalExpression(a, b, c);
 
     // 6.5.16 Assignment operators
     [Rule("assignment_expression: unary_expression assignment_operator assignment_expression")]
