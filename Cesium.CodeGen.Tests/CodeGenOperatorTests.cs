@@ -15,4 +15,13 @@ public class CodeGenOperatorTests: CodeGenTestBase
 
     [Fact]
     public Task SubtractIntFromInt() => DoTest(@"int main() { int x = 2 - 1; }");
+
+    [Fact]
+    public Task ConditionalVoid() => DoTest(@"void foo() {} int main() { 1 ? foo() : foo(); }");
+
+    [Fact]
+    public Task ConditionalInt() => DoTest(@"int main() { int x = 1 ? 2 : 3; }");
+
+    [Fact]
+    public Task ConditionalFloatAndInt() => DoTest(@"int main() { float x = 1 ? 2.0f : 3; }");
 }

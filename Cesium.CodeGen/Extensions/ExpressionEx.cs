@@ -27,6 +27,8 @@ internal static class ExpressionEx
         Ast.BitwiseBinaryOperatorExpression e => new BitwiseBinaryOperatorExpression(e),
         Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
 
+        Ast.ConditionalExpression e => new ConditionalExpression(e),
+
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),

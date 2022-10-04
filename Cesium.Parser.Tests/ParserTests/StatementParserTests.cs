@@ -58,6 +58,9 @@ if (1)
     public Task LogicalOrOperator() => DoTest("return 1 || 2;");
 
     [Fact]
+    public Task ConditionalOperator() => DoTest("return 1 ? 2 ? 3 : 4 ? 5 : 6 : 7;");
+
+    [Fact]
     public Task ForStatement_Full() => DoTest("for (i = 1; i < 0; ++i) ++i;");
 
     [Fact]
