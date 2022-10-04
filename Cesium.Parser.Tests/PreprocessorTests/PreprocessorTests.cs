@@ -138,4 +138,12 @@ int foo() { return 0; }
 int foo() { return 0; }
 #endif
 ");
+
+    [Fact]
+    public Task IfExpressionNotEqualsLiteral() => DoTest(
+@"#define mycondition 2
+#if mycondition != 1
+int foo() { return 0; }
+#endif
+");
 }
