@@ -4,15 +4,14 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <Version>0.0.0</Version>
+        <PublishAot Condition="$(TargetFramework) == 'net7.0'">true</PublishAot>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.8.0" />
-        <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2022.2.14-2.21.20-nightly" />
+        <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2022.6.17-3.21.43-nightly" />
     </ItemGroup>
 
     <ItemGroup>
@@ -21,6 +20,7 @@
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <OutputItemType>Content</OutputItemType>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <Targets>Build</Targets>
         </ProjectReference>
         <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
@@ -29,6 +29,10 @@
 
     <ItemGroup>
         <Content Include="stdlib/*" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <RdXmlFile Include="rd.xml" />
     </ItemGroup>
 
 </Project>

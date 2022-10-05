@@ -1,0 +1,136 @@
+﻿{
+  "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
+  "Declarations": [
+    {
+      "$type": "Cesium.Ast.FunctionDefinition, Cesium.Ast",
+      "Specifiers": [
+        {
+          "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+          "TypeName": "int"
+        }
+      ],
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.IdentifierListDirectDeclarator, Cesium.Ast",
+          "Base": {
+            "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+            "Identifier": "main",
+            "Base": null
+          },
+          "Identifiers": null
+        }
+      },
+      "Declarations": null,
+      "Statement": {
+        "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
+        "Block": [
+          {
+            "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+            "Specifiers": [
+              {
+                "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+                "TypeName": "float"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+                "Declarator": {
+                  "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                    "Identifier": "f1",
+                    "Base": null
+                  }
+                },
+                "Initializer": {
+                  "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+                  "Expression": {
+                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "Constant": {
+                      "Kind": "FloatLiteral",
+                      "Text": "1.0"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+            "Specifiers": [
+              {
+                "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+                "TypeName": "float"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+                "Declarator": {
+                  "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                    "Identifier": "f2",
+                    "Base": null
+                  }
+                },
+                "Initializer": {
+                  "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+                  "Expression": {
+                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "Constant": {
+                      "Kind": "FloatLiteral",
+                      "Text": "1.0f"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+            "Specifiers": [
+              {
+                "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+                "TypeName": "long"
+              },
+              {
+                "$type": "Cesium.Ast.NamedTypeSpecifier, Cesium.Ast",
+                "TypeDefName": "doubld"
+              }
+            ],
+            "InitDeclarators": [
+              {
+                "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+                "Declarator": {
+                  "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+                  "Pointer": null,
+                  "DirectDeclarator": {
+                    "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+                    "Identifier": "ld1",
+                    "Base": null
+                  }
+                },
+                "Initializer": {
+                  "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+                  "Expression": {
+                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "Constant": {
+                      "Kind": "FloatLiteral",
+                      "Text": "1.0l"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

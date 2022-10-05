@@ -18,12 +18,12 @@ internal class FunctionValue : IAddressableValue
         _methodReference = methodReference;
     }
 
-    public void EmitGetValue(IDeclarationScope scope)
+    public void EmitGetValue(IEmitScope scope)
     {
         throw new WipException(227, "Cannot directly get a value of a function, yet.");
     }
 
-    public void EmitGetAddress(IDeclarationScope scope)
+    public void EmitGetAddress(IEmitScope scope)
     {
         scope.LdFtn(_methodReference);
     }

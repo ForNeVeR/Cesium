@@ -1,23 +1,23 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
 internal interface IDeclarationScope
 {
-    AssemblyContext AssemblyContext { get; }
-    ModuleDefinition Module { get; }
-    TypeSystem TypeSystem { get; }
     CTypeSystem CTypeSystem { get; }
     IReadOnlyDictionary<string, FunctionInfo> Functions { get; }
-    TranslationUnitContext Context { get; }
-    MethodDefinition Method { get; }
     IReadOnlyDictionary<string, IType> Variables { get; }
+    IReadOnlyDictionary<string, IType> GlobalFields { get; }
     void AddVariable(string identifier, IType variable);
-    VariableDefinition ResolveVariable(string identifier);
+    /// <summary>
+    /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
+    /// </summary>
+    /// <param name="type">Type which should be resolved.</param>
+    /// <returns>A <see cref="IType"/> which fully resolves.</returns>
+    /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
+    IType ResolveType(IType type);
+    void AddTypeDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);
-    ParameterDefinition ResolveParameter(string name);
 }

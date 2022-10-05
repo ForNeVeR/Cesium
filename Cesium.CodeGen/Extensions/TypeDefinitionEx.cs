@@ -2,6 +2,8 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
 using Cesium.Core;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
+using System.Xml.Linq;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -31,8 +33,6 @@ internal static class TypeDefinitionEx
         if (parametersInfo == null) return;
         var (parameters, isVoid, isVarArg) = parametersInfo;
         if (isVoid) return;
-        if (isVarArg)
-            throw new WipException(196, $"VarArg functions not supported, yet: {method.Name}.");
 
         // TODO[#87]: Process empty (non-void) parameter list.
 
@@ -42,6 +42,14 @@ internal static class TypeDefinitionEx
             var parameterDefinition = new ParameterDefinition(type.Resolve(context))
             {
                 Name = name
+            };
+            method.Parameters.Add(parameterDefinition);
+        }
+        if (isVarArg)
+        {
+            var parameterDefinition = new ParameterDefinition(context.TypeSystem.Void.MakePointerType())
+            {
+                Name = "varargs"
             };
             method.Parameters.Add(parameterDefinition);
         }

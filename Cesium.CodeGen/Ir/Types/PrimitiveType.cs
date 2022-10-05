@@ -42,6 +42,9 @@ internal enum PrimitiveTypeKind
     LongLongInt,
     SignedLongLongInt,
     LongDouble,
+
+    // This is band-aid type until we would be able perform lowering in controlled fashion.
+    NativeInt,
 }
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType

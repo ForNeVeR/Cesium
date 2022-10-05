@@ -98,4 +98,10 @@ if (1)
 
     [Fact]
     public Task NotFuncCall() => DoTest("if (!test()) return 1;");
+
+    [Fact]
+    public Task IndirectionGet() => DoTest("x = *y;");
+
+    [Fact]
+    public Task IndirectionSet() => DoTest("*x = 42;");
 }

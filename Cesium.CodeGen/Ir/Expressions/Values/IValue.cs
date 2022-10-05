@@ -1,12 +1,11 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal interface IValue
 {
-    void EmitGetValue(IDeclarationScope scope);
+    void EmitGetValue(IEmitScope scope);
     IType GetValueType();
 }
 
@@ -15,10 +14,10 @@ internal interface IValue
 /// </remarks>
 internal interface IAddressableValue : IValue
 {
-    void EmitGetAddress(IDeclarationScope scope);
+    void EmitGetAddress(IEmitScope scope);
 }
 
 internal interface ILValue : IAddressableValue
 {
-    void EmitSetValue(IDeclarationScope scope, IExpression value);
+    void EmitSetValue(IEmitScope scope, IExpression value);
 }

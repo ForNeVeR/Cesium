@@ -1,8 +1,10 @@
 using System.Reflection;
 using Cesium.CodeGen;
 using Cesium.Compiler;
+using Cesium.Core;
 using CommandLine;
 using CommandLine.Text;
+using Mono.Cecil;
 
 var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
 
@@ -26,20 +28,35 @@ return await parserResult.MapResult(async args =>
             _ => TargetRuntimeDescriptor.Net60
         };
 
-        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, targetRuntime, args.ModuleKind, args.Namespace, args.GlobalClass);
+        var cesiumRuntime = args.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
+        var defaultImportsAssembly = args.DefaultImportAssemblies ?? Array.Empty<string>();
+        var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
+        var moduleKind = args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
+        {
+            ".exe" => ModuleKind.Console,
+            ".dll" => ModuleKind.Dll,
+            var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
+        };
+        var compilationOptions = new CompilationOptions(targetRuntime, moduleKind, corelibAssembly, cesiumRuntime, defaultImportsAssembly, args.Namespace, args.GlobalClass);
+        return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>
     {
-        DisplayHelp(parserResult);
+        string helpText = PrepareHelpText(parserResult);
+        Console.WriteLine(helpText);
         return Task.FromResult(-1);
     });
 
-static void DisplayHelp<T>(ParserResult<T> result)
+static string PrepareHelpText<T>(ParserResult<T> result)
 {
+    if (result is NotParsed<T> notParsed && notParsed.Errors.IsVersion())
+        return HelpText.AutoBuild(result);
+
     var helpText = HelpText.AutoBuild(result, h =>
     {
         h.AddEnumValuesToHelpText = true;
         return HelpText.DefaultParsingErrorsHandler(result, h);
     }, e => e);
-    Console.WriteLine(helpText);
+
+    return helpText;
 }

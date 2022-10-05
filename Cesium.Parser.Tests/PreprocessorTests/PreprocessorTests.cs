@@ -77,6 +77,27 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfElseLiteral() => DoTest(
+@"#define foo main
+#ifndef foo
+int myfoo() { return 0; }
+#else
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task NestedIfDefined() => DoTest(
+@"#define foo main
+#ifdef foo
+int foo() { return 0; }
+#ifdef xfoo
+int foo() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
     public Task IfNotDefinedLiteral() => DoTest(
 @"#define foo main
 #ifndef foo
@@ -100,5 +121,45 @@ int main() { return foo; }
     public Task ReplaceFunctionParameter() => DoTest(
 @"#define foo 0
 int main() { return abs(foo); }
+");
+
+    [Fact]
+    public Task IfExpressionDefinedLiteral() => DoTest(
+@"#define mycondition
+#if mycondition
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionEqualsLiteral() => DoTest(
+@"#define mycondition 1
+#if mycondition == 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionEqualsSkippedIfNotMetLiteral() => DoTest(
+@"#define mycondition 0
+#if mycondition == 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionNotEqualsLiteral() => DoTest(
+@"#define mycondition 2
+#if mycondition != 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionNotEqualsSkippedIfNotMetLiteral() => DoTest(
+@"#define mycondition 1
+#if mycondition != 1
+int foo() { return 0; }
+#endif
 ");
 }

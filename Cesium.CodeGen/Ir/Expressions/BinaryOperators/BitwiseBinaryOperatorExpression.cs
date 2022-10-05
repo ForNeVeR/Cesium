@@ -2,7 +2,6 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
@@ -21,9 +20,9 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
     {
     }
 
-    public override IExpression Lower() => new BitwiseBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower());
+    public override IExpression Lower(IDeclarationScope scope) => new BitwiseBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
 
-    public override void EmitTo(IDeclarationScope scope)
+    public override void EmitTo(IEmitScope scope)
     {
         Left.EmitTo(scope);
         Right.EmitTo(scope);

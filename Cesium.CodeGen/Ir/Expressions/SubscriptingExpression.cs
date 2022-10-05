@@ -3,7 +3,6 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -25,10 +24,13 @@ internal class SubscriptingExpression : IExpression, IValueExpression
         _index = index;
     }
 
-    public IExpression Lower()
-        => new SubscriptingExpression(_expression.Lower(), _index.Lower());
+    public IExpression Lower(IDeclarationScope scope)
+    {
+        var lowered = new SubscriptingExpression(_expression, _index.Lower(scope));
+        return new GetValueExpression(lowered.Resolve(scope));
+    }
 
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
     

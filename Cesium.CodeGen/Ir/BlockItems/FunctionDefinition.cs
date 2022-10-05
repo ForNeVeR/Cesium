@@ -1,7 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -10,9 +9,9 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
-namespace Cesium.CodeGen.Ir.TopLevel;
+namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class FunctionDefinition : ITopLevelNode
+internal class FunctionDefinition : IBlockItem
 {
     private const string MainFunctionName = "main";
 
@@ -40,8 +39,14 @@ internal class FunctionDefinition : ITopLevelNode
         _statement = astStatement.ToIntermediate();
     }
 
-    public void EmitTo(TranslationUnitContext context)
+    public IBlockItem Lower(IDeclarationScope scope)
     {
+        return this;
+    }
+
+    public void EmitTo(IEmitScope scope)
+    {
+        var context = scope.Context;
         var (parameters, returnType) = _functionType;
         var resolvedReturnType = returnType.Resolve(context);
         if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
@@ -73,7 +78,7 @@ internal class FunctionDefinition : ITopLevelNode
         else
             context.Functions[_name] = declaration with { IsDefined = true };
 
-        var scope = new FunctionScope(context, declaration, method);
+        var functionScope = new FunctionScope(context, declaration, method);
         if (IsMain)
         {
             var entryPoint = GenerateSyntheticEntryPoint(context, method);
@@ -87,7 +92,7 @@ internal class FunctionDefinition : ITopLevelNode
             assembly.EntryPoint = entryPoint;
         }
 
-        EmitCode(context, scope);
+        EmitCode(context, functionScope);
     }
 
     /// <summary>
@@ -162,22 +167,22 @@ internal class FunctionDefinition : ITopLevelNode
         var exit = context.GetRuntimeHelperMethod("Exit");
         var arrayCopyTo = context.GetArrayCopyToMethod();
 
-        var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
+        var argC = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 0
         syntheticEntrypoint.Body.Variables.Add(argC);
 
-        var argV = new VariableDefinition(bytePtrArrayType); // 1
+        var argV = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 1
         syntheticEntrypoint.Body.Variables.Add(argV);
 
         // argVCopy is a copy for the user which could be changed during the program execution. Only original argV
         // strings will be freed at the end of the execution, though, since we don't know how any other strings may have
         // been allocated by the user.
-        var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
+        var argVCopy = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 2
         syntheticEntrypoint.Body.Variables.Add(argVCopy);
 
-        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
+        var argVPinned = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
         syntheticEntrypoint.Body.Variables.Add(argVPinned);
 
-        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
@@ -246,7 +251,7 @@ internal class FunctionDefinition : ITopLevelNode
 
         var exit = context.GetRuntimeHelperMethod("Exit");
 
-        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
@@ -264,8 +269,9 @@ internal class FunctionDefinition : ITopLevelNode
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
-        _statement.EmitTo(scope);
-        if ((_statement as IBlockItem).HasDefiniteReturn == false)
+        var statement = _statement.Lower(scope);
+        statement.EmitTo(scope);
+        if (statement.HasDefiniteReturn == false)
         {
             if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
             {

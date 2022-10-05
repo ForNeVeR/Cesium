@@ -4,7 +4,6 @@ using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -17,9 +16,9 @@ internal class PrefixIncrementExpression : IExpression
         _target = target.ToIntermediate();
     }
 
-    public IExpression Lower()
+    public IExpression Lower(IDeclarationScope scope)
     {
-        var target = _target.Lower();
+        var target = _target.Lower(scope);
         return new AssignmentExpression(
             target,
             BinaryOperator.Assign,
@@ -28,10 +27,10 @@ internal class PrefixIncrementExpression : IExpression
                 BinaryOperator.Add,
                 new ConstantExpression(new IntegerConstant("1"))
             )
-        );
+        ).Lower(scope);
     }
 
-    public void EmitTo(IDeclarationScope scope) => throw new AssertException("Should be lowered");
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     public IType GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 }

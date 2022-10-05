@@ -6,6 +6,6 @@ internal interface IBlockItem
 {
     bool HasDefiniteReturn => false;
 
-    IBlockItem Lower();
-    void EmitTo(IDeclarationScope scope);
+    IBlockItem Lower(IDeclarationScope scope);
+    void EmitTo(IEmitScope scope);
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -104,6 +105,15 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         IStream<IToken<CPreprocessorTokenType>> stream)
     {
         yield return firstToken;
+        foreach (var token in ReadTillEnd(stream))
+        {
+            yield return token;
+        }
+    }
+
+    private IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
+        IStream<IToken<CPreprocessorTokenType>> stream)
+    {
         while (!stream.IsEnd)
         {
             var token = stream.Consume();
@@ -145,6 +155,19 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             throw new PreprocessorException(
                 $"Cannot process preprocessor directive: expected {expectedTypeString}, " +
                 $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
+        }
+
+        IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLine()
+        {
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current is { Kind: WhiteSpace })
+                {
+                    continue;
+                }
+
+                yield return enumerator.Current;
+            }
         }
 
         var hash = ConsumeNext(Hash);
@@ -214,6 +237,13 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 IncludeTokens = includeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
+            case "if":
+            {
+                var expressionTokens = ConsumeLine();
+                bool includeTokens = EvaluateExpression(expressionTokens.ToList());
+                IncludeTokens = includeTokens;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
@@ -226,11 +256,26 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 IncludeTokens = true;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
+            case "else":
+            {
+                IncludeTokens = !IncludeTokens;
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
             default:
                 throw new WipException(
                     77,
                     $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
         }
+    }
+    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    {
+        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
+            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
+        var p = new CPreprocessorExpressionParser(stream);
+        var expression = p.ParseExpression();
+        var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
+        bool includeTokens = macroExpression != null;
+        return includeTokens;
     }
 
     private ValueTask<TextReader> LookUpIncludeFile(string filePath) => filePath[0] switch

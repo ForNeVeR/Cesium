@@ -8,13 +8,17 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDefinition Method) : IDeclarationScope
+internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
 {
+    private MethodDefinition? _method;
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
+
+    public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
+    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
     public IReadOnlyDictionary<string, IType> Variables => ImmutableDictionary<string, IType>.Empty;
     public void AddVariable(string identifier, IType variable) =>
@@ -25,4 +29,8 @@ internal record GlobalConstructorScope(TranslationUnitContext Context, MethodDef
     public ParameterInfo? GetParameterInfo(string name) => null;
     public ParameterDefinition ResolveParameter(string name) =>
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
+
+    /// <inheritdoc />
+    public IType ResolveType(IType type) => Context.ResolveType(type);
+    public void AddTypeDefinition(string identifier, IType type) => Context.AddTypeDefinition(identifier, type);
 }

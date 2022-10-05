@@ -3,7 +3,6 @@ using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -22,7 +21,7 @@ internal class AssignmentExpression : BinaryOperatorExpression
         _target = Left as IValueExpression ?? throw new AssertException($"Not a value expression: {Left}.");
     }
 
-    public override IExpression Lower()
+    public override IExpression Lower(IDeclarationScope scope)
     {
         var rightExpanded = Operator switch
         {
@@ -38,20 +37,24 @@ internal class AssignmentExpression : BinaryOperatorExpression
             _ => throw new WipException(226, $"Assignment operator not supported, yet: {Operator}.")
         };
 
-        return new AssignmentExpression(Left.Lower(), BinaryOperator.Assign, rightExpanded.Lower());
-    }
+        IExpression left = Left.Lower(scope);
+        IExpression right = rightExpanded.Lower(scope);
+        IType leftType = left.GetExpressionType(scope);
+        IType rightType = right.GetExpressionType(scope);
+        if (scope.CTypeSystem.IsConversionAvailable(rightType, leftType)
+            && !rightType.Equals(leftType))
+        {
+            right = new TypeCastExpression(leftType, right);
+        }
 
-    public override void EmitTo(IDeclarationScope scope)
-    {
-        if (Operator != BinaryOperator.Assign)
-            throw new AssertException($"Operator {Operator} should've been lowered before emitting.");
-
-        var value = _target.Resolve(scope);
+        var value = ((IValueExpression)left).Resolve(scope);
         if (value is not ILValue lvalue)
             throw new CompilationException($"Not an lvalue: {value}.");
 
-        lvalue.EmitSetValue(scope, Right);
+        return new SetValueExpression(lvalue, right);
     }
+
+    public override void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
     // `x = v` expression returns type of x (and v)
     // e.g `int x; int y; x = (y = 10);`

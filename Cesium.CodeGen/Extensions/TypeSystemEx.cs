@@ -108,12 +108,22 @@ internal static class TypeSystemEx
 
         if (parameters.IsVarArg)
         {
-            var lastSrcParam = methodParameters.Last();
-            var paramsAttrType = context.GetParamArrayAttributeType();
-            if (lastSrcParam.ParameterType.IsArray == false
-                || lastSrcParam.CustomAttributes.Any(x => x.AttributeType == paramsAttrType) == false)
+            if (parameters.Parameters.Count + 1 != method.Parameters.Count)
             {
-                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source."));
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Count of parameters does not match."));
+                return false;
+            }
+
+            var lastSrcParam = methodParameters.Last();
+            if (lastSrcParam.ParameterType is not Mono.Cecil.PointerType pointerType)
+            {
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an pointer type."));
+                return false;
+            }
+
+            if (!pointerType.ElementType.IsEqualTo(context.TypeSystem.Void))
+            {
+                similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an void*."));
                 return false;
             }
         }
@@ -175,7 +185,7 @@ internal static class TypeSystemEx
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
-        var unsignedTypes = new[] {ts.Bool, ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
@@ -217,11 +227,6 @@ internal static class TypeSystemEx
                     return i;
             return null;
         }
-    }
-
-    public static TypeReference GetParamArrayAttributeType(this TranslationUnitContext context)
-    {
-        return context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ParamArrayAttribute"));
     }
 
     public static TypeDefinition GetRuntimeHelperType(this TranslationUnitContext context)

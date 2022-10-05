@@ -16,13 +16,10 @@ internal static class Compilation
     public static async Task<int> Compile(
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null,
-        string @namespace = "",
-        string globalClassFqn = "")
+        CompilationOptions compilationOptions)
     {
         Console.WriteLine($"Generating assembly {outputFilePath}.");
-        var assemblyContext = CreateAssembly(outputFilePath, targetRuntime, moduleKind, @namespace, globalClassFqn);
+        var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
 
         foreach (var inputFilePath in inputFilePaths)
         {
@@ -30,39 +27,17 @@ internal static class Compilation
             await GenerateCode(assemblyContext, inputFilePath);
         }
 
-        SaveAssembly(assemblyContext, targetRuntime.Kind, outputFilePath);
+        SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath, compilationOptions.CesiumRuntime);
 
         return 0;
     }
 
-    private static AssemblyContext CreateAssembly(
-        string outputFilePath,
-        TargetRuntimeDescriptor targetRuntime,
-        ModuleKind? moduleKind = null,
-        string @namespace = "",
-        string globalClassFqn = "")
+    private static AssemblyContext CreateAssembly(string outputFilePath, CompilationOptions compilationOptions)
     {
-        var parsedModuleKind = moduleKind ?? Path.GetExtension(outputFilePath).ToLowerInvariant() switch
-        {
-            ".exe" => ModuleKind.Console,
-            ".dll" => ModuleKind.Dll,
-            var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
-        };
         var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
-        var defaultImportAssemblies = new []
-        {
-            typeof(Console).Assembly.Location, // System.Console.dll
-        };
-        var cesiumRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
-            parsedModuleKind,
-            targetRuntime,
-            defaultImportAssemblies,
-            typeof(Math).Assembly.Location, // System.Runtime.dll
-            cesiumRuntime,
-            @namespace,
-            globalClassFqn);
+            compilationOptions);
     }
 
     private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
@@ -107,22 +82,27 @@ internal static class Compilation
         if (parser.TokenStream.Peek().Kind != CTokenType.End)
             throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
 
-        context.EmitTranslationUnit(translationUnit.ToIntermediate());
+        context.EmitTranslationUnit(translationUnit);
     }
 
     private static void SaveAssembly(
         AssemblyContext context,
         SystemAssemblyKind targetFrameworkKind,
-        string outputFilePath)
+        string outputFilePath,
+        string compilerRuntimeDll)
     {
         context.VerifyAndGetAssembly().Write(outputFilePath);
 
         // This part should go to Cesium.SDK eventually together with
         // runtimeconfig.json generation
-        var compilerRuntime = Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
         var outputExecutablePath = Path.GetDirectoryName(outputFilePath) ?? Environment.CurrentDirectory;
         var applicationRuntime = Path.Combine(outputExecutablePath, "Cesium.Runtime.dll");
-        File.Copy(compilerRuntime, applicationRuntime, true);
+
+        // Prevent copying of the Cesium.Runtime if compile in same directory as compiler.
+        if (!string.Equals(Path.GetFullPath(compilerRuntimeDll), Path.GetFullPath(applicationRuntime), StringComparison.InvariantCultureIgnoreCase))
+        {
+            File.Copy(compilerRuntimeDll, applicationRuntime, true);
+        }
 
         if (context.Module.Kind == ModuleKind.Console && targetFrameworkKind == SystemAssemblyKind.SystemRuntime)
         {

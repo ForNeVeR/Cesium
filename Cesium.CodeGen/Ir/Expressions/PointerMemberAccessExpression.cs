@@ -10,27 +10,32 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal class PointerMemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
-    private readonly IExpression _memberIdentifier;
+    private readonly IdentifierExpression _memberIdentifier;
 
     public PointerMemberAccessExpression(Ast.PointerMemberAccessExpression accessExpression)
     {
-        var (expression, memberIdentifier) = accessExpression;
+        var (expression, memberAst) = accessExpression;
         _target = expression.ToIntermediate();
-        _memberIdentifier = memberIdentifier.ToIntermediate();
+        if (memberAst.ToIntermediate() is not IdentifierExpression memberIdentifier)
+            throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
+        _memberIdentifier = memberIdentifier;
     }
 
-    internal PointerMemberAccessExpression(IExpression target, IExpression memberIdentifier)
+    internal PointerMemberAccessExpression(IExpression target, IdentifierExpression memberIdentifier)
     {
         _target = target;
         _memberIdentifier = memberIdentifier;
     }
 
-    public IExpression Lower()
-        => new PointerMemberAccessExpression(_target.Lower(), _memberIdentifier.Lower());
+    public IExpression Lower(IDeclarationScope scope)
+    {
+        var lowered = new PointerMemberAccessExpression(_target.Lower(scope), _memberIdentifier);
+        return new GetValueExpression(lowered.Resolve(scope));
+    }
 
-    public void EmitTo(IDeclarationScope scope) => Resolve(scope).EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
 
-    public IType GetExpressionType(IDeclarationScope scope) => Resolve(scope).GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => _target.GetExpressionType(scope);
 
     public IValue Resolve(IDeclarationScope scope)
     {
@@ -38,12 +43,6 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
             throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
 
         var valueType = _target.GetExpressionType(scope);
-        var valueTypeReference = valueType.Resolve(scope.Context);
-        var valueTypeDef = valueTypeReference.Resolve();
-
-        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == memberIdentifier.Identifier)
-                    ?? throw new CompilationException(
-                        $"\"{valueTypeDef.Name}\" has no member named \"{memberIdentifier.Identifier}\"");
-        return new LValueField(_target, valueType, new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+        return new LValueField(_target, valueType, memberIdentifier.Identifier);
     }
 }

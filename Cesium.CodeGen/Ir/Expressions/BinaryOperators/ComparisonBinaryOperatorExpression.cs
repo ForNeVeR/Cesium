@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
@@ -21,43 +22,54 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
     {
     }
 
-    public override IExpression Lower() => Operator switch
+    public override IExpression Lower(IDeclarationScope scope)
     {
-        BinaryOperator.GreaterThanOrEqualTo => new ComparisonBinaryOperatorExpression(
-            new ComparisonBinaryOperatorExpression(Left.Lower(), BinaryOperator.LessThan, Right.Lower()),
-            BinaryOperator.EqualTo,
-            new ConstantExpression(new IntegerConstant("0"))
-        ),
-        BinaryOperator.LessThanOrEqualTo => new ComparisonBinaryOperatorExpression(
-            new ComparisonBinaryOperatorExpression(Left.Lower(), BinaryOperator.GreaterThan, Right.Lower()),
-            BinaryOperator.EqualTo,
-            new ConstantExpression(new IntegerConstant("0"))
-        ),
-        BinaryOperator.NotEqualTo => new ComparisonBinaryOperatorExpression(
-            new ComparisonBinaryOperatorExpression(Left.Lower(), BinaryOperator.EqualTo, Right.Lower()),
-            BinaryOperator.EqualTo,
-            new ConstantExpression(new IntegerConstant("0"))
-        ),
-        _ => new ComparisonBinaryOperatorExpression(Left.Lower(), Operator, Right.Lower()),
-    };
-
-    public override void EmitTo(IDeclarationScope scope)
-    {
-        var leftType = Left.GetExpressionType(scope);
-        var rightType = Right.GetExpressionType(scope);
-
+        var left = Left.Lower(scope);
+        var right = Right.Lower(scope);
+        var leftType = left.GetExpressionType(scope);
+        var rightType = right.GetExpressionType(scope);
         if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not PointerType)
             || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
             throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
         var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        if (!leftType.IsEqualTo(commonType))
+        {
+            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(leftType, commonType));
+            left = new TypeCastExpression(commonType, left).Lower(scope);
+        }
 
+        if (!rightType.IsEqualTo(commonType))
+        {
+            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(rightType, commonType));
+            right = new TypeCastExpression(commonType, right).Lower(scope);
+        }
+
+        return Operator switch
+        {
+            BinaryOperator.GreaterThanOrEqualTo => new ComparisonBinaryOperatorExpression(
+                new ComparisonBinaryOperatorExpression(left, BinaryOperator.LessThan, right),
+                BinaryOperator.EqualTo,
+                new ConstantExpression(new IntegerConstant("0"))
+            ),
+            BinaryOperator.LessThanOrEqualTo => new ComparisonBinaryOperatorExpression(
+                new ComparisonBinaryOperatorExpression(left, BinaryOperator.GreaterThan, right),
+                BinaryOperator.EqualTo,
+                new ConstantExpression(new IntegerConstant("0"))
+            ),
+            BinaryOperator.NotEqualTo => new ComparisonBinaryOperatorExpression(
+                new ComparisonBinaryOperatorExpression(left, BinaryOperator.EqualTo, right),
+                BinaryOperator.EqualTo,
+                new ConstantExpression(new IntegerConstant("0"))
+            ),
+            _ => new ComparisonBinaryOperatorExpression(left, Operator, right),
+        };
+    }
+
+    public override void EmitTo(IEmitScope scope)
+    {
         Left.EmitTo(scope);
-        EmitConversion(scope, leftType, commonType);
-
         Right.EmitTo(scope);
-        EmitConversion(scope, rightType, commonType);
-
         scope.Method.Body.Instructions.Add(GetInstruction());
 
         Instruction GetInstruction() => Operator switch

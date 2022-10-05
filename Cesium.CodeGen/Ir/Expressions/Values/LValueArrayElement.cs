@@ -1,7 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
@@ -17,7 +16,7 @@ internal class LValueArrayElement : ILValue
         _index = index;
     }
 
-    public void EmitGetValue(IDeclarationScope scope)
+    public void EmitGetValue(IEmitScope scope)
     {
         EmitPointerMoveToElement(scope);
 
@@ -25,12 +24,12 @@ internal class LValueArrayElement : ILValue
         scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
-    public void EmitGetAddress(IDeclarationScope scope)
+    public void EmitGetAddress(IEmitScope scope)
     {
         EmitPointerMoveToElement(scope);
     }
 
-    public void EmitSetValue(IDeclarationScope scope, IExpression value)
+    public void EmitSetValue(IEmitScope scope, IExpression value)
     {
         EmitPointerMoveToElement(scope);
         value.EmitTo(scope);
@@ -52,7 +51,7 @@ internal class LValueArrayElement : ILValue
         return (PrimitiveType)type.Base;
     }
 
-    private void EmitPointerMoveToElement(IDeclarationScope scope)
+    private void EmitPointerMoveToElement(IEmitScope scope)
     {
         _array.EmitGetValue(scope);
         _index.EmitTo(scope);

@@ -56,9 +56,6 @@ int main()
     [Fact]
     public Task NegationExpressTest() => DoTest("int main() { return -42; }");
 
-    [Fact]
-    public Task AddressOfTest() => DoTest("int main() { int x; int *y = &x; }");
-
     [Fact] public Task ParameterlessMain() => DoTest("int main(){}");
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
@@ -74,8 +71,13 @@ int main()
     [Fact] public Task Parameter5Get() => DoTest("int foo(int a, int b, int c, int d, int e){ return e + 1; }");
     [Fact] public Task CharConstTest() => DoTest("int main() { char x = '\\t'; return 42; }");
     [Fact] public Task DoubleConstTest() => DoTest("int main() { double x = 1.5; return 42; }");
+    [Fact] public Task FloatConstTest() => DoTest("int main() { float x = 1.5f; return 42; }");
+    [Fact] public Task FloatConstTest2() => DoTest("int main() { float x = 1.5; return 42; }");
 
     [Fact] public Task MultiDeclaration() => DoTest("int main() { int x = 0, y = 2 + 2; }");
+
+    [Fact] public Task MultiDeclarationWithStruct() => DoTest(@"typedef struct { int x; } foo;
+int main() { foo x,x2; x2.x=0; }");
 
     [Fact] public Task UninitializedVariable() => DoTest("int main() { int x; return 0; }");
 
@@ -107,6 +109,68 @@ int foo(int bar) {}", "Incorrect parameter count");
     public void IncorrectOverrideCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Read"")
 int console_read(void);
 int console_read(void) { return 0; }", "Function console_read already defined as immutable.");
+
+    [Fact]
+    public void DifferentCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Beep"")
+void console_beep(void);
+__cli_import(""System.Console::Clear"")
+void console_beep(void);", "Function console_beep already defined as as CLI-import with System.Void System.Console::Beep().");
+
+    [Fact]
+    public void CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
+int console_read(void);
+__cli_import(""System.Console::Read"")
+int console_read(void);");
+
+    [Fact]
+    public void VarargCall() => DoTest(@"void console_read(int arg, ...);
+
+void console_read(int arg, ...)
+{
+}
+
+void test()
+{
+    console_read(5, 32);
+    console_read(5, 2.21f);
+    console_read(5, 67.44);
+}");
+
+    [Fact]
+    public void ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
+
+void console_read()
+{
+}");
+
+    [Fact]
+    public void ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
+
+void console_read()
+{
+}");
+
+    [Fact]
+    public void ExplicitVarargDeclarationShouldHaveExplicitDefinition() => DoesNotCompile(@"void console_read(int x, ...);
+
+void console_read(int x)
+{
+}", "Function console_read declared with varargs but defined without varargs.");
+
+    [Fact]
+    public void ExplicitVarargDefinitionShouldHaveExplicitDeclaration() => DoesNotCompile(@"void console_read(int x);
+
+void console_read(int x, ...)
+{
+}", "Function console_read declared without varargs but defined with varargs.");
+
+    [Fact]
+    public void CanHaveTwoFunctionDeclarations() => DoTest(@"
+int console_read(void);
+
+int console_read(void);
+
+int console_read(void) { return 0; }");
 
     [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
@@ -193,20 +257,6 @@ int main() { return foo(); }", "Function foo not defined.");
 
     [Fact]
     public Task LogicalOrOperator() => DoTest(@"int main() { return 1 || 2; }");
-
-    [Fact]
-    public Task ArrayAssignment() => DoTest(@"int main() {
-    int a[10];
-    a[1] = 2;
-    return a[1];
- }");
-
-    [Fact]
-    public Task ArrayAddressOf() => DoTest(@"int main() {
-    int a[10];
-    int *x = &a[2];
-    return 0;
- }");
 
     [Fact]
     public Task AmbiguousCallTest() => DoTest(@"

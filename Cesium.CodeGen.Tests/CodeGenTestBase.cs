@@ -1,6 +1,5 @@
 using System.Text;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Test.Framework;
@@ -38,16 +37,20 @@ public abstract class CodeGenTestBase : VerifyTestBase
         Assert.Contains(expectedMessage, ex.Message);
     }
 
-    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFqn = "") =>
-        AssemblyContext.Create(
-            new AssemblyNameDefinition("test", new Version()),
+    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFqn = "")
+    {
+        CompilationOptions compilationOptions = new CompilationOptions(
+            targetRuntime ?? TargetRuntimeDescriptor.Net60,
             ModuleKind.Console,
-            targetRuntime,
-            new [] { typeof(Console).Assembly.Location },
             typeof(Math).Assembly.Location,
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
+            new[] { typeof(Console).Assembly.Location },
             @namespace,
             globalTypeFqn);
+        return AssemblyContext.Create(
+            new AssemblyNameDefinition("test", new Version()),
+            compilationOptions);
+    }
 
     private static void GenerateCode(AssemblyContext context, IEnumerable<string> sources)
     {
@@ -62,7 +65,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             if (parser.TokenStream.Peek().Kind != CTokenType.End)
                 throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-            context.EmitTranslationUnit(translationUnit.Ok.Value.ToIntermediate());
+            context.EmitTranslationUnit(translationUnit.Ok.Value);
         }
     }
 
