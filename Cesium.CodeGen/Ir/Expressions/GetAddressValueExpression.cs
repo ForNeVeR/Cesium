@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
@@ -22,5 +23,5 @@ internal class GetAddressValueExpression : IExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType().MakePointerType();
 }
