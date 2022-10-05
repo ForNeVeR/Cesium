@@ -162,4 +162,19 @@ int foo() { return 0; }
 int foo() { return 0; }
 #endif
 ");
+
+    [Fact]
+    public Task IfExpressionDefined() => DoTest(
+@"#define mycondition
+#if defined mycondition
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionNotDefinedFunction() => DoTest(
+@"#if !defined(not_existing_condition)
+int foo() { return 0; }
+#endif
+");
 }
