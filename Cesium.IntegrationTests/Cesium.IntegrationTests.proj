@@ -6,6 +6,4 @@
         <Content Include="Run-Tests.ps1" />
     </ItemGroup>
 
-    <Target Name="Build" />
-    <Target Name="VSTest" />
 </Project>
