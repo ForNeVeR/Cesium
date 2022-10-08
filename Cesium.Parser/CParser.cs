@@ -670,15 +670,20 @@ public partial class CParser
     // TODO[#211]: 6.7.10 Static assertions
 
     // 6.8 Statements and blocks
-    // TODO[#210]: [Rule("statement: labeled_statement")]
     [Rule("statement: compound_statement")]
+    [Rule("statement: labeled_statement")]
     [Rule("statement: expression_statement")]
     [Rule("statement: selection_statement")]
     [Rule("statement: iteration_statement")]
     [Rule("statement: jump_statement")]
-    private static IBlockItem MakeStatementIdentity(IBlockItem statement) => statement;
+    private static Statement MakeStatementIdentity(Statement statement) => statement;
 
-    // TODO[#210]: 6.8.1 Labeled statements
+    // 6.8.1 Labeled statements
+    // TODO[#210]: 6.8.1 switch cases 
+    [Rule("labeled_statement: Identifier ':' statement")]
+    private static LabelStatement MakeLabelStatement(IToken identifier, IToken _, Statement block) =>
+        new LabelStatement(identifier.Text, block);
+    
     // 6.8.2 Compound statement
     [Rule("compound_statement: '{' block_item_list? '}'")]
     private static CompoundStatement MakeCompoundStatement(ICToken _, BlockItemList? block, ICToken __) =>

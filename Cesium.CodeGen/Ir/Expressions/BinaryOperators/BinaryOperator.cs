@@ -5,6 +5,7 @@ public enum BinaryOperator
     Add, // +
     Subtract, // -
     Multiply, // *
+    Reminder, // %
 
     Assign, // =
     AddAndAssign, // +=
@@ -39,7 +40,8 @@ public static class BinaryOperatorExtensions
     public static bool IsArithmetic(this BinaryOperator op) =>
         op is BinaryOperator.Add
            or BinaryOperator.Subtract
-           or BinaryOperator.Multiply;
+           or BinaryOperator.Multiply
+           or BinaryOperator.Reminder;
 
     public static bool IsComparison(this BinaryOperator op) =>
         op is BinaryOperator.GreaterThan

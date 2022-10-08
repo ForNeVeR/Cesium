@@ -5,6 +5,9 @@ namespace Cesium.Ast;
 // 6.8 Statements and blocks
 public abstract record Statement : IBlockItem;
 
+// 6.8.1 Labeled statement
+public record LabelStatement(string Identifier, Statement Body) : Statement;
+
 // 6.8.2 Compound statement
 public record CompoundStatement(ImmutableArray<IBlockItem> Block) : Statement;
 

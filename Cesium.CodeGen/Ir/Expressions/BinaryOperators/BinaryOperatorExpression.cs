@@ -58,6 +58,7 @@ internal abstract class BinaryOperatorExpression : IExpression
         "!=" => BinaryOperator.NotEqualTo,
         "&&" => BinaryOperator.LogicalAnd,
         "||" => BinaryOperator.LogicalOr,
+        "%" => BinaryOperator.Reminder,
         _ => throw new WipException(226, $"Binary operator not supported, yet: {@operator}.")
     };
 }

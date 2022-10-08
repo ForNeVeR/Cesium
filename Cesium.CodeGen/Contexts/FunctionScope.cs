@@ -16,6 +16,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
 
     private readonly Dictionary<string, IType> _variables = new();
+    private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
     public IReadOnlyDictionary<string, IType> Variables => _variables;
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
@@ -52,4 +53,21 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
+
+    /// <inheritdoc />
+    public void AddLabel(string identifier)
+    {
+        if (_labels.TryGetValue(identifier, out _))
+        {
+            throw new CompilationException($"Label {identifier} was already registered.");
+        }
+
+        _labels.Add(identifier, Instruction.Create(OpCodes.Nop));
+    }
+
+    /// <inheritdoc />
+    public Instruction ResolveLabel(string label)
+    {
+        return _labels[label];
+    }
 }

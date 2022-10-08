@@ -28,4 +28,16 @@ internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
+
+    /// <inheritdoc />
+    public void AddLabel(string identifier)
+    {
+        ((IDeclarationScope)Parent).AddLabel(identifier);
+    }
+
+    /// <inheritdoc />
+    public Instruction ResolveLabel(string label)
+    {
+        return Parent.ResolveLabel(label);
+    }
 }

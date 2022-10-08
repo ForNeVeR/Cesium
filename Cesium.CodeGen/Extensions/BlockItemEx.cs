@@ -16,11 +16,13 @@ internal static class BlockItemEx
     {
         Ast.Declaration d => ToIntermediate(d),
         Ast.CompoundStatement s => s.ToIntermediate(),
+        Ast.LabelStatement s => new LabelStatement(s),
         Ast.ReturnStatement s => new ReturnStatement(s),
         Ast.ExpressionStatement s => new ExpressionStatement(s),
         Ast.IfElseStatement s => new IfElseStatement(s),
         Ast.ForStatement s => new ForStatement(s),
         Ast.BreakStatement => new BreakStatement(),
+        Ast.GoToStatement s => new GoToStatement(s),
         Ast.AmbiguousBlockItem a => new AmbiguousBlockItem(a),
         _ => throw new WipException(206, $"Statement not supported, yet: {blockItem}.")
     };
