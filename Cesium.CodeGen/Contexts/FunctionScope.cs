@@ -57,7 +57,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     /// <inheritdoc />
     public void AddLabel(string identifier)
     {
-        if (_labels.TryGetValue(identifier, out _))
+        if (_labels.ContainsKey(identifier))
         {
             throw new CompilationException($"Label {identifier} was already registered.");
         }
