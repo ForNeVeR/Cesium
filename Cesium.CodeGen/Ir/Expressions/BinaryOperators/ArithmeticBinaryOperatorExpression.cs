@@ -1,10 +1,10 @@
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
@@ -82,7 +82,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.Add => OpCodes.Add,
             BinaryOperator.Subtract => OpCodes.Sub,
             BinaryOperator.Multiply => OpCodes.Mul,
-            BinaryOperator.Reminder => OpCodes.Rem,
+            BinaryOperator.Remainder => OpCodes.Rem,
             _ => throw new AssertException($"Operator {Operator} is not arithmetic.")
         };
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));

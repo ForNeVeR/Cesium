@@ -41,7 +41,7 @@ public static class BinaryOperatorExtensions
         op is BinaryOperator.Add
            or BinaryOperator.Subtract
            or BinaryOperator.Multiply
-           or BinaryOperator.Reminder;
+           or BinaryOperator.Remainder;
 
     public static bool IsComparison(this BinaryOperator op) =>
         op is BinaryOperator.GreaterThan

@@ -2,7 +2,6 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
@@ -58,7 +57,7 @@ internal abstract class BinaryOperatorExpression : IExpression
         "!=" => BinaryOperator.NotEqualTo,
         "&&" => BinaryOperator.LogicalAnd,
         "||" => BinaryOperator.LogicalOr,
-        "%" => BinaryOperator.Reminder,
+        "%" => BinaryOperator.Remainder,
         _ => throw new WipException(226, $"Binary operator not supported, yet: {@operator}.")
     };
 }
