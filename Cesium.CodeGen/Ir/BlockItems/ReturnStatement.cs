@@ -25,10 +25,7 @@ internal class ReturnStatement : IBlockItem
 
     public void EmitTo(IEmitScope scope)
     {
-        if (_expression != null)
-        {
-            _expression.EmitTo(scope);
-        }
+        _expression?.EmitTo(scope);
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
