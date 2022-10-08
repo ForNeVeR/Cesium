@@ -5,7 +5,7 @@ public enum BinaryOperator
     Add, // +
     Subtract, // -
     Multiply, // *
-    Reminder, // %
+    Remainder, // %
 
     Assign, // =
     AddAndAssign, // +=
