@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Reflection.Emit;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
@@ -33,4 +34,16 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => Context.AddTypeDefinition(identifier, type);
+
+    /// <inheritdoc />
+    public void AddLabel(string identifier)
+    {
+        throw new AssertException("Cannot define label into a global constructor scope");
+    }
+
+    /// <inheritdoc />
+    public Instruction ResolveLabel(string label)
+    {
+        throw new AssertException("Cannot define label into a global constructor scope");
+    }
 }

@@ -82,6 +82,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.Add => OpCodes.Add,
             BinaryOperator.Subtract => OpCodes.Sub,
             BinaryOperator.Multiply => OpCodes.Mul,
+            BinaryOperator.Reminder => OpCodes.Rem,
             _ => throw new AssertException($"Operator {Operator} is not arithmetic.")
         };
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));

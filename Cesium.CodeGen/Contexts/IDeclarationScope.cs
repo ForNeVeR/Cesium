@@ -20,4 +20,10 @@ internal interface IDeclarationScope
     IType ResolveType(IType type);
     void AddTypeDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);
+
+    /// <summary>
+    /// Adds label to the scope.
+    /// </summary>
+    /// <param name="identifier">Label to add to the current scope.</param>
+    void AddLabel(string identifier);
 }

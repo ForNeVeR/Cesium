@@ -94,6 +94,12 @@ int main() { foo x,x2; x2.x=0; }");
 ");
 
     [Fact]
+    public void ReturnWithoutArgument() => DoTest(@"void console_read()
+{
+    return;
+}");
+
+    [Fact]
     public void IncorrectReturnTypeDoesNotCompile() => DoesNotCompile(@"int foo(void);
 void foo(void) {}", "Incorrect return type");
 
