@@ -233,7 +233,9 @@ public partial class CParser
     private static IToken MakeAssignmentOperator(IToken token) => token;
 
     // 6.5.17 Comma operator
-    // TODO[#207]: [Rule("expression: expression ',' assignment_expression")]
+    [Rule("expression: expression ',' assignment_expression")]
+    private static Expression MakeCommaExpression(Expression left, IToken _, Expression right) =>
+        new CommaExpression(left, right);
 
     // TODO[#207]: 6.6 Constant expressions
 

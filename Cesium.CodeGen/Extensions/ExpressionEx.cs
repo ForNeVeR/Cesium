@@ -33,6 +33,8 @@ internal static class ExpressionEx
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
 
+        Ast.CommaExpression e => new CommaExpression(e),
+
         _ => throw new WipException(208, $"Expression not supported, yet: {ex}."),
     };
 }
