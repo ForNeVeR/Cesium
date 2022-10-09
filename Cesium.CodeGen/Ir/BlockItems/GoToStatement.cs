@@ -12,7 +12,7 @@ internal class GoToStatement : IBlockItem
         _identifier = statement.Identifier;
     }
 
-    private GoToStatement(string identifier)
+    public GoToStatement(string identifier)
     {
         _identifier = identifier;
     }

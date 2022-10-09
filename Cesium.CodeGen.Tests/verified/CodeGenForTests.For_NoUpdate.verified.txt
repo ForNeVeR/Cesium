@@ -12,8 +12,9 @@
   IL_000c: ldc.i4.s 10
   IL_000e: clt
   IL_0010: brtrue IL_0007
-  IL_0015: ldc.i4.0
-  IL_0016: ret
+  IL_0015: nop
+  IL_0016: ldc.i4.0
+  IL_0017: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

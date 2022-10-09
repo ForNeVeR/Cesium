@@ -39,7 +39,6 @@ internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public ParameterDefinition ResolveParameter(string name) => Parent.ResolveParameter(name);
     public ParameterInfo? GetParameterInfo(string name) => ((IDeclarationScope)Parent).GetParameterInfo(name);
 
-    public Instruction? EndInstruction { get; set; }
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
@@ -54,5 +53,19 @@ internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public Instruction ResolveLabel(string label)
     {
         return Parent.ResolveLabel(label);
+    }
+
+    /// <inheritdoc />
+    public void RegisterChildScope(IDeclarationScope childScope)
+    {
+
+    }
+
+    private string _breakLabel = Guid.NewGuid().ToString();
+
+    /// <inheritdoc />
+    public string? GetBreakLabel()
+    {
+        return _breakLabel;
     }
 }

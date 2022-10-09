@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
@@ -13,6 +14,7 @@ internal class ForStatement : IBlockItem
     private readonly IExpression _testExpression;
     private readonly IExpression? _updateExpression;
     private readonly IBlockItem _body;
+    private readonly string? _breakLabel;
 
     public ForStatement(Ast.ForStatement statement)
     {
@@ -28,26 +30,35 @@ internal class ForStatement : IBlockItem
         IExpression? initExpression,
         IExpression testExpression,
         IExpression? updateExpression,
-        IBlockItem body)
+        IBlockItem body,
+        string breakLabel)
     {
         _initExpression = initExpression;
         _testExpression = testExpression;
         _updateExpression = updateExpression;
         _body = body;
+        _breakLabel = breakLabel;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
-        => new ForStatement(
-            _initExpression?.Lower(scope),
-            _testExpression.Lower(scope),
-            _updateExpression?.Lower(scope),
-            _body.Lower(scope));
+    {
+        var forScope = new ForScope((IEmitScope)scope);
+        var breakLabel = forScope.GetBreakLabel();
+        scope.AddLabel(breakLabel!);
+        return new ForStatement(
+            _initExpression?.Lower(forScope),
+            _testExpression.Lower(forScope),
+            _updateExpression?.Lower(forScope),
+            _body.Lower(forScope),
+            breakLabel!);
+    }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
 
     public void EmitTo(IEmitScope scope)
     {
-        var forScope = new ForScope(scope);
+        Debug.Assert(_breakLabel != null);
+        var forScope = scope;
 
         var bodyProcessor = forScope.Method.Body.GetILProcessor();
         var instructions = bodyProcessor.Body.Instructions;
@@ -66,8 +77,6 @@ internal class ForStatement : IBlockItem
 
         var loopStart = instructions[loopStartIndex];
         bodyProcessor.Emit(OpCodes.Brtrue, loopStart);
-
-        if (forScope.EndInstruction != null)
-            bodyProcessor.Append(forScope.EndInstruction);
+        bodyProcessor.Append(scope.ResolveLabel(_breakLabel));
     }
 }

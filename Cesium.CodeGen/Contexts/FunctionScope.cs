@@ -80,4 +80,16 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     {
         return _labels[label];
     }
+
+    /// <inheritdoc />
+    public void RegisterChildScope(IDeclarationScope childScope)
+    {
+
+    }
+
+    /// <inheritdoc />
+    public string? GetBreakLabel()
+    {
+        return null;
+    }
 }
