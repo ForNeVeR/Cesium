@@ -29,4 +29,16 @@ internal interface IDeclarationScope
     /// </summary>
     /// <param name="identifier">Label to add to the current scope.</param>
     void AddLabel(string identifier);
+
+    /// <summary>
+    // Registers child declaration scope.
+    /// </summary>
+    /// <param name="childScope">Child scope to add to the current one.</param>
+    void RegisterChildScope(IDeclarationScope childScope);
+
+    /// <summary>
+    /// Gets name of the virtual label which point to exit location from the scope.
+    /// </summary>
+    /// <returns>Name of the virtual label which can be used by break statement</returns>
+    string? GetBreakLabel();
 }

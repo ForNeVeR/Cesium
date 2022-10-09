@@ -56,4 +56,16 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     {
         throw new AssertException("Cannot define label into a global constructor scope");
     }
+
+    /// <inheritdoc />
+    public void RegisterChildScope(IDeclarationScope childScope)
+    {
+        throw new AssertException("Cannot add child scope to a global constructor scope");
+    }
+
+    /// <inheritdoc />
+    public string? GetBreakLabel()
+    {
+        return null;
+    }
 }
