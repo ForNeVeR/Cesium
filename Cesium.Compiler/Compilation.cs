@@ -79,7 +79,8 @@ internal static class Compilation
 
         var translationUnit = translationUnitParseError.Ok.Value;
 
-        if (parser.TokenStream.Peek().Kind != CTokenType.End)
+        var lastUnprocessedToken = parser.TokenStream.Peek();
+        if (lastUnprocessedToken.Kind != CTokenType.End)
             throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
 
         context.EmitTranslationUnit(translationUnit);
