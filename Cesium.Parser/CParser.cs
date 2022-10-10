@@ -103,7 +103,7 @@ public partial class CParser
     // TODO[#207]:
     // postfix-expression:
     //     postfix-expression ++
-    //     postfix-expression -
+    //     postfix-expression --
     //     ( type-name ) { initializer-list }
     //     ( type-name ) { initializer-list , }
 
@@ -120,16 +120,17 @@ public partial class CParser
     // TODO[#207]: 6.5.3 Unary operators
     // unary-expression:
     //    postfix-expression
-    //    ++ unary-expression
+    [Rule("unary_expression: '++' unary_expression")]
+    [Rule("unary_expression: '--' unary_expression")]
+    private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
+        new PrefixExpression(prefixOperator, target);
+    // TODO[#207]:
+    // unary-expression:
     //    * unary-expression
     //    unary-operator cast-expression
     //    sizeof unary-expression
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
-    [Rule("unary_expression: '++' unary_expression")]
-    [Rule("unary_expression: '--' unary_expression")]
-    private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
-        new PrefixExpression(prefixOperator, target);
 
     [Rule("unary_expression: '*' unary_expression")]
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
@@ -682,11 +683,11 @@ public partial class CParser
     private static Statement MakeStatementIdentity(Statement statement) => statement;
 
     // 6.8.1 Labeled statements
-    // TODO[#210]: 6.8.1 switch cases 
+    // TODO[#210]: 6.8.1 switch cases
     [Rule("labeled_statement: Identifier ':' statement")]
     private static LabelStatement MakeLabelStatement(IToken identifier, IToken _, Statement block) =>
         new LabelStatement(identifier.Text, block);
-    
+
     // 6.8.2 Compound statement
     [Rule("compound_statement: '{' block_item_list? '}'")]
     private static CompoundStatement MakeCompoundStatement(ICToken _, BlockItemList? block, ICToken __) =>
