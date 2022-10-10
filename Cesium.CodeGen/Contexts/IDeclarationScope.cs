@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Contexts;
 
