@@ -5,6 +5,7 @@ public enum BinaryOperator
     Add, // +
     Subtract, // -
     Multiply, // *
+    Divide, // /
     Remainder, // %
 
     Assign, // =
@@ -41,6 +42,7 @@ public static class BinaryOperatorExtensions
         op is BinaryOperator.Add
            or BinaryOperator.Subtract
            or BinaryOperator.Multiply
+           or BinaryOperator.Divide
            or BinaryOperator.Remainder;
 
     public static bool IsComparison(this BinaryOperator op) =>

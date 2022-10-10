@@ -17,7 +17,7 @@ public record MemberAccessExpression(Expression Target, IdentifierExpression Ide
 public record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 
 // 6.5.3 Unary operators
-public record PrefixIncrementExpression(Expression Target) : Expression;
+public record PrefixExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
 

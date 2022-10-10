@@ -35,6 +35,7 @@ internal abstract class BinaryOperatorExpression : IExpression
         "+" => BinaryOperator.Add,
         "-" => BinaryOperator.Subtract,
         "*" => BinaryOperator.Multiply,
+        "/" => BinaryOperator.Divide,
         "=" => BinaryOperator.Assign,
         "+=" => BinaryOperator.AddAndAssign,
         "-=" => BinaryOperator.SubtractAndAssign,
