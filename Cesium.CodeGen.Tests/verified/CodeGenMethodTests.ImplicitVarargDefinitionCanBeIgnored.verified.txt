@@ -1,0 +1,2 @@
+﻿System.Void <Module>::console_read()
+  IL_0000: ret
