@@ -1,7 +1,10 @@
+using JetBrains.Annotations;
+
 namespace Cesium.CodeGen.Tests;
 
 public class MultiFileCompilationTest : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(params string[] sources)
     {
         var assembly = GenerateAssembly(default, sources);

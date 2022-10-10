@@ -1,7 +1,10 @@
+using JetBrains.Annotations;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenTypeTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
     {
         var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);

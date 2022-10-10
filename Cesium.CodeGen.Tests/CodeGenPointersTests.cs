@@ -1,7 +1,10 @@
+using JetBrains.Annotations;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenPointersTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source)
     {
         var assembly = GenerateAssembly(default, source);

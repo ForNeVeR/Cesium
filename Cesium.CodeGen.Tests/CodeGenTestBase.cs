@@ -3,6 +3,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Test.Framework;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.Streams;
@@ -80,6 +81,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return assembly;
     }
 
+    [MustUseReturnValue]
     protected static Task VerifyTypes(AssemblyDefinition assembly)
     {
         var result = new StringBuilder();
@@ -92,6 +94,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return Verify(result, GetSettings());
     }
 
+    [MustUseReturnValue]
     protected static Task VerifyMethods(TypeDefinition type)
     {
         var result = new StringBuilder();

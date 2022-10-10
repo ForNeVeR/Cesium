@@ -1,10 +1,8 @@
-using System;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Xunit.Sdk;
 
+namespace Cesium.CodeGen.Tests;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class UseInvariantCultureAttribute : BeforeAfterTestAttribute

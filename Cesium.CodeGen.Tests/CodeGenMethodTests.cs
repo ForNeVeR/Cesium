@@ -1,9 +1,11 @@
 using Cesium.Core;
+using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenMethodTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source)
     {
         var assembly = GenerateAssembly(default, source);
@@ -94,7 +96,7 @@ int main() { foo x,x2; x2.x=0; }");
 ");
 
     [Fact]
-    public void ReturnWithoutArgument() => DoTest(@"void console_read()
+    public Task ReturnWithoutArgument() => DoTest(@"void console_read()
 {
     return;
 }");
@@ -123,13 +125,13 @@ __cli_import(""System.Console::Clear"")
 void console_beep(void);", "Function console_beep already defined as as CLI-import with System.Void System.Console::Beep().");
 
     [Fact]
-    public void CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
+    public Task CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
 int console_read(void);
 __cli_import(""System.Console::Read"")
 int console_read(void);");
 
     [Fact]
-    public void VarargCall() => DoTest(@"void console_read(int arg, ...);
+    public Task VarargCall() => DoTest(@"void console_read(int arg, ...);
 
 void console_read(int arg, ...)
 {
@@ -143,14 +145,14 @@ void test()
 }");
 
     [Fact]
-    public void ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
+    public Task ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
 
 void console_read()
 {
 }");
 
     [Fact]
-    public void ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
+    public Task ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
 
 void console_read()
 {
@@ -171,7 +173,7 @@ void console_read(int x, ...)
 }", "Function console_read declared without varargs but defined with varargs.");
 
     [Fact]
-    public void CanHaveTwoFunctionDeclarations() => DoTest(@"
+    public Task CanHaveTwoFunctionDeclarations() => DoTest(@"
 int console_read(void);
 
 int console_read(void);
