@@ -37,7 +37,11 @@
     }
   },
   "UpdateExpression": {
-    "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+    "$type": "Cesium.Ast.PrefixExpression, Cesium.Ast",
+    "PrefixOperator": {
+      "Kind": "Increment",
+      "Text": "++"
+    },
     "Target": {
       "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
       "Constant": {
@@ -49,7 +53,11 @@
   "Body": {
     "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
     "Expression": {
-      "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.PrefixExpression, Cesium.Ast",
+      "PrefixOperator": {
+        "Kind": "Increment",
+        "Text": "++"
+      },
       "Target": {
         "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
         "Constant": {

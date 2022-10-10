@@ -16,7 +16,7 @@ internal static class ExpressionEx
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
         // Unary operators:
-        Ast.PrefixIncrementExpression e => new PrefixIncrementExpression(e),
+        Ast.PrefixExpression e => new PrefixExpression(e),
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
 

@@ -127,8 +127,9 @@ public partial class CParser
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
     [Rule("unary_expression: '++' unary_expression")]
-    private static Expression MakePrefixIncrementExpression(ICToken _, Expression target) =>
-        new PrefixIncrementExpression(target);
+    [Rule("unary_expression: '--' unary_expression")]
+    private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
+        new PrefixExpression(prefixOperator, target);
 
     [Rule("unary_expression: '*' unary_expression")]
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
