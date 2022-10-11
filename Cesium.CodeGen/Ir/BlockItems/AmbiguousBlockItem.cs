@@ -27,10 +27,10 @@ internal class AmbiguousBlockItem : IBlockItem
     public IBlockItem Lower(IDeclarationScope scope)
     {
         // Check if this can be a valid variable declaration:
-        var isValidVariableDeclaration = scope.TryGetVariable(_item1, out _);
+        var isValidVariableDeclaration = scope.GetVariable(_item1) != null;
 
         // Check if this can be a function call:
-        scope.TryGetFunctionInfo(_item1, out var function);
+        var function = scope.GetFunctionInfo(_item1);
         var isValidFunctionCall = function != null;
         if (!isValidVariableDeclaration && !isValidFunctionCall)
             throw new CompilationException(

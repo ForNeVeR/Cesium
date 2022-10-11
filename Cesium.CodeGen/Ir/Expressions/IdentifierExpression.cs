@@ -41,8 +41,8 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        scope.TryGetVariable(Identifier, out var var);
-        scope.TryGetFunctionInfo(Identifier, out var fun);
+        var var = scope.GetVariable(Identifier);
+        var fun = scope.GetFunctionInfo(Identifier);
         var par = scope.GetParameterInfo(Identifier);
         scope.GlobalFields.TryGetValue(Identifier, out var globalType);
 

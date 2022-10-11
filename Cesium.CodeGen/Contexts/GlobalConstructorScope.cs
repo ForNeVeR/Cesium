@@ -1,6 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
@@ -19,9 +17,10 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
-    public bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo)
+    public FunctionInfo? GetFunctionInfo(string identifier)
     {
-        return Context.Functions.TryGetValue(identifier, out functionInfo);
+        Context.Functions.TryGetValue(identifier, out var functionInfo);
+        return functionInfo;
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
@@ -29,10 +28,9 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     public void AddVariable(string identifier, IType variable) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
-    public bool TryGetVariable(string identifier, [NotNullWhen(true)] out IType? type)
+    public IType? GetVariable(string identifier)
     {
-        type = null;
-        return false;
+        return null;
     }
     public VariableDefinition ResolveVariable(string identifier) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");
@@ -55,12 +53,6 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     public Instruction ResolveLabel(string label)
     {
         throw new AssertException("Cannot define label into a global constructor scope");
-    }
-
-    /// <inheritdoc />
-    public void RegisterChildScope(IDeclarationScope childScope)
-    {
-        throw new AssertException("Cannot add child scope to a global constructor scope");
     }
 
     /// <inheritdoc />

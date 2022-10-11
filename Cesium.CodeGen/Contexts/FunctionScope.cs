@@ -4,7 +4,6 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -15,9 +14,10 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public TypeSystem TypeSystem => Context.TypeSystem;
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
-    public bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo)
+    public FunctionInfo? GetFunctionInfo(string identifier)
     {
-        return Context.Functions.TryGetValue(identifier, out functionInfo);
+        Context.Functions.TryGetValue(identifier, out var functionInfo);
+        return functionInfo;
     }
 
     private readonly Dictionary<string, IType> _variables = new();
@@ -26,9 +26,10 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
     public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
 
-    public bool TryGetVariable(string identifier, [NotNullWhen(true)] out IType? type)
+    public IType? GetVariable(string identifier)
     {
-        return _variables.TryGetValue(identifier, out type);
+        _variables.TryGetValue(identifier, out var type);
+        return type;
     }
 
     public VariableDefinition ResolveVariable(string identifier)
@@ -79,12 +80,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public Instruction ResolveLabel(string label)
     {
         return _labels[label];
-    }
-
-    /// <inheritdoc />
-    public void RegisterChildScope(IDeclarationScope childScope)
-    {
-
     }
 
     /// <inheritdoc />
