@@ -42,7 +42,7 @@ internal class ForStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var forScope = new LoopScope((IEmitScope)scope);
+        var forScope = new ForScope((IEmitScope)scope);
         var breakLabel = forScope.GetBreakLabel();
         scope.AddLabel(breakLabel);
         return new ForStatement(
