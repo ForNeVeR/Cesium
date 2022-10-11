@@ -5,7 +5,7 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdLibFunctions
 {
-    public const int RAND_MAX = 0x7fff;
+    public const int RAND_MAX = 0x7FFFFFFF;
     private static System.Random shared = new();
 
     public static int Abs(int value)
@@ -26,6 +26,6 @@ public unsafe static class StdLibFunctions
 
     public static void SRand(uint seed)
     {
-        shared = new Random(unchecked((int)seed));
+        shared = new Random((int)seed);
     }
 }
