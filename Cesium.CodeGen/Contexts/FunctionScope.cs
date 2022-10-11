@@ -14,11 +14,8 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public TypeSystem TypeSystem => Context.TypeSystem;
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
-    public FunctionInfo? GetFunctionInfo(string identifier)
-    {
-        Context.Functions.TryGetValue(identifier, out var functionInfo);
-        return functionInfo;
-    }
+    public FunctionInfo? GetFunctionInfo(string identifier) =>
+        Functions.GetValueOrDefault(identifier);
 
     private readonly Dictionary<string, IType> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
@@ -26,11 +23,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
     public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
 
-    public IType? GetVariable(string identifier)
-    {
-        _variables.TryGetValue(identifier, out var type);
-        return type;
-    }
+    public IType? GetVariable(string identifier) => _variables.GetValueOrDefault(identifier);
 
     public VariableDefinition ResolveVariable(string identifier)
     {

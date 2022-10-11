@@ -4,7 +4,6 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Mono.Cecil.Cil;
-using ConstantExpression = Cesium.CodeGen.Ir.Expressions.ConstantExpression;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -44,6 +43,7 @@ internal class ForStatement : IBlockItem
     {
         var forScope = new ForScope((IEmitScope)scope);
         var breakLabel = forScope.GetBreakLabel();
+        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         scope.AddLabel(breakLabel);
         return new ForStatement(
             _initExpression?.Lower(forScope),

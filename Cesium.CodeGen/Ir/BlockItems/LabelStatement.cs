@@ -1,7 +1,5 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -26,6 +24,7 @@ internal class LabelStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
+        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         scope.AddLabel(_identifier);
         return new LabelStatement(_identifier, _expression.Lower(scope));
     }
