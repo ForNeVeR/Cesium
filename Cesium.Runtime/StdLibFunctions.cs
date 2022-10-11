@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -27,5 +29,18 @@ public unsafe static class StdLibFunctions
     public static void SRand(uint seed)
     {
         shared = new Random((int)seed);
+    }
+
+    public static int System(byte* command)
+    {
+        switch (StdIoFunctions.Unmarshal(command))
+        {
+            case "cls":
+            case "clear":
+                Console.Clear();
+                return 0;
+            default:
+                return 8 /*ENOEXEC*/;
+        }
     }
 }

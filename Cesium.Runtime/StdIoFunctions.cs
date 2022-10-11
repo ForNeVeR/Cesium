@@ -86,7 +86,7 @@ public unsafe static class StdIoFunctions
         Console.Write(formatString.Substring(currentPosition));
     }
 
-    private static string? Unmarshal(byte* str)
+    internal static string? Unmarshal(byte* str)
     {
 #if NETSTANDARD
         Encoding encoding = Encoding.UTF8;
