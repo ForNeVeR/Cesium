@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
+internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
