@@ -17,11 +17,8 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
-    public FunctionInfo? GetFunctionInfo(string identifier)
-    {
-        Context.Functions.TryGetValue(identifier, out var functionInfo);
-        return functionInfo;
-    }
+    public FunctionInfo? GetFunctionInfo(string identifier) =>
+        Context.Functions.GetValueOrDefault(identifier);
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
     public IReadOnlyDictionary<string, IType> Variables => ImmutableDictionary<string, IType>.Empty;
