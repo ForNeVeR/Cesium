@@ -4,32 +4,22 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
+internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
     public CTypeSystem CTypeSystem => Parent.CTypeSystem;
-    public bool TryGetFunctionInfo(string identifier, [NotNullWhen(true)] out FunctionInfo? functionInfo)
-        => ((IDeclarationScope)Parent).TryGetFunctionInfo(identifier, out functionInfo);
+    public FunctionInfo? GetFunctionInfo(string identifier)
+        => ((IDeclarationScope)Parent).GetFunctionInfo(identifier);
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
-    private readonly Dictionary<string, IType> _variables = new();
 
-    public bool TryGetVariable(string identifier, [NotNullWhen(true)] out IType? type)
+    public IType? GetVariable(string identifier)
     {
-        var hasLocalDeclarations = _variables.TryGetValue(identifier, out type);
-        if (hasLocalDeclarations)
-        {
-            Debug.Assert(type != null);
-            return true;
-        }
-
-        return ((IDeclarationScope)Parent).TryGetVariable(identifier, out type);
+        return ((IDeclarationScope)Parent).GetVariable(identifier);
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
     public void AddVariable(string identifier, IType variable) =>
@@ -55,16 +45,10 @@ internal record ForScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
         return Parent.ResolveLabel(label);
     }
 
-    /// <inheritdoc />
-    public void RegisterChildScope(IDeclarationScope childScope)
-    {
-
-    }
-
     private string _breakLabel = Guid.NewGuid().ToString();
 
     /// <inheritdoc />
-    public string? GetBreakLabel()
+    public string GetBreakLabel()
     {
         return _breakLabel;
     }

@@ -42,15 +42,15 @@ internal class ForStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var forScope = new ForScope((IEmitScope)scope);
+        var forScope = new LoopScope((IEmitScope)scope);
         var breakLabel = forScope.GetBreakLabel();
-        scope.AddLabel(breakLabel!);
+        scope.AddLabel(breakLabel);
         return new ForStatement(
             _initExpression?.Lower(forScope),
             _testExpression.Lower(forScope),
             _updateExpression?.Lower(forScope),
             _body.Lower(forScope),
-            breakLabel!);
+            breakLabel);
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
