@@ -31,7 +31,7 @@ internal interface IDeclarationScope
     void AddLabel(string identifier);
 
     /// <summary>
-    // Registers child declaration scope.
+    /// Registers child declaration scope.
     /// </summary>
     /// <param name="childScope">Child scope to add to the current one.</param>
     void RegisterChildScope(IDeclarationScope childScope);
