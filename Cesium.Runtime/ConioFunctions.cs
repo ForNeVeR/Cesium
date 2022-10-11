@@ -11,9 +11,4 @@ internal static class ConioFunctions
     {
         return Console.Read();
     }
-
-    public static void Cls()
-    {
-        Console.Clear();
-    }
 }

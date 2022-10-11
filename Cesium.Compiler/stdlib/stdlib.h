@@ -13,3 +13,6 @@ int rand(void);
 
 __cli_import("Cesium.Runtime.StdLibFunctions::SRand")
 void srand(unsigned);
+
+__cli_import("Cesium.Runtime.ConioFunctions::System")
+int system(char* command);
