@@ -1,2 +1,2 @@
 __cli_import("Cesium.Runtime.UniStdFunctions::Sleep")
-int sleep(double);
+int sleep(unsigned int);
