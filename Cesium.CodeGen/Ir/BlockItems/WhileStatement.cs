@@ -22,8 +22,7 @@ internal class WhileStatement : IBlockItem
     {
         var (testExpression, body) = statement;
 
-        // 6.8.5.3.2 if testExpression is null it should be replaced by nonzero constant
-        _testExpression = testExpression?.ToIntermediate() ?? new ConstantExpression(new IntegerConstant("1"));
+        _testExpression = testExpression.ToIntermediate();
         _body = body.ToIntermediate();
     }
 
@@ -39,13 +38,13 @@ internal class WhileStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var forScope = new ForScope((IEmitScope)scope);
-        var breakLabel = forScope.GetBreakLabel();
+        var loopScope = new LoopScope((IEmitScope)scope);
+        var breakLabel = loopScope.GetBreakLabel();
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         scope.AddLabel(breakLabel);
         return new WhileStatement(
-            _testExpression.Lower(forScope),
-            _body.Lower(forScope),
+            _testExpression.Lower(loopScope),
+            _body.Lower(loopScope),
             breakLabel);
     }
 
