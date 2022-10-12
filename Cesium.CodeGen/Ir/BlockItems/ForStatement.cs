@@ -41,15 +41,15 @@ internal class ForStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var forScope = new ForScope((IEmitScope)scope);
-        var breakLabel = forScope.GetBreakLabel();
+        var loopScope = new LoopScope((IEmitScope)scope);
+        var breakLabel = loopScope.GetBreakLabel();
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         scope.AddLabel(breakLabel);
         return new ForStatement(
-            _initExpression?.Lower(forScope),
-            _testExpression.Lower(forScope),
-            _updateExpression?.Lower(forScope),
-            _body.Lower(forScope),
+            _initExpression?.Lower(loopScope),
+            _testExpression.Lower(loopScope),
+            _updateExpression?.Lower(loopScope),
+            _body.Lower(loopScope),
             breakLabel);
     }
 

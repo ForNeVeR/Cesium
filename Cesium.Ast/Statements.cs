@@ -29,11 +29,11 @@ public record IfElseStatement(Expression Expression, Statement TrueBranch, State
 
 // 6.8.5 Iteration statements
 public record WhileStatement(
-    Expression? TestExpression,
+    Expression TestExpression,
     IBlockItem Body) : Statement;
 
 public record DoWhileStatement(
-    Expression? TestExpression,
+    Expression TestExpression,
     IBlockItem Body) : Statement;
 
 public record ForStatement(
