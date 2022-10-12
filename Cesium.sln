@@ -21,7 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\run-build-and-integration-tests.yml = .github\workflows\run-build-and-integration-tests.yml
 		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
-		.github\workflows\sonar-scan.yml = .github\workflows\sonar-scan.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Parser", "Cesium.Parser\Cesium.Parser.csproj", "{537F83F5-67B1-4863-A557-CF08149A99CB}"
