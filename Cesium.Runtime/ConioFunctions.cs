@@ -1,6 +1,6 @@
 namespace Cesium.Runtime;
 
-internal static class ConioFunctions
+public static class ConioFunctions
 {
     public static int KbHit()
     {
@@ -9,6 +9,6 @@ internal static class ConioFunctions
 
     public static int GetCh()
     {
-        return Console.Read();
+        return (int)Console.ReadKey().KeyChar;
     }
 }

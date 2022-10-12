@@ -1,6 +1,6 @@
 namespace Cesium.Runtime;
 
-internal static class UniStdFunctions
+public static class UniStdFunctions
 {
     public static int Sleep(double duration)
     {
