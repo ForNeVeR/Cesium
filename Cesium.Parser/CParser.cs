@@ -732,8 +732,28 @@ public partial class CParser
     // TODO[#210]: 6.8.4 Selection statements switch
 
     // TODO[#210]: 6.8.5 Iteration statements
+    [Rule("iteration_statement: 'while' '(' expression ')' statement")]
+    private static Statement MakeWhileStatement(
+        ICToken _,
+        ICToken __,
+        Expression testExpression,
+        ICToken ___,
+        IBlockItem body)
+        => new WhileStatement(testExpression, body);
+
+    [Rule("iteration_statement: 'do' statement 'while' '(' expression ')' ';'")]
+    private static Statement MakeDoWhileStatement(
+        ICToken _,
+        IBlockItem body,
+        ICToken __,
+        ICToken ___,
+        Expression testExpression,
+        ICToken ____,
+        ICToken _____)
+        => new DoWhileStatement(testExpression, body);
+
     [Rule("iteration_statement: 'for' '(' expression? ';' expression? ';' expression? ')' statement")]
-    private static ForStatement MakeForStatement(
+    private static Statement MakeForStatement(
         ICToken _,
         ICToken __,
         Expression initExpression,
@@ -743,7 +763,7 @@ public partial class CParser
         Expression updateExpression,
         ICToken _____,
         IBlockItem body)
-        => new(initExpression, testExpression, updateExpression, body);
+        => new ForStatement(initExpression, testExpression, updateExpression, body);
 
     // 6.8.6 Jump statements
     [Rule("jump_statement: 'goto' Identifier ';'")]

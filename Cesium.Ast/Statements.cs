@@ -28,6 +28,14 @@ public record AmbiguousBlockItem(string Item1, string Item2) : IBlockItem;
 public record IfElseStatement(Expression Expression, Statement TrueBranch, Statement? FalseBranch) : Statement;
 
 // 6.8.5 Iteration statements
+public record WhileStatement(
+    Expression? TestExpression,
+    IBlockItem Body) : Statement;
+
+public record DoWhileStatement(
+    Expression? TestExpression,
+    IBlockItem Body) : Statement;
+
 public record ForStatement(
     Expression? InitExpression,
     Expression? TestExpression,
