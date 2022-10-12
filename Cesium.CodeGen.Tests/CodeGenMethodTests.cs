@@ -304,4 +304,12 @@ int main()
 {
     int unused;
 }", "Function foo has no return statement.");
+
+    [Fact]
+    public Task ConsumeUnusedResult() => DoTest(@"
+int test () { return 1; }
+int main()
+{
+    test();
+}");
 }
