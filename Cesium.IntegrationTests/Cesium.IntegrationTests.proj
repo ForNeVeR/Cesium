@@ -7,6 +7,6 @@
     </ItemGroup>
 
     <Target Name="Build" />
-    <Target Name="ReBuild" />
+    <Target Name="Rebuild" />
 
 </Project>
