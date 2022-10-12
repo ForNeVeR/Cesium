@@ -7,6 +7,50 @@ Cesium is a fully managed C compiler for CLI platform (.NET).
 
 **Why?** C programs are very useful in the modern world and solve practical tasks. At the same time, deploying C code alongside .NET code may be tricky (especially if your application supports multiple platforms). Cesium is designed to resolve the problems of C code deployment, and lift it to the managed state (so it is cross-platform in the same way as the underlying CIL code it is compiled to).
 
+### Sneak Peek
+
+Currently, Cesium is able to compile a "Hello, world" C17 example to a .NET assembly:
+
+```c
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+    puts("Hello, world!");
+    return 42;
+}
+```
+
+The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
+
+Usage
+-----
+
+```console
+$ dotnet run --project Cesium.Compiler -- <path to the input .c file> --out <path to the output assembly>
+```
+
+For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
+
+```console
+$ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c --out out.exe
+$ dotnet ./out.exe # run with .NET 6
+$ ./out.exe # only on Windows, run with .NET Framework
+$ mono ./out.exe # run with Mono
+```
+
+### Optional Parameters
+
+- `--framework <framework>`: specifies the target framework, defaults to `Net`
+  - `NetFramework` for .NET Framework
+  - `NetStandard` for .NET Standard
+  - `Net` for .NET 5+
+- `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
+  - `Dll`: gets detected from a `.dll` extension
+  - `Console`: gets detected from an `.exe` extension
+  - `Windows`: doesn't get detected, so it's only possible to select manually
+  - `NetModule`: is a rudiment from Cecil, not supported
+
 Implementation Status
 ---------------------
 
@@ -39,62 +83,6 @@ If you're interested in certain project areas, check the per-area issue labels:
 - [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
 - [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
 - [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
-
-### Sneak Peek
-
-Currently, Cesium is able to compile a "Hello, world" C17 example to a .NET assembly:
-
-```c
-#include <stdio.h>
-
-int main(int argc, char *argv[])
-{
-    puts("Hello, world!");
-    return 42;
-}
-```
-
-The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
-
-Documentation
--------------
-
-- [C17 Language Standard Draft][c17-draft]
-
-- [Cesium Tests][docs.tests]
-- [Cesium Type System][docs.type-system]
-- [CLI-Related Language Extensions][docs.language-extensions]
-- [Exceptions in the Compiler Code][docs.exceptions]
-
-- [License (MIT)][docs.license]
-
-Usage
------
-
-```console
-$ dotnet run --project Cesium.Compiler -- <path to the input .c file> --out <path to the output assembly>
-```
-
-For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
-
-```console
-$ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c --out out.exe
-$ dotnet ./out.exe # run with .NET 6
-$ ./out.exe # only on Windows, run with .NET Framework
-$ mono ./out.exe # run with Mono
-```
-
-### Optional Parameters
-
-- `--framework <framework>`: specifies the target framework, defaults to `Net`
-  - `NetFramework` for .NET Framework
-  - `NetStandard` for .NET Standard
-  - `Net` for .NET 5+
-- `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
-  - `Dll`: gets detected from a `.dll` extension
-  - `Console`: gets detected from an `.exe` extension
-  - `Windows`: doesn't get detected, so it's only possible to select manually
-  - `NetModule`: is a rudiment from Cecil, not supported
 
 Testing
 -------
@@ -135,6 +123,18 @@ dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-containe
 ```
 
 Then navigate to `Cesium.Compiler\bin\Debug\net6.0\win-x64\publish\` and that's your Cesium.
+
+Documentation
+-------------
+
+- [C17 Language Standard Draft][c17-draft]
+
+- [Cesium Tests][docs.tests]
+- [Cesium Type System][docs.type-system]
+- [CLI-Related Language Extensions][docs.language-extensions]
+- [Exceptions in the Compiler Code][docs.exceptions]
+
+- [License (MIT)][docs.license]
 
 Code Quality (Experimental)
 ------------
