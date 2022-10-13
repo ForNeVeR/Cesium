@@ -49,7 +49,7 @@
                 "Initializer": {
                   "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
                   "Expression": {
-                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                     "Constant": {
                       "Kind": "FloatLiteral",
                       "Text": "1.0"
@@ -82,7 +82,7 @@
                 "Initializer": {
                   "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
                   "Expression": {
-                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                     "Constant": {
                       "Kind": "FloatLiteral",
                       "Text": "1.0f"
@@ -119,7 +119,7 @@
                 "Initializer": {
                   "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
                   "Expression": {
-                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                     "Constant": {
                       "Kind": "FloatLiteral",
                       "Text": "1.0l"

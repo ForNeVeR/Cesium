@@ -7,22 +7,24 @@ namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
 internal class IntegerConstant : IConstant
 {
-    private readonly int _value;
-
     public IntegerConstant(string value)
     {
-        if (!int.TryParse(value, out _value))
+        if (!int.TryParse(value, out var intValue))
             throw new CompilationException($"Cannot parse an integer literal: {value}.");
+
+        Value = intValue;
     }
 
     public IntegerConstant(int value)
     {
-        _value = value;
+        Value = value;
     }
+
+    public int Value { get; }
 
     public void EmitTo(IEmitScope scope)
     {
-        scope.Method.Body.Instructions.Add(_value switch
+        scope.Method.Body.Instructions.Add(Value switch
         {
             0 => Instruction.Create(OpCodes.Ldc_I4_0),
             1 => Instruction.Create(OpCodes.Ldc_I4_1),
@@ -34,12 +36,12 @@ internal class IntegerConstant : IConstant
             7 => Instruction.Create(OpCodes.Ldc_I4_7),
             8 => Instruction.Create(OpCodes.Ldc_I4_8),
             -1 => Instruction.Create(OpCodes.Ldc_I4_M1),
-            >= sbyte.MinValue and <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) _value),
-            _ => Instruction.Create(OpCodes.Ldc_I4, _value)
+            >= sbyte.MinValue and <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) Value),
+            _ => Instruction.Create(OpCodes.Ldc_I4, Value)
         });
     }
 
     public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.Int;
 
-    public override string ToString() => $"integer: {_value}";
+    public override string ToString() => $"integer: {Value}";
 }

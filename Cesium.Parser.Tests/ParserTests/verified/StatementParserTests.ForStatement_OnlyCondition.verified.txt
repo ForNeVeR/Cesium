@@ -4,7 +4,7 @@
   "TestExpression": {
     "$type": "Cesium.Ast.ComparisonBinaryOperatorExpression, Cesium.Ast",
     "Left": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "Identifier",
         "Text": "i"
@@ -12,7 +12,7 @@
     },
     "Operator": "<",
     "Right": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "IntLiteral",
         "Text": "0"
@@ -29,7 +29,7 @@
         "Text": "++"
       },
       "Target": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "Identifier",
           "Text": "i"

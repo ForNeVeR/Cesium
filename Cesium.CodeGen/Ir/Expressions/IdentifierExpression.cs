@@ -11,7 +11,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 {
     public string Identifier { get; }
 
-    public IdentifierExpression(Ast.ConstantExpression expression)
+    public IdentifierExpression(Ast.ConstantLiteralExpression expression)
     {
         var constant = expression.Constant;
         if (expression.Constant.Kind != CTokenType.Identifier)

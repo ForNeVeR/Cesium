@@ -20,7 +20,7 @@ internal class ForStatement : IBlockItem
         var (initExpression, testExpression, updateExpression, body) = statement;
         _initExpression = initExpression?.ToIntermediate();
         // 6.8.5.3.2 if testExpression is null it should be replaced by nonzero constant
-        _testExpression = testExpression?.ToIntermediate() ?? new ConstantExpression(new IntegerConstant("1"));
+        _testExpression = testExpression?.ToIntermediate() ?? new ConstantLiteralExpression(new IntegerConstant("1"));
         _updateExpression = updateExpression?.ToIntermediate();
         _body = body.ToIntermediate();
     }

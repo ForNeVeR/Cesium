@@ -168,7 +168,7 @@ internal record LocalDeclarationInfo(
                         type = new PointerType(type);
                     else
                     {
-                        if (sizeExpr is not ConstantExpression constantExpression ||
+                        if (sizeExpr is not ConstantLiteralExpression constantExpression ||
                             constantExpression.Constant.Kind != CTokenType.IntLiteral ||
                             !int.TryParse(constantExpression.Constant.Text, out var size))
                             throw new CompilationException($"Array size specifier is not integer {sizeExpr}.");

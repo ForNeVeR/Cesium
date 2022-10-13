@@ -3,7 +3,7 @@
   "InitExpression": {
     "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
     "Left": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "Identifier",
         "Text": "i"
@@ -11,7 +11,7 @@
     },
     "Operator": "=",
     "Right": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "IntLiteral",
         "Text": "1"
@@ -29,7 +29,7 @@
         "Text": "++"
       },
       "Target": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "Identifier",
           "Text": "i"

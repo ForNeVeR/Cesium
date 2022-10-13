@@ -8,7 +8,7 @@ public abstract record Expression;
 
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
-public record ConstantExpression(IToken<CTokenType> Constant) : Expression;
+public record ConstantLiteralExpression(IToken<CTokenType> Constant) : Expression;
 
 // 6.5.2 Postfix operators
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
@@ -42,3 +42,6 @@ public record AssignmentExpression(Expression Left, string Operator, Expression 
 
 // 6.5.17 Comma operator
 public record CommaExpression(Expression Left, Expression Right) : Expression;
+
+// 6.6 Constant expressions
+public record ConstantExpression(Expression Expression) : Expression;

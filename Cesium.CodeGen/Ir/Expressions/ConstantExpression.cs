@@ -1,63 +1,30 @@
-using System.Globalization;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core;
-using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class ConstantExpression : IExpression
 {
-    private readonly IConstant _constant;
-    internal ConstantExpression(IConstant constant)
-    {
-        _constant = constant;
-    }
+    internal IExpression Expression { get; }
 
     public ConstantExpression(Ast.ConstantExpression expression)
-        : this(GetConstant(expression))
     {
+        Expression = expression.Expression.ToIntermediate();
     }
 
-    public IExpression Lower(IDeclarationScope scope) => this;
-
-    public void EmitTo(IEmitScope scope) => _constant.EmitTo(scope);
-
-    public IType GetExpressionType(IDeclarationScope scope) => _constant.GetConstantType(scope);
-
-    public override string ToString() => $"{nameof(ConstantExpression)}: {_constant}";
-
-    private static IConstant GetConstant(Ast.ConstantExpression expression)
+    public IExpression Lower(IDeclarationScope scope)
     {
-        var constant = expression.Constant;
-        return constant.Kind switch
-        {
-            CTokenType.IntLiteral => new IntegerConstant(constant.Text),
-            CTokenType.CharLiteral => new CharConstant(constant.Text),
-            CTokenType.StringLiteral => new StringConstant(constant),
-            CTokenType.FloatLiteral => ParseFloatingPoint(constant.Text),
-            _ => throw new AssertException($"Not a literal: {constant.Kind}.")
-        };
+        return Expression.Lower(scope);
     }
 
-    private static IConstant ParseFloatingPoint(string value)
+    public IType GetExpressionType(IDeclarationScope scope)
     {
-        if (value.EndsWith('f'))
-        {
-            if (!float.TryParse(value.AsSpan().Slice(0, value.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var floatValue))
-            {
-                throw new CompilationException($"Value {value} is too large to fit into float");
-            }
+        return Expression.GetExpressionType(scope);
+    }
 
-            return new FloatingPointConstant(floatValue, true);
-        }
-        else
-        {
-            if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var doubleValue))
-                throw new CompilationException($"Cannot parse a double literal: {value}.");
-
-            return new FloatingPointConstant(doubleValue, false);
-        }
+    public void EmitTo(IEmitScope scope)
+    {
+        Expression.EmitTo(scope);
     }
 }

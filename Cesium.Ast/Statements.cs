@@ -8,6 +8,8 @@ public abstract record Statement : IBlockItem;
 // 6.8.1 Labeled statement
 public record LabelStatement(string Identifier, Statement Body) : Statement;
 
+public record CaseStatement(ConstantExpression? Constant, Statement Body) : Statement;
+
 // 6.8.2 Compound statement
 public record CompoundStatement(ImmutableArray<IBlockItem> Block) : Statement;
 
@@ -26,6 +28,8 @@ public record AmbiguousBlockItem(string Item1, string Item2) : IBlockItem;
 
 // 6.8.4 Selection statements
 public record IfElseStatement(Expression Expression, Statement TrueBranch, Statement? FalseBranch) : Statement;
+
+public record SwitchStatement(Expression Expression, Statement Body) : Statement;
 
 // 6.8.5 Iteration statements
 public record WhileStatement(

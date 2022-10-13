@@ -50,17 +50,17 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
             BinaryOperator.GreaterThanOrEqualTo => new ComparisonBinaryOperatorExpression(
                 new ComparisonBinaryOperatorExpression(left, BinaryOperator.LessThan, right),
                 BinaryOperator.EqualTo,
-                new ConstantExpression(new IntegerConstant("0"))
+                new ConstantLiteralExpression(new IntegerConstant("0"))
             ),
             BinaryOperator.LessThanOrEqualTo => new ComparisonBinaryOperatorExpression(
                 new ComparisonBinaryOperatorExpression(left, BinaryOperator.GreaterThan, right),
                 BinaryOperator.EqualTo,
-                new ConstantExpression(new IntegerConstant("0"))
+                new ConstantLiteralExpression(new IntegerConstant("0"))
             ),
             BinaryOperator.NotEqualTo => new ComparisonBinaryOperatorExpression(
                 new ComparisonBinaryOperatorExpression(left, BinaryOperator.EqualTo, right),
                 BinaryOperator.EqualTo,
-                new ConstantExpression(new IntegerConstant("0"))
+                new ConstantLiteralExpression(new IntegerConstant("0"))
             ),
             _ => new ComparisonBinaryOperatorExpression(left, Operator, right),
         };

@@ -29,7 +29,7 @@
           {
             "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
             "Expression": {
-              "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+              "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
               "Constant": {
                 "Kind": "IntLiteral",
                 "Text": "42"
@@ -89,7 +89,7 @@
                   "Expression": {
                     "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
                     "Function": {
-                      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                       "Constant": {
                         "Kind": "Identifier",
                         "Text": "foo"
@@ -108,7 +108,7 @@
               "Left": {
                 "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
                 "Function": {
-                  "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                  "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                   "Constant": {
                     "Kind": "Identifier",
                     "Text": "foo"
@@ -118,7 +118,7 @@
               },
               "Operator": "+",
               "Right": {
-                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "IntLiteral",
                   "Text": "1"

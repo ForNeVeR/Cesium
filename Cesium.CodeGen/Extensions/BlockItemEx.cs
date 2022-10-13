@@ -23,6 +23,8 @@ internal static class BlockItemEx
         Ast.ForStatement s => new ForStatement(s),
         Ast.WhileStatement s => new WhileStatement(s),
         Ast.DoWhileStatement s => new DoWhileStatement(s),
+        Ast.SwitchStatement s => new SwitchStatement(s),
+        Ast.CaseStatement s => new CaseStatement(s),
         Ast.BreakStatement => new BreakStatement(),
         Ast.GoToStatement s => new GoToStatement(s),
         Ast.AmbiguousBlockItem a => new AmbiguousBlockItem(a),

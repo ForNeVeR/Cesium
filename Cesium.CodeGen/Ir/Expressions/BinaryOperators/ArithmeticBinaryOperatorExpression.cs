@@ -36,7 +36,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
                 right = new TypeCastExpression(
                     scope.CTypeSystem.NativeInt,
                     new ArithmeticBinaryOperatorExpression(
-                        new ConstantExpression(new IntegerConstant(leftPointerType.Base.SizeInBytes)),
+                        new ConstantLiteralExpression(new IntegerConstant(leftPointerType.Base.SizeInBytes)),
                         BinaryOperator.Multiply,
                         right));
 
@@ -48,7 +48,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
                 left = new TypeCastExpression(
                     scope.CTypeSystem.NativeInt,
                     new ArithmeticBinaryOperatorExpression(
-                        new ConstantExpression(new IntegerConstant(rightPointerType.Base.SizeInBytes)),
+                        new ConstantLiteralExpression(new IntegerConstant(rightPointerType.Base.SizeInBytes)),
                         BinaryOperator.Multiply,
                         left));
 

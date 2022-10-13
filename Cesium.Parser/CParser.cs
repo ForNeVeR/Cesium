@@ -55,18 +55,22 @@ public partial class CParser
     [Rule("conditional_expression: logical_OR_expression")] // 6.5.15 Conditional operator
     [Rule("assignment_expression: conditional_expression")] // 6.5.16 Assignment operators
     [Rule("expression: assignment_expression")] // 6.5.17 Comma operator
+    [Rule("expression: constant_expression")] // 6.6 Constant expressions
     private static Expression CreateExpressionIdentity(Expression expression) => expression;
+
+    [Rule("constant_expression: conditional_expression")] // 6.6 Constant expressions
+    private static ConstantExpression CreateConstantExpression(Expression expression) => new ConstantExpression(expression);
 
     // 6.5.1 Primary expressions
     [Rule("primary_expression: constant")]
-    private static Expression MakeConstantExpression(ICToken constant) => new ConstantExpression(constant);
+    private static Expression MakeConstantExpression(ICToken constant) => new ConstantLiteralExpression(constant);
 
     [Rule("primary_expression: Identifier")]
     private static Expression MakeIdentifierExpression(IToken identifier) => new IdentifierExpression(identifier.Text);
 
     [Rule("primary_expression: StringLiteral")]
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
-        new ConstantExpression(stringLiteral);
+        new ConstantLiteralExpression(stringLiteral);
 
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
@@ -138,8 +142,8 @@ public partial class CParser
 
     [Rule("unary_expression: unary_operator unary_expression")]
     private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
-        @operator.Kind == CTokenType.Subtract && target is ConstantExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
-        ? new ConstantExpression(MergeTokens(@operator, constantExpression.Constant))
+        @operator.Kind == CTokenType.Subtract && target is ConstantLiteralExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
+        ? new ConstantLiteralExpression(MergeTokens(@operator, constantExpression.Constant))
         : new UnaryOperatorExpression(@operator.Text, target);
 
     [Rule("unary_operator: '&'")]
@@ -683,10 +687,17 @@ public partial class CParser
     private static Statement MakeStatementIdentity(Statement statement) => statement;
 
     // 6.8.1 Labeled statements
-    // TODO[#210]: 6.8.1 switch cases
     [Rule("labeled_statement: Identifier ':' statement")]
-    private static LabelStatement MakeLabelStatement(IToken identifier, IToken _, Statement block) =>
+    private static Statement MakeLabelStatement(IToken identifier, IToken _, Statement block) =>
         new LabelStatement(identifier.Text, block);
+
+    [Rule("labeled_statement: 'case' constant_expression ':' statement")]
+    private static Statement MakeCaseStatement(IToken _, ConstantExpression constant, IToken __, Statement block) =>
+        new CaseStatement(constant, block);
+
+    [Rule("labeled_statement: 'default' ':' statement")]
+    private static Statement MakeDefaultStatement(IToken _, IToken __, Statement block) =>
+        new CaseStatement(null, block);
 
     // 6.8.2 Compound statement
     [Rule("compound_statement: '{' block_item_list? '}'")]
@@ -709,17 +720,17 @@ public partial class CParser
 
     // 6.8.4 Selection statements
     [Rule("selection_statement: 'if' '(' expression ')' statement")]
-    private static IfElseStatement MakeIfStatement(
+    private static Statement MakeIfStatement(
         IToken _,
         IToken __,
         Expression expression,
         IToken ___,
         IBlockItem statement) =>
         // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
-        new(expression, (Statement)statement, null);
+        new IfElseStatement(expression, (Statement)statement, null);
 
     [Rule("selection_statement: 'if' '(' expression ')' statement 'else' statement")]
-    private static IfElseStatement MakeIfElseStatement(
+    private static Statement MakeIfElseStatement(
         IToken _,
         IToken __,
         Expression expression,
@@ -728,8 +739,16 @@ public partial class CParser
         IToken ____,
         IBlockItem falseBranch)
         // TODO[#115]: These direct casts should't be necessary. They are here because of the "lexer hack".
-        => new(expression, (Statement)trueBranch, (Statement)falseBranch);
-    // TODO[#210]: 6.8.4 Selection statements switch
+        => new IfElseStatement(expression, (Statement)trueBranch, (Statement)falseBranch);
+
+    [Rule("selection_statement: 'switch' '(' expression ')' statement")]
+    private static Statement MakeSwitchStatement(
+        IToken _, // switch
+        IToken __, // (
+        Expression expression,
+        IToken ___, // )
+        Statement body)
+        => new SwitchStatement(expression, body);
 
     // TODO[#210]: 6.8.5 Iteration statements
     [Rule("iteration_statement: 'while' '(' expression ')' statement")]

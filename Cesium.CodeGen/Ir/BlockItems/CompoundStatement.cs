@@ -5,11 +5,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class CompoundStatement : IBlockItem
 {
-    private readonly List<IBlockItem> _items;
-
-    private CompoundStatement(List<IBlockItem> items)
+    public CompoundStatement(List<IBlockItem> items)
     {
-        _items = items;
+        Statements = items;
     }
 
     public CompoundStatement(Ast.CompoundStatement statement)
@@ -17,16 +15,18 @@ internal class CompoundStatement : IBlockItem
     {
     }
 
-    bool IBlockItem.HasDefiniteReturn => _items.Any(x => x.HasDefiniteReturn);
+    bool IBlockItem.HasDefiniteReturn => Statements.Any(x => x.HasDefiniteReturn);
+
+    internal List<IBlockItem> Statements { get; }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new CompoundStatement(_items.Select(blockItem => blockItem.Lower(scope)).ToList());
+        return new CompoundStatement(Statements.Select(blockItem => blockItem.Lower(scope)).ToList());
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        foreach (var item in _items)
+        foreach (var item in Statements)
         {
             item.EmitTo(scope);
         }

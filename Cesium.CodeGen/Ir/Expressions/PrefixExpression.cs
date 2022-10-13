@@ -29,7 +29,7 @@ internal class PrefixExpression : IExpression
             new ArithmeticBinaryOperatorExpression(
                 target,
                 _operator,
-                new ConstantExpression(new IntegerConstant("1"))
+                new ConstantLiteralExpression(new IntegerConstant("1"))
             )
         ).Lower(scope);
     }

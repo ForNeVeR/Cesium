@@ -1,7 +1,7 @@
 ﻿{
   "$type": "Cesium.Ast.IfElseStatement, Cesium.Ast",
   "Expression": {
-    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
     "Constant": {
       "Kind": "IntLiteral",
       "Text": "1"
@@ -33,7 +33,7 @@
             "Initializer": {
               "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
               "Expression": {
-                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "IntLiteral",
                   "Text": "0"

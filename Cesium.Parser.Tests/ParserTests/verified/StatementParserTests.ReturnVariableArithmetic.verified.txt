@@ -3,7 +3,7 @@
   "Expression": {
     "$type": "Cesium.Ast.ArithmeticBinaryOperatorExpression, Cesium.Ast",
     "Left": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "Identifier",
         "Text": "x"
@@ -13,7 +13,7 @@
     "Right": {
       "$type": "Cesium.Ast.ArithmeticBinaryOperatorExpression, Cesium.Ast",
       "Left": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "IntLiteral",
           "Text": "2"
@@ -21,7 +21,7 @@
       },
       "Operator": "*",
       "Right": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "IntLiteral",
           "Text": "2"

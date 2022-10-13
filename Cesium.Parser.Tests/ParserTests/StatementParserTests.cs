@@ -107,4 +107,30 @@ if (1)
 
     [Fact]
     public Task IndirectionSet() => DoTest("*x = 42;");
+
+    [Fact]
+    public Task SwitchStatement_Empty() => DoTest(@"switch(x) { }");
+
+    [Fact]
+    public Task SwitchStatement_OneCase() => DoTest(@"switch(x) { case 0: break; }");
+
+    [Fact]
+    public Task SwitchStatement_MultiCases() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+}");
+
+    [Fact]
+    public Task SwitchStatement_MultiCasesWithDefault() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+    default: break;
+}");
+
+    [Fact]
+    public Task SwitchStatement_FallthroughCase() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1:
+    default: break;
+}");
 }

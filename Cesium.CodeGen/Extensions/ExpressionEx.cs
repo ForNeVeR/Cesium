@@ -10,7 +10,8 @@ internal static class ExpressionEx
     public static IExpression ToIntermediate(this Ast.Expression ex) => ex switch
     {
         Ast.IdentifierExpression e => new IdentifierExpression(e),
-        Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
+        Ast.ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
+        Ast.ConstantLiteralExpression e => new ConstantLiteralExpression(e),
         Ast.ConstantExpression e => new ConstantExpression(e),
 
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
