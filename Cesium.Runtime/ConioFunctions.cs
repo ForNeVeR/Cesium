@@ -9,6 +9,6 @@ public static class ConioFunctions
 
     public static int GetCh()
     {
-        return (int)Console.ReadKey().KeyChar;
+        return (int)Console.ReadKey(true).KeyChar;
     }
 }
