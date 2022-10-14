@@ -34,4 +34,10 @@ internal interface IDeclarationScope
     /// </summary>
     /// <returns>Name of the virtual label which can be used by break statement</returns>
     string? GetBreakLabel();
+
+    /// <summary>
+    /// Gets name of the virtual label which point to loop check location.
+    /// </summary>
+    /// <returns>Name of the virtual label which can be used by continue statement</returns>
+    string? GetContinueLabel();
 }

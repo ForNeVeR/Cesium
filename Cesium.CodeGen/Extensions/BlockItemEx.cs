@@ -26,6 +26,7 @@ internal static class BlockItemEx
         Ast.SwitchStatement s => new SwitchStatement(s),
         Ast.CaseStatement s => new CaseStatement(s),
         Ast.BreakStatement => new BreakStatement(),
+        Ast.ContinueStatement => new ContinueStatement(),
         Ast.GoToStatement s => new GoToStatement(s),
         Ast.AmbiguousBlockItem a => new AmbiguousBlockItem(a),
         _ => throw new WipException(206, $"Statement not supported, yet: {blockItem}.")

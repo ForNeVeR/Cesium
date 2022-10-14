@@ -14,6 +14,7 @@ internal class ForStatement : IBlockItem
     private readonly IExpression? _updateExpression;
     private readonly IBlockItem _body;
     private readonly string? _breakLabel;
+    private readonly string? _continueLabel;
 
     public ForStatement(Ast.ForStatement statement)
     {
@@ -30,13 +31,15 @@ internal class ForStatement : IBlockItem
         IExpression testExpression,
         IExpression? updateExpression,
         IBlockItem body,
-        string breakLabel)
+        string breakLabel,
+        string continueLabel)
     {
         _initExpression = initExpression;
         _testExpression = testExpression;
         _updateExpression = updateExpression;
         _body = body;
         _breakLabel = breakLabel;
+        _continueLabel = continueLabel;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
@@ -45,12 +48,15 @@ internal class ForStatement : IBlockItem
         var breakLabel = loopScope.GetBreakLabel();
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         scope.AddLabel(breakLabel);
+        var continueLabel = loopScope.GetContinueLabel();
+        scope.AddLabel(continueLabel);
         return new ForStatement(
             _initExpression?.Lower(loopScope),
             _testExpression.Lower(loopScope),
             _updateExpression?.Lower(loopScope),
             _body.Lower(loopScope),
-            breakLabel);
+            breakLabel,
+            continueLabel);
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
@@ -58,6 +64,7 @@ internal class ForStatement : IBlockItem
     public void EmitTo(IEmitScope scope)
     {
         Debug.Assert(_breakLabel != null);
+        Debug.Assert(_continueLabel != null);
         var forScope = scope;
 
         var bodyProcessor = forScope.Method.Body.GetILProcessor();
@@ -69,6 +76,10 @@ internal class ForStatement : IBlockItem
         bodyProcessor.Append(brToTest);
         var loopStartIndex = instructions.Count;
         _body.EmitTo(forScope);
+
+        var loopIterationStart = scope.ResolveLabel(_continueLabel);
+        bodyProcessor.Append(loopIterationStart);
+
         _updateExpression?.EmitTo(forScope);
         var testStartIndex = instructions.Count;
         _testExpression.EmitTo(forScope);
