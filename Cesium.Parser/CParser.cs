@@ -104,6 +104,12 @@ public partial class CParser
         IToken _,
         IToken identifier) => new PointerMemberAccessExpression(target, new IdentifierExpression(identifier.Text));
 
+    [Rule("postfix_expression: postfix_expression '++'")]
+    [Rule("postfix_expression: postfix_expression '--'")]
+    private static Expression MakePostfixIncrementDecrementExpression(
+        Expression target,
+        ICToken operation) => new PostfixIncrementDecrementExpression(operation, target);
+
     // TODO[#207]:
     // postfix-expression:
     //     postfix-expression ++
@@ -127,7 +133,7 @@ public partial class CParser
     [Rule("unary_expression: '++' unary_expression")]
     [Rule("unary_expression: '--' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
-        new PrefixExpression(prefixOperator, target);
+        new PrefixIncrementDecrementExpression(prefixOperator, target);
     // TODO[#207]:
     // unary-expression:
     //    * unary-expression

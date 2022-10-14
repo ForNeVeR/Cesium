@@ -9,11 +9,11 @@ using Yoakke.SynKit.Lexer;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class PrefixExpression : IExpression
+internal class PrefixIncrementDecrementExpression : IExpression
 {
     private readonly IExpression _target;
     private readonly BinaryOperator _operator;
-    public PrefixExpression(Ast.PrefixExpression expression)
+    public PrefixIncrementDecrementExpression(Ast.PrefixIncrementDecrementExpression expression)
     {
         expression.Deconstruct(out var prefixOperator, out var target);
         _target = target.ToIntermediate();
@@ -23,14 +23,20 @@ internal class PrefixExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var target = _target.Lower(scope);
+        var newValueExpression = new ArithmeticBinaryOperatorExpression(
+            target,
+            _operator,
+            new ConstantLiteralExpression(new IntegerConstant("1"))
+        );
+        if (_target is ConstantLiteralExpression)
+        {
+            return newValueExpression.Lower(scope);
+        }
+
         return new AssignmentExpression(
             target,
             BinaryOperator.Assign,
-            new ArithmeticBinaryOperatorExpression(
-                target,
-                _operator,
-                new ConstantLiteralExpression(new IntegerConstant("1"))
-            )
+            newValueExpression
         ).Lower(scope);
     }
 
