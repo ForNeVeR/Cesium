@@ -138,6 +138,22 @@ int main()
  }");
 
     [Fact]
+    public Task PostfixVariableIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    x++;
+    return x;
+ }");
+
+    [Fact]
+    public Task PostfixConstantIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    x = 5++;
+    return x;
+ }");
+
+    [Fact]
     public Task SimpleStructDefinition() => DoTest(@"typedef struct { int x; } foo;");
 
     [Fact]

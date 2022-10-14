@@ -23,7 +23,7 @@
   "Body": {
     "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
     "Expression": {
-      "$type": "Cesium.Ast.PrefixExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.PrefixIncrementDecrementExpression, Cesium.Ast",
       "PrefixOperator": {
         "Kind": "Increment",
         "Text": "++"

@@ -62,16 +62,27 @@
           {
             "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
             "Expression": {
-              "$type": "Cesium.Ast.PrefixIncrementDecrementExpression, Cesium.Ast",
-              "PrefixOperator": {
-                "Kind": "Increment",
-                "Text": "++"
-              },
-              "Target": {
+              "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
+              "Left": {
                 "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "Identifier",
                   "Text": "x"
+                }
+              },
+              "Operator": "=",
+              "Right": {
+                "$type": "Cesium.Ast.PostfixIncrementDecrementExpression, Cesium.Ast",
+                "PrefixOperator": {
+                  "Kind": "Increment",
+                  "Text": "++"
+                },
+                "Target": {
+                  "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+                  "Constant": {
+                    "Kind": "IntLiteral",
+                    "Text": "5"
+                  }
                 }
               }
             }

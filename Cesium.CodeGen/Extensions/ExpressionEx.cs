@@ -17,7 +17,7 @@ internal static class ExpressionEx
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
         // Unary operators:
-        Ast.PrefixExpression e => new PrefixExpression(e),
+        Ast.PrefixIncrementDecrementExpression e => new PrefixIncrementDecrementExpression(e),
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
 
@@ -33,6 +33,7 @@ internal static class ExpressionEx
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
+        Ast.PostfixIncrementDecrementExpression e => new PostfixIncrementDecrementExpression(e),
 
         Ast.CommaExpression e => new CommaExpression(e),
 

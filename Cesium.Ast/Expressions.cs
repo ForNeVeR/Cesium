@@ -15,9 +15,10 @@ public record SubscriptingExpression(Expression Base, Expression Index) : Expres
 public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments) : Expression;
 public record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
+public record PostfixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
 
 // 6.5.3 Unary operators
-public record PrefixExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
+public record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
 
