@@ -53,8 +53,8 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     }
 
     /// <inheritdoc />
-    public string? GetBreakLabel()
-    {
-        return null;
-    }
+    public string? GetBreakLabel() => null;
+
+    /// <inheritdoc />
+    public string? GetContinueLabel() => null;
 }

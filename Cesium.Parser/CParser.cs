@@ -789,7 +789,10 @@ public partial class CParser
     private static Statement MakeGoToStatement(ICToken _, ICToken identifier, ICToken __) =>
         new GoToStatement(identifier.Text);
 
-    // [Rule("jump_statement: 'continue' ';'")]
+    [Rule("jump_statement: 'continue' ';'")]
+    private static Statement MakeContinueStatement(ICToken _, ICToken __)
+        => new ContinueStatement();
+
     [Rule("jump_statement: 'break' ';'")]
     private static Statement MakeBreakStatement(ICToken _, ICToken __)
         => new BreakStatement();

@@ -50,5 +50,6 @@ public record ForStatement(
 public record GoToStatement(string Identifier) : Statement;
 
 public record BreakStatement : Statement;
+public record ContinueStatement : Statement;
 
 public record ReturnStatement(Expression Expression) : Statement;

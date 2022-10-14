@@ -52,4 +52,7 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     {
         return _breakLabel;
     }
+
+    /// <inheritdoc />
+    public string? GetContinueLabel() => null;
 }

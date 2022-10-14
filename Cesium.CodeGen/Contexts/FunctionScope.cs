@@ -76,8 +76,8 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     }
 
     /// <inheritdoc />
-    public string? GetBreakLabel()
-    {
-        return null;
-    }
+    public string? GetBreakLabel() => null;
+
+    /// <inheritdoc />
+    public string? GetContinueLabel() => null;
 }
