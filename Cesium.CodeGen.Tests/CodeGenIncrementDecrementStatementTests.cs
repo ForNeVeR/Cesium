@@ -23,12 +23,12 @@ public class CodeGenIncrementDecrementStatementTests : CodeGenTestBase
 }");
 
     [Fact]
-    public Task PostfixIncrementConstant() => DoTest(@"int main()
+    public void PostfixIncrementCannotBeConstant() => DoesNotCompile(@"int main()
 {
     int x;
     x = 5++;
     return x;
-}");
+}", "'++' needs l-value");
 
     [Fact]
     public Task PrefixIncrementVariable() => DoTest(@"int main()
@@ -39,10 +39,18 @@ public class CodeGenIncrementDecrementStatementTests : CodeGenTestBase
 }");
 
     [Fact]
-    public Task PrefixIncrementConstant() => DoTest(@"int main()
+    public void PrefixIncrementCannotBeConstant() => DoesNotCompile(@"int main()
 {
     int x;
     x = ++5;
     return x;
-}");
+}", "'++' needs l-value");
+
+    [Fact]
+    public void PrefixDecrementCannotBeConstant() => DoesNotCompile(@"int main()
+{
+    int x;
+    x = --5;
+    return x;
+}", "'--' needs l-value");
 }
