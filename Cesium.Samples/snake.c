@@ -1,5 +1,5 @@
 // C program to build the complete
-// snake game
+// snake game from https://auth.geeksforgeeks.org/user/souravwork14/articles
 #include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
