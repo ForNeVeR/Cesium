@@ -13,11 +13,13 @@ internal class PostfixIncrementDecrementExpression : IExpression
 {
     private readonly IExpression _target;
     private readonly BinaryOperator _operator;
+    private readonly IToken<CTokenType> _prefixOperator;
     public PostfixIncrementDecrementExpression(Ast.PostfixIncrementDecrementExpression expression)
     {
         expression.Deconstruct(out var prefixOperator, out var target);
         _target = target.ToIntermediate();
         _operator = GetOperator(prefixOperator);
+        _prefixOperator = prefixOperator;
     }
 
     public IExpression Lower(IDeclarationScope scope)
@@ -28,9 +30,9 @@ internal class PostfixIncrementDecrementExpression : IExpression
             _operator,
             new ConstantLiteralExpression(new IntegerConstant("1"))
         );
-        if (_target is ConstantLiteralExpression)
+        if (_target is not IValueExpression)
         {
-            return newValueExpression.Lower(scope);
+            throw new CompilationException($"'{_prefixOperator.Text}' needs l-value");
         }
 
         return new AssignmentExpression(
