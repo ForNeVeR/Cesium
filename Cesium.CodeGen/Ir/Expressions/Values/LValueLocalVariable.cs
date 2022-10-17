@@ -34,14 +34,21 @@ internal class LValueLocalVariable : ILValue
     public void EmitGetAddress(IEmitScope scope)
     {
         var variable = GetVariableDefinition(scope);
-        scope.Method.Body.Instructions.Add(
-            Instruction.Create(
-                variable.Index <= sbyte.MaxValue
-                    ? OpCodes.Ldloca_S
-                    : OpCodes.Ldloca,
-                _definition
-            )
-        );
+        if (variable.VariableType.IsPointer)
+        {
+            EmitGetValue(scope);
+        }
+        else
+        {
+            scope.Method.Body.Instructions.Add(
+                Instruction.Create(
+                    variable.Index <= sbyte.MaxValue
+                        ? OpCodes.Ldloca_S
+                        : OpCodes.Ldloca,
+                    _definition
+                )
+            );
+        }
     }
 
     public void EmitSetValue(IEmitScope scope, IExpression value)

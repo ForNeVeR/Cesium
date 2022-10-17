@@ -23,5 +23,19 @@ internal class GetAddressValueExpression : IExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType().MakePointerType();
+    public IType GetExpressionType(IDeclarationScope scope)
+    {
+        IType valueType = _value.GetValueType();
+        return GetBasePointer(valueType);
+    }
+
+    private static IType GetBasePointer(IType valueType)
+    {
+        if (valueType is InPlaceArrayType inPlaceArrayType)
+        {
+            return GetBasePointer(inPlaceArrayType.Base);
+        }
+
+        return valueType.MakePointerType();
+    }
 }

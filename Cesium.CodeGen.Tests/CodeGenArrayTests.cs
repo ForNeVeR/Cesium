@@ -27,7 +27,7 @@ public class CodeGenArrayTests : CodeGenTestBase
     return 0;
  }");
 
-    [Fact(Skip = "Do not implemented yet. https://github.com/ForNeVeR/Cesium/issues/232")]
+    [Fact]
     public Task MultidimensionalArrayAssignment() => DoTest(@"int main() {
     int a[10][4];
     a[1][2] = 2;

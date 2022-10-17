@@ -48,7 +48,8 @@ internal class LValueArrayElement : ILValue
             throw new AssertException("Array type expected.");
         }
 
-        return (PrimitiveType)type.Base;
+        var primitiveType = (PrimitiveType)GetBaseType(type);
+        return primitiveType;
     }
 
     private void EmitPointerMoveToElement(IEmitScope scope)
@@ -61,5 +62,15 @@ internal class LValueArrayElement : ILValue
         method.Emit(OpCodes.Ldc_I4, elementSize);
         method.Emit(OpCodes.Mul);
         method.Emit(OpCodes.Add);
+    }
+
+    private static IType GetBaseType(InPlaceArrayType valueType)
+    {
+        if (valueType.Base is InPlaceArrayType inPlaceArrayType)
+        {
+            return GetBaseType(inPlaceArrayType);
+        }
+
+        return valueType.Base;
     }
 }

@@ -10,7 +10,7 @@ internal class IndirectionExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
 
-    private IndirectionExpression(IExpression target)
+    public IndirectionExpression(IExpression target)
     {
         _target = target;
     }

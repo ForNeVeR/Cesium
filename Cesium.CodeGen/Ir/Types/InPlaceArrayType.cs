@@ -12,7 +12,13 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context)
     {
-        return Base.Resolve(context).MakePointerType();
+        TypeReference baseType = Base.Resolve(context);
+        if (baseType.IsPointer)
+        {
+            return baseType;
+        }
+
+        return baseType.MakePointerType();
     }
 
     public FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName)
@@ -46,9 +52,6 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
     public void EmitInitializer(IEmitScope scope)
     {
-        if (Base is not PrimitiveType)
-            throw new WipException(232, $"Array of complex type specifiers aren't supported, yet: {Base}");
-
         var arraySizeInBytes = SizeInBytes;
 
         var method = scope.Method.Body.GetILProcessor();

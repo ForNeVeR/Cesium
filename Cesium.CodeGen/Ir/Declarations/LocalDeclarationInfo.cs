@@ -173,7 +173,7 @@ internal record LocalDeclarationInfo(
                             !int.TryParse(constantExpression.Constant.Text, out var size))
                             throw new CompilationException($"Array size specifier is not integer {sizeExpr}.");
 
-                        type = new InPlaceArrayType(type, size);
+                        type = CreateArrayType(type, size);
                     }
 
                     break;
@@ -222,6 +222,16 @@ internal record LocalDeclarationInfo(
         }
 
         return (type, identifier);
+    }
+
+    private static IType CreateArrayType(IType type, int size)
+    {
+        if (type is InPlaceArrayType inplaceArrayType)
+        {
+            return new InPlaceArrayType(new InPlaceArrayType(inplaceArrayType.Base, size), inplaceArrayType.Size);
+        }
+
+        return new InPlaceArrayType(type, size);
     }
 
     private static IEnumerable<LocalDeclarationInfo> GetTypeMemberDeclarations(
