@@ -7,11 +7,3 @@ int main(int argc, char *argv[])
     *b = 42;
     return a[5];
 }
-
-/*
-int a[10];
-a[5] = 2
-*(a + 20) = 2;
-int x = a[5]
-int x = *(a + 20)
-*/
