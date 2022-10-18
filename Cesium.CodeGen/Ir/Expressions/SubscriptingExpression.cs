@@ -28,8 +28,9 @@ internal class SubscriptingExpression : IExpression, IValueExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var expressionType = (InPlaceArrayType)_expression.GetExpressionType(scope);
-        var value = (IAddressableValue)((IValueExpression)_expression).Resolve(scope);
+        var expression = LowerExpression(_expression, scope);
+        var expressionType = (InPlaceArrayType)expression.GetExpressionType(scope);
+        var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var offset = expressionType.Base is InPlaceArrayType nestedArray
             ? new ArithmeticBinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(GetElementsSize(nestedArray))))
             : _index;
@@ -37,10 +38,21 @@ internal class SubscriptingExpression : IExpression, IValueExpression
             new ArithmeticBinaryOperatorExpression(
                 new GetAddressValueExpression(value),
                 BinaryOperator.Add,
-                offset
+                offset.Lower(scope)
             ));
         var lowered = indirection.Lower(scope);
         return lowered;
+    }
+
+    private static IExpression LowerExpression(IExpression expression, IDeclarationScope scope)
+    {
+        if (expression is SubscriptingExpression subscriptingExpression)
+        {
+            var newExpression = LowerExpression(subscriptingExpression._expression, scope);
+            return new SubscriptingExpression(newExpression, subscriptingExpression._index.Lower(scope));
+        }
+
+        return expression;
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
@@ -49,10 +61,18 @@ internal class SubscriptingExpression : IExpression, IValueExpression
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        if (_expression is not IdentifierExpression identifier)
-            throw new WipException(230, "Subscription supported only for IdentifierConstantExpression");
+        if (_expression is IdentifierExpression identifier)
+        {
+            return new LValueArrayElement(identifier.Resolve(scope), _index);
+        }
 
-        return new LValueArrayElement(identifier.Resolve(scope), _index);
+        if (_expression is SubscriptingExpression subscriptingExpression)
+        {
+            var a = subscriptingExpression.Resolve(scope);
+            return new LValueArrayElement(a, _index);
+        }
+
+        throw new WipException(230, "Subscription supported only for IdentifierConstantExpression");
     }
 
     private static int GetElementsSize(InPlaceArrayType inPlaceArray)

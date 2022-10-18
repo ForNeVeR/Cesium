@@ -26,11 +26,19 @@ internal class VariableDefinition : IBlockItem
     public void EmitTo(IEmitScope scope)
     {
         scope.AssemblyContext.AddGlobalField(_identifier, _type);
+        var field = scope.AssemblyContext.ResolveGlobalField(_identifier, scope.Context);
         if (_initializer != null)
         {
-            var field = scope.AssemblyContext.ResolveGlobalField(_identifier, scope.Context);
             _initializer.EmitTo(scope);
             scope.StSFld(field);
+        }
+        else
+        {
+            if (_type is InPlaceArrayType arrayType)
+            {
+                arrayType.EmitInitializer(scope);
+                scope.StSFld(field);
+            }
         }
     }
 }

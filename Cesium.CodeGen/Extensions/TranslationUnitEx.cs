@@ -48,7 +48,7 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType) // TODO[#75]: Consider other type categories.
+                    if (type is PrimitiveType || type is InPlaceArrayType) // TODO[#75]: Consider other type categories.
                     {
                         var variable = new VariableDefinition(identifier, type, initializer);
                         yield return variable;

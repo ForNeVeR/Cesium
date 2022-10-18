@@ -33,7 +33,7 @@ internal class LValueIndirection : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(store));
     }
 
-    public IType GetValueType() => _pointerType;
+    public IType GetValueType() => _pointerType.Base;
 
     private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => pointerType.Base switch
     {
