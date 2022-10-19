@@ -22,18 +22,23 @@ internal record LocalDeclarationInfo(
             return new LocalDeclarationInfo(type, null, null);
 
         var (pointer, directDeclarator) = declarator;
-        if (pointer != null)
-        {
-            var (typeQualifiers, childPointer) = pointer;
-            if (typeQualifiers != null || childPointer != null)
-                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
-
-            type = new PointerType(type);
-        }
-
+        type = ProcessPointer(pointer, type);
         (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
+    }
+
+    public static LocalDeclarationInfo Of(
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
+        AbstractDeclarator abstractDeclarator)
+    {
+        var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
+
+        var (pointer, directAbstractDeclarator) = abstractDeclarator;
+        type = ProcessPointer(pointer, type);
+        type = ProcessDirectAbstractDeclarator(directAbstractDeclarator, type);
+
+        return new LocalDeclarationInfo(type, Identifier: null, cliImportMemberName);
     }
 
     private static (IType, string? CliImportMemberName) ProcessSpecifiers(
@@ -117,6 +122,19 @@ internal record LocalDeclarationInfo(
                 $"Declaration specifiers missing type specifier: {string.Join(", ", specifiers)}");
 
         return (isConst ? new ConstType(type) : type, cliImportMemberName);
+    }
+
+    private static IType ProcessPointer(Pointer? pointer, IType type)
+    {
+        if (pointer == null) return type;
+
+        var (typeQualifiers, childPointer) = pointer;
+        if (typeQualifiers != null || childPointer != null)
+            throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
+
+        type = new PointerType(type);
+
+        return type;
     }
 
     private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type)
@@ -222,6 +240,27 @@ internal record LocalDeclarationInfo(
         }
 
         return (type, identifier);
+    }
+
+    private static IType ProcessDirectAbstractDeclarator(
+        IDirectAbstractDeclarator? directAbstractDeclarator,
+        IType type)
+    {
+        var current = directAbstractDeclarator;
+        while (current != null)
+        {
+            switch (current)
+            {
+                default:
+                    throw new WipException(
+                        332,
+                        $"Direct abstract declarator is not supported, yet: {current}.");
+            }
+
+            current = current.Base;
+        }
+
+        return type;
     }
 
     private static IType CreateArrayType(IType type, int size)

@@ -1,0 +1,49 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: foo
+  Nested types:
+    Type: foo/<SyntheticBuffer>b
+    Pack: 0
+    Size: 20
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Int32 foo/<SyntheticBuffer>b::FixedElementField
+
+    Type: foo/<SyntheticBuffer>c
+    Pack: 0
+    Size: 64
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Byte foo/<SyntheticBuffer>c::FixedElementField
+
+    Type: foo/<SyntheticBuffer>array
+    Pack: 0
+    Size: 1600
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Int32* foo/<SyntheticBuffer>array::FixedElementField
+  Fields:
+    System.Int32 foo::a
+    foo/<SyntheticBuffer>b foo::b
+    Custom attributes:
+    - FixedBufferAttribute(System.Int32, 20)
+
+    foo/<SyntheticBuffer>c foo::c
+    Custom attributes:
+    - FixedBufferAttribute(System.Byte, 64)
+
+    method System.Void *(System.Int32,System.Int32*,System.Int32*) foo::func
+    foo/<SyntheticBuffer>array foo::array
+    Custom attributes:
+    - FixedBufferAttribute(System.Int32*, 1600)
+

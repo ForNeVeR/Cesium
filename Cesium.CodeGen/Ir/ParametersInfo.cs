@@ -44,12 +44,13 @@ internal record ParameterInfo(IType Type, string? Name)
     public static ParameterInfo Of(ParameterDeclaration declaration)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
-        if (abstractDeclarator != null)
-            throw new WipException(
-                234,
-                $"Parameter with abstract declarator is not supported, yet: {declaration}.");
-
-        var (type, identifier, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
+        var (type, identifier, cliImportMemberName) = (declarator, abstractDeclarator) switch
+        {
+            (null, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator),
+            (_, null) => LocalDeclarationInfo.Of(specifiers, declarator),
+            _ => throw new AssertException(
+                $"Both declarator and abstract declarator found for declaration {declaration}.")
+        };
 
         if (cliImportMemberName != null)
             throw new CompilationException("CLI import specifier isn't supported for a parameter.");
