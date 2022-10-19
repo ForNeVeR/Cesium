@@ -1,9 +1,0 @@
-﻿System.Void <Module>::foo(System.Int32* x)
-  IL_0000: ldarg.0
-  IL_0001: ldc.i4.1
-  IL_0002: conv.i
-  IL_0003: ldc.i4 4
-  IL_0008: mul
-  IL_0009: add
-  IL_000a: starg.s x
-  IL_000c: ret
