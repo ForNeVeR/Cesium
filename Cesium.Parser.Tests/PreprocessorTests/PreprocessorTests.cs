@@ -44,6 +44,13 @@ int test()
 }}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
     [Fact]
+    public Task IncludeNoWhitespaces() => DoTest(@"#include<foo.h>
+int test()
+{
+    foo();
+}", new() { ["foo.h"] = "void foo() {}" });
+
+    [Fact]
     public Task NestedIncludes() => DoTest(@"#include <foo.h>
 
 int test()
