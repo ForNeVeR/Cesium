@@ -24,12 +24,12 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static void PrintF(byte* str, void* varargs)
+    public static int PrintF(byte* str, void* varargs)
     {
         var formatString = Unmarshal(str);
         if (formatString == null)
         {
-            return;
+            return 1;
         }
 
         int currentPosition = 0;
@@ -89,6 +89,7 @@ public unsafe static class StdIoFunctions
         }
 
         Console.Write(formatString.Substring(currentPosition));
+        return 0;
     }
 
     internal static string? Unmarshal(byte* str)
