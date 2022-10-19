@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 }
 ```
 
-The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
+The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **80%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
 
 Documentation
 -------------
