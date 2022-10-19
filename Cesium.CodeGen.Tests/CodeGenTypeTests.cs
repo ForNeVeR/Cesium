@@ -194,4 +194,15 @@ int main(void) {
     foo x;
     return x.nonExisting;
 }", "\"foo\" has no member named \"nonExisting\"");
+
+    [Fact]
+    public Task ComplexStructDefinition() => DoTest(@"typedef void(*function)(int, const int*, const int*);
+typedef struct {
+	int a;
+	int b[5];
+	unsigned char c[64];
+	function func;
+
+	int array[80][5];
+} foo;");
 }
