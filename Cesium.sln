@@ -9,10 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
-		Directory.Build.props = Directory.Build.props
-		README.md = README.md
 		after.Cesium.sln.targets = after.Cesium.sln.targets
 		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F6830-E724-4B3A-BFDC-3FA1301A59D0}"
@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cesium.Samples", "Cesium.Sa
 		Cesium.Samples\arithmetics.c = Cesium.Samples\arithmetics.c
 		Cesium.Samples\cli-interop.c = Cesium.Samples\cli-interop.c
 		Cesium.Samples\functions.c = Cesium.Samples\functions.c
+		Cesium.Samples\GOL.c = Cesium.Samples\GOL.c
 		Cesium.Samples\hello.c = Cesium.Samples\hello.c
 		Cesium.Samples\minimal.c = Cesium.Samples\minimal.c
 		Cesium.Samples\snake.c = Cesium.Samples\snake.c
@@ -53,10 +54,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
 	ProjectSection(SolutionItems) = preProject
-		docs\language-extensions.md = docs\language-extensions.md
-		docs\type-system.md = docs\type-system.md
-		docs\tests.md = docs\tests.md
 		docs\exceptions.md = docs\exceptions.md
+		docs\language-extensions.md = docs\language-extensions.md
+		docs\tests.md = docs\tests.md
+		docs\type-system.md = docs\type-system.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
@@ -70,7 +71,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perform-common-steps", "per
 		.github\workflows\perform-common-steps\action.yml = .github\workflows\perform-common-steps\action.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Core", "Cesium.Core\Cesium.Core.csproj", "{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Core", "Cesium.Core\Cesium.Core.csproj", "{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

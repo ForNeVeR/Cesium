@@ -57,7 +57,12 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "d":
+                case "li":
                     Console.Write((int)((long*)varargs)[consumedArgs]);
+                    consumedArgs++;
+                    break;
+                case "i":
+                    Console.Write(((int*)varargs)[consumedArgs]);
                     consumedArgs++;
                     break;
                 case "u":

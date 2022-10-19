@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     printf("%d\n", intValue);
     printf("%u\n", -1);
     printf("%lu\n", -1);
+    printf("%i\n", -1);
 
     float floatValue = 5.99;
     printf("%f\n", floatValue);
