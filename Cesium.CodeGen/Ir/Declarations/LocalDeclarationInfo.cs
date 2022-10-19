@@ -129,10 +129,12 @@ internal record LocalDeclarationInfo(
         if (pointer == null) return type;
 
         var (typeQualifiers, childPointer) = pointer;
-        if (typeQualifiers != null || childPointer != null)
+        if (typeQualifiers != null)
             throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
 
         type = new PointerType(type);
+        if (childPointer != null)
+            type = ProcessPointer(childPointer, type);
 
         return type;
     }
