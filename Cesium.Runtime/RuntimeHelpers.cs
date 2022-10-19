@@ -53,4 +53,13 @@ public static unsafe class RuntimeHelpers
     {
         System.Environment.Exit(exitCode);
     }
+
+    public static void* AllocateGlobalField(uint size)
+    {
+#if NETSTANDARD2_0
+        throw new NotImplementedException();
+#else
+        return NativeMemory.Alloc(size);
+#endif
+    }
 }

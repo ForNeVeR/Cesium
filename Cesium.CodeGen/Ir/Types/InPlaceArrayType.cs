@@ -57,7 +57,15 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         var method = scope.Method.Body.GetILProcessor();
         method.Emit(OpCodes.Ldc_I4, arraySizeInBytes);
         method.Emit(OpCodes.Conv_U);
-        method.Emit(OpCodes.Localloc);
+        if (scope is GlobalConstructorScope)
+        {
+            var allocateGlobalFieldMethod = scope.Context.GetRuntimeHelperMethod("AllocateGlobalField");
+            method.Emit(OpCodes.Call, allocateGlobalFieldMethod);
+        }
+        else
+        {
+            method.Emit(OpCodes.Localloc);
+        }
     }
 
     public int SizeInBytes => Base.SizeInBytes * Size;
