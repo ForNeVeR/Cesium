@@ -35,9 +35,12 @@ public unsafe static class StdIoFunctions
         int currentPosition = 0;
         var formatStartPosition = formatString.IndexOf('%', currentPosition);
         int consumedArgs = 0;
+        int consumedBytes = 0;
         while (formatStartPosition >= 0)
         {
-            Console.Write(formatString.Substring(currentPosition, formatStartPosition - currentPosition));
+            var lengthTillPercent = formatStartPosition - currentPosition;
+            Console.Write(formatString.Substring(currentPosition, lengthTillPercent));
+            consumedBytes += lengthTillPercent;
             int addition = 1;
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
             if (formatString[formatStartPosition + addition] == 'l')
@@ -49,35 +52,45 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case "s":
-                    Console.Write(Unmarshal((byte*)((long*)varargs)[consumedArgs]));
+                    string? stringValue = Unmarshal((byte*)((long*)varargs)[consumedArgs]);
+                    Console.Write(stringValue);
+                    consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
                 case "c":
                     Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    consumedBytes++;
                     consumedArgs++;
                     break;
                 case "d":
                 case "li":
-                    Console.Write((int)((long*)varargs)[consumedArgs]);
-                    consumedArgs++;
-                    break;
                 case "i":
-                    Console.Write(((int*)varargs)[consumedArgs]);
+                    int intValue = (int)((long*)varargs)[consumedArgs];
+                    var intValueString = intValue.ToString();
+                    Console.Write(intValueString);
+                    consumedBytes += intValueString.Length;
                     consumedArgs++;
                     break;
                 case "u":
                 case "lu":
-                    Console.Write((uint)((long*)varargs)[consumedArgs]);
+                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                    var uintValueString = uintValue.ToString();
+                    Console.Write(uintValueString);
+                    consumedBytes += uintValueString.Length;
                     consumedArgs++;
                     break;
                 case "f":
                     var floatNumber = ((double*)varargs)[consumedArgs];
-                    Console.Write(floatNumber.ToString("F6"));
+                    string floatNumberString = floatNumber.ToString("F6");
+                    Console.Write(floatNumberString);
+                    consumedBytes += floatNumberString.Length;
                     consumedArgs++;
                     break;
                 case "p":
                     nint pointerValue = ((nint*)varargs)[consumedArgs];
-                    Console.Write(pointerValue.ToString("X"));
+                    string pointerValueString = pointerValue.ToString("X");
+                    Console.Write(pointerValueString);
+                    consumedBytes += pointerValueString.Length;
                     consumedArgs++;
                     break;
                 default:
@@ -88,8 +101,9 @@ public unsafe static class StdIoFunctions
             formatStartPosition = formatString.IndexOf('%', currentPosition);
         }
 
-        Console.Write(formatString.Substring(currentPosition));
-        return 0;
+        string reminderString = formatString.Substring(currentPosition);
+        Console.Write(reminderString);
+        return consumedBytes + reminderString.Length;
     }
 
     internal static string? Unmarshal(byte* str)

@@ -30,4 +30,10 @@ public class CodeGenOperatorTests: CodeGenTestBase
 
     [Fact]
     public Task CommaOperator() => DoTest(@"int main() { int x = (1, 2); }");
+
+    [Fact]
+    public Task TertiaryOperator() => DoTest(@"int main() { int x = 1 > 2 ? 1 : 2; }");
+
+    [Fact]
+    public Task TertiaryOperatorWithoutAssignment() => DoTest(@"int main() { 1 > 2 ? 1 : 2; }");
 }

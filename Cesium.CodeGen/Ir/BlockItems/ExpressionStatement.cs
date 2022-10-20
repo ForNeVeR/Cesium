@@ -19,7 +19,8 @@ internal class ExpressionStatement : IBlockItem
     public IBlockItem Lower(IDeclarationScope scope)
     {
         IExpression? loweredExpression = _expression?.Lower(scope);
-        if (loweredExpression is FunctionCallExpression
+        if (loweredExpression is not null
+            && loweredExpression is not SetValueExpression
             && !loweredExpression.GetExpressionType(scope).IsEqualTo(scope.CTypeSystem.Void))
         {
             loweredExpression = new ConsumeExpression(loweredExpression);
