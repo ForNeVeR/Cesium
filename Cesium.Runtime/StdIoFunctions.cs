@@ -101,9 +101,9 @@ public unsafe static class StdIoFunctions
             formatStartPosition = formatString.IndexOf('%', currentPosition);
         }
 
-        string reminderString = formatString.Substring(currentPosition);
-        Console.Write(reminderString);
-        return consumedBytes + reminderString.Length;
+        string remainderString = formatString.Substring(currentPosition);
+        Console.Write(remainderString);
+        return consumedBytes + remainderString.Length;
     }
 
     internal static string? Unmarshal(byte* str)
