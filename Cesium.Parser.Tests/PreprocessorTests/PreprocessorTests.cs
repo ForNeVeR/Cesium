@@ -1,16 +1,17 @@
 using Cesium.Core;
 using Cesium.Preprocessor;
 using Cesium.Test.Framework;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, string?>? defines = null)
+    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
         var lexer = new CPreprocessorLexer(source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
-        var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, string?>());
+        var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
         var preprocessor = new CPreprocessor(lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         await Verify(result, GetSettings());
@@ -128,6 +129,31 @@ int main() { return foo; }
     public Task ReplaceFunctionParameter() => DoTest(
 @"#define foo 0
 int main() { return abs(foo); }
+");
+
+    [Fact]
+    public Task ReplaceWithParameter() => DoTest(
+@"#define foo(x) x
+int main() { return foo(0); }
+");
+
+    [Fact]
+    public Task ReplaceWithMultipleParameters() => DoTest(
+@"#define foo(x,y,z) (y,z,x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task ReplaceWithHash() => DoTest(
+@"#define foo(x) #x
+int main() { char* x = foo(0); }
+");
+
+    [Fact]
+    public Task ReplaceWithHashNested() => DoTest(
+@"#define foo(x) #x
+int main() { char* x = foo(int x; printf(""some string"")); }
 ");
 
     [Fact]

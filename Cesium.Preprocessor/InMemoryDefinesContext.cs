@@ -1,23 +1,33 @@
 using System.Diagnostics.CodeAnalysis;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
 public class InMemoryDefinesContext : IMacroContext
 {
-    private readonly Dictionary<string, string?> defines;
+    private readonly Dictionary<string, IList<IToken<CPreprocessorTokenType>>> _defines;
+    private readonly Dictionary<string, IList<string>> _defineParameters;
 
-    public InMemoryDefinesContext(IReadOnlyDictionary<string, string?>? initialDefines = null)
+    public InMemoryDefinesContext(IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
     {
-        defines = initialDefines == null ? new Dictionary<string, string?>() : new Dictionary<string, string?>(initialDefines);
+        _defines = initialDefines == null
+            ? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>()
+            : new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>(initialDefines);
+        _defineParameters = new Dictionary<string, IList<string>>();
     }
 
-    public void DefineMacro(string macro, string? replacement)
+    public void DefineMacro(string macro, string[]? parameters, IList<IToken<CPreprocessorTokenType>> replacement)
     {
-        defines[macro] = replacement;
+        _defines[macro] = replacement;
+        if (parameters is { })
+        {
+            _defineParameters[macro] = parameters;
+        }
     }
 
-    public bool TryResolveMacro(string macro, [NotNullWhen(true)]out string? macroReplacement)
+    public bool TryResolveMacro(string macro, out IList<string>? macroParameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
     {
-        return defines.TryGetValue(macro, out macroReplacement);
+        _defineParameters.TryGetValue(macro, out macroParameters);
+        return _defines.TryGetValue(macro, out macroReplacement);
     }
 }

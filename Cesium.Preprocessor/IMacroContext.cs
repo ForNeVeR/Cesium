@@ -1,10 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
 public interface IMacroContext
 {
-    bool TryResolveMacro(string macro, [NotNullWhen(true)]out string? macroReplacement);
+    bool TryResolveMacro(string macro, out IList<string>? macroParameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement);
 
-    void DefineMacro(string macro, string? replacement);
+    void DefineMacro(string macro, string[]? parameters, IList<IToken<CPreprocessorTokenType>> replacement);
 }
