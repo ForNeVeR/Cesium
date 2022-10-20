@@ -29,7 +29,7 @@ public unsafe static class StdIoFunctions
         var formatString = Unmarshal(str);
         if (formatString == null)
         {
-            return 1;
+            return -1;
         }
 
         int currentPosition = 0;
