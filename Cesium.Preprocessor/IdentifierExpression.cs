@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
@@ -14,9 +14,9 @@ internal class IdentifierExpression : IPreprocessorExpression
 
     public string? EvaluateExpression(IMacroContext context)
     {
-        if (context.TryResolveMacro(this.Identifer, out var result))
+        if (context.TryResolveMacro(this.Identifer, out var parameters, out var macroReplacement))
         {
-            return result;
+            return macroReplacement.Count == 0 ? string.Empty : macroReplacement[0].Text;
         }
 
         if (Regex.IsMatch(this.Identifer, Regexes.IntLiteral))
@@ -24,6 +24,6 @@ internal class IdentifierExpression : IPreprocessorExpression
             return this.Identifer;
         }
 
-        return result;
+        return null;
     }
 }
