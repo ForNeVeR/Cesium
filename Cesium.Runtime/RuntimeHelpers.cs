@@ -51,15 +51,16 @@ public static unsafe class RuntimeHelpers
 
     public static void Exit(int exitCode)
     {
-        System.Environment.Exit(exitCode);
+        Environment.Exit(exitCode);
     }
 
     public static void* AllocateGlobalField(uint size)
     {
-#if NETSTANDARD2_0
-        throw new NotImplementedException();
-#else
-        return NativeMemory.Alloc(size);
-#endif
+        return (void*)Marshal.AllocHGlobal(checked((int)size));
+    }
+
+    public static void FreeGlobalField(void* field)
+    {
+        Marshal.FreeHGlobal((IntPtr)field);
     }
 }

@@ -1,7 +1,10 @@
 <Project>
-    <PropertyGroup>
+    <PropertyGroup Label="Versioning">
+        <VersionPrefix>0.0.1</VersionPrefix>
+    </PropertyGroup>
+    <PropertyGroup Label="Language">
         <Nullable>enable</Nullable>
         <WarningsAsErrors>nullable</WarningsAsErrors>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <LangVersion>10.0</LangVersion>
     </PropertyGroup>
 </Project>
