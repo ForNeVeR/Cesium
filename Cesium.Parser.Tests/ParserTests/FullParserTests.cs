@@ -186,4 +186,10 @@ int main(void) { foo x; return x.x; }");
     [Fact]
     public Task StructUsageWithMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
 int main(void) { foo x; x.x = 42; return 0; }");
+
+    [Fact]
+    public Task StaticVariable() => DoTest(@"static int foo = 123;");
+
+    [Fact]
+    public Task StaticFunction() => DoTest(@"static int foo() { return 123; }");
 }
