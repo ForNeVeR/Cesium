@@ -312,4 +312,18 @@ int main()
 {
     test();
 }");
+
+    [Fact]
+    public Task StructSubscriptionTest() => DoTest(@"typedef struct
+{
+    int fixedArr[4];
+} foo;
+int main()
+{
+    foo x;
+    x.fixedArr[3] = 0;
+    return x.fixedArr[3];
+}
+");
+
 }
