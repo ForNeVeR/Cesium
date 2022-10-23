@@ -31,17 +31,17 @@ public class AssemblyContext
         var module = assembly.MainModule;
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
-        var targetRuntime = compilationOptions.TargetRuntime ?? TargetRuntimeDescriptor.Net60;
+        var targetRuntime = compilationOptions.TargetRuntime;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
         module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
         return assemblyContext;
     }
 
-    public void EmitTranslationUnit(Ast.TranslationUnit translationUnit)
+    public void EmitTranslationUnit(string name, Ast.TranslationUnit translationUnit)
     {
         var nodes = translationUnit.ToIntermediate();
-        var context = new TranslationUnitContext(this);
+        var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
         nodes = nodes.Select(node => node.Lower(scope));
         foreach (var node in nodes)
@@ -109,7 +109,7 @@ public class AssemblyContext
         }
     }
 
-    internal void AddGlobalField(string name, IType type)
+    internal void AddAssemblyLevelField(string name, IType type)
     {
         if (_globalFields.ContainsKey(name))
             throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
@@ -117,21 +117,14 @@ public class AssemblyContext
         _globalFields.Add(name, type);
     }
 
-    public FieldDefinition ResolveGlobalField(string name, TranslationUnitContext context)
+    public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)
     {
         if (!_globalFields.TryGetValue(name, out var type))
         {
-            throw new CompilationException($"Cannot find a global field \"{name}\".");
+            return null;
         }
 
-        var field = GlobalType.Fields.FirstOrDefault(f => f.Name == name);
-        if (field == null)
-        {
-            field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type.Resolve(context));
-            GlobalType.Fields.Add(field);
-        }
-
-        return field;
+        return GlobalType.GetOrAddField(context, type, name);
     }
 
     /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>

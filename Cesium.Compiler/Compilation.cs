@@ -1,7 +1,6 @@
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
@@ -83,7 +82,8 @@ internal static class Compilation
         if (lastUnprocessedToken.Kind != CTokenType.End)
             throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
 
-        context.EmitTranslationUnit(translationUnit);
+        var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
+        context.EmitTranslationUnit(translationUnitName, translationUnit);
     }
 
     private static void SaveAssembly(

@@ -9,7 +9,7 @@ namespace Cesium.CodeGen.Ir.Expressions.Values
     {
         private readonly IType _type;
         private readonly string _name;
-        private FieldDefinition? _definition;
+        private FieldReference? _field;
 
         public LValueGlobalVariable(IType type, string name)
         {
@@ -18,28 +18,28 @@ namespace Cesium.CodeGen.Ir.Expressions.Values
         }
 
         public void EmitGetValue(IEmitScope scope) =>
-            scope.LdSFld(GetVariableDefinition(scope));
+            scope.LdSFld(GetVariableReference(scope));
 
         public void EmitGetAddress(IEmitScope scope) =>
-            scope.LdSFldA(GetVariableDefinition(scope));
+            scope.LdSFldA(GetVariableReference(scope));
 
         public void EmitSetValue(IEmitScope scope, IExpression value)
         {
             value.EmitTo(scope);
-            scope.StSFld(GetVariableDefinition(scope));
+            scope.StSFld(GetVariableReference(scope));
         }
 
         public IType GetValueType() => _type;
 
-        private FieldDefinition GetVariableDefinition(IEmitScope scope)
+        private FieldReference GetVariableReference(IEmitScope scope)
         {
-            if (_definition != null)
+            if (_field != null)
             {
-                return _definition;
+                return _field;
             }
 
-            _definition = scope.Context.AssemblyContext.ResolveGlobalField(_name, scope.Context);
-            return _definition;
+            _field = scope.ResolveGlobalField(_name);
+            return _field;
         }
     }
 }

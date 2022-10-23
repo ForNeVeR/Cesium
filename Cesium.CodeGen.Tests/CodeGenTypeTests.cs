@@ -208,7 +208,4 @@ typedef struct {
 
     [Fact]
     public Task StaticFileScopedVariable() => DoTest(@"static int x = 123;");
-
-    [Fact]
-    public Task StaticFunction() => DoTest(@"static void foo() {}");
 }

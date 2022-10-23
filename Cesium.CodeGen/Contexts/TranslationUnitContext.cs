@@ -1,19 +1,22 @@
 using Cesium.CodeGen.Contexts.Meta;
-using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record TranslationUnitContext(AssemblyContext AssemblyContext)
+public record TranslationUnitContext(AssemblyContext AssemblyContext, string Name)
 {
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
-    internal CTypeSystem CTypeSystem { get; } = new CTypeSystem();
+    internal CTypeSystem CTypeSystem { get; } = new();
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public TypeDefinition GlobalType => AssemblyContext.GlobalType;
+
+    private TypeDefinition? _translationUnitLevelType;
 
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
@@ -52,9 +55,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
             return _types.GetValueOrDefault(namedType.TypeName) ?? throw new CompilationException($"Cannot resolve type {namedType.TypeName}");
         }
 
-        if (type is Ir.Types.PointerType pointerType)
+        if (type is PointerType pointerType)
         {
-            return new Ir.Types.PointerType(ResolveType(pointerType.Base));
+            return new PointerType(ResolveType(pointerType.Base));
         }
 
         if (type is InPlaceArrayType arrayType)
@@ -64,7 +67,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
 
         if (type is StructType structType)
         {
-            var members = structType.Members.Select(structMember => new LocalDeclarationInfo(ResolveType(structMember.Type), structMember.Identifier, structMember.CliImportMemberName)).ToList();
+            var members = structType.Members
+                .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
+                .ToList();
             return new StructType(members);
         }
 
@@ -72,5 +77,26 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext)
     }
 
     internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
-    internal TypeReference? GetTypeReference(string typeName) => _types.GetValueOrDefault(typeName)?.Resolve(this);
+
+    private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
+    internal void AddTranslationUnitLevelField(string identifier, IType type)
+    {
+        _translationUnitLevelFieldTypes.Add(identifier, type);
+    }
+
+    internal FieldReference? ResolveTranslationUnitField(string name)
+    {
+        var type = _translationUnitLevelFieldTypes.GetValueOrDefault(name);
+        if (type == null) return null;
+
+        var containingType = _translationUnitLevelType ??= CreateTranslationUnitLevelType();
+        return containingType.GetOrAddField(this, type, name);
+    }
+
+    private TypeDefinition CreateTranslationUnitLevelType()
+    {
+        var type = new TypeDefinition("", $"{Name}<Statics>", TypeAttributes.Abstract | TypeAttributes.Sealed);
+        Module.Types.Add(type);
+        return type;
+    }
 }

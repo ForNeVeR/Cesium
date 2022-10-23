@@ -1,16 +1,13 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using FunctionDefinition = Cesium.CodeGen.Ir.BlockItems.FunctionDefinition;
-using IBlockItem = Cesium.CodeGen.Ir.BlockItems.IBlockItem;
 
 namespace Cesium.CodeGen.Extensions;
 
 internal static class TranslationUnitEx
 {
-    public static IEnumerable<IBlockItem> ToIntermediate(this TranslationUnit translationUnit) =>
+    public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
             Ast.FunctionDefinition func => new IBlockItem[] { new FunctionDefinition(func) },
@@ -20,14 +17,12 @@ internal static class TranslationUnitEx
 
     private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym)
     {
-        sym.Deconstruct(out var xdeclaration);
-        var _declaration = IScopedDeclarationInfo.Of(xdeclaration);
-        switch (_declaration)
+        sym.Deconstruct(out var astDeclaration);
+        var wholeDeclaration = IScopedDeclarationInfo.Of(astDeclaration);
+        switch (wholeDeclaration)
         {
             case ScopedIdentifierDeclaration scopedDeclaration:
                 var (storageClass, items) = scopedDeclaration;
-                if (storageClass != StorageClass.Auto)
-                    throw new WipException(335, $"Storage class {storageClass} isn't supported, yet.");
 
                 foreach (var (declaration, initializer) in items)
                 {
@@ -41,6 +36,10 @@ internal static class TranslationUnitEx
                             throw new CompilationException(
                                 $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
+                        if (storageClass != StorageClass.Auto)
+                            throw new WipException(WipException.ToDo,
+                                $"Storage class {storageClass} isn't supported for a top-level function, yet.");
+
                         var functionDeclaration = new FunctionDeclaration(identifier, functionType, cliImportMemberName);
                         yield return functionDeclaration;
                         continue;
@@ -51,9 +50,9 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType || type is PointerType || type is InPlaceArrayType) // TODO[#75]: Consider other type categories.
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType) // TODO[#75]: Consider other type categories.
                     {
-                        var variable = new VariableDefinition(identifier, type, initializer);
+                        var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
                         continue;
                     }
@@ -66,7 +65,7 @@ internal static class TranslationUnitEx
                 yield return typeDefBlockItem;
                 break;
             default:
-                throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
+                throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
         }
     }
 }

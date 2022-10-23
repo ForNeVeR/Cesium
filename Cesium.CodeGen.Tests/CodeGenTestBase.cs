@@ -66,7 +66,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             if (parser.TokenStream.Peek().Kind != CTokenType.End)
                 throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-            context.EmitTranslationUnit(translationUnit.Ok.Value);
+            context.EmitTranslationUnit("testInput", translationUnit.Ok.Value);
         }
     }
 
