@@ -25,7 +25,10 @@ internal static class TranslationUnitEx
         switch (_declaration)
         {
             case ScopedIdentifierDeclaration scopedDeclaration:
-                scopedDeclaration.Deconstruct(out var items);
+                var (storageClass, items) = scopedDeclaration;
+                if (storageClass != StorageClass.Auto)
+                    throw new WipException(335, $"Storage class {storageClass} isn't supported, yet.");
+
                 foreach (var (declaration, initializer) in items)
                 {
                     var (type, identifier, cliImportMemberName) = declaration;

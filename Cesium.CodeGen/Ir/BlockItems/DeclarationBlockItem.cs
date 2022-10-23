@@ -17,8 +17,8 @@ internal class DeclarationBlockItem : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        _declaration.Deconstruct(out var items);
-        List<InitializableDeclarationInfo> newItems = new List<InitializableDeclarationInfo>();
+        var (storageClass, items) = _declaration;
+        var newItems = new List<InitializableDeclarationInfo>();
         foreach (var (declaration, initializer) in items)
         {
             var (type, identifier, cliImportMemberName) = declaration;
@@ -49,13 +49,16 @@ internal class DeclarationBlockItem : IBlockItem
             newItems.Add(new InitializableDeclarationInfo(new LocalDeclarationInfo(type, identifier, cliImportMemberName), initializerExpression?.Lower(scope)));
         }
 
-        return new DeclarationBlockItem(new ScopedIdentifierDeclaration(newItems));
+        return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, newItems));
     }
 
 
     public void EmitTo(IEmitScope scope)
     {
-        _declaration.Deconstruct(out var declarations);
+        var (storageClass, declarations) = _declaration;
+        if (storageClass != StorageClass.Auto)
+            throw new WipException(WipException.ToDo, "Storage class static isn't supported, yet.");
+
         foreach (var (declaration, initializer) in declarations)
         {
             var (type, identifier, _) = declaration;

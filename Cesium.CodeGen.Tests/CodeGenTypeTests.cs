@@ -205,4 +205,10 @@ typedef struct {
 
 	int array[80][5];
 } foo;");
+
+    [Fact]
+    public Task StaticFileScopedVariable() => DoTest(@"static int x = 123;");
+
+    [Fact]
+    public Task StaticFunction() => DoTest(@"static void foo() {}");
 }

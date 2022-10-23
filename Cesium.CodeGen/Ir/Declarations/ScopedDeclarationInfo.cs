@@ -45,11 +45,13 @@ internal interface IScopedDeclarationInfo
         IReadOnlyList<IDeclarationSpecifier> specifiers,
         IEnumerable<InitDeclarator> initDeclarators)
     {
+        var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
+
         var declarations = initDeclarators
-            .Select(id => IdentifierOf(specifiers, id))
+            .Select(id => IdentifierOf(declarationSpecifiers, id))
             .ToList();
 
-        return new ScopedIdentifierDeclaration(declarations);
+        return new ScopedIdentifierDeclaration(storageClass, declarations);
     }
 
     private static InitializableDeclarationInfo IdentifierOf(
@@ -66,8 +68,44 @@ internal interface IScopedDeclarationInfo
         };
         return new InitializableDeclarationInfo(declarationInfo, expression);
     }
+
+    private static (StorageClass, List<IDeclarationSpecifier>) ExtractStorageClass(
+        IEnumerable<IDeclarationSpecifier> specifiers)
+    {
+        StorageClass? storageClass = null;
+        var declarationSpecifiers = new List<IDeclarationSpecifier>();
+        foreach (var specifier in specifiers)
+        {
+            if (specifier is not StorageClassSpecifier scs)
+            {
+                declarationSpecifiers.Add(specifier);
+                continue;
+            }
+
+            if (storageClass != null)
+                throw new CompilationException(
+                    $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
+
+            storageClass = scs.Name switch
+            {
+                "static" => StorageClass.Static,
+                _ => throw new WipException(WipException.ToDo, $"Storage class not known, yet: {scs.Name}")
+            };
+        }
+
+        return (storageClass ?? StorageClass.Auto, declarationSpecifiers);
+    }
 }
 
 internal record TypeDefDeclaration(ICollection<LocalDeclarationInfo> Types) : IScopedDeclarationInfo;
-internal record ScopedIdentifierDeclaration(ICollection<InitializableDeclarationInfo> Items) : IScopedDeclarationInfo;
+internal record ScopedIdentifierDeclaration(
+    StorageClass StorageClass,
+    ICollection<InitializableDeclarationInfo> Items
+) : IScopedDeclarationInfo;
 internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, IExpression? Initializer);
+
+internal enum StorageClass
+{
+    Static,
+    Auto
+}
