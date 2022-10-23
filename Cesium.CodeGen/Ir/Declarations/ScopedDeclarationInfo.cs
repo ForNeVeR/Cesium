@@ -89,7 +89,7 @@ internal interface IScopedDeclarationInfo
             storageClass = scs.Name switch
             {
                 "static" => StorageClass.Static,
-                _ => throw new WipException(WipException.ToDo, $"Storage class not known, yet: {scs.Name}")
+                _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
             };
         }
 

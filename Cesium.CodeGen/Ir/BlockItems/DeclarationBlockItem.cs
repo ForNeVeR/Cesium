@@ -57,7 +57,7 @@ internal class DeclarationBlockItem : IBlockItem
     {
         var (storageClass, declarations) = _declaration;
         if (storageClass != StorageClass.Auto)
-            throw new WipException(WipException.ToDo, "Storage class static isn't supported, yet.");
+            throw new WipException(342, $"Storage class {storageClass} isn't supported, yet.");
 
         foreach (var (declaration, initializer) in declarations)
         {
