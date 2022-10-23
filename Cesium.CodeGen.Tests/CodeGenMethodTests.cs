@@ -326,4 +326,15 @@ int main()
 }
 ");
 
+    [Fact]
+    public Task StructArraySubscriptionTest() => DoTest(@"typedef struct { int x; int y; } foo;
+
+int main()
+{
+    foo a[10];
+    a[1].x = 42;
+    return a[1].x;
+}
+");
+
 }

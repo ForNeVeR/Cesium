@@ -21,7 +21,11 @@ internal class StructType : IGeneratedType
             "",
             name,
             TypeAttributes.Sealed,
-            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
+            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")))
+        {
+            PackingSize = 1,
+            ClassSize = SizeInBytes,
+        };
         context.Module.Types.Add(structType);
 
         foreach (var member in Members)
@@ -46,6 +50,5 @@ internal class StructType : IGeneratedType
     public TypeReference Resolve(TranslationUnitContext context) =>
         context.GetTypeReference(this) ?? throw new CompilationException($"Type {this} was not found.");
 
-    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
-        throw new WipException(232, $"Could not calculate size for {this} yet.");
+    public int SizeInBytes => Members.Sum(_ => _.Type.SizeInBytes);
 }
