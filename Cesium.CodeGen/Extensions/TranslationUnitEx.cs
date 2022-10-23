@@ -37,7 +37,7 @@ internal static class TranslationUnitEx
                                 $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
                         if (storageClass != StorageClass.Auto)
-                            throw new WipException(WipException.ToDo,
+                            throw new WipException(344,
                                 $"Storage class {storageClass} isn't supported for a top-level function, yet.");
 
                         var functionDeclaration = new FunctionDeclaration(identifier, functionType, cliImportMemberName);
