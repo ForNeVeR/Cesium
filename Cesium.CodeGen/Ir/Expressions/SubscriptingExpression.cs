@@ -29,11 +29,11 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var expression = LowerExpression(_expression, scope);
-        var expressionType = (InPlaceArrayType)expression.GetExpressionType(scope);
-        var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
-        var offset = expressionType.Base is InPlaceArrayType nestedArray
-            ? new ArithmeticBinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(GetElementsSize(nestedArray))))
+        var elementSize = GetElementSize(expression.GetExpressionType(scope));
+        var offset = elementSize != 1
+            ? new ArithmeticBinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
             : _index;
+        var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
             new ArithmeticBinaryOperatorExpression(
                 new GetAddressValueExpression(value),
@@ -44,12 +44,33 @@ internal class SubscriptingExpression : IExpression, IValueExpression
         return lowered;
     }
 
+    private static int GetElementSize(IType type)
+    {
+        if (type is InPlaceArrayType inPlaceArrayType)
+        {
+            return inPlaceArrayType.Base is InPlaceArrayType nestedArray ? GetElementsSize(nestedArray) : 1;
+        }
+        else if (type is PointerType pointerType)
+        {
+            return 1;
+        }
+        else
+        {
+            throw new AssertException($"Cannot index over type {type}");
+        }
+    }
+
     private static IExpression LowerExpression(IExpression expression, IDeclarationScope scope)
     {
         if (expression is SubscriptingExpression subscriptingExpression)
         {
             var newExpression = LowerExpression(subscriptingExpression._expression, scope);
             return new SubscriptingExpression(newExpression, subscriptingExpression._index.Lower(scope));
+        }
+
+        if (expression is MemberAccessExpression)
+        {
+            return expression.Lower(scope);
         }
 
         return expression;
