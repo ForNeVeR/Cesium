@@ -17,14 +17,34 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
 
+    private readonly Dictionary<string, IType> _variables = new();
+    private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
+
     public IType? GetVariable(string identifier)
     {
-        return ((IDeclarationScope)Parent).GetVariable(identifier);
+        return _variables.TryGetValue(identifier, out var variable)
+            ? variable
+            : ((IDeclarationScope)Parent).GetVariable(identifier);
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
-    public void AddVariable(string identifier, IType variable) =>
-        throw new WipException(205, "Variable addition into a switch scope is not implemented, yet.");
-    public VariableDefinition ResolveVariable(string identifier) => Parent.ResolveVariable(identifier); // no declarations for `for` now, so pass parent variables
+    public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
+    public VariableDefinition ResolveVariable(string identifier)
+    {
+        if (!_variables.TryGetValue(identifier, out var variableType))
+        {
+            return Parent.ResolveVariable(identifier);
+        }
+
+        if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
+        {
+            var typeReference = variableType.Resolve(Context);
+            variableDefinition = new VariableDefinition(typeReference);
+            Method.Body.Variables.Add(variableDefinition);
+            _variableDefinition.Add(identifier, variableDefinition);
+        }
+
+        return variableDefinition;
+    }
 
     public ParameterDefinition ResolveParameter(string name) => Parent.ResolveParameter(name);
     public ParameterInfo? GetParameterInfo(string name) => ((IDeclarationScope)Parent).GetParameterInfo(name);

@@ -97,7 +97,8 @@ internal class SwitchStatement : IBlockItem
     public void EmitTo(IEmitScope scope)
     {
         Debug.Assert(_breakLabel != null);
-        var bodyProcessor = scope.Method.Body.GetILProcessor();
+        var switchScope = new SwitchScope(scope);
+        var bodyProcessor = switchScope.Method.Body.GetILProcessor();
 
         var compoundStatement = _body as CompoundStatement;
         Debug.Assert(compoundStatement != null);
@@ -115,19 +116,19 @@ internal class SwitchStatement : IBlockItem
             }
         }
 
-        _expression.EmitTo(scope);
-        var intermediateVar = new Mono.Cecil.Cil.VariableDefinition(scope.Context.TypeSystem.Int32);
-        scope.Method.Body.Variables.Add(intermediateVar);
+        _expression.EmitTo(switchScope);
+        var intermediateVar = new Mono.Cecil.Cil.VariableDefinition(switchScope.Context.TypeSystem.Int32);
+        switchScope.Method.Body.Variables.Add(intermediateVar);
         bodyProcessor.Emit(OpCodes.Stloc, intermediateVar);
         foreach (var caseExpression in caseExpressions)
         {
             bodyProcessor.Emit(OpCodes.Ldloc, intermediateVar);
-            caseExpression.Key.EmitTo(scope);
+            caseExpression.Key.EmitTo(switchScope);
             bodyProcessor.Emit(OpCodes.Ceq);
             bodyProcessor.Emit(OpCodes.Brtrue, caseExpression.Value);
         }
 
-        var exitLoop = scope.ResolveLabel(_breakLabel);
+        var exitLoop = switchScope.ResolveLabel(_breakLabel);
         if (defaultCaseInstruction is null)
         {
             bodyProcessor.Emit(OpCodes.Br, exitLoop);
@@ -150,11 +151,12 @@ internal class SwitchStatement : IBlockItem
                     bodyProcessor.Append(defaultCaseInstruction!);
                 }
 
-                caseStatement.Statement.EmitTo(scope);
+                caseStatement.Statement.EmitTo(switchScope);
             }
             else
             {
-                statement.EmitTo(scope);
+                statement.Lower(switchScope);
+                statement.EmitTo(switchScope);
             }
         }
 
