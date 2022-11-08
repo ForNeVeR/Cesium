@@ -65,7 +65,7 @@ internal class ForStatement : IBlockItem
     {
         Debug.Assert(_breakLabel != null);
         Debug.Assert(_continueLabel != null);
-        var forScope = scope;
+        var forScope = new LoopScope(scope);
 
         var bodyProcessor = forScope.Method.Body.GetILProcessor();
         var instructions = bodyProcessor.Body.Instructions;
@@ -75,6 +75,7 @@ internal class ForStatement : IBlockItem
         var brToTest = bodyProcessor.Create(OpCodes.Br, stub);
         bodyProcessor.Append(brToTest);
         var loopStartIndex = instructions.Count;
+        _body.Lower(forScope);
         _body.EmitTo(forScope);
 
         var loopIterationStart = scope.ResolveLabel(_continueLabel);
