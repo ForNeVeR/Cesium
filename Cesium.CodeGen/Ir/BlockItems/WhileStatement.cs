@@ -54,7 +54,7 @@ internal class WhileStatement : IBlockItem
     {
         Debug.Assert(_breakLabel != null);
         Debug.Assert(_continueLabel != null);
-        var loopScope = scope;
+        var loopScope = new LoopScope(scope);
 
         var bodyProcessor = loopScope.Method.Body.GetILProcessor();
         var instructions = bodyProcessor.Body.Instructions;
@@ -68,6 +68,7 @@ internal class WhileStatement : IBlockItem
         var exitLoop = scope.ResolveLabel(_breakLabel);
         bodyProcessor.Emit(OpCodes.Brfalse, exitLoop);
 
+        _body.Lower(loopScope);
         _body.EmitTo(loopScope);
 
         var testStart = instructions[testStartIndex];
