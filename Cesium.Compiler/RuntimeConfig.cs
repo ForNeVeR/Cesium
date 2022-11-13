@@ -6,6 +6,7 @@ internal static class RuntimeConfig
     {
       "runtimeOptions": {
         "tfm": "net6.0",
+        "rollForward": "Major",
         "framework": {
           "name": "Microsoft.NETCore.App",
           "version": "6.0.0"
