@@ -6,7 +6,7 @@ Building
 
 ### Prerequisites
 
-To build Cesium, install [.NET 6 SDK][dotnet.download] or later.
+To build Cesium, install [.NET 7 SDK][dotnet.download] or later.
 
 Testing
 -------
@@ -46,7 +46,7 @@ For producing standalone compiler executable run
 dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-contained
 ```
 
-Then navigate to `Cesium.Compiler\bin\Debug\net6.0\win-x64\publish\` and that's your Cesium.
+Then navigate to `Cesium.Compiler\bin\Debug\net7.0\win-x64\publish\` and that's your Cesium.
 
 [docs.tests]: docs/tests.md
 [dotnet.download]: https://dotnet.microsoft.com/en-us/download
