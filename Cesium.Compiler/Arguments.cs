@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Cesium.CodeGen;
 using CommandLine;
 using Mono.Cecil;
 
@@ -23,6 +24,9 @@ public class Arguments
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
     public TargetFrameworkKind Framework { get; init; }
+
+    [Option("arch", Default = TargetArchitectureSet.Dynamic)]
+    public TargetArchitectureSet TargetArchitectureSet { get; init; }
 
     [Option("modulekind")]
     public ModuleKind? ModuleKind { get; init; } = null!;

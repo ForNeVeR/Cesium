@@ -21,6 +21,7 @@ return await parserResult.MapResult(async args =>
             return 2;
         }
 
+        var targetArchitectureSet = args.TargetArchitectureSet;
         var targetRuntime = args.Framework switch
         {
             TargetFrameworkKind.NetFramework => TargetRuntimeDescriptor.Net48,
@@ -39,7 +40,15 @@ return await parserResult.MapResult(async args =>
             ".dll" => ModuleKind.Dll,
             var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
         };
-        var compilationOptions = new CompilationOptions(targetRuntime, moduleKind, corelibAssembly, cesiumRuntime, defaultImportsAssembly, args.Namespace, args.GlobalClass);
+        var compilationOptions = new CompilationOptions(
+            targetRuntime,
+            targetArchitectureSet,
+            moduleKind,
+            corelibAssembly,
+            cesiumRuntime,
+            defaultImportsAssembly,
+            args.Namespace,
+            args.GlobalClass);
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>

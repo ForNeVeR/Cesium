@@ -4,6 +4,7 @@ namespace Cesium.CodeGen;
 
 public record CompilationOptions(
     TargetRuntimeDescriptor TargetRuntime,
+    TargetArchitectureSet TargetArchitectureSet,
     ModuleKind ModuleKind,
     string CorelibAssembly,
     string CesiumRuntime,

@@ -9,7 +9,8 @@ public class ArchitectureDependentCodeTests : CodeGenTestBase
     {
         Assert.True(false, "TODO: Provide architecture for tests");
         var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);
-        return VerifyMethods(assembly);
+        var moduleType = assembly.Modules.Single().GetType("<Module>");
+        return VerifyMethods(moduleType);
     }
 
     [Theory]

@@ -22,7 +22,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
     protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, string @namespace = "", string globalTypeFqn = "", params string[] sources)
     {
-        var context = CreateAssembly(runtime, @namespace, globalTypeFqn);
+        var context = CreateAssembly(runtime, @namespace: @namespace, globalTypeFqn: globalTypeFqn);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -38,10 +38,15 @@ public abstract class CodeGenTestBase : VerifyTestBase
         Assert.Contains(expectedMessage, ex.Message);
     }
 
-    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFqn = "")
+    private static AssemblyContext CreateAssembly(
+        TargetRuntimeDescriptor? targetRuntime,
+        TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "")
     {
         CompilationOptions compilationOptions = new CompilationOptions(
             targetRuntime ?? TargetRuntimeDescriptor.Net60,
+            targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
