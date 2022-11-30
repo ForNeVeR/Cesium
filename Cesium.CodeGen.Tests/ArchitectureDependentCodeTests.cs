@@ -5,22 +5,21 @@ namespace Cesium.CodeGen.Tests;
 public class ArchitectureDependentCodeTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
+    private static Task DoTest(TargetArchitectureSet arch, string source)
     {
-        Assert.True(false, "TODO: Provide architecture for tests");
-        var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);
+        var assembly = GenerateAssembly(runtime: default, arch: arch, sources: source);
         var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        return VerifyMethods(moduleType, arch);
     }
 
     [Theory]
-    [InlineData()] // TODO: 64b
-    [InlineData()] // TODO: 32b
-    [InlineData()] // TODO: dynamic
-    public Task StaticArray() => DoTest("""
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    public Task StaticArray(TargetArchitectureSet arch) => DoTest(arch, """
 int main(void)
 {
-    int x[300];
+    int *x[300];
     x[299] = 0;
     return x[299];
 }

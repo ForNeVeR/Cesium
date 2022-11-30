@@ -20,9 +20,13 @@ public abstract class CodeGenTestBase : VerifyTestBase
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
-    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, string @namespace = "", string globalTypeFqn = "", params string[] sources)
+    protected static AssemblyDefinition GenerateAssembly(
+        TargetRuntimeDescriptor? runtime,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "", params string[] sources)
     {
-        var context = CreateAssembly(runtime, @namespace: @namespace, globalTypeFqn: globalTypeFqn);
+        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -100,12 +104,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
 
     [MustUseReturnValue]
-    protected static Task VerifyMethods(TypeDefinition type)
+    protected static Task VerifyMethods(TypeDefinition type, params object[] parameters)
     {
         var result = new StringBuilder();
         DumpMethods(type, result);
 
-        return Verify(result, GetSettings());
+        return Verify(result, GetSettings(parameters));
     }
 
     private static void DumpTypes(IEnumerable<TypeDefinition> types, StringBuilder result, int indent)

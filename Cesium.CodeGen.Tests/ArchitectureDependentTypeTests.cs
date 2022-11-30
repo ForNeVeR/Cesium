@@ -8,7 +8,7 @@ public class ArchitectureDependentTypeTests : CodeGenTestBase
     private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
     {
         Assert.True(false, "TODO: Provide architecture for tests");
-        var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);
+        var assembly = GenerateAssembly(default, @namespace: @namespace, globalTypeFqn: globalTypeFqn, sources: source);
         return VerifyTypes(assembly);
     }
 
