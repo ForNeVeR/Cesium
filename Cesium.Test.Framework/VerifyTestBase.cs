@@ -14,7 +14,8 @@ public abstract class VerifyTestBase
     {
         var settings = new VerifySettings();
         settings.UseDirectory("verified");
-        settings.UseParameters(parameters);
+        if (parameters.Length > 0)
+            settings.UseParameters(parameters);
         return settings;
     }
 }
