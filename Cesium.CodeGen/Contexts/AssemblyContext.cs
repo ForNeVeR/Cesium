@@ -12,6 +12,7 @@ namespace Cesium.CodeGen.Contexts;
 public class AssemblyContext
 {
     internal AssemblyDefinition Assembly { get; }
+    public TargetArchitectureSet ArchitectureSet { get; }
     internal AssemblyDefinition MscorlibAssembly { get; }
     internal AssemblyDefinition CesiumRuntimeAssembly { get; }
     public ModuleDefinition Module { get; }
@@ -75,6 +76,7 @@ public class AssemblyContext
         CompilationOptions compilationOptions)
     {
         Assembly = assembly;
+        ArchitectureSet = compilationOptions.TargetArchitectureSet;
         Module = module;
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);

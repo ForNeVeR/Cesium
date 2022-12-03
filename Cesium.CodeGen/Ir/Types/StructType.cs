@@ -46,5 +46,6 @@ internal class StructType : IGeneratedType
     public TypeReference Resolve(TranslationUnitContext context) =>
         context.GetTypeReference(this) ?? throw new CompilationException($"Type {this} was not found.");
 
-    public int SizeInBytes => throw new WipException(232, $"Could not calculate size for {this} yet.");
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
+        throw new WipException(232, $"Could not calculate size for {this} yet.");
 }

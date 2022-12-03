@@ -23,8 +23,15 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
     public FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName)
     {
+        var arch = context.AssemblyContext.ArchitectureSet;
+        var size = GetSizeInBytes(arch);
+        if (size == null)
+            throw new CompilationException(
+                $"Cannot statically determine a size of type {this} for architecture set {arch}. " +
+                $"This size is required to generate a field {fieldName} inside of a type {ownerType}.");
+
         var itemType = Base.Resolve(context);
-        var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName);
+        var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName, size.Value);
         ownerType.NestedTypes.Add(bufferType);
 
         return new FieldDefinition(fieldName, FieldAttributes.Public, bufferType)
@@ -44,7 +51,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
                 ConstructorArguments =
                 {
                     new CustomAttributeArgument(context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type")), itemType),
-                    new CustomAttributeArgument(context.TypeSystem.Int32, SizeInBytes)
+                    new CustomAttributeArgument(context.TypeSystem.Int32, size.Value)
                 }
             };
         }
@@ -52,10 +59,9 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
     public void EmitInitializer(IEmitScope scope)
     {
-        var arraySizeInBytes = SizeInBytes;
-
         var method = scope.Method.Body.GetILProcessor();
-        method.Emit(OpCodes.Ldc_I4, arraySizeInBytes);
+        var expression = ((IType)this).GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+        expression.EmitTo(scope);
         method.Emit(OpCodes.Conv_U);
         if (scope is GlobalConstructorScope)
         {
@@ -68,12 +74,14 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         }
     }
 
-    public int SizeInBytes => Base.SizeInBytes * Size;
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
+        Base.GetSizeInBytes(arch) * Size;
 
-    private TypeDefinition CreateFixedBufferType(
+    private static TypeDefinition CreateFixedBufferType(
         ModuleDefinition module,
         TypeReference fieldType,
-        string fieldName)
+        string fieldName,
+        int sizeInBytes)
     {
         // An example of what C# does for fixed int x[20]:
         //
@@ -98,7 +106,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
             module.ImportReference(typeof(ValueType)))
         {
             PackingSize = 0,
-            ClassSize = SizeInBytes,
+            ClassSize = sizeInBytes,
             CustomAttributes = { compilerGeneratedAttribute, unsafeValueTypeAttribute },
             Fields = { new FieldDefinition("FixedElementField", FieldAttributes.Public, fieldType) }
         };

@@ -7,6 +7,7 @@ namespace Cesium.CodeGen.Contexts;
 
 internal interface IDeclarationScope
 {
+    TargetArchitectureSet ArchitectureSet { get; }
     CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
     IReadOnlyDictionary<string, IType> GlobalFields { get; }

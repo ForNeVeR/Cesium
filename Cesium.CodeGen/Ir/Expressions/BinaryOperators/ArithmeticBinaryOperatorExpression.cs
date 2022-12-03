@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -36,7 +35,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
                 right = new TypeCastExpression(
                     scope.CTypeSystem.NativeInt,
                     new ArithmeticBinaryOperatorExpression(
-                        new ConstantLiteralExpression(new IntegerConstant(leftPointerType.Base.SizeInBytes)),
+                        leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
                         BinaryOperator.Multiply,
                         right));
 
@@ -48,7 +47,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
                 left = new TypeCastExpression(
                     scope.CTypeSystem.NativeInt,
                     new ArithmeticBinaryOperatorExpression(
-                        new ConstantLiteralExpression(new IntegerConstant(rightPointerType.Base.SizeInBytes)),
+                        rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
                         BinaryOperator.Multiply,
                         left));
 

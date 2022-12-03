@@ -15,9 +15,6 @@ internal record PointerType(IType Base) : IType
         return Base.Resolve(context).MakePointerType();
     }
 
-    public virtual int SizeInBytes => throw new WipException(132, "Could not calculate size yet.");
-
-    // explicit impl while Size not implemented
-    public override string ToString()
-        => $"PointerType {{ Base = {Base} }}";
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
+        throw new WipException(132, "Could not calculate size yet.");
 }

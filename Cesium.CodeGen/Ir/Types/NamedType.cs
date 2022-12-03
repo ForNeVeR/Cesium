@@ -9,10 +9,6 @@ public record NamedType(string TypeName) : IType
     public TypeReference Resolve(TranslationUnitContext context) =>
         throw new AssertException($"Type {TypeName} was never resolved.");
 
-    public int SizeInBytes =>
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
         throw new AssertException($"Type {TypeName} was never resolved.");
-
-    // explicit impl while Size not implemented
-    public override string ToString()
-        => $"NamedType {{ TypeName = {TypeName} }}";
 }

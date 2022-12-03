@@ -94,7 +94,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
         };
     }
 
-    public int SizeInBytes =>
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
         Kind switch
         {
             // Basic
@@ -131,6 +131,14 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.LongLongInt => 8,
             PrimitiveTypeKind.SignedLongLongInt => 8,
             PrimitiveTypeKind.LongDouble => 8,
+
+            PrimitiveTypeKind.NativeInt => arch switch
+            {
+                TargetArchitectureSet.Dynamic => null,
+                TargetArchitectureSet.Bit32 => 4,
+                TargetArchitectureSet.Bit64 => 8,
+                _ => throw new AssertException($"Architecture set not supported: {arch}.")
+            },
 
             _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };

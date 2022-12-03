@@ -11,8 +11,8 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
-    public TypeSystem TypeSystem => Context.TypeSystem;
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
+    public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Functions.GetValueOrDefault(identifier);

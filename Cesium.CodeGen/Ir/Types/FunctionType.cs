@@ -38,7 +38,8 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
         return pointer;
     }
 
-    public int SizeInBytes => throw new AssertException($"Function type {this} has no defined size.");
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
+        throw new AssertException($"Function type {this} has no defined size.");
 
     public override string ToString() =>
         $"FunctionType {{ {nameof(Parameters)} = {Parameters}, {nameof(ReturnType)} = {ReturnType} }}";

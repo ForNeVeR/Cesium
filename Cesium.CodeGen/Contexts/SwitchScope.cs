@@ -12,6 +12,7 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
     public CTypeSystem CTypeSystem => Parent.CTypeSystem;
+    public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier)
         => ((IDeclarationScope)Parent).GetFunctionInfo(identifier);
     public TranslationUnitContext Context => Parent.Context;

@@ -13,10 +13,9 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     private MethodDefinition? _method;
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
-    public TypeSystem TypeSystem => Module.TypeSystem;
-
     public MethodDefinition Method => _method ??= Context.AssemblyContext.GetGlobalInitializer();
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
+    public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Context.Functions.GetValueOrDefault(identifier);
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
