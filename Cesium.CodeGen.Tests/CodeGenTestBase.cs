@@ -31,14 +31,26 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return EmitAssembly(context);
     }
 
-    protected static void DoesNotCompile(string source, string expectedMessage)
+    protected static void DoesNotCompile(
+        string source,
+        string expectedMessage,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "")
     {
-        DoesNotCompile<CompilationException>(source, expectedMessage);
+        DoesNotCompile<CompilationException>(source, expectedMessage, runtime, arch, @namespace, globalTypeFqn);
     }
 
-    protected static void DoesNotCompile<T>(string source, string expectedMessage) where T : CesiumException
+    protected static void DoesNotCompile<T>(
+        string source,
+        string expectedMessage,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "") where T : CesiumException
     {
-        var ex = Assert.Throws<T>(() => GenerateAssembly(default, source));
+        var ex = Assert.Throws<T>(() => GenerateAssembly(runtime, arch, @namespace, globalTypeFqn, source));
         Assert.Contains(expectedMessage, ex.Message);
     }
 
@@ -91,7 +103,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
 
     [MustUseReturnValue]
-    protected static Task VerifyTypes(AssemblyDefinition assembly)
+    protected static Task VerifyTypes(AssemblyDefinition assembly, params object[] parameters)
     {
         var result = new StringBuilder();
         foreach (var module in assembly.Modules)
@@ -100,7 +112,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             DumpTypes(module.Types, result, 1);
         }
 
-        return Verify(result, GetSettings());
+        return Verify(result, GetSettings(parameters));
     }
 
     [MustUseReturnValue]

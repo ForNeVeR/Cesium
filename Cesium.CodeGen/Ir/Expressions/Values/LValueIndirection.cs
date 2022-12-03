@@ -38,6 +38,7 @@ internal class LValueIndirection : ILValue
     private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => pointerType.Base switch
     {
         PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
+        PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
         _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
     };
 }

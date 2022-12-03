@@ -174,6 +174,6 @@ internal static class PrimitiveTypeInfo
         { PrimitiveTypeKind.Float, (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
         { PrimitiveTypeKind.Long, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
         { PrimitiveTypeKind.UnsignedLong, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
-        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
+        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) }
     };
 }

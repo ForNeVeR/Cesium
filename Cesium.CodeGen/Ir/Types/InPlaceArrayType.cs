@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -27,8 +29,8 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         var size = GetSizeInBytes(arch);
         if (size == null)
             throw new CompilationException(
-                $"Cannot statically determine a size of type {this} for architecture set {arch}. " +
-                $"This size is required to generate a field {fieldName} inside of a type {ownerType}.");
+                $"Cannot statically determine a size of type {this} for architecture set \"{arch}\". " +
+                $"This size is required to generate a field \"{fieldName}\" inside of a type \"{ownerType}\".");
 
         var itemType = Base.Resolve(context);
         var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName, size.Value);
@@ -60,7 +62,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
     public void EmitInitializer(IEmitScope scope)
     {
         var method = scope.Method.Body.GetILProcessor();
-        var expression = ((IType)this).GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+        var expression = GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
         expression.EmitTo(scope);
         method.Emit(OpCodes.Conv_U);
         if (scope is GlobalConstructorScope)
@@ -76,6 +78,18 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) =>
         Base.GetSizeInBytes(arch) * Size;
+
+    public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
+    {
+        var constSize = GetSizeInBytes(arch);
+        if (constSize != null) return ConstantLiteralExpression.OfInt32(constSize.Value);
+
+        return new ArithmeticBinaryOperatorExpression(
+            Base.GetSizeInBytesExpression(arch),
+            BinaryOperator.Multiply,
+            ConstantLiteralExpression.OfInt32(Size)
+        );
+    }
 
     private static TypeDefinition CreateFixedBufferType(
         ModuleDefinition module,

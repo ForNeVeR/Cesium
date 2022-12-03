@@ -9,6 +9,8 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class ConstantLiteralExpression : IExpression
 {
+    public static ConstantLiteralExpression OfInt32(int value) => new(new IntegerConstant(value));
+
     internal ConstantLiteralExpression(IConstant constant)
     {
         Constant = constant;

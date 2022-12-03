@@ -5,29 +5,34 @@ namespace Cesium.CodeGen.Tests;
 public class ArchitectureDependentTypeTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
+    private static Task DoTest(TargetArchitectureSet arch, string source, string @namespace = "", string globalTypeFqn = "")
     {
-        Assert.True(false, "TODO: Provide architecture for tests");
-        var assembly = GenerateAssembly(default, @namespace: @namespace, globalTypeFqn: globalTypeFqn, sources: source);
-        return VerifyTypes(assembly);
+        var assembly = GenerateAssembly(
+            default,
+            arch,
+            @namespace: @namespace,
+            globalTypeFqn: globalTypeFqn,
+            sources: source);
+        return VerifyTypes(assembly, arch);
     }
 
     [Theory]
-    [InlineData()] // TODO: 64b
-    [InlineData()] // TODO: 32b
-    public Task StructWithPointer() => DoTest("""
-struct foo
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    public Task StructWithPointer(TargetArchitectureSet arch) => DoTest(arch, """
+typedef struct
 {
     char *x[1];
-};
+} foo;
 """);
 
     [Fact(DisplayName = "Struct with a fixed array of a pointer type isn't supported for dynamic architecture")]
-    // TODO: Provide the architecture.
     public void StructWithPointerDynamic() => DoesNotCompile("""
-struct foo
+typedef struct
 {
     char *x[1];
-};
-""", "Dynamic architecture doesn't support fixed struct member of architecture-dependent size.");
+} foo;
+""",
+        "Cannot statically determine a size of type",
+        arch: TargetArchitectureSet.Dynamic);
 }

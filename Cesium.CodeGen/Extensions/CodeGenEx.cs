@@ -51,4 +51,7 @@ internal static class CodeGenEx
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldftn, method));
     }
+
+    public static void SizeOf(this IEmitScope scope, TypeReference type) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Sizeof, type));
 }
