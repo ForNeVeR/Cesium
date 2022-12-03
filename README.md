@@ -37,6 +37,7 @@ Documentation
 
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
+- [Architecture Sets][docs.architecture-sets]
 - [CLI-Related Language Extensions][docs.language-extensions]
 - [Exceptions in the Compiler Code][docs.exceptions]
 
@@ -64,6 +65,10 @@ $ mono ./out.exe # run with Mono
   - `NetFramework` for .NET Framework
   - `NetStandard` for .NET Standard
   - `Net` for .NET 5+
+- `--arch <architecture-set>`: specifies the [target architecture set][docs.architecture-sets], defaults to `Dynamic`. Possible values are:
+  - `Dynamic`
+  - `Bit32`
+  - `Bit64`
 - `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
   - `Dll`: gets detected from a `.dll` extension
   - `Console`: gets detected from an `.exe` extension
@@ -115,6 +120,7 @@ Documentation
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
+[docs.architecture-sets]: docs/architecture-sets.md
 [docs.contributing]: CONTRIBUTING.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
