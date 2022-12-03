@@ -14,17 +14,17 @@ Architecture set influences the following features of compiled programs:
 - ability to compile certain C constructs.
 
 Cesium aims to support the following architecture sets:
-- `Bit32`: the set of architectures where the pointers are 32-bit-wide. Supports the C standard completely.
+- **32b** (aka `Bit32`): the set of architectures where the pointers are 32-bit-wide. Supports the C standard completely.
 
   **Example architectures** of this architecture set are x86 and ARM32.
-- `Bit64`: the set of architectures where the pointers are 64-bit-wide. Supports the C standard completely.
+- **64b** (aka `Bit64`): the set of architectures where the pointers are 64-bit-wide. Supports the C standard completely.
 
   **Example architectures** of this architecture set are x86_64 and ARM64.
-- `Dynamic` architecture has no fixed pointer size, and will calculate it in the runtime when required.
+- **Dynamic** architecture has no fixed pointer size, and will calculate it in the runtime when required.
 
   Not every C construct allows to use dynamically-calculated size (in particular, it's impossible for pointer-dependent arrays embedded into structures), so this architecture doesn't support all the C standard. It still should be practical for many applications.
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.
-- `Wide` architecture **is not implemented, yet** (see #TODO), and uses the fixed pointer size of 64 bits on all computers. This allows it to cover all the features of the C standard, for the cost of some redundancy on 32-bit architectures, and slightly different method signatures for .NET interop.
+- **Wide** architecture **is not implemented, yet** (see #TODO), and uses the fixed pointer size of 64 bits on all computers. This allows it to cover all the features of the C standard, for the cost of some redundancy on 32-bit architectures, and slightly different method signatures for .NET interop.
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.

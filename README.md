@@ -66,9 +66,9 @@ $ mono ./out.exe # run with Mono
   - `NetStandard` for .NET Standard
   - `Net` for .NET 5+
 - `--arch <architecture-set>`: specifies the [target architecture set][docs.architecture-sets], defaults to `Dynamic`. Possible values are:
-  - `Dynamic`
-  - `Bit32`
-  - `Bit64`
+  - `Dynamic` (machine-independent),
+  - `Bit32` (for 32-bit CPUs),
+  - `Bit64` (for 64-bit CPUs).
 - `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
   - `Dll`: gets detected from a `.dll` extension
   - `Console`: gets detected from an `.exe` extension
