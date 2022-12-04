@@ -24,4 +24,18 @@ int main(void)
     return x[299];
 }
 """);
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    public Task ArchDependentStructArray(TargetArchitectureSet arch) => DoTest(arch, """
+typedef struct { char *ptr; } foo;
+
+int main(void)
+{
+    foo x[3];
+    return 0;
+}
+""");
 }

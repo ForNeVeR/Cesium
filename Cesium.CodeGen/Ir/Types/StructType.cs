@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using Mono.Cecil;
 
@@ -22,6 +23,22 @@ internal class StructType : IGeneratedType
             name,
             TypeAttributes.Sealed,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
+        switch (context.AssemblyContext.ArchitectureSet)
+        {
+            case TargetArchitectureSet.Dynamic:
+                // Nothing, default layout is okay for dynamic architecture.
+                break;
+            case TargetArchitectureSet.Bit32:
+                structType.PackingSize = 4;
+                // TODO[xxx]: enable explicit layout.
+                break;
+            case TargetArchitectureSet.Bit64:
+                structType.PackingSize = 8;
+                // TODO[xxx]: enable explicit layout.
+                break;
+            default:
+                throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
+        }
         context.Module.Types.Add(structType);
 
         foreach (var member in Members)
@@ -37,6 +54,7 @@ internal class StructType : IGeneratedType
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
             var field = type.CreateFieldOfType(context, structType, identifier);
+            // TODO[xxx]: for every field, calculate the explicit layout position.
             structType.Fields.Add(field);
         }
 
@@ -46,6 +64,23 @@ internal class StructType : IGeneratedType
     public TypeReference Resolve(TranslationUnitContext context) =>
         context.GetTypeReference(this) ?? throw new CompilationException($"Type {this} was not found.");
 
-    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
-        Members.Sum(m => m.Type.GetSizeInBytes(arch));
+    public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
+    {
+        var constSize = GetSizeInBytes(arch);
+        if (constSize != null)
+            return ConstantLiteralExpression.OfInt32(constSize.Value);
+
+        return new SizeOfExpression(this);
+    }
+
+    public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch
+    {
+        0 => throw new AssertException("Invalid struct with no members: {this}."),
+        1 => Members.Single().Type.GetSizeInBytes(arch),
+        _ => arch switch
+            {
+                TargetArchitectureSet.Dynamic => null,
+                _ => throw new WipException(WipException.ToDo, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
+            }
+    };
 }
