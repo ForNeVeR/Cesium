@@ -40,8 +40,8 @@ int main(void)
 """);
 
     [Theory]
-    // TODO[xxx]: [InlineData(TargetArchitectureSet.Bit64)]
-    // TODO[xxx]: [InlineData(TargetArchitectureSet.Bit32)]
+    // TODO[#355]: [InlineData(TargetArchitectureSet.Bit64)]
+    // TODO[#355]: [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
     public Task TwoMemberStructArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct { char *ptr; int len; } foo;

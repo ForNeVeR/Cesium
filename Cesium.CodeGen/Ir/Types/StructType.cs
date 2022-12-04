@@ -30,11 +30,11 @@ internal class StructType : IGeneratedType
                 break;
             case TargetArchitectureSet.Bit32:
                 structType.PackingSize = 4;
-                // TODO[xxx]: enable explicit layout.
+                // TODO[#355]: enable explicit layout.
                 break;
             case TargetArchitectureSet.Bit64:
                 structType.PackingSize = 8;
-                // TODO[xxx]: enable explicit layout.
+                // TODO[#355]: enable explicit layout.
                 break;
             default:
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
@@ -54,7 +54,7 @@ internal class StructType : IGeneratedType
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
             var field = type.CreateFieldOfType(context, structType, identifier);
-            // TODO[xxx]: for every field, calculate the explicit layout position.
+            // TODO[#355]: for every field, calculate the explicit layout position.
             structType.Fields.Add(field);
         }
 
@@ -80,7 +80,7 @@ internal class StructType : IGeneratedType
         _ => arch switch
             {
                 TargetArchitectureSet.Dynamic => null,
-                _ => throw new WipException(WipException.ToDo, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
+                _ => throw new WipException(355, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
             }
     };
 }
