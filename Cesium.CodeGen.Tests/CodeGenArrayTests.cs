@@ -51,8 +51,8 @@ int main() {
     return a[1][2];
  }");
 
-    [Fact(Skip = "Do not implemented yet. https://github.com/ForNeVeR/Cesium/issues/232")]
-    public Task ComplextTypeAssignment() => DoTest(@"typedef struct { int x; } foo;
+    [Fact]
+    public Task ComplexTypeAssignment() => DoTest(@"typedef struct { int x; } foo;
 
 int main() {
     foo a[10];
