@@ -29,8 +29,22 @@ int main(void)
     [InlineData(TargetArchitectureSet.Bit64)]
     [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
-    public Task ArchDependentStructArray(TargetArchitectureSet arch) => DoTest(arch, """
+    public Task StructArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct { char *ptr; } foo;
+
+int main(void)
+{
+    foo x[3];
+    return 0;
+}
+""");
+
+    [Theory]
+    // TODO[xxx]: [InlineData(TargetArchitectureSet.Bit64)]
+    // TODO[xxx]: [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    public Task TwoMemberStructArray(TargetArchitectureSet arch) => DoTest(arch, """
+typedef struct { char *ptr; int len; } foo;
 
 int main(void)
 {
