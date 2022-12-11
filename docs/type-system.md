@@ -27,4 +27,8 @@ This should be kept in sync with section **6.7.2 Type Specifiers** of the actual
 | `double _Complex`                                                           | N/A             |
 | `long double _Complex`                                                      | N/A             |
 
-All pointer types are mapped to the CLI pointers of the corresponding type.
+All the pointer types are mapped to the CLI pointers of the corresponding type on **dynamic**, **32b** and **64b** architecture sets.
+
+For the **wide** architecture set, the pointers are mapped to `Cesium.Runtime.CPtr` (for `void*`) and `Cesium.Runtime.CPtr<T>` (for typed pointers). This architecture requires 64-bit pointer types everywhere, and thus can't use the CLI pointer types.
+
+To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `CPtr` in all of its standard APIs.

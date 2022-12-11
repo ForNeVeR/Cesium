@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -8,7 +6,7 @@ namespace Cesium.Runtime;
 public unsafe static class StdLibFunctions
 {
     public const int RAND_MAX = 0x7FFFFFFF;
-    private static System.Random shared = new();
+    private static Random shared = new();
 
     public static int Abs(int value)
     {
@@ -31,9 +29,9 @@ public unsafe static class StdLibFunctions
         shared = new Random((int)seed);
     }
 
-    public static int System(byte* command)
+    public static int System(CPtr<byte> command)
     {
-        switch (StdIoFunctions.Unmarshal(command))
+        switch (RuntimeHelpers.Unmarshal(command.AsPtr()))
         {
             case "cls":
             case "clear":

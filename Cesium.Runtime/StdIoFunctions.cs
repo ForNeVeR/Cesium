@@ -1,8 +1,3 @@
-using System.Runtime.InteropServices;
-#if NETSTANDARD
-using System.Text;
-#endif
-
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -10,11 +5,11 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
-    public static void PutS(byte* str)
+    public static void PutS(CPtr<byte> str)
     {
         try
         {
-            Console.Write(Unmarshal(str));
+            Console.Write(RuntimeHelpers.Unmarshal(str.AsPtr()));
             // return 0; // TODO[#156]: Uncomment
         }
         catch (Exception) // TODO[#154]: Exception handling.
@@ -24,9 +19,9 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static int PrintF(byte* str, void* varargs)
+    public static int PrintF(CPtr<byte> str, CPtr varargs)
     {
-        var formatString = Unmarshal(str);
+        var formatString = RuntimeHelpers.Unmarshal(str.AsPtr());
         if (formatString == null)
         {
             return -1;
@@ -52,20 +47,20 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case "s":
-                    string? stringValue = Unmarshal((byte*)((long*)varargs)[consumedArgs]);
+                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)varargs.AsPtr<long>()[consumedArgs]);
                     Console.Write(stringValue);
                     consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
                 case "c":
-                    Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    Console.Write((char)(byte)varargs.AsPtr<long>()[consumedArgs]);
                     consumedBytes++;
                     consumedArgs++;
                     break;
                 case "d":
                 case "li":
                 case "i":
-                    int intValue = (int)((long*)varargs)[consumedArgs];
+                    int intValue = (int)varargs.AsPtr<long>()[consumedArgs];
                     var intValueString = intValue.ToString();
                     Console.Write(intValueString);
                     consumedBytes += intValueString.Length;
@@ -73,21 +68,21 @@ public unsafe static class StdIoFunctions
                     break;
                 case "u":
                 case "lu":
-                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                    uint uintValue = (uint)varargs.AsPtr<long>()[consumedArgs];
                     var uintValueString = uintValue.ToString();
                     Console.Write(uintValueString);
                     consumedBytes += uintValueString.Length;
                     consumedArgs++;
                     break;
                 case "f":
-                    var floatNumber = ((double*)varargs)[consumedArgs];
+                    var floatNumber = varargs.AsPtr<double>()[consumedArgs];
                     string floatNumberString = floatNumber.ToString("F6");
                     Console.Write(floatNumberString);
                     consumedBytes += floatNumberString.Length;
                     consumedArgs++;
                     break;
                 case "p":
-                    nint pointerValue = ((nint*)varargs)[consumedArgs];
+                    nint pointerValue = varargs.AsPtr<nint>()[consumedArgs];
                     string pointerValueString = pointerValue.ToString("X");
                     Console.Write(pointerValueString);
                     consumedBytes += pointerValueString.Length;
@@ -104,30 +99,5 @@ public unsafe static class StdIoFunctions
         string remainderString = formatString.Substring(currentPosition);
         Console.Write(remainderString);
         return consumedBytes + remainderString.Length;
-    }
-
-    internal static string? Unmarshal(byte* str)
-    {
-#if NETSTANDARD
-        Encoding encoding = Encoding.UTF8;
-        int byteLength = 0;
-        byte* search = str;
-        while (*search != '\0')
-        {
-            byteLength++;
-            search++;
-        }
-
-        int stringLength = encoding.GetCharCount(str, byteLength);
-        string s = new string('\0', stringLength);
-        fixed (char* pTempChars = s)
-        {
-            encoding.GetChars(str, byteLength, pTempChars, stringLength);
-        }
-
-        return s;
-#else
-        return Marshal.PtrToStringUTF8((nint)str);
-#endif
     }
 }

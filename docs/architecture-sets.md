@@ -28,3 +28,5 @@ Cesium aims to support the following architecture sets:
 - **Wide** architecture uses the fixed pointer size of 64 bits on all computers. This allows it to cover all the features of the C standard, for the cost of some redundancy on 32-bit architectures, and slightly different method signatures for .NET interop.
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.
+
+Specifically for the **wide** architecture, the type `CPtr` was introduced. It corresponds to a 64-bit pointer universally, and the **wide** architecture uses it in place of normal pointer types everywhere in the API. For cross-compatibility with any architecture, this type is also used in the Cesium.Runtime library.
