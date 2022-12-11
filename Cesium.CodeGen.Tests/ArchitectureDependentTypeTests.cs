@@ -19,6 +19,7 @@ public class ArchitectureDependentTypeTests : CodeGenTestBase
     [Theory]
     [InlineData(TargetArchitectureSet.Bit64)]
     [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
     public Task StructWithPointer(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct
 {

@@ -6,9 +6,9 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record PointerType(IType Base) : IType
+internal sealed record PointerType(IType Base) : IType
 {
-    public virtual TypeReference Resolve(TranslationUnitContext context)
+    public TypeReference Resolve(TranslationUnitContext context)
     {
         if (Base is FunctionType ft)
             return ft.ResolvePointer(context);
@@ -22,6 +22,7 @@ internal record PointerType(IType Base) : IType
             TargetArchitectureSet.Dynamic => null,
             TargetArchitectureSet.Bit32 => 4,
             TargetArchitectureSet.Bit64 => 8,
+            TargetArchitectureSet.Wide => 8,
             _ => throw new AssertException($"Unknown architecture set: {arch}.")
         };
 

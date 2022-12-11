@@ -16,6 +16,7 @@ public class ArchitectureDependentCodeTests : CodeGenTestBase
     [InlineData(TargetArchitectureSet.Bit64)]
     [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Wide)]
     public Task StaticArray(TargetArchitectureSet arch) => DoTest(arch, """
 int main(void)
 {
@@ -29,6 +30,7 @@ int main(void)
     [InlineData(TargetArchitectureSet.Bit64)]
     [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Wide)]
     public Task StructArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct { char *ptr; } foo;
 
@@ -43,6 +45,7 @@ int main(void)
     // TODO[#355]: [InlineData(TargetArchitectureSet.Bit64)]
     // TODO[#355]: [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
+    // TODO[#355] [InlineData(TargetArchitectureSet.Wide)]
     public Task TwoMemberStructArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct { char *ptr; int len; } foo;
 
@@ -50,6 +53,20 @@ int main(void)
 {
     foo x[3];
     return 0;
+}
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task PointerArrayMemberAssign(TargetArchitectureSet arch) => DoTest(arch, """
+int main(void)
+{
+    void *x[3];
+    x[2] = 0;
+    x[0] = x[2];
 }
 """);
 }
