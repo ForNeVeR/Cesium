@@ -29,6 +29,14 @@ This should be kept in sync with section **6.7.2 Type Specifiers** of the actual
 
 All the pointer types are mapped to the CLI pointers of the corresponding type on **dynamic**, **32b** and **64b** architecture sets.
 
-For the **wide** architecture set, the pointers are mapped to `Cesium.Runtime.CPtr` (for `void*`) and `Cesium.Runtime.CPtr<T>` (for typed pointers). This architecture requires 64-bit pointer types everywhere, and thus can't use the CLI pointer types.
+The **wide** architecture set supports mapping to raw pointers as well, but also supports special mapping types that have architecture-independent size and memory alignment, according to the following table.
 
-To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `CPtr` in all of its standard APIs.
+| C type                                                 | CLI Type                 |
+|--------------------------------------------------------|--------------------------|
+| `void*`                                                | `Cesium.Runtime.CPtr`    |
+| Function pointer                                       | `Cesium.Runtime.FPtr`    |
+| `T*` (where `T` is not `void` and not a function type) | `Cesium.Runtime.CPtr<T>` |
+
+Note that function and function pointer signatures still use raw pointers even in the **wide** architecture set, because this has no effect on memory requirement and alignment, and thus type safety is preferred by default.
+
+To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `CPtr` and `FPtr`, where appropriate, in all of its standard APIs.
