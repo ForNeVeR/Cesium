@@ -1,7 +1,7 @@
 namespace Cesium.Runtime;
 
 /// <summary>A class encapsulating an opaque pointer (aka <code>void*</code> in C).</summary>
-public unsafe readonly struct CPtr
+public readonly unsafe struct CPtr
 {
     private readonly long _value;
 
@@ -19,7 +19,7 @@ public unsafe readonly struct CPtr
 
 /// <summary>A class encapsulating an object pointer.</summary>
 /// <typeparam name="T">Type this pointer may be resolved to.</typeparam>
-public unsafe readonly struct CPtr<T> where T : unmanaged
+public readonly unsafe struct CPtr<T> where T : unmanaged
 {
     private readonly long _value;
 

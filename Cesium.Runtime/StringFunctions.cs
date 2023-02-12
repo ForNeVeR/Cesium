@@ -10,7 +10,7 @@ namespace Cesium.Runtime;
 /// <summary>
 /// Functions declared in the string.h
 /// </summary>
-public unsafe static class StringFunctions
+public static unsafe class StringFunctions
 {
     public static uint StrLen(CPtr<byte> str)
     {
