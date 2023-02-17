@@ -1,16 +1,16 @@
 namespace Cesium.Runtime;
 
 /// <summary>A class encapsulating an opaque pointer (aka <code>void*</code> in C).</summary>
-public readonly unsafe struct CPtr
+public readonly unsafe struct VoidPtr
 {
     private readonly long _value;
 
-    private CPtr(long value)
+    private VoidPtr(long value)
     {
         _value = value;
     }
 
-    public static implicit operator CPtr(void* ptr) => new((long)ptr);
+    public static implicit operator VoidPtr(void* ptr) => new((long)ptr);
     public void* AsPtr() => (void*)_value;
     public TResult* AsPtr<TResult>() where TResult : unmanaged => (TResult*)_value;
     public IntPtr AsIntPtr() => (IntPtr)AsPtr();

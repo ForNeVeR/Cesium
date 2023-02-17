@@ -1,11 +1,11 @@
 namespace Cesium.Runtime;
 
 /// <summary>A class encapsulating a C function pointer.</summary>
-public readonly unsafe struct FPtr<TDelegate> where TDelegate : Delegate // TODO: Think about vararg and empty parameter list encoding.
+public readonly unsafe struct FuncPtr<TDelegate> where TDelegate : Delegate // TODO: Think about vararg and empty parameter list encoding.
 {
     private readonly long _value;
 
-    public FPtr(void* ptr)
+    public FuncPtr(void* ptr)
     {
         _value = (long)ptr;
     }

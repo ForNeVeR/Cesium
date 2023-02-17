@@ -33,8 +33,8 @@ The **wide** architecture set supports mapping to raw pointers as well, but also
 
 | C type                                                 | CLI Type                 |
 |--------------------------------------------------------|--------------------------|
-| `void*`                                                | `Cesium.Runtime.CPtr`    |
-| Function pointer                                       | `Cesium.Runtime.FPtr`    |
+| `void*`                                                | `Cesium.Runtime.VoidPtr` |
+| Function pointer                                       | `Cesium.Runtime.FuncPtr` |
 | `T*` (where `T` is not `void` and not a function type) | `Cesium.Runtime.CPtr<T>` |
 
 Note that function and function pointer signatures still use raw pointers even in the **wide** architecture set, because this has no effect on memory requirement and alignment, and thus type safety is preferred by default.

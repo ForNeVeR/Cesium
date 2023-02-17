@@ -3,14 +3,18 @@ namespace Cesium.Runtime.Tests;
 public unsafe class PtrTests
 {
     [Fact]
-    public void CPtrTests()
+    public void VoidPtrTests()
     {
-        CPtr v = (void*)0x1234;
+        VoidPtr v = (void*)0x1234;
         Assert.Equal(0x1234L, (long)v.AsPtr());
         Assert.Equal(0x1234L, (long)v.AsPtr<byte>());
 
-        Assert.Equal(sizeof(long), sizeof(CPtr));
+        Assert.Equal(sizeof(long), sizeof(VoidPtr));
+    }
 
+    [Fact]
+    public void CPtrTests()
+    {
         CPtr<int> t = (int*)0x2345;
         Assert.Equal(0x2345L, (long)t.AsPtr());
         Assert.Equal((IntPtr)0x2345, t.AsIntPtr());
@@ -20,10 +24,10 @@ public unsafe class PtrTests
     }
 
     [Fact]
-    public void FPtrTests()
+    public void FuncPtrTests()
     {
-        var a = new FPtr<Action>((void*)0x1234);
+        var a = new FuncPtr<Action>((void*)0x1234);
         Assert.Equal(0x1234L, (long)a.AsPtr());
-        Assert.Equal(sizeof(long), sizeof(FPtr<Action>));
+        Assert.Equal(sizeof(long), sizeof(FuncPtr<Action>));
     }
 }

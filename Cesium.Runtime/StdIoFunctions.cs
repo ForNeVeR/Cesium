@@ -19,7 +19,7 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static int PrintF(CPtr<byte> str, CPtr varargs)
+    public static int PrintF(CPtr<byte> str, VoidPtr varargs)
     {
         var formatString = RuntimeHelpers.Unmarshal(str.AsPtr());
         if (formatString == null)
