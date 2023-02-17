@@ -8,8 +8,7 @@ public class ArchitectureDependentCodeTests : CodeGenTestBase
     private static Task DoTest(TargetArchitectureSet arch, string source)
     {
         var assembly = GenerateAssembly(runtime: default, arch: arch, sources: source);
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType, arch);
+        return VerifyTypes(assembly, arch);
     }
 
     [Theory]
@@ -68,5 +67,45 @@ int main(void)
     x[2] = 0;
     x[0] = x[2];
 }
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task PointerFunctionSignature(TargetArchitectureSet arch) => DoTest(arch, """
+int foo(void *x)
+{
+    return 0;
+}
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task FunctionPointerParameter(TargetArchitectureSet arch) => DoTest(arch, """
+typedef void (*func)(int, int);
+typedef void (*v_func)(void);
+
+int foo(func x) { return 0; }
+int v_foo(v_func x) { return 0; }
+""");
+    // TODO: empty-paren-func ptr
+    // TODO: vararg-func ptr
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task FunctionPointerStructMember(TargetArchitectureSet arch) => DoTest(arch, """
+typedef void (*func)(int);
+struct Foo
+{
+    func x;
+};
 """);
 }
