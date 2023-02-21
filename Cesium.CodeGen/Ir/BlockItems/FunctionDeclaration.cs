@@ -21,7 +21,7 @@ internal class FunctionDeclaration : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return this;
+        return this; // TODO: scope.ResolveType(_functionType)
     }
 
     public void EmitTo(IEmitScope scope)
