@@ -1,0 +1,49 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        System.Void* V_0
+      IL_0000: sizeof System.Void*
+      IL_0006: ldc.i4.3
+      IL_0007: mul
+      IL_0008: conv.u
+      IL_0009: localloc
+      IL_000b: stloc.0
+      IL_000c: ldloc.0
+      IL_000d: conv.u
+      IL_000e: sizeof System.Void*
+      IL_0014: ldc.i4.2
+      IL_0015: mul
+      IL_0016: conv.i
+      IL_0017: add
+      IL_0018: ldc.i4.0
+      IL_0019: stind.i
+      IL_001a: ldloc.0
+      IL_001b: conv.u
+      IL_001c: sizeof System.Void*
+      IL_0022: ldc.i4.0
+      IL_0023: mul
+      IL_0024: conv.i
+      IL_0025: add
+      IL_0026: ldloc.0
+      IL_0027: conv.u
+      IL_0028: sizeof System.Void*
+      IL_002e: ldc.i4.2
+      IL_002f: mul
+      IL_0030: conv.i
+      IL_0031: add
+      IL_0032: ldind.i
+      IL_0033: stind.i
+      IL_0034: ldc.i4.0
+      IL_0035: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret

@@ -8,8 +8,7 @@ public class ArchitectureDependentCodeTests : CodeGenTestBase
     private static Task DoTest(TargetArchitectureSet arch, string source)
     {
         var assembly = GenerateAssembly(runtime: default, arch: arch, sources: source);
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType, arch);
+        return VerifyTypes(assembly, arch);
     }
 
     [Theory]
@@ -49,6 +48,30 @@ typedef struct { char *ptr; int len; } foo;
 int main(void)
 {
     foo x[3];
+    return 0;
+}
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    public Task PointerArrayMemberAssign(TargetArchitectureSet arch) => DoTest(arch, """
+int main(void)
+{
+    void *x[3];
+    x[2] = 0;
+    x[0] = x[2];
+}
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    public Task PointerFunctionSignature(TargetArchitectureSet arch) => DoTest(arch, """
+int foo(void *x)
+{
     return 0;
 }
 """);
