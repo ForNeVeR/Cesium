@@ -6,7 +6,7 @@ public class FileSystemIncludeContext : IIncludeContext
 {
     private readonly string _stdLibDirectory;
     private readonly string _currentDirectory;
-    private readonly List<string> visitedFiles = new();
+    private readonly List<string> _guardedIncludedFiles = new();
 
     public FileSystemIncludeContext(string stdLibDirectory, string currentDirectory)
     {
@@ -32,12 +32,12 @@ public class FileSystemIncludeContext : IIncludeContext
 
     public TextReader OpenFileStream(string filePath) => new StreamReader(filePath);
 
-    public bool CanIncludeFile(string filePath)
+    public bool ShouldIncludeFile(string filePath)
     {
         return !visitedFiles.Contains(filePath);
     }
 
-    public void RegisterPragmaOnceFile(string filePath)
+    public void RegisterGuardedFileInclude(string filePath)
     {
         visitedFiles.Add(filePath);
     }
