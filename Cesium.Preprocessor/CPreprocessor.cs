@@ -270,7 +270,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 var filePath = ConsumeNext(HeaderName).Text;
                 var includeFilePath = LookUpIncludeFile(filePath);
-                if (!IncludeContext.CanIncludeFile(includeFilePath))
+                if (!IncludeContext.ShouldIncludeFile(includeFilePath))
                 {
                     return Array.Empty<IToken<CPreprocessorTokenType>>();
                 }
@@ -346,7 +346,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 if (identifier == "once")
                 {
-                    IncludeContext.RegisterPragmaOnceFile(CompilationUnitPath);
+                    IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
                     return Array.Empty<IToken<CPreprocessorTokenType>>();
                 }
                 else

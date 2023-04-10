@@ -34,11 +34,11 @@ public class FileSystemIncludeContext : IIncludeContext
 
     public bool ShouldIncludeFile(string filePath)
     {
-        return !visitedFiles.Contains(filePath);
+        return !_guardedIncludedFiles.Contains(filePath);
     }
 
     public void RegisterGuardedFileInclude(string filePath)
     {
-        visitedFiles.Add(filePath);
+        _guardedIncludedFiles.Add(filePath);
     }
 }
