@@ -39,7 +39,7 @@ internal static class Compilation
             compilationOptions);
     }
 
-    private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
+    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader)
     {
         var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
@@ -48,18 +48,19 @@ internal static class Compilation
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
-        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
     }
 
     private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
     {
         var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
+        var compilationSourcePath = Path.GetFullPath(inputFilePath);
 
         await using var input = new FileStream(inputFilePath, FileMode.Open);
         using var reader = new StreamReader(input, Encoding.UTF8);
 
-        var content = await Preprocess(compilationFileDirectory, reader);
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();

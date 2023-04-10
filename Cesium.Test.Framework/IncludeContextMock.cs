@@ -5,19 +5,26 @@ namespace Cesium.Test.Framework;
 public class IncludeContextMock : IIncludeContext
 {
     private readonly IReadOnlyDictionary<string, string> _angleBracedFiles;
+    private readonly List<string> visitedFiles = new();
 
     public IncludeContextMock(IReadOnlyDictionary<string, string> angleBracedFiles)
     {
         _angleBracedFiles = angleBracedFiles;
     }
 
-    public ValueTask<TextReader> LookUpAngleBracedIncludeFile(string filePath)
+    public string LookUpAngleBracedIncludeFile(string filePath) => filePath;
+
+    public string LookUpQuotedIncludeFile(string filePath) => filePath;
+
+    public TextReader OpenFileStream(string filePath) => new StringReader(_angleBracedFiles[filePath]);
+
+    public bool CanIncludeFile(string filePath)
     {
-        return ValueTask.FromResult<TextReader>(new StringReader(_angleBracedFiles[filePath]));
+        return !visitedFiles.Contains(filePath);
     }
 
-    public ValueTask<TextReader> LookUpQuotedIncludeFile(string filePath)
+    public void RegisterPragmaOnceFile(string filePath)
     {
-        throw new NotSupportedException();
+        visitedFiles.Add(filePath);
     }
 }

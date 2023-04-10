@@ -12,7 +12,7 @@ public class PreprocessorTests : VerifyTestBase
         var lexer = new CPreprocessorLexer(source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
-        var preprocessor = new CPreprocessor(lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(source, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         await Verify(result, GetSettings());
     }
@@ -64,6 +64,14 @@ int test()
 int test()
 {
 }", new() { ["foo.h"] = "#include <bar.h>", ["bar.h"] = "#include <baz.h>", ["baz.h"] = "int bar = 0;" });
+
+    [Fact]
+    public Task PragmaOnce() => DoTest(@"
+int test()
+{
+#include <foo.h>
+#include <foo.h>
+}", new() { ["foo.h"] = "#pragma once\nprintfn();" });
 
     [Fact]
     public async Task ErrorMsg()

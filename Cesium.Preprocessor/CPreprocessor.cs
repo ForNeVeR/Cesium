@@ -9,7 +9,7 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
+public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
     private bool IncludeTokens = true;
     public async Task<string> ProcessSource()
@@ -269,9 +269,15 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             case "include":
             {
                 var filePath = ConsumeNext(HeaderName).Text;
-                using var reader = await LookUpIncludeFile(filePath);
+                var includeFilePath = LookUpIncludeFile(filePath);
+                if (!IncludeContext.CanIncludeFile(includeFilePath))
+                {
+                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                }
+
+                using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 var tokensList = new List<IToken<CPreprocessorTokenType>>();
-                await foreach (var token in ProcessInclude(reader))
+                await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {
                     tokensList.Add(token);
                 }
@@ -335,6 +341,21 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 IncludeTokens = !IncludeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
+            case "pragma":
+            {
+                var identifier = ConsumeNext(PreprocessingToken).Text;
+                if (identifier == "once")
+                {
+                    IncludeContext.RegisterPragmaOnceFile(CompilationUnitPath);
+                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                }
+                else
+                {
+                    throw new WipException(
+                        77,
+                        $"Preprocessor #pragma directive not supported: {keyword.Kind} {keyword.Text}.");
+                }
+            }
             default:
                 throw new WipException(
                     77,
@@ -370,17 +391,17 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         return (macroDefinition.Ok.Value, macroReplacement);
     }
 
-    private ValueTask<TextReader> LookUpIncludeFile(string filePath) => filePath[0] switch
+    private string LookUpIncludeFile(string filePath) => filePath[0] switch
     {
         '<' => IncludeContext.LookUpAngleBracedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
         '"' => IncludeContext.LookUpQuotedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
         _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
     };
 
-    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(string compilationUnitPath, TextReader fileReader)
     {
         var lexer = new CPreprocessorLexer(fileReader);
-        var subProcessor = new CPreprocessor(lexer, IncludeContext, MacroContext);
+        var subProcessor = new CPreprocessor(compilationUnitPath, lexer, IncludeContext, MacroContext);
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;
