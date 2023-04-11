@@ -19,7 +19,14 @@ internal record LocalDeclarationInfo(
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
+        {
+            if (type is StructType structType)
+            {
+                return new LocalDeclarationInfo(type, structType.Identifier, null);
+            }
+
             return new LocalDeclarationInfo(type, null, null);
+        }
 
         var (pointer, directDeclarator) = declarator;
         type = ProcessPointer(pointer, type);
@@ -105,10 +112,7 @@ internal record LocalDeclarationInfo(
                     if (complexTypeKind != ComplexTypeKind.Struct)
                         throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
 
-                    if (identifier != null)
-                        throw new WipException(218, $"Named structures aren't supported, yet: {identifier}.");
-
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList());
+                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
                     break;
                 }
 

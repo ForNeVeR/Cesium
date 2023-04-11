@@ -182,6 +182,11 @@ int main(void) { foo x = 0; return 0; }");
 } foo;");
 
     [Fact]
+    public Task NamedStruct() => DoTest(@"struct foo {
+    int x[4];
+};");
+
+    [Fact]
     public Task FunctionPointer() => DoTest(@"void foo(int) {}
 typedef int (*foo_t)(int);
 int main(void) {

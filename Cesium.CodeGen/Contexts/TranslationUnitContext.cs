@@ -70,7 +70,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             var members = structType.Members
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();
-            return new StructType(members);
+            return new StructType(members, structType.Identifier);
         }
 
         return type;

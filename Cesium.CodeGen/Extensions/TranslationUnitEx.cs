@@ -57,6 +57,12 @@ internal static class TranslationUnitEx
                         continue;
                     }
 
+                    if (type is StructType structType)
+                    {
+                        yield return new TypeDefBlockItem(new[] { declaration });
+                        continue;
+                    }
+
                     throw new WipException(75, $"Declaration not supported, yet: {declaration}.");
                 }
                 break;
