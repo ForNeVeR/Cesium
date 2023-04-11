@@ -75,4 +75,16 @@ int foo(void *x)
     return 0;
 }
 """);
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    public Task FunctionPointerStructMember(TargetArchitectureSet arch) => DoTest(arch, """
+typedef void (*func)(int);
+struct Foo
+{
+    func x;
+};
+""");
 }

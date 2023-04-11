@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
+using System.Collections.Immutable;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -14,13 +15,28 @@ internal interface IScopedDeclarationInfo
     public static IScopedDeclarationInfo Of(Declaration declaration)
     {
         var (specifiers, initDeclarators) = declaration;
-        if (initDeclarators == null)
-            throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
         if (specifiers.Length > 0 && specifiers[0] is StorageClassSpecifier { Name: "typedef" })
         {
+            if (initDeclarators == null)
+                throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
+
             return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
         }
+
+        if (specifiers.Length > 0 && specifiers[0] is StructOrUnionSpecifier structOrUnionSpecifier)
+        {
+            Declarator? declarator = null;
+            return new ScopedIdentifierDeclaration(StorageClass.Auto,
+                specifiers.Select(_ =>
+                {
+                    var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
+                    return new InitializableDeclarationInfo(ld, null);
+                }).ToImmutableArray());
+        }
+
+        if (initDeclarators == null)
+            throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
         return IdentifierOf(specifiers, initDeclarators);
     }
