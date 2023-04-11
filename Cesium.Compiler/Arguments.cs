@@ -49,4 +49,10 @@ public class Arguments
     [Option("runtime", HelpText = "Sets path to Cesium C Runtime assembly")]
     public string? CesiumCRuntime { get; init; }
 
+    [Option('O', HelpText = "Set optimization level to 3")]
+    public int OptimizationLevel { get; init; } = 0;
+
+    [Option('W', HelpText = "Enable warnings set")]
+    public string WarningsSet { get; init; } = "";
+
 }
