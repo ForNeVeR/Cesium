@@ -167,6 +167,17 @@ int main(void) { foo x; return x.x; }");
 int main(void) { foo x; x.x = 42; return 0; }");
 
     [Fact]
+    public Task StructAndTypeDefHasSeparateNamespaces() => DoTest(@"struct tagFoo { int A; };
+typedef struct { int B; } Foo;
+int main(void) {
+  struct tagFoo a;
+  Foo b;
+  a.A = 0;
+  b.B = 0;
+}
+");
+
+    [Fact]
     public Task ArrayDeclaration() => DoTest(@"int main()
 {
     int i;

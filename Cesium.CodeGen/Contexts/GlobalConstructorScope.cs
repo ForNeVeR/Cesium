@@ -38,6 +38,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => Context.AddTypeDefinition(identifier, type);
+    public void AddTagDefinition(string identifier, IType type) => Context.AddTagDefinition(identifier, type);
 
     /// <inheritdoc />
     public void AddLabel(string identifier)

@@ -53,6 +53,7 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
+    public void AddTagDefinition(string identifier, IType type) => throw new AssertException("Not supported");
 
     /// <inheritdoc />
     public void AddLabel(string identifier)

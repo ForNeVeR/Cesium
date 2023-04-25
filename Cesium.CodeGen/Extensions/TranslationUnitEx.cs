@@ -59,7 +59,7 @@ internal static class TranslationUnitEx
 
                     if (type is StructType structType)
                     {
-                        yield return new TypeDefBlockItem(new[] { declaration });
+                        yield return new TagBlockItem(new[] { declaration });
                         continue;
                     }
 
