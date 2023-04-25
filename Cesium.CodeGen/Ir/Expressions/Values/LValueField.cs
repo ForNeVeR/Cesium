@@ -57,7 +57,7 @@ internal class LValueField : ILValue
 
         var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == _name)
                 ?? throw new CompilationException(
-                    $"\"{valueTypeDef.Name}\" has no member named \"{_name}\"");
+                    $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{_name}\"");
         _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);
         return _field;
     }
