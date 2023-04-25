@@ -40,10 +40,13 @@ internal interface IScopedDeclarationInfo
             var initializationDeclarators = initDeclarators.Value.SelectMany(id => specifiers.Select(_ =>
             {
                 var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
-                if (id.Initializer != null)
-                    throw new CompilationException($"Initializers for struct is not supported.");
+                if (id.Initializer is AssignmentInitializer assignmentInitializer)
+                    return new InitializableDeclarationInfo(ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression));
 
-                return new InitializableDeclarationInfo(ld, null);
+                if (id.Initializer is null)
+                    return new InitializableDeclarationInfo(ld, null);
+
+                throw new CompilationException($"Struct initializers are not supported.");
             })).ToImmutableArray();
             return new ScopedIdentifierDeclaration(StorageClass.Auto, initializationDeclarators);
         }
