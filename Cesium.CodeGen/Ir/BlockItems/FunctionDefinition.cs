@@ -186,7 +186,7 @@ internal class FunctionDefinition : IBlockItem
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
-        var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc_S, exitCode);
+        var atExitLdLocExitCode = Instruction.Create(OpCodes.Nop);
 
         // argC = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
@@ -223,6 +223,7 @@ internal class FunctionDefinition : IBlockItem
                 instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
             //unpin
+            instructions.Add(atExitLdLocExitCode);
             {
                 instructions.Add(Instruction.Create(OpCodes.Ldnull));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_3)); // 3 = argVPinned.Index
@@ -232,7 +233,7 @@ internal class FunctionDefinition : IBlockItem
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
         }
-        instructions.Add(atExitLdLocExitCode);
+        instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Call, exit)); // exit(exitCode)
         instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Ret));
