@@ -22,6 +22,7 @@ internal interface IDeclarationScope
     /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
     IType ResolveType(IType type);
     void AddTypeDefinition(string identifier, IType type);
+    void AddTagDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);
 
     /// <summary>

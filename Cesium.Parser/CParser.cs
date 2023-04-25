@@ -397,6 +397,11 @@ public partial class CParser
         StructDeclarationList structDeclarationList,
         IToken __) => new(structOrUnion, identifier?.Text, structDeclarationList);
 
+    [Rule("struct_or_union_specifier: struct_or_union Identifier")]
+    private static StructOrUnionSpecifier MakeStructOrUnionSpecifier(
+        ComplexTypeKind structOrUnion,
+        IToken identifier) => new(structOrUnion, identifier?.Text, ImmutableArray<StructDeclaration>.Empty);
+
     // TODO[#211]: struct-or-union-specifier: struct-or-union identifier
 
     [Rule("struct_or_union: 'struct'")]

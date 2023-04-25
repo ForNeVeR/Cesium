@@ -22,7 +22,7 @@ internal class StructType : IGeneratedType
     {
         var structType = new TypeDefinition(
             "",
-            Identifier is null ? name : Identifier,
+            Identifier is null ? "<typedef>" + name : Identifier,
             TypeAttributes.Sealed,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
         switch (context.AssemblyContext.ArchitectureSet)

@@ -31,6 +31,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
     private readonly Dictionary<string, IType> _types = new();
+    private readonly Dictionary<string, IType> _tags = new();
 
     internal void GenerateType(string name, IGeneratedType type)
     {
@@ -39,6 +40,8 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     }
 
     internal void AddTypeDefinition(string name, IType type) => _types.Add(name, type);
+
+    internal void AddTagDefinition(string name, IType type) => _tags.Add(name, type);
 
     internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
 
@@ -67,6 +70,14 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
         if (type is StructType structType)
         {
+            if (structType.Members.Count == 0 && structType.Identifier is not null)
+            {
+                if (_tags.TryGetValue(structType.Identifier, out var existingType))
+                {
+                    return existingType;
+                }
+            }
+
             var members = structType.Members
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();

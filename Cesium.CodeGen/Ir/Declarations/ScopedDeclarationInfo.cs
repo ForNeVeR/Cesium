@@ -26,13 +26,26 @@ internal interface IScopedDeclarationInfo
 
         if (specifiers.Length > 0 && specifiers[0] is StructOrUnionSpecifier structOrUnionSpecifier)
         {
-            Declarator? declarator = null;
-            return new ScopedIdentifierDeclaration(StorageClass.Auto,
-                specifiers.Select(_ =>
-                {
-                    var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
-                    return new InitializableDeclarationInfo(ld, null);
-                }).ToImmutableArray());
+            if (initDeclarators == null)
+            {
+                Declarator? declarator = null;
+                return new ScopedIdentifierDeclaration(StorageClass.Auto,
+                    specifiers.Select(_ =>
+                    {
+                        var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
+                        return new InitializableDeclarationInfo(ld, null);
+                    }).ToImmutableArray());
+            }
+
+            var initializationDeclarators = initDeclarators.Value.SelectMany(id => specifiers.Select(_ =>
+            {
+                var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
+                if (id.Initializer != null)
+                    throw new CompilationException($"Initializers for struct is not supported.");
+
+                return new InitializableDeclarationInfo(ld, null);
+            })).ToImmutableArray();
+            return new ScopedIdentifierDeclaration(StorageClass.Auto, initializationDeclarators);
         }
 
         if (initDeclarators == null)

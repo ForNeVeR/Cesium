@@ -27,6 +27,9 @@ public class DeclarationParserTests : ParserTestBase
     public Task ArrayDeclaration() => DoDeclarationParserTest("int x[100];");
 
     [Fact]
+    public Task StructTypeVariableDeclaration() => DoDeclarationParserTest("struct Foo x;");
+
+    [Fact]
     public Task CliImport() => DoDeclarationParserTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
 void *malloc(size_t);");
 
@@ -43,4 +46,7 @@ void *malloc(size_t);");
     public Task StructWithArray() => DoDeclarationParserTest(@"typedef struct {
     int x[4];
 } foo;");
+
+    [Fact]
+    public Task StructTypeDeclaration() => DoDeclarationParserTest(@"struct Foo { int A; };");
 }
