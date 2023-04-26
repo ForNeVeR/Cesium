@@ -134,6 +134,7 @@ public partial class CParser
     [Rule("unary_expression: '--' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
         new PrefixIncrementDecrementExpression(prefixOperator, target);
+
     // TODO[#207]:
     // unary-expression:
     //    * unary-expression
@@ -142,7 +143,7 @@ public partial class CParser
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
 
-    [Rule("unary_expression: '*' unary_expression")]
+    [Rule("unary_expression: '*' cast_expression")]
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
         new IndirectionExpression(target);
 
@@ -159,7 +160,10 @@ public partial class CParser
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
-    // TODO[#207]: 6.5.4 Cast operators
+    // 6.5.4 Cast operators
+    [Rule("cast_expression: '(' type_name ')' cast_expression")]
+    private static Expression MakeCastExpression(ICToken _, TypeName typeName, ICToken __, Expression target) =>
+        new CastExpression(typeName, target);
 
     // 6.5.5 Multiplicative operators
     [Rule("multiplicative_expression: multiplicative_expression '*' cast_expression")]
@@ -611,6 +615,9 @@ public partial class CParser
     // TODO[#211]:
     // type-name:
     //     specifier-qualifier-list abstract-declarator?
+
+    [Rule("type_name: specifier_qualifier_list abstract_declarator?")]
+    private static TypeName MakeTypeName(SpecifierQualifierList specifierQualifierList, AbstractDeclarator? abstractDeclarator) => new(specifierQualifierList, abstractDeclarator);
 
     [Rule("abstract_declarator: pointer")]
     private static AbstractDeclarator MakeAbstractDeclarator(Pointer pointer) => new(pointer);

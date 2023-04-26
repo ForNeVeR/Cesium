@@ -1,9 +1,9 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -16,6 +16,15 @@ internal sealed class TypeCastExpression : IExpression
     {
         _targetType = targetType;
         _expression = expression;
+    }
+
+    public TypeCastExpression(CastExpression castExpression)
+    {
+        var ls = castExpression.TypeName.AbstractDeclarator is null
+            ? Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, (Declarator?)null)
+            : Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, castExpression.TypeName.AbstractDeclarator);
+        _targetType = ls.Type;
+        _expression = ExpressionEx.ToIntermediate(castExpression.Target);
     }
 
     public void EmitTo(IEmitScope scope)

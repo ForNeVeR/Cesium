@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 
 namespace Cesium.Ast;
+using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
 
 // 6.7 Declarations
 public record Declaration(
@@ -43,6 +44,7 @@ public record StructDeclarator(Declarator Declarator);
 public record TypeQualifier(string Name) : ISpecifierQualifierListItem;
 
 // 6.7.7 Type names
+public record TypeName(SpecifierQualifierList SpecifierQualifierList, AbstractDeclarator? AbstractDeclarator = null);
 public record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);
 public interface IDirectAbstractDeclarator
 {

@@ -80,6 +80,12 @@ int main()
 }");
 
     [Fact]
+    public Task TypeConversionTest() => DoTest(@"int main()
+{
+    return (int)42;
+}");
+
+    [Fact]
     public Task ConstIntLargeLiteralTest() => DoTest(@"int main()
 {
     return 1337;
