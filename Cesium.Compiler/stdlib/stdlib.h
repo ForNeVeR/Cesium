@@ -16,3 +16,6 @@ void srand(unsigned);
 
 __cli_import("Cesium.Runtime.StdLibFunctions::System")
 int system(char* command);
+
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1

@@ -39,9 +39,16 @@ internal class FunctionDefinition : IBlockItem
         _statement = astStatement.ToIntermediate();
     }
 
+    private FunctionDefinition(string name, FunctionType functionType, CompoundStatement statement)
+    {
+        _name = name;
+        _functionType = functionType;
+        _statement = statement;
+    }
+
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return this;
+        return new FunctionDefinition(_name, (FunctionType)scope.ResolveType(_functionType), _statement);
     }
 
     public void EmitTo(IEmitScope scope)
