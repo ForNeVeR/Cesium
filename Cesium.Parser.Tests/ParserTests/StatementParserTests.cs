@@ -109,6 +109,9 @@ if (1)
     public Task IndirectionSet() => DoTest("*x = 42;");
 
     [Fact]
+    public Task TypeCast() => DoTest("(int)42;");
+
+    [Fact]
     public Task SwitchStatement_Empty() => DoTest(@"switch(x) { }");
 
     [Fact]

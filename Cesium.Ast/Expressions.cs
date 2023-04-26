@@ -22,6 +22,9 @@ public record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperat
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
 
+// 6.5.4 Cast expression
+public record CastExpression(TypeName TypeName, Expression Target) : Expression;
+
 // 6.5.5–6.5.14: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
 public record LogicalBinaryOperatorExpression(Expression Left, string Operator, Expression Right)

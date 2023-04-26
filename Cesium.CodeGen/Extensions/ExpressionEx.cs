@@ -20,6 +20,7 @@ internal static class ExpressionEx
         Ast.PrefixIncrementDecrementExpression e => new PrefixIncrementDecrementExpression(e),
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
+        Ast.CastExpression e => new TypeCastExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
