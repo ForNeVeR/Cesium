@@ -3,6 +3,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using Cesium.Parser;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -38,7 +39,7 @@ internal class ConstantLiteralExpression : IExpression
         {
             CTokenType.IntLiteral => new IntegerConstant(constant.Text),
             CTokenType.CharLiteral => new CharConstant(constant.Text),
-            CTokenType.StringLiteral => new StringConstant(constant),
+            CTokenType.StringLiteral => new StringConstant(constant.UnwrapStringLiteral()),
             CTokenType.FloatLiteral => ParseFloatingPoint(constant.Text),
             _ => throw new AssertException($"Not a literal: {constant.Kind}.")
         };
