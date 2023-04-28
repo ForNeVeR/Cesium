@@ -21,7 +21,23 @@ internal class CompoundStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new CompoundStatement(Statements.Select(blockItem => blockItem.Lower(scope)).ToList());
+        var newNestedStatements = new List<IBlockItem>();
+        foreach (var blockItem in Statements)
+        {
+            if (blockItem is DeclarationBlockItem declaration)
+            {
+                foreach (var splittedBlockItem in declaration.LowerInitializers())
+                {
+                    newNestedStatements.Add(splittedBlockItem.Lower(scope));
+                }
+            }
+            else
+            {
+                newNestedStatements.Add(blockItem.Lower(scope));
+            }
+        }
+
+        return new CompoundStatement(newNestedStatements);
     }
 
     public void EmitTo(IEmitScope scope)

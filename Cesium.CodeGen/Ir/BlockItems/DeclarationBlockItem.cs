@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -46,12 +47,31 @@ internal class DeclarationBlockItem : IBlockItem
                 }
             }
 
-            newItems.Add(new InitializableDeclarationInfo(new LocalDeclarationInfo(type, identifier, cliImportMemberName), initializerExpression?.Lower(scope)));
+            var newDeclaration = new LocalDeclarationInfo(type, identifier, cliImportMemberName);
+            var initializableDeclaration = new InitializableDeclarationInfo(newDeclaration, initializerExpression?.Lower(scope));
+            newItems.Add(initializableDeclaration);
         }
 
         return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, newItems));
     }
 
+    public IEnumerable<IBlockItem> LowerInitializers()
+    {
+        var (storageClass, items) = _declaration;
+        foreach (var (declaration, initializer) in items)
+        {
+            var (type, identifier, cliImportMemberName) = declaration;
+            if (identifier is null)
+                throw new CompilationException("An anonymous local declaration isn't supported.");
+
+            var initializableDeclaration = new InitializableDeclarationInfo(declaration, null);
+            yield return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, new[] { initializableDeclaration }));
+            if (initializer is not null)
+            {
+                yield return new ExpressionStatement(new AssignmentExpression(new IdentifierExpression(identifier), BinaryOperator.Assign, initializer));
+            }
+        }
+    }
 
     public void EmitTo(IEmitScope scope)
     {

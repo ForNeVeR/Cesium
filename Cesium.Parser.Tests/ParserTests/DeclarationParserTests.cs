@@ -30,6 +30,12 @@ public class DeclarationParserTests : ParserTestBase
     public Task ArrayDeclaration() => DoDeclarationParserTest("int x[100];");
 
     [Fact]
+    public Task ArrayDeclarationWithInitializer() => DoDeclarationParserTest("int x[4] = { 1, 2, 3, 4 };");
+
+    [Fact]
+    public Task ArrayDeclarationWithInitializerWithTrailingComma() => DoDeclarationParserTest("int x[4] = { 1, 2, 3, 4, };");
+
+    [Fact]
     public Task StructTypeVariableDeclaration() => DoDeclarationParserTest("struct Foo x;");
 
     [Fact]

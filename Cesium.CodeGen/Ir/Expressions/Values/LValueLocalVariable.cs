@@ -55,7 +55,22 @@ internal class LValueLocalVariable : ILValue
     {
         var variable = GetVariableDefinition(scope);
         value.EmitTo(scope);
-        scope.StLoc(variable);
+        if (value is CompoundInitializationExpression)
+        {
+            // for compound initialization copy memory.s
+            scope.AddInstruction(OpCodes.Ldloc, variable);
+            var expression = ((InPlaceArrayType)_variableType).GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+            expression.EmitTo(scope);
+            scope.AddInstruction(OpCodes.Conv_U);
+
+            var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
+            scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
+        }
+        else
+        {
+            // Regular initialization.
+            scope.StLoc(variable);
+        }
     }
 
     public IType GetValueType() => _variableType;

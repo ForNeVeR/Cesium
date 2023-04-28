@@ -50,7 +50,7 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType or PointerType or InPlaceArrayType) // TODO[#75]: Consider other type categories.
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType)
                     {
                         var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;

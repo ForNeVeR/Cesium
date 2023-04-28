@@ -63,4 +63,9 @@ public static unsafe class RuntimeHelpers
     {
         Marshal.FreeHGlobal((IntPtr)field);
     }
+
+    public static void InitializeCompound(void* source, void* target, uint size)
+    {
+        Buffer.MemoryCopy(source, target, size, size);
+    }
 }

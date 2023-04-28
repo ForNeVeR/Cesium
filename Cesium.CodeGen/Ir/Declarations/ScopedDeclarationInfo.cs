@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using System.Collections.Immutable;
 
@@ -92,13 +93,41 @@ internal interface IScopedDeclarationInfo
     {
         var (declarator, initializer) = initDeclarator;
         var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator);
-        var expression = initializer switch
-        {
-            null => null,
-            AssignmentInitializer ai => ai.Expression.ToIntermediate(),
-            _ => throw new WipException(225, $"Object initializer not supported, yet: {initializer}.")
-        };
+        var (type, _, _) = declarationInfo;
+        var expression = ConvertInitializer(type, initializer);
         return new InitializableDeclarationInfo(declarationInfo, expression);
+    }
+
+    private static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer)
+    {
+        if (initializer is null)
+        {
+            return null;
+        }
+
+        if (initializer is AssignmentInitializer ai)
+        {
+            return ai.Expression.ToIntermediate();
+        }
+
+        if (initializer is ArrayInitializer arrayInitializer)
+        {
+            if (type is null)
+            {
+                throw new CompilationException($"Type for array initializer unknown.");
+            }
+
+            if (type is not InPlaceArrayType inPlaceArrayType)
+            {
+                throw new CompilationException($"Only in-place array types are supported.");
+            }
+
+            var nestedInitializers = arrayInitializer.Initializers.Select(i => ConvertInitializer(inPlaceArrayType.Base, i)).ToImmutableArray();
+            var expression = new ArrayInitializerExpression(nestedInitializers);
+            return new CompoundInitializationExpression(type, expression);
+        }
+
+        throw new WipException(225, $"Object initializer not supported, yet: {initializer}.");
     }
 
     private static (StorageClass, List<IDeclarationSpecifier>) ExtractStorageClass(
