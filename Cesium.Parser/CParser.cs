@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Ast;
 using Yoakke.SynKit.C.Syntax;
@@ -682,13 +683,26 @@ public partial class CParser
     // 6.7.9 Initialization
 
     [Rule("initializer: assignment_expression")]
-    private static AssignmentInitializer MakeInitializer(Expression assignmentExpression) =>
-        new(assignmentExpression);
+    private static Initializer MakeInitializer(Expression assignmentExpression) =>
+        new AssignmentInitializer(assignmentExpression);
+
+    [Rule("initializer: '{' initializer_list '}' ")]
+    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>
+        new ArrayInitializer(initializers);
+
+    [Rule("initializer: '{' initializer_list ',' '}' ")]
+    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __, IToken ___) =>
+        new ArrayInitializer(initializers);
+
+    [Rule("initializer_list: initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(Initializer initializer) =>
+        ImmutableArray.Create<Initializer>(initializer);
+
+    [Rule("initializer_list: initializer_list ',' initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(ImmutableArray<Initializer> initializers, IToken _, Initializer initializer) =>
+        initializers.Add(initializer);
 
     // TODO[#211]:
-    // initializer:
-    //     { initializer-list }
-    //     { initializer-list , }
     // initializer-list:
     //     designation? initializer
     //     initializer-list , designation? initializer

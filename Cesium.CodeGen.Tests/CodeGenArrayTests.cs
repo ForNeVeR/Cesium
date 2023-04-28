@@ -76,4 +76,20 @@ int main() {
     a[i][0] = 13;
     return 0;
  }");
+
+    [Fact]
+    public Task ArrayInitialization() => DoTest(@"int main() {
+    int a[4] = { 1, 2, 3, 4, };
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
+    public Task GlobalArrayInitialization() => DoTest(@"
+int a[4] = { 1, 2, 3, 4, };
+
+int main() {
+    a[1] = 2;
+    return a[1];
+ }");
 }

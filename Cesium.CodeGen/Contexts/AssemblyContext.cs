@@ -171,6 +171,20 @@ public class AssemblyContext
         return field;
     }
 
+    public FieldReference GetConstantPoolReference(byte[] dataConstant)
+    {
+        var hash = dataConstant.GetHashCode().ToString();
+        if (_stringConstantHolders.TryGetValue(hash, out var field))
+            return field;
+
+        var bufferSize = dataConstant.Length;
+        var type = GetStubType(bufferSize);
+        field = GenerateFieldForStringConstant(type, dataConstant);
+        _stringConstantHolders.Add(hash, field);
+
+        return field;
+    }
+
     private TypeReference GetStubType(int size)
     {
         if (_stubTypesPerSize.TryGetValue(size, out var typeRef))

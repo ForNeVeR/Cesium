@@ -95,6 +95,7 @@ public record ParameterDeclaration(
 // 6.7.9 Initialization
 public abstract record Initializer;
 public record AssignmentInitializer(Expression Expression) : Initializer;
+public record ArrayInitializer(ImmutableArray<Initializer> Initializers) : Initializer;
 
 // CLI extensions
 public record CliImportSpecifier(string MemberName) : IDeclarationSpecifier;

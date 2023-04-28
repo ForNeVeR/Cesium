@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -36,8 +37,25 @@ internal record GlobalVariableDefinition(
         var field = scope.ResolveGlobalField(Identifier);
         if (Initializer != null)
         {
-            Initializer.EmitTo(scope);
-            scope.StSFld(field);
+            if (Type is InPlaceArrayType arrayType && Initializer is CompoundInitializationExpression)
+            {
+                arrayType.EmitInitializer(scope);
+                scope.StSFld(field);
+                Initializer.EmitTo(scope);
+                // for compound initialization copy memory.s
+                scope.AddInstruction(OpCodes.Ldsflda, field);
+                var expression = arrayType.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+                expression.EmitTo(scope);
+                scope.AddInstruction(OpCodes.Conv_U);
+
+                var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
+                scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
+            }
+            else
+            {
+                Initializer.EmitTo(scope);
+                scope.StSFld(field);
+            }
         }
         else if (Type is InPlaceArrayType arrayType)
         {
