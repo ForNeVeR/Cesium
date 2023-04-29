@@ -1,4 +1,4 @@
-﻿using Cesium.Core;
+using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
@@ -26,6 +26,10 @@ internal class BinaryExpression : IPreprocessorExpression
                 return firstValue == secondValue ? "1" : null;
             case CPreprocessorOperator.NotEquals:
                 return firstValue != secondValue ? "1" : null;
+            case CPreprocessorOperator.LogicalAnd:
+                return (!string.IsNullOrEmpty(firstValue) && !string.IsNullOrEmpty(secondValue)) ? "1" : null;
+            case CPreprocessorOperator.LogicalOr:
+                return (!string.IsNullOrEmpty(firstValue) || !string.IsNullOrEmpty(secondValue)) ? "1" : null;
             default:
                 throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives");
         }

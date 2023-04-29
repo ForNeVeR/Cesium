@@ -7,4 +7,6 @@ internal enum CPreprocessorOperator
     Equals,
     NotEquals,
     Negation,
+    LogicalOr,
+    LogicalAnd,
 }

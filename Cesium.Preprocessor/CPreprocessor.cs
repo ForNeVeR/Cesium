@@ -212,6 +212,24 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 case NewLine:
                 case End:
                     yield break;
+                case NextLine:
+                    token = stream.Consume();
+                    bool nextLineReached = false;
+                    while (token.Kind == CPreprocessorTokenType.NewLine || token.Kind == CPreprocessorTokenType.WhiteSpace)
+                    {
+                        if (token.Kind == CPreprocessorTokenType.NewLine)
+                        {
+                            nextLineReached = true;
+                        }
+
+                        token = stream.Consume();
+                    }
+
+                    if (!nextLineReached)
+                        throw new PreprocessorException($"Illegal token {token.Kind} {token.Text} after \\.");
+
+                    yield return token;
+                    break;
                 default:
                     yield return token;
                     break;
@@ -268,18 +286,22 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         {
             case "include":
             {
+                // If in disabled block, do not attempt to include files.
                 var filePath = ConsumeNext(HeaderName).Text;
-                var includeFilePath = LookUpIncludeFile(filePath);
-                if (!IncludeContext.ShouldIncludeFile(includeFilePath))
-                {
-                    return Array.Empty<IToken<CPreprocessorTokenType>>();
-                }
-
-                using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 var tokensList = new List<IToken<CPreprocessorTokenType>>();
-                await foreach (var token in ProcessInclude(includeFilePath, reader))
+                if (IncludeTokens)
                 {
-                    tokensList.Add(token);
+                    var includeFilePath = LookUpIncludeFile(filePath);
+                    if (!IncludeContext.ShouldIncludeFile(includeFilePath))
+                    {
+                        return Array.Empty<IToken<CPreprocessorTokenType>>();
+                    }
+
+                    using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                    await foreach (var token in ProcessInclude(includeFilePath, reader))
+                    {
+                        tokensList.Add(token);
+                    }
                 }
 
                 bool hasRemaining;
@@ -308,6 +330,13 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 var expressionTokens = ConsumeLine();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
                 MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "undef":
+            {
+                var expressionTokens = ConsumeLine();
+                var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
+                MacroContext.UndefineMacro(macroDefinition.Name);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifdef":
@@ -368,6 +397,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
         var p = new CPreprocessorExpressionParser(stream);
         var expression = p.ParseExpression();
+        if (expression.IsError)
+        {
+            throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}, got {expression.Error.Got}");
+        }
+
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
         bool includeTokens = macroExpression != null;
         return includeTokens;
