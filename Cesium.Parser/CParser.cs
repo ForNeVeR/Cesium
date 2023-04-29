@@ -612,10 +612,6 @@ public partial class CParser
 
     // 6.7.7 Type names
 
-    // TODO[#211]:
-    // type-name:
-    //     specifier-qualifier-list abstract-declarator?
-
     [Rule("type_name: specifier_qualifier_list abstract_declarator?")]
     private static TypeName MakeTypeName(SpecifierQualifierList specifierQualifierList, AbstractDeclarator? abstractDeclarator) => new(specifierQualifierList, abstractDeclarator);
 
