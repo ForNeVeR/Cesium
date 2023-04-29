@@ -377,6 +377,7 @@ public partial class CParser
     [Rule("type_specifier: 'unsigned'")]
     [Rule("type_specifier: '_Bool'")]
     [Rule("type_specifier: '_Complex'")]
+    [Rule("type_specifier: '__nint'")]
     private static ITypeSpecifier MakeSimpleTypeSpecifier(ICToken specifier) => new SimpleTypeSpecifier(specifier.Text);
 
     // TODO[#211]: [Rule("type_specifier: atomic_type_specifier")]
