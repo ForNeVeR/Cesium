@@ -68,7 +68,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
             new[] { typeof(Console).Assembly.Location },
             @namespace,
-            globalTypeFqn);
+            globalTypeFqn,
+            Array.Empty<string>());
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);

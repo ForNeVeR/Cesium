@@ -7,6 +7,7 @@ using Cesium.Preprocessor;
 using Mono.Cecil;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Compiler;
 
@@ -39,7 +40,7 @@ internal static class Compilation
             compilationOptions);
     }
 
-    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader)
+    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
         var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
@@ -48,6 +49,12 @@ internal static class Compilation
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
+        var outOfFileRange = new Yoakke.SynKit.Text.Range();
+        foreach (var define in compilationOptions.DefineConstants)
+        {
+            definesContext.DefineMacro(define, null, new[] { new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken) });
+        }
+
         var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
     }
@@ -60,7 +67,7 @@ internal static class Compilation
         await using var input = new FileStream(inputFilePath, FileMode.Open);
         using var reader = new StreamReader(input, Encoding.UTF8);
 
-        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader);
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, context.CompilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();

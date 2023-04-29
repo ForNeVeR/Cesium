@@ -48,7 +48,8 @@ return await parserResult.MapResult(async args =>
             cesiumRuntime,
             defaultImportsAssembly,
             args.Namespace,
-            args.GlobalClass);
+            args.GlobalClass,
+            args.DefineConstant.ToList());
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>
