@@ -1,4 +1,4 @@
-int b[10][2];
+int b[10][10];
 
 int main(int argc, char *argv[])
 {

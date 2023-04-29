@@ -24,9 +24,9 @@ public static unsafe class RuntimeHelpers
         byte* AllocateUtf8String(string s)
         {
             var bytes = encoding.GetBytes(s);
-            var buffer = (byte*)Marshal.AllocHGlobal(s.Length + 1);
+            var buffer = (byte*)Marshal.AllocHGlobal(bytes.Length + 1);
             Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
-            buffer[s.Length] = 0;
+            buffer[bytes.Length] = 0;
             return buffer;
         }
 

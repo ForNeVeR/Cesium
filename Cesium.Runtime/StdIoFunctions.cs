@@ -44,12 +44,12 @@ public unsafe static class StdIoFunctions
         try
         {
             Console.WriteLine(Unmarshal(str));
-            // return 0; // TODO[#156]: Uncomment
+            // return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
-            // const int EOF = -1; // TODO[#155]: Extract to some common place.
-            // return EOF; // TODO[#156]: Uncomment
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
         }
     }
     public static int PutChar(byte character)
