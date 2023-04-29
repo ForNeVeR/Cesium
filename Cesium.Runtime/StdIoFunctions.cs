@@ -57,7 +57,7 @@ public unsafe static class StdIoFunctions
         try
         {
             Console.Write((char)character);
-            return 0;
+            return character;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
@@ -77,7 +77,7 @@ public unsafe static class StdIoFunctions
             }
 
             streamDescriptor.Writer!.Write((char)character);
-            return 0;
+            return character;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
