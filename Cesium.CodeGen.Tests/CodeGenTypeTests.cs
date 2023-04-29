@@ -98,6 +98,18 @@ int main()
 }");
 
     [Fact]
+    public Task ConstIntHexLiteralTest() => DoTest(@"int main()
+{
+    return 0x42;
+}");
+
+    [Fact]
+    public Task ConstIntOctalLiteralTest() => DoTest(@"int main()
+{
+    return 042;
+}");
+
+    [Fact]
     public Task ConstCharLiteralDeduplication() => DoTest(@"int main()
 {
     const char *test1 = ""hellow"";
