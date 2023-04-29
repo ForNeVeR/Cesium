@@ -14,8 +14,8 @@ public unsafe static class StdIoFunctions
     record class StreamHandle
     {
         public required string FileMode { get; set; }
-        public TextReader? Reader { get; set; }
-        public TextWriter? Writer { get; set; }
+        public Func<TextReader>? Reader { get; set; }
+        public Func<TextWriter>? Writer { get; set; }
     }
 
     private static List<StreamHandle> handles = new();
@@ -25,26 +25,26 @@ public unsafe static class StdIoFunctions
         handles.Add(new StreamHandle()
         {
             FileMode = "r",
-            Reader = Console.In,
+            Reader = () => Console.In,
         });
         handles.Add(new StreamHandle()
         {
             FileMode = "w",
-            Writer = Console.Out,
+            Writer = () => Console.Out,
         });
         handles.Add(new StreamHandle()
         {
             FileMode = "w",
-            Writer = Console.Error,
+            Writer = () => Console.Error,
         });
     }
 
-    public static void PutS(byte* str)
+    public static int PutS(byte* str)
     {
         try
         {
             Console.WriteLine(Unmarshal(str));
-            // return 0;
+            return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
@@ -76,7 +76,7 @@ public unsafe static class StdIoFunctions
                 return -1;
             }
 
-            streamDescriptor.Writer!.Write((char)character);
+            streamDescriptor.Writer!().Write((char)character);
             return character;
         }
         catch (Exception) // TODO[#154]: Exception handling.
