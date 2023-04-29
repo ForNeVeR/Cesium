@@ -25,6 +25,12 @@ public class InMemoryDefinesContext : IMacroContext
         }
     }
 
+    public void UndefineMacro(string macro)
+    {
+        _defines.Remove(macro);
+        _defineParameters.Remove(macro);
+    }
+
     public bool TryResolveMacro(string macro, out IList<string>? macroParameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
     {
         _defineParameters.TryGetValue(macro, out macroParameters);

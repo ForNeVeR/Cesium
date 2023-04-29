@@ -218,4 +218,48 @@ int foo() { return 0; }
 int foo() { return 0; }
 #endif
 ");
+
+    [Fact]
+    public Task IfExpressionNotDefined() => DoTest(
+@"#define mycondition
+#if (!defined mycondition)
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionMultiline() => DoTest(
+@"#define mycondition
+#if (!defined \
+    mycondition)
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionOr() => DoTest(
+@"#define mycondition
+#define mycondition2 1
+#if mycondition || mycondition2
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionAnd() => DoTest(
+@"#define mycondition
+#define mycondition2 1
+#if mycondition && mycondition2
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task UndefMacro() => DoTest(
+@"#define mycondition 1
+#undef mycondition
+#if !mycondition
+int foo() { return 0; }
+#endif
+");
 }
