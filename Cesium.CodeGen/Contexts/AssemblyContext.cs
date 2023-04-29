@@ -23,6 +23,7 @@ public class AssemblyContext
 
     private readonly Dictionary<string, IType> _globalFields = new();
     internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
+    public CompilationOptions CompilationOptions { get; }
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
@@ -78,6 +79,8 @@ public class AssemblyContext
         Assembly = assembly;
         ArchitectureSet = compilationOptions.TargetArchitectureSet;
         Module = module;
+        CompilationOptions = compilationOptions;
+
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
         ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();

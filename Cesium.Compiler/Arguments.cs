@@ -55,4 +55,7 @@ public class Arguments
     [Option('W', HelpText = "Enable warnings set")]
     public string WarningsSet { get; init; } = "";
 
+    [Option('D', HelpText = "Define constants for preprocessor")]
+    public IEnumerable<string> DefineConstant { get; init; } = Array.Empty<string>();
+
 }
