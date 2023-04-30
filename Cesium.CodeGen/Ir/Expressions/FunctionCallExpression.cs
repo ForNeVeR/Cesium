@@ -36,6 +36,24 @@ internal class FunctionCallExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
+        if (_function.Identifier == "__builtin_offsetof_instance")
+        {
+            if (_arguments is not [IdentifierExpression typeExpr])
+            {
+                throw new CompilationException($"__builtin_offsetof_instance: invalid arguments");
+            }
+
+            var type = typeExpr.Identifier;
+
+            var resolvedType = scope.ResolveType(new NamedType(type));
+            if (resolvedType is not StructType resolvedStruct)
+            {
+                throw new CompilationException($"Type \"{type}\" is not a struct type.");
+            }
+
+            return new InstanceForOffsetOfExpression(resolvedStruct);
+        }
+
         var functionName = _function.Identifier;
         var callee = scope.GetFunctionInfo(functionName);
         if (callee is null)

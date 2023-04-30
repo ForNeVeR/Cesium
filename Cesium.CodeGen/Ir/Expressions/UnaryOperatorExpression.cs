@@ -28,9 +28,11 @@ internal class UnaryOperatorExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
+        var loweredTarget = _target.Lower(scope);
+
         if (_operator == UnaryOperator.AddressOf)
         {
-            if (_target is not IValueExpression expression)
+            if (loweredTarget is not IValueExpression expression)
                 throw new CompilationException($"Required a value expression to get address, got {_target} instead.");
 
             var value = expression.Resolve(scope);
@@ -40,7 +42,7 @@ internal class UnaryOperatorExpression : IExpression
             return new GetAddressValueExpression(aValue);
         }
 
-        return new UnaryOperatorExpression(_operator, _target.Lower(scope));
+        return new UnaryOperatorExpression(_operator, loweredTarget);
     }
 
     public void EmitTo(IEmitScope scope)
