@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -25,34 +26,13 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
     {
         var left = Left.Lower(scope);
         var right = Right.Lower(scope);
+
         var leftType = left.GetExpressionType(scope);
         var rightType = right.GetExpressionType(scope);
-        ValidateTypeOperations(leftType, rightType);
+
         if (leftType is PointerType || rightType is PointerType)
         {
-            if (leftType is PointerType leftPointerType)
-            {
-                right = new TypeCastExpression(
-                    scope.CTypeSystem.NativeInt,
-                    new ArithmeticBinaryOperatorExpression(
-                        leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                        BinaryOperator.Multiply,
-                        right));
-
-                return new ArithmeticBinaryOperatorExpression(left, Operator, right);
-            }
-
-            if (rightType is PointerType rightPointerType)
-            {
-                left = new TypeCastExpression(
-                    scope.CTypeSystem.NativeInt,
-                    new ArithmeticBinaryOperatorExpression(
-                        rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                        BinaryOperator.Multiply,
-                        left));
-
-                return new ArithmeticBinaryOperatorExpression(left, Operator, right);
-            }
+            return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
 
         var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
@@ -69,6 +49,64 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         }
 
         return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+    }
+
+    private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
+    {
+        if (leftType is PointerType leftPointerType)
+        {
+            if (rightType is PointerType rightPointerType)
+            {
+                if (Operator != BinaryOperator.Subtract)
+                {
+                    throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
+                }
+
+                var baseSizeLeft = leftPointerType.Base.GetSizeInBytes(scope.ArchitectureSet);
+                var baseSizeRight = rightPointerType.Base.GetSizeInBytes(scope.ArchitectureSet);
+
+                if (baseSizeLeft == null || baseSizeRight == null || baseSizeLeft != baseSizeRight)
+                    throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
+
+                return new ArithmeticBinaryOperatorExpression(
+                    new ArithmeticBinaryOperatorExpression(left, Operator, right),
+                    BinaryOperator.Divide,
+                    new ConstantLiteralExpression(new IntegerConstant(baseSizeLeft.Value))
+                );
+            }
+
+            if (Operator != BinaryOperator.Add)
+            {
+                throw new CompilationException($"Operator {Operator} is not supported for pointer/value operands");
+            }
+
+            right = new TypeCastExpression(
+                scope.CTypeSystem.NativeInt,
+                new ArithmeticBinaryOperatorExpression(
+                    leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
+                    BinaryOperator.Multiply,
+                    right));
+
+            return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+        }
+        else
+        {
+            var rightPointerType = (PointerType)rightType;
+
+            if (Operator != BinaryOperator.Add)
+            {
+                throw new CompilationException($"Operator {Operator} is not supported for value/pointer operands");
+            }
+
+            left = new TypeCastExpression(
+                scope.CTypeSystem.NativeInt,
+                new ArithmeticBinaryOperatorExpression(
+                    rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
+                    BinaryOperator.Multiply,
+                    left));
+
+            return new ArithmeticBinaryOperatorExpression(left, Operator, right);
+        }
     }
 
     public override void EmitTo(IEmitScope scope)
@@ -93,41 +131,16 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
 
-        if (leftType is PointerType || rightType is PointerType)
+        switch (leftType, rightType)
         {
-            if (leftType is PointerType)
-            {
-                return leftType;
-            }
+            case (PointerType, not PointerType): return leftType;
+            case (not PointerType, PointerType): return rightType;
+            case (PointerType left, PointerType right):
+                Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) == right.Base.GetSizeInBytes(scope.ArchitectureSet));
 
-            return rightType;
+                return scope.CTypeSystem.Int; // ptrdiff_t, must be signed, int is "fine" (nint is not numeric anyway)
         }
 
         return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
-    }
-
-    private void ValidateTypeOperations(IType leftType, IType rightType)
-    {
-        if (leftType is PointerType || rightType is PointerType)
-        {
-            if (Operator == BinaryOperator.Multiply)
-            {
-                throw new CompilationException("Operator '*' does not suported on pointer types");
-            }
-
-            if (leftType is PointerType && rightType is PointerType)
-            {
-                if (Operator == BinaryOperator.Add)
-                {
-                    throw new CompilationException("Operator '+': cannot add two pointers");
-                }
-
-                if (Operator == BinaryOperator.Subtract)
-                {
-                    throw new WipException(260, "Pointer subtraction not implemented.");
-
-                }
-            }
-        }
     }
 }
