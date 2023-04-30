@@ -16,6 +16,8 @@ internal static class CodeGenEx
         scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
     public static void AddInstruction(this IEmitScope scope, OpCode opCode, MethodReference value) =>
         scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode, FieldReference value) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
     public static void AddInstruction(this IEmitScope scope, OpCode opCode, VariableDefinition value) =>
         scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
 
