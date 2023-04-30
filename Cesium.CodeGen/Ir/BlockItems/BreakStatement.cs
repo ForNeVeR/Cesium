@@ -6,6 +6,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class BreakStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     public IBlockItem Lower(IDeclarationScope scope)
     {
         var breakLabel = scope.GetBreakLabel();

@@ -9,6 +9,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ForStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression? _initExpression;
     private readonly IExpression _testExpression;
     private readonly IExpression? _updateExpression;

@@ -6,6 +6,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ExpressionStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression? _expression;
     internal ExpressionStatement(IExpression? expression)
     {
@@ -14,6 +17,16 @@ internal class ExpressionStatement : IBlockItem
 
     public ExpressionStatement(Ast.ExpressionStatement statement) : this(statement.Expression?.ToIntermediate())
     {
+    }
+
+    public void ResolveNextNodes(IBlockItem root, IBlockItem parent)
+    {
+        NextNodes = new List<IBlockItem> { parent.NextNode(this) };
+    }
+
+    public IEnumerable<IBlockItem> GetChildren(IBlockItem root)
+    {
+        yield break;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)

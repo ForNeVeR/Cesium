@@ -8,6 +8,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class DoWhileStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression _testExpression;
     private readonly IBlockItem _body;
     private readonly string? _breakLabel;

@@ -7,6 +7,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class CaseStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     public CaseStatement(IExpression? expression, IBlockItem statement)
     {
         Expression = expression;

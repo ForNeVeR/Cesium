@@ -9,6 +9,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class DeclarationBlockItem : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly ScopedIdentifierDeclaration _declaration;
     internal DeclarationBlockItem(ScopedIdentifierDeclaration declaration)
     {
@@ -52,6 +55,10 @@ internal class DeclarationBlockItem : IBlockItem
         return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, newItems));
     }
 
+    public void ResolveNextNodes(IBlockItem root, IBlockItem parent)
+    {
+        NextNodes = new List<IBlockItem> { parent.NextNode(this) };
+    }
 
     public void EmitTo(IEmitScope scope)
     {

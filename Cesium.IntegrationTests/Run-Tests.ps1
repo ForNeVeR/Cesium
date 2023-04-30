@@ -5,7 +5,7 @@ param (
     $OutDir = "$PSScriptRoot/bin",
     $ObjDir = "$PSScriptRoot/obj",
     $TestCaseDir = "$PSScriptRoot",
-    $TestCaseName = $null
+    $TestCaseName = "goto/forward.c"
 )
 
 Set-StrictMode -Version Latest

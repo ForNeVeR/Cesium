@@ -10,6 +10,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class SwitchStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression _expression;
     private readonly IBlockItem _body;
     private readonly string? _breakLabel;

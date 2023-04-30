@@ -7,6 +7,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class IfElseStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression _expression;
     private readonly IBlockItem _trueBranch;
     private readonly IBlockItem? _falseBranch;
@@ -24,6 +27,28 @@ internal class IfElseStatement : IBlockItem
         _expression = expression.ToIntermediate();
         _trueBranch = trueBranch.ToIntermediate();
         _falseBranch = falseBranch?.ToIntermediate();
+    }
+
+    public void ResolveNextNodes(IBlockItem root, IBlockItem parent)
+    {
+        NextNodes = new List<IBlockItem> { _trueBranch };
+
+        _trueBranch.ResolveNextNodes(root, this);
+
+        if (_falseBranch != null)
+        {
+            NextNodes.Add(_falseBranch);
+
+            _falseBranch.ResolveNextNodes(root, this);
+        }
+    }
+
+    public IEnumerable<IBlockItem> GetChildren(IBlockItem root)
+    {
+        yield return _trueBranch;
+
+        if (_falseBranch != null)
+            yield return _falseBranch;
     }
 
     bool IBlockItem.HasDefiniteReturn => _trueBranch.HasDefiniteReturn && _falseBranch?.HasDefiniteReturn == true;

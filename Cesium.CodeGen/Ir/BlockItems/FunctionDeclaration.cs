@@ -8,6 +8,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class FunctionDeclaration : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly string _identifier;
     private readonly FunctionType _functionType;
     private readonly string? _cliImportMemberName;

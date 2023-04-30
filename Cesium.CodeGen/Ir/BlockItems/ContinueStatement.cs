@@ -5,6 +5,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ContinueStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     public IBlockItem Lower(IDeclarationScope scope)
     {
         var continueLabel = scope.GetContinueLabel();

@@ -7,6 +7,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ReturnStatement : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly IExpression? _expression;
 
     public ReturnStatement(Ast.ReturnStatement statement)
@@ -17,6 +20,16 @@ internal class ReturnStatement : IBlockItem
     private ReturnStatement(IExpression? expression)
     {
         _expression = expression;
+    }
+
+    public void ResolveNextNodes(IBlockItem root, IBlockItem parent)
+    {
+        NextNodes = new();
+    }
+
+    public IEnumerable<IBlockItem> GetChildren(IBlockItem root)
+    {
+        yield break;
     }
 
     bool IBlockItem.HasDefiniteReturn => true;

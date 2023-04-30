@@ -7,6 +7,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class TypeDefBlockItem : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private readonly ICollection<LocalDeclarationInfo> types;
 
     public TypeDefBlockItem(TypeDefDeclaration declaration)

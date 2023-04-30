@@ -19,6 +19,9 @@ internal class AmbiguousBlockItem : IBlockItem
     private readonly string _item1;
     private readonly string _item2;
 
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     public AmbiguousBlockItem(Ast.AmbiguousBlockItem item)
     {
         (_item1, _item2) = item;

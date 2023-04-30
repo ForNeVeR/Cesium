@@ -16,7 +16,6 @@ even:
     return;
 odd:
     printf("%d is odd", num);
-    return; // This statement needed since control flow analysis in Cesium is broken.
 }
 
 int main() {

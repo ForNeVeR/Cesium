@@ -14,6 +14,9 @@ internal record GlobalVariableDefinition(
     string Identifier,
     IExpression? Initializer) : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     public IBlockItem Lower(IDeclarationScope scope)
     {
         return this with { Initializer = Initializer?.Lower(scope) };

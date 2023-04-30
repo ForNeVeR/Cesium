@@ -13,6 +13,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class FunctionDefinition : IBlockItem
 {
+    public List<IBlockItem>? NextNodes { get; set; }
+    public IBlockItem? Parent { get; set; }
+
     private const string MainFunctionName = "main";
 
     private readonly FunctionType _functionType;
@@ -268,24 +271,36 @@ internal class FunctionDefinition : IBlockItem
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         var statement = _statement.Lower(scope);
+
         statement.EmitTo(scope);
-        if (statement.HasDefiniteReturn == false)
+        statement.ResolveParents(statement);
+        statement.ResolveNextNodes(statement, statement);
+        var syntheticRetRequired = !statement.CheckNextNodes(_functionType.ReturnType.Resolve(context) != context.TypeSystem.Void);
+
+        if (syntheticRetRequired)
         {
-            if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
-            {
-                var instructions = scope.Method.Body.Instructions;
-                instructions.Add(Instruction.Create(OpCodes.Ret));
-            }
-            else if (IsMain)
-            {
-                var instructions = scope.Method.Body.Instructions;
-                instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-                instructions.Add(Instruction.Create(OpCodes.Ret));
-            }
-            else
-            {
-                throw new CompilationException($"Function {scope.Method.Name} has no return statement.");
-            }
+            var instructions = scope.Method.Body.Instructions;
+            instructions.Add(Instruction.Create(OpCodes.Ret));
         }
+
+        //
+        // if ()
+        // {
+        //     if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
+        //     {
+        //         var instructions = scope.Method.Body.Instructions;
+        //         instructions.Add(Instruction.Create(OpCodes.Ret));
+        //     }
+        //     else if (IsMain)
+        //     {
+        //         var instructions = scope.Method.Body.Instructions;
+        //         instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+        //         instructions.Add(Instruction.Create(OpCodes.Ret));
+        //     }
+        //     else
+        //     {
+        //         throw new CompilationException($"Function {scope.Method.Name} has no return statement.");
+        //     }
+        // }
     }
 }
