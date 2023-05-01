@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -49,7 +50,7 @@ internal class IntegerConstant : IConstant
     {
         if (text.StartsWith("0x"))
         {
-            if (int.TryParse(text[2..], System.Globalization.NumberStyles.HexNumber, null, out value))
+            if (int.TryParse(text[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
             {
                 return true;
             }
@@ -75,7 +76,7 @@ internal class IntegerConstant : IConstant
             return true;
         }
 
-        if (int.TryParse(text, out value))
+        if (int.TryParse(text, CultureInfo.InvariantCulture, out value))
         {
             return true;
         }
