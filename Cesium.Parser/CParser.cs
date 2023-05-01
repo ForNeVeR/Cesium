@@ -73,7 +73,7 @@ public partial class CParser
         new ConstantLiteralExpression(stringLiteral);
 
     [Rule("primary_expression: '(' expression ')'")]
-    private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
+    private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
 
     // TODO[#207]:
     // primary-expression:
@@ -90,7 +90,13 @@ public partial class CParser
         Expression function,
         IToken _,
         ArgumentExpressionList? arguments,
-        IToken __) => new FunctionCallExpression(function, arguments);
+        IToken __)
+    {
+        var castLike = function is ParenExpression { Contents: ConstantLiteralExpression } &&
+                       arguments != null && arguments.Value.Length > 0;
+
+        return new FunctionCallExpression(function, arguments, castLike);
+    }
 
     [Rule("postfix_expression: postfix_expression '.' Identifier")]
     private static Expression MakeMemberAccessExpression(

@@ -9,10 +9,11 @@ public abstract record Expression;
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
 public record ConstantLiteralExpression(IToken<CTokenType> Constant) : Expression;
+public record ParenExpression(Expression Contents) : Expression;
 
 // 6.5.2 Postfix operators
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
-public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments) : Expression;
+public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments, bool CastLike) : Expression;
 public record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PostfixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
