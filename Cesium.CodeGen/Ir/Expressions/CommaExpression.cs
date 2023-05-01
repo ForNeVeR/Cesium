@@ -10,7 +10,7 @@ internal class CommaExpression : IExpression
     private readonly IExpression _left;
     private readonly IExpression _right;
 
-    private CommaExpression(IExpression left, IExpression right)
+    internal CommaExpression(IExpression left, IExpression right)
     {
         _left = left;
         _right = right;

@@ -13,6 +13,7 @@ internal static class ExpressionEx
         Ast.ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
         Ast.ConstantLiteralExpression e => new ConstantLiteralExpression(e),
         Ast.ConstantExpression e => new ConstantExpression(e),
+        Ast.ParenExpression e => ToIntermediate(e.Contents),
 
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
