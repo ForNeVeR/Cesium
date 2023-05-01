@@ -33,7 +33,7 @@ public static unsafe class RuntimeHelpers
         // Last item should be a null pointer; the first one we'll allocate from the executable path, so + 2:
         var pointers = new byte*[args.Length + 2];
 
-        var executablePath = Assembly.GetEntryAssembly()?.Location ?? "";
+        var executablePath = Environment.GetCommandLineArgs().ElementAtOrDefault(0) ?? "";
         pointers[0] = AllocateUtf8String(executablePath);
         for (var i = 0; i < args.Length; ++i)
             pointers[i + 1] = AllocateUtf8String(args[i]);
