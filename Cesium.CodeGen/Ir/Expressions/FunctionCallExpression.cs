@@ -74,6 +74,9 @@ internal class FunctionCallExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
+        if (_callee == null)
+            throw new AssertException("Should be lowered");
+
         VariableDefinition? varArgBuffer = null;
         var explicitParametersCount = _callee!.Parameters?.Parameters.Count ?? 0;
         var varArgParametersCount = _arguments.Count - explicitParametersCount;

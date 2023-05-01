@@ -62,5 +62,5 @@ internal sealed class TypeCastExpression : IExpression
 
     public IType GetExpressionType(IDeclarationScope scope) => _targetType;
 
-    public IExpression Lower(IDeclarationScope scope) => this;
+    public IExpression Lower(IDeclarationScope scope) => new TypeCastExpression(_targetType, _expression.Lower(scope));
 }
