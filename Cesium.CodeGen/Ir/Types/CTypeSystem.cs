@@ -29,7 +29,7 @@ internal class CTypeSystem
             || (this.IsBool(targetType) && this.IsInteger(type)))
             return true;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsEqualTo(NativeInt) && !this.IsNumeric(type))
             return false;
 
         if (targetType.Equals(SignedChar))
@@ -52,6 +52,8 @@ internal class CTypeSystem
             return true;
         else if (targetType.Equals(Double))
             return true;
+        else if (targetType.Equals(NativeInt))
+            return true;
         else
             return false;
     }
@@ -61,7 +63,7 @@ internal class CTypeSystem
         if (type.IsEqualTo(targetType))
             return false;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsEqualTo(NativeInt) && !this.IsNumeric(type))
             throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
 
         if (targetType.Equals(SignedChar))

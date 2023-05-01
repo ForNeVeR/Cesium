@@ -172,7 +172,13 @@ internal static class TypeSystemEx
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
     public static IType GetCommonNumericType(this CTypeSystem ts, IType a, IType b)
     {
-        // First, if the corresponding real type of either operand is (long) double,
+        // First, if the corresponding real type of either operand is native int,
+        // the other operand is converted, without change of type domain, to a type whose corresponding real type is native int.
+        // Pointer arithmetics is constrained to few special operators, so there's no narrowing problems
+        if (a.IsEqualTo(ts.NativeInt) || b.IsEqualTo(ts.NativeInt))
+            return ts.NativeInt;
+
+        // Otherwise, if the corresponding real type of either operand is (long) double,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is (long) double.
         if (a.IsEqualTo(ts.Double) || b.IsEqualTo(ts.Double))
             return ts.Double;
