@@ -26,5 +26,8 @@ This should be kept in sync with section **6.7.2 Type Specifiers** of the actual
 | `float _Complex`                                                            | N/A             |
 | `double _Complex`                                                           | N/A             |
 | `long double _Complex`                                                      | N/A             |
+| `__nint`[^1]                                                                | `System.IntPtr` |
 
 All pointer types are mapped to the CLI pointers of the corresponding type.
+
+[^1]: `__nint` is a Cesium extension.
