@@ -1,4 +1,8 @@
+#if NETSTANDARD
 using System.Text;
+#else
+using System.Runtime.InteropServices;
+#endif
 
 namespace Cesium.Runtime;
 
