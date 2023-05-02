@@ -92,10 +92,13 @@ public partial class CParser
         ArgumentExpressionList? arguments,
         IToken __)
     {
-        var castLike = function is ParenExpression { Contents: ConstantLiteralExpression } &&
-                       arguments != null && arguments.Value.Length > 0;
+        if (function is ParenExpression { Contents: ConstantLiteralExpression { Constant: CToken { Kind: CTokenType.Identifier, Text: var name } } } &&
+            arguments != null && arguments.Value.Length > 0)
+        {
+            return new TypeCastOrNamedFunctionCallExpression(name, arguments.Value);
+        }
 
-        return new FunctionCallExpression(function, arguments, castLike);
+        return new FunctionCallExpression(function, arguments);
     }
 
     [Rule("postfix_expression: postfix_expression '.' Identifier")]

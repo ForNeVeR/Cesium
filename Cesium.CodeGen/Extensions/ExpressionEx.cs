@@ -15,6 +15,7 @@ internal static class ExpressionEx
         Ast.ConstantExpression e => new ConstantExpression(e),
         Ast.ParenExpression e => ToIntermediate(e.Contents),
 
+        Ast.TypeCastOrNamedFunctionCallExpression e => new TypeCastOrNamedFunctionCallExpression(e),
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
         // Unary operators:
