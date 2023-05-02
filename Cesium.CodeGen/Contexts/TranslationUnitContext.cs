@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -82,6 +83,19 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();
             return new StructType(members, structType.Identifier);
+        }
+
+        if (type is FunctionType functionType)
+        {
+            ParametersInfo? parametersInfo = null;
+            if (functionType.Parameters is not null)
+            {
+                var functionParameters = functionType.Parameters;
+                var parameters = functionParameters.Parameters.Select(parameterInfo => parameterInfo with { Type = ResolveType(parameterInfo.Type) }).ToArray();
+                parametersInfo = new ParametersInfo(parameters, functionParameters.IsVoid, functionParameters.IsVarArg);
+            }
+
+            return new FunctionType(parametersInfo, ResolveType(functionType.ReturnType));
         }
 
         return type;

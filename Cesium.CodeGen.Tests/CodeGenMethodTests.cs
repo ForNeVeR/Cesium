@@ -145,6 +145,15 @@ void test()
 }");
 
     [Fact]
+    public Task TypeDefDeclaration() => DoTest(@"typedef void FILE;
+FILE* console_read(FILE* stream);
+
+FILE* console_read(FILE* stream)
+{
+    return 0;
+}");
+
+    [Fact]
     public Task ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
 
 void console_read()

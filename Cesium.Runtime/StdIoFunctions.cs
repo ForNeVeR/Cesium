@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 #if NETSTANDARD
 using System.Text;
@@ -10,12 +11,73 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
+    record class StreamHandle
+    {
+        public required string FileMode { get; set; }
+        public Func<TextReader>? Reader { get; set; }
+        public Func<TextWriter>? Writer { get; set; }
+    }
+
+    private static List<StreamHandle> handles = new();
+
+    static StdIoFunctions()
+    {
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "r",
+            Reader = () => Console.In,
+        });
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Out,
+        });
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Error,
+        });
+    }
+
     public static int PutS(byte* str)
     {
         try
         {
-            Console.Write(Unmarshal(str));
+            Console.WriteLine(Unmarshal(str));
             return 0;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
+    public static int PutChar(byte character)
+    {
+        try
+        {
+            Console.Write((char)character);
+            return character;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
+
+    public static int PutC(byte character, void* stream)
+    {
+        try
+        {
+            var streamDescriptor = GetStreamHandle(stream);
+            if (streamDescriptor == null)
+            {
+                return -1;
+            }
+
+            streamDescriptor.Writer!().Write((char)character);
+            return character;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
@@ -129,5 +191,12 @@ public unsafe static class StdIoFunctions
 #else
         return Marshal.PtrToStringUTF8((nint)str);
 #endif
+    }
+
+    private static StreamHandle? GetStreamHandle(void* stream)
+    {
+        var handleIndex = (int)(IntPtr)stream;
+        var result = handles.ElementAtOrDefault(handleIndex);
+        return result;
     }
 }
