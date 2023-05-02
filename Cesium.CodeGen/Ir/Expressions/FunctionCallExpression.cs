@@ -11,11 +11,10 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal class FunctionCallExpression : IExpression
 {
     private readonly IdentifierExpression _function;
-    private readonly IList<IExpression> _arguments;
+    private readonly IReadOnlyList<IExpression> _arguments;
     private readonly FunctionInfo? _callee;
-    private readonly bool _castLike;
 
-    private FunctionCallExpression(IdentifierExpression function, FunctionInfo callee, IList<IExpression> arguments)
+    public FunctionCallExpression(IdentifierExpression function, FunctionInfo? callee, IReadOnlyList<IExpression> arguments)
     {
         _function = function;
         _arguments = arguments;
@@ -24,55 +23,18 @@ internal class FunctionCallExpression : IExpression
 
     public FunctionCallExpression(Ast.FunctionCallExpression expression)
     {
-        var (function, arguments,  castLike) = expression;
+        var (function, arguments) = expression;
         var functionExpression = function.ToIntermediate();
         _function = functionExpression as IdentifierExpression
                     ?? throw new WipException(
                         229,
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
-        _arguments = (IList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
+        _arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
                      ?? Array.Empty<IExpression>();
         _callee = null;
-        _castLike = castLike;
     }
 
     public IExpression Lower(IDeclarationScope scope)
-    {
-        if (_castLike)
-        {
-            return TryLowerAsCast(scope) ?? LowerAsFunction(scope);
-        }
-
-        return LowerAsFunction(scope);
-    }
-
-    private IExpression? TryLowerAsCast(IDeclarationScope scope)
-    {
-        var functionName = _function.Identifier;
-
-        IType resolvedType;
-        try
-        {
-            resolvedType = scope.ResolveType(new NamedType(functionName));
-        }
-        catch (CompilationException)
-        {
-            // no better way to do this
-
-            return null;
-        }
-
-        var expr = _arguments.First();
-
-        foreach (var argument in _arguments.Skip(1))
-        {
-            expr = new CommaExpression(expr, argument);
-        }
-
-        return new TypeCastExpression(resolvedType, expr.Lower(scope)).Lower(scope);
-    }
-
-    private IExpression LowerAsFunction(IDeclarationScope scope)
     {
         var functionName = _function.Identifier;
         var callee = scope.GetFunctionInfo(functionName);

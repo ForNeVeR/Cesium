@@ -64,8 +64,7 @@ internal class AmbiguousBlockItem : IBlockItem
 
         var functionCallExpression = new Expressions.FunctionCallExpression(new FunctionCallExpression(
             new ConstantLiteralExpression(functionNameToken),
-            ImmutableArray.Create<Expression>(new ConstantLiteralExpression(argumentToken)),
-            false
+            ImmutableArray.Create<Expression>(new ConstantLiteralExpression(argumentToken))
         ));
         var realNode = new ExpressionStatement(functionCallExpression);
         return realNode.Lower(scope);

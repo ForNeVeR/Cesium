@@ -53,6 +53,7 @@ internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
+    public IType? TryGetType(string identifier) => Context.TryGetType(identifier);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
     public void AddTagDefinition(string identifier, IType type) => throw new AssertException("Not supported");
 
