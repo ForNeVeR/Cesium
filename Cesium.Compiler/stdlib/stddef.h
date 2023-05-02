@@ -1,5 +1,5 @@
 typedef __nint ptrdiff_t;
-typedef unsigned int size_t;
+typedef __nuint size_t;
 
 typedef unsigned int max_align_t;
 

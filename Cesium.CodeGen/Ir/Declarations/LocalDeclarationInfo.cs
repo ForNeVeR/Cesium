@@ -354,6 +354,7 @@ internal record LocalDeclarationInfo(
                 ["float"] => PrimitiveTypeKind.Float,
                 ["double"] => PrimitiveTypeKind.Double,
                 ["__nint"] => PrimitiveTypeKind.NativeInt,
+                ["__nuint"] => PrimitiveTypeKind.NativeUInt,
                 _ => throw new WipException(
                     224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),

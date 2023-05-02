@@ -1,14 +1,13 @@
-namespace Cesium.Runtime;
-
-using System.Runtime.InteropServices;
 using System.Text;
+
+namespace Cesium.Runtime;
 
 /// <summary>
 /// Functions declared in the string.h
 /// </summary>
 public unsafe static class StringFunctions
 {
-    public static uint StrLen(byte* str)
+    public static nuint StrLen(byte* str)
     {
 #if NETSTANDARD
         if (str == null)
@@ -55,7 +54,7 @@ public unsafe static class StringFunctions
         *dest = 0;
         return result;
     }
-    public static byte* StrNCpy(byte* dest, byte* src, uint count)
+    public static byte* StrNCpy(byte* dest, byte* src, nuint count)
     {
         if (dest == null)
         {
@@ -113,7 +112,7 @@ public unsafe static class StringFunctions
         *dest = 0;
         return result;
     }
-    public static byte* StrNCat(byte* dest, byte* src, uint count)
+    public static byte* StrNCat(byte* dest, byte* src, nuint count)
     {
         if (dest == null)
         {

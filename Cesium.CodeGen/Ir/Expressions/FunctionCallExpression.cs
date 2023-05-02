@@ -125,6 +125,6 @@ internal class FunctionCallExpression : IExpression
     {
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new AssertException($"Function \"{functionName}\" was not lowered.");
-        return callee.ReturnType;
+        return scope.ResolveType(callee.ReturnType);
     }
 }

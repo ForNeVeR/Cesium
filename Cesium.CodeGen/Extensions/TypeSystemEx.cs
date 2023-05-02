@@ -32,7 +32,8 @@ internal static class TypeSystemEx
             }
         }
 
-        var paramsString = string.Join(", ", parametersInfo.Parameters.Select(x => x.Type.Resolve(context)));
+        var paramsString = string.Join(", ", parametersInfo.Parameters.Select(x =>
+            context.ResolveType(x.Type).Resolve(context)));
         var methodDisplayName = $"{memberName}({paramsString})";
         var errorMessage = similarMethods.Count == 0
             ? $"Cannot find CLI-imported member {methodDisplayName}."
@@ -94,7 +95,7 @@ internal static class TypeSystemEx
         for (var i = 0; i < parameters.Parameters.Count; i++)
         {
             var declParam = parameters.Parameters[i];
-            var declParamType = declParam.Type.Resolve(context);
+            var declParamType = context.ResolveType(declParam.Type).Resolve(context);
 
             var srcParam = methodParameters[i];
             var srcParamType = srcParam.ParameterType;
@@ -151,7 +152,8 @@ internal static class TypeSystemEx
         return t.IsEqualTo(ts.SignedChar)
             || t.IsEqualTo(ts.Short)
             || t.IsEqualTo(ts.Int)
-            || t.IsEqualTo(ts.Long);
+            || t.IsEqualTo(ts.Long)
+            || t.IsEqualTo(ts.NativeInt);
     }
 
     public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
@@ -160,7 +162,8 @@ internal static class TypeSystemEx
             || t.IsEqualTo(ts.Char)
             || t.IsEqualTo(ts.UnsignedShort)
             || t.IsEqualTo(ts.UnsignedInt)
-            || t.IsEqualTo(ts.UnsignedLong);
+            || t.IsEqualTo(ts.UnsignedLong)
+            || t.IsEqualTo(ts.NativeUInt);
     }
 
     public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
@@ -184,8 +187,9 @@ internal static class TypeSystemEx
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
+        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt};
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt};
+        // TODO: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
