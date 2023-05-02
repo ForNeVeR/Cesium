@@ -22,10 +22,10 @@ function buildCompiler() {
 function buildFileWithNativeCompiler($inputFile, $outputFile) {
     if ($IsWindows) {
         Write-Host "Compiling $inputFile with cl.exe."
-        cl.exe /nologo $inputFile /Fo:$ObjDir/ /Fe:$outputFile | Out-Host
+        cl.exe /nologo $inputFile -D__TEST_DEFINE /Fo:$ObjDir/ /Fe:$outputFile | Out-Host
     } else {
         Write-Host "Compiling $inputFile with gcc."
-        gcc $inputFile -o $outputFile | Out-Host
+        gcc $inputFile -o $outputFile -D__TEST_DEFINE | Out-Host
     }
 
     if (!$?) {
@@ -42,7 +42,7 @@ function buildFileWithCesium($inputFile, $outputFile) {
     $env:Platform = $null
     try {
         Write-Host "Compiling $inputFile with Cesium."
-        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile --out $outputFile | Out-Host
+        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile -D__TEST_DEFINE --out $outputFile | Out-Host
         if (!$?) {
             Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
             return $false

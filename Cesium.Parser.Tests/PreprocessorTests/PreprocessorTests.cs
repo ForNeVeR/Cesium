@@ -9,12 +9,18 @@ public class PreprocessorTests : VerifyTestBase
 {
     private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
+        string result = await DoPreprocess(source, standardHeaders, defines);
+        await Verify(result, GetSettings());
+    }
+
+    private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+    {
         var lexer = new CPreprocessorLexer(source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
         var preprocessor = new CPreprocessor(source, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
-        await Verify(result, GetSettings());
+        return result;
     }
 
     [Fact]
@@ -165,12 +171,15 @@ int main() { char* x = foo(int x; printf(""some string"")); }
 ");
 
     [Fact]
-    public Task IfExpressionDefinedLiteral() => DoTest(
+    public Task IfExpressionCannotConsumeNonInteger()
+    {
+        return Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(
 @"#define mycondition
 #if mycondition
 int foo() { return 0; }
 #endif
-");
+"));
+    }
 
     [Fact]
     public Task IfExpressionEqualsLiteral() => DoTest(
@@ -238,7 +247,7 @@ int foo() { return 0; }
 
     [Fact]
     public Task IfExpressionOr() => DoTest(
-@"#define mycondition
+@"#define mycondition 0
 #define mycondition2 1
 #if mycondition || mycondition2
 int foo() { return 0; }
@@ -247,7 +256,7 @@ int foo() { return 0; }
 
     [Fact]
     public Task IfExpressionAnd() => DoTest(
-@"#define mycondition
+@"#define mycondition 0
 #define mycondition2 1
 #if mycondition && mycondition2
 int foo() { return 0; }
@@ -258,7 +267,7 @@ int foo() { return 0; }
     public Task UndefMacro() => DoTest(
 @"#define mycondition 1
 #undef mycondition
-#if !mycondition
+#if !(defined mycondition)
 int foo() { return 0; }
 #endif
 ");

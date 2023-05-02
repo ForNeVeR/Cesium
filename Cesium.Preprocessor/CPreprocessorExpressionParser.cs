@@ -13,10 +13,12 @@ internal partial class CPreprocessorExpressionParser
     private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken token) => new IdentifierExpression(token.Text);
 
     [Rule("identifier_defined: 'defined' PreprocessingToken")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token) => new IdentifierExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token)
+        => new DefinedExpression(token.Text);
 
     [Rule("identifier_defined: 'defined' '(' PreprocessingToken ')' ")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken openToken, ICPreprocessorToken token, ICPreprocessorToken closedToken) => new IdentifierExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken openToken, ICPreprocessorToken token, ICPreprocessorToken closedToken)
+        => new DefinedExpression(token.Text);
 
     [Rule("simple_expression: identifier")]
     private static IPreprocessorExpression MakeSimpleExpression(IPreprocessorExpression expression) => expression;

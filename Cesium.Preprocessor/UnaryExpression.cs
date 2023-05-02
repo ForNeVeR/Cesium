@@ -19,7 +19,7 @@ internal class UnaryExpression : IPreprocessorExpression
         switch(Operator)
         {
             case CPreprocessorOperator.Negation:
-                return expressionValue == null ? "1" : null;
+                return !expressionValue.AsBoolean() ? "1" : "0";
             default:
                 throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives");
         }
