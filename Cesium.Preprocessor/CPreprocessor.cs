@@ -403,7 +403,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
 
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
-        bool includeTokens = macroExpression != null;
+        bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
     private (CPreprocessorMacroDefinitionParser.MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)

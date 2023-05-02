@@ -23,13 +23,13 @@ internal class BinaryExpression : IPreprocessorExpression
         switch(Operator)
         {
             case CPreprocessorOperator.Equals:
-                return firstValue == secondValue ? "1" : null;
+                return firstValue == secondValue ? "1" : "0";
             case CPreprocessorOperator.NotEquals:
-                return firstValue != secondValue ? "1" : null;
+                return firstValue != secondValue ? "1" : "0";
             case CPreprocessorOperator.LogicalAnd:
-                return (!string.IsNullOrEmpty(firstValue) && !string.IsNullOrEmpty(secondValue)) ? "1" : null;
+                return (firstValue.AsBoolean() && secondValue.AsBoolean()) ? "1" : "0";
             case CPreprocessorOperator.LogicalOr:
-                return (!string.IsNullOrEmpty(firstValue) || !string.IsNullOrEmpty(secondValue)) ? "1" : null;
+                return (firstValue.AsBoolean() || secondValue.AsBoolean()) ? "1" : "0";
             default:
                 throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives");
         }
