@@ -43,7 +43,7 @@ internal class FunctionDeclaration : IBlockItem
         if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
 
-        var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo, scope.Context.ResolveType(returnType));
+        var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo, returnType);
         var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, method, IsDefined: true);
         if (!scope.Context.Functions.TryGetValue(_identifier, out var existingDeclaration))
         {

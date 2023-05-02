@@ -32,8 +32,7 @@ internal static class TypeSystemEx
             }
         }
 
-        var paramsString = string.Join(", ", parametersInfo.Parameters.Select(x =>
-            context.ResolveType(x.Type).Resolve(context)));
+        var paramsString = string.Join(", ", parametersInfo.Parameters.Select(x => x.Type.Resolve(context)));
         var methodDisplayName = $"{memberName}({paramsString})";
         var errorMessage = similarMethods.Count == 0
             ? $"Cannot find CLI-imported member {methodDisplayName}."
@@ -95,7 +94,7 @@ internal static class TypeSystemEx
         for (var i = 0; i < parameters.Parameters.Count; i++)
         {
             var declParam = parameters.Parameters[i];
-            var declParamType = context.ResolveType(declParam.Type).Resolve(context);
+            var declParamType = declParam.Type.Resolve(context);
 
             var srcParam = methodParameters[i];
             var srcParamType = srcParam.ParameterType;
