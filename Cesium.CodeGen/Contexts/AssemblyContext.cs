@@ -66,7 +66,7 @@ public class AssemblyContext
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
-    private readonly Dictionary<string, FieldReference> _stringConstantHolders = new();
+    private readonly Dictionary<string, FieldReference> _dataConstantHolders = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
@@ -155,7 +155,7 @@ public class AssemblyContext
 
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
-        if (_stringConstantHolders.TryGetValue(stringConstant, out var field))
+        if (_dataConstantHolders.TryGetValue(stringConstant, out var field))
             return field;
 
         var encoding = Encoding.UTF8;
@@ -165,24 +165,36 @@ public class AssemblyContext
         Debug.Assert(writtenBytes == bufferSize - 1);
 
         var type = GetStubType(bufferSize);
-        field = GenerateFieldForStringConstant(type, data);
-        _stringConstantHolders.Add(stringConstant, field);
+        field = GenerateFieldForDataConstant(type, data);
+        _dataConstantHolders.Add(stringConstant, field);
 
         return field;
     }
 
     public FieldReference GetConstantPoolReference(byte[] dataConstant)
     {
-        var hash = dataConstant.GetHashCode().ToString();
-        if (_stringConstantHolders.TryGetValue(hash, out var field))
+        if (dataConstant.Length >= 10)
+        {
+            // Do not attempt to put large arrays in cache.
+            // Most likely they are single use in the application.
+            // No chance that they would be cached by values.
+            var bufferSize = dataConstant.Length;
+            var type = GetStubType(bufferSize);
+            return GenerateFieldForDataConstant(type, dataConstant);
+        }
+        else
+        {
+            var hash = string.Join("", dataConstant.Select(_ => _.ToString("X2")));
+            if (_dataConstantHolders.TryGetValue(hash, out var field))
+                return field;
+
+            var bufferSize = dataConstant.Length;
+            var type = GetStubType(bufferSize);
+            field = GenerateFieldForDataConstant(type, dataConstant);
+            _dataConstantHolders.Add(hash, field);
+
             return field;
-
-        var bufferSize = dataConstant.Length;
-        var type = GetStubType(bufferSize);
-        field = GenerateFieldForStringConstant(type, dataConstant);
-        _stringConstantHolders.Add(hash, field);
-
-        return field;
+        }
     }
 
     private TypeReference GetStubType(int size)
@@ -208,12 +220,12 @@ public class AssemblyContext
         return type;
     }
 
-    private FieldReference GenerateFieldForStringConstant(
+    private FieldReference GenerateFieldForDataConstant(
         TypeReference stubStructType,
         byte[] contentWithTerminatingZero)
     {
-        var number = _stringConstantHolders.Count;
-        var fieldName = $"ConstStringBuffer{number}";
+        var number = _dataConstantHolders.Count;
+        var fieldName = $"ConstDataBuffer{number}";
 
         var field = new FieldDefinition(fieldName, FieldAttributes.Static | FieldAttributes.InitOnly, stubStructType)
         {
