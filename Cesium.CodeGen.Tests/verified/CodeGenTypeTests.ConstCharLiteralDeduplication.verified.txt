@@ -6,11 +6,11 @@
         System.Byte* V_0
         System.Byte* V_1
         System.Byte* V_2
-      IL_0000: ldsflda <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstStringBuffer0
+      IL_0000: ldsflda <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstDataBuffer0
       IL_0005: stloc.0
-      IL_0006: ldsflda <ConstantPool>/<ConstantPoolItemType8> <ConstantPool>::ConstStringBuffer1
+      IL_0006: ldsflda <ConstantPool>/<ConstantPoolItemType8> <ConstantPool>::ConstDataBuffer1
       IL_000b: stloc.1
-      IL_000c: ldsflda <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstStringBuffer0
+      IL_000c: ldsflda <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstDataBuffer0
       IL_0011: stloc.2
       IL_0012: ldc.i4.0
       IL_0013: ret
@@ -35,7 +35,7 @@
     Pack: 1
     Size: 8
   Fields:
-    <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstStringBuffer0
+    <ConstantPool>/<ConstantPoolItemType7> <ConstantPool>::ConstDataBuffer0
       Init with (UTF-8 x 7 bytes): "hellow"
-    <ConstantPool>/<ConstantPoolItemType8> <ConstantPool>::ConstStringBuffer1
+    <ConstantPool>/<ConstantPoolItemType8> <ConstantPool>::ConstDataBuffer1
       Init with (UTF-8 x 8 bytes): "hellow1"
