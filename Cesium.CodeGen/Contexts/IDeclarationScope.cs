@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -20,7 +21,26 @@ internal interface IDeclarationScope
     /// <param name="type">Type which should be resolved.</param>
     /// <returns>A <see cref="IType"/> which fully resolves.</returns>
     /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
-    IType ResolveType(IType type);
+    IType ResolveType(IType type)
+    {
+        if (TryResolveType(type, out var resolvedType, out var unresolvedType))
+        {
+            return resolvedType;
+        }
+
+        throw new CompilationException($"Cannot resolve type {unresolvedType}");
+    }
+
+    /// <summary>
+    /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
+    /// </summary>
+    /// <param name="type">Type which should be resolved.</param>
+    /// <param name="resolvedType">A <see cref="IType"/> which fully resolves.</param>
+    /// <param name="unresolvedType">A <see cref="IType"/> which blocks resolution resolves.</param>
+    /// <returns>A <c>true</c> if type was successfully resolved; <c>false</c> otherwise.</returns>
+    /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>    IType ResolveType(IType type);
+    bool TryResolveType(IType type, [NotNullWhen(true)] out IType? resolvedType, [NotNullWhen(false)] out IType? unresolvedType);
+
     void AddTypeDefinition(string identifier, IType type);
     void AddTagDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);

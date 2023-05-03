@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -51,7 +52,8 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public ParameterInfo? GetParameterInfo(string name) => ((IDeclarationScope)Parent).GetParameterInfo(name);
 
     /// <inheritdoc />
-    public IType ResolveType(IType type) => Context.ResolveType(type);
+    public bool TryResolveType(IType type, [NotNullWhen(true)] out IType? resolvedType, [NotNullWhen(false)] out IType? unresolvedType)
+        => Context.TryResolveType(type, out resolvedType, out unresolvedType);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
     public void AddTagDefinition(string identifier, IType type) => throw new AssertException("Not supported");
 

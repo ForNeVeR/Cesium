@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
@@ -36,7 +37,8 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
 
     /// <inheritdoc />
-    public IType ResolveType(IType type) => Context.ResolveType(type);
+    public bool TryResolveType(IType type, [NotNullWhen(true)] out IType? resolvedType, [NotNullWhen(false)] out IType? unresolvedType)
+        => Context.TryResolveType(type, out resolvedType, out unresolvedType);
     public void AddTypeDefinition(string identifier, IType type) => Context.AddTypeDefinition(identifier, type);
     public void AddTagDefinition(string identifier, IType type) => Context.AddTagDefinition(identifier, type);
 
