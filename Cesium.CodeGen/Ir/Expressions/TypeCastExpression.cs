@@ -66,6 +66,8 @@ internal sealed class TypeCastExpression : IExpression
     {
         var resolvedType = scope.ResolveType(_targetType);
 
-        return new TypeCastExpression(resolvedType, _expression.Lower(scope));
+        return resolvedType is PrimitiveType { Kind: PrimitiveTypeKind.Void }
+            ? new ConsumeExpression(_expression.Lower(scope)).Lower(scope)
+            : new TypeCastExpression(resolvedType, _expression.Lower(scope));
     }
 }
