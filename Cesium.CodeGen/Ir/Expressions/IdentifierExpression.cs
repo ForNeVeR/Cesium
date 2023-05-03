@@ -56,7 +56,13 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (var is not null)
         {
-            return new LValueLocalVariable(var, Identifier);
+            if (var.StorageClass == Declarations.StorageClass.Auto)
+                return new LValueLocalVariable(var.Type, Identifier);
+
+            if (var.StorageClass == Declarations.StorageClass.Static)
+                return new LValueGlobalVariable(var.Type, Identifier);
+
+            throw new CompilationException($"Identifier {Identifier} has unsupported storage class {var.StorageClass}.");
         }
 
         if (par is not null)

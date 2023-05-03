@@ -1,10 +1,12 @@
 using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -20,13 +22,21 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
         Context.Functions.GetValueOrDefault(identifier);
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
-    public IReadOnlyDictionary<string, IType> Variables => ImmutableDictionary<string, IType>.Empty;
-    public void AddVariable(string identifier, IType variable) =>
-        throw new AssertException("Cannot add a variable into a global constructor scope");
+    private readonly Dictionary<string, VariableInfo> _variables = new();
 
-    public IType? GetVariable(string identifier)
+    public void AddVariable(StorageClass storageClass, string identifier, IType variableType)
     {
-        return null;
+        if (storageClass == StorageClass.Static)
+        {
+            _variables.Add(identifier, new(identifier, storageClass, variableType));
+        }
+
+        Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);
+    }
+
+    public VariableInfo? GetVariable(string identifier)
+    {
+        return _variables.GetValueOrDefault(identifier);
     }
     public VariableDefinition ResolveVariable(string identifier) =>
         throw new AssertException("Cannot add a variable into a global constructor scope");

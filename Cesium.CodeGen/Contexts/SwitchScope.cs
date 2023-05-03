@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -18,17 +19,18 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
 
-    private readonly Dictionary<string, IType> _variables = new();
+    private readonly Dictionary<string, VariableInfo> _variables = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
 
-    public IType? GetVariable(string identifier)
+    public VariableInfo? GetVariable(string identifier)
     {
         return _variables.TryGetValue(identifier, out var variable)
             ? variable
             : ((IDeclarationScope)Parent).GetVariable(identifier);
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
-    public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
+    public void AddVariable(StorageClass storageClass, string identifier, IType variable)
+        => _variables.Add(identifier, new(identifier, storageClass, variable));
     public VariableDefinition ResolveVariable(string identifier)
     {
         if (!_variables.TryGetValue(identifier, out var variableType))
@@ -38,7 +40,7 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 
         if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
         {
-            var typeReference = variableType.Resolve(Context);
+            var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);
             _variableDefinition.Add(identifier, variableDefinition);

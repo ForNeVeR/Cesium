@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -104,9 +105,19 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
-    internal void AddTranslationUnitLevelField(string identifier, IType type)
+    internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
     {
-        _translationUnitLevelFieldTypes.Add(identifier, type);
+        switch (storageClass)
+        {
+            case StorageClass.Static: // file-level
+                _translationUnitLevelFieldTypes.Add(identifier, type);
+                break;
+            case StorageClass.Auto: // assembly-level
+                AssemblyContext.AddAssemblyLevelField(identifier, type);
+                break;
+            default:
+                throw new CompilationException($"Global variable of storage class {storageClass} is not supported.");
+        }
     }
 
     internal FieldReference? ResolveTranslationUnitField(string name)

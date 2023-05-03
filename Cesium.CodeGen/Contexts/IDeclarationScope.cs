@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -11,8 +12,8 @@ internal interface IDeclarationScope
     CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
-    void AddVariable(string identifier, IType variable);
-    IType? GetVariable(string identifier);
+    void AddVariable(StorageClass storageClass, string identifier, IType variable);
+    VariableInfo? GetVariable(string identifier);
 
     /// <summary>
     /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.

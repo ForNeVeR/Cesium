@@ -34,7 +34,7 @@ internal class DeclarationBlockItem : IBlockItem
                     $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
             type = scope.ResolveType(type);
-            scope.AddVariable(identifier, type);
+            scope.AddVariable(storageClass, identifier, type);
 
             var initializerExpression = initializer;
             if (initializerExpression != null)
@@ -76,9 +76,6 @@ internal class DeclarationBlockItem : IBlockItem
     public void EmitTo(IEmitScope scope)
     {
         var (storageClass, declarations) = _declaration;
-        if (storageClass != StorageClass.Auto)
-            throw new WipException(342, $"Storage class {storageClass} isn't supported, yet.");
-
         foreach (var (declaration, initializer) in declarations)
         {
             var (type, identifier, _) = declaration;
@@ -94,8 +91,19 @@ internal class DeclarationBlockItem : IBlockItem
                     break;
             }
 
-            var variable = scope.ResolveVariable(identifier!);
-            scope.StLoc(variable);
+            switch (storageClass)
+            {
+                case StorageClass.Auto:
+                    var variable = scope.ResolveVariable(identifier!);
+                    scope.StLoc(variable);
+                    break;
+                case StorageClass.Static:
+                    var field = scope.ResolveGlobalField(identifier!);
+                    scope.StSFld(field);
+                    break;
+                default:
+                    throw new CompilationException($"Storage class {storageClass} is not supported");
+            } 
         }
     }
 }

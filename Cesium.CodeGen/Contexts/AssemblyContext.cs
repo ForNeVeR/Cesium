@@ -36,6 +36,7 @@ public class AssemblyContext
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
         var targetRuntime = compilationOptions.TargetRuntime;
+        //module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
 
         return assemblyContext;
@@ -84,7 +85,7 @@ public class AssemblyContext
 
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
-        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
+        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).Distinct().ToArray();
         _constantPool = new(
             () =>
             {

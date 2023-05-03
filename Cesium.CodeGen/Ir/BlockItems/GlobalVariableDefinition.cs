@@ -17,23 +17,13 @@ internal record GlobalVariableDefinition(
 {
     public IBlockItem Lower(IDeclarationScope scope)
     {
+        scope.AddVariable(StorageClass, Identifier, Type);
+
         return this with { Initializer = Initializer?.Lower(scope) };
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        switch (StorageClass)
-        {
-            case StorageClass.Static: // file-level
-                scope.Context.AddTranslationUnitLevelField(Identifier, Type);
-                break;
-            case StorageClass.Auto: // assembly-level
-                scope.AssemblyContext.AddAssemblyLevelField(Identifier, Type);
-                break;
-            default:
-                throw new CompilationException($"Global variable of storage class {StorageClass} is not supported.");
-        }
-
         var field = scope.ResolveGlobalField(Identifier);
         if (Initializer != null)
         {
