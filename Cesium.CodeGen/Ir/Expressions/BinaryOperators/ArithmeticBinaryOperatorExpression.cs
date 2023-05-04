@@ -62,16 +62,15 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
                     throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
                 }
 
-                var baseSizeLeft = leftPointerType.Base.GetSizeInBytes(scope.ArchitectureSet);
-                var baseSizeRight = rightPointerType.Base.GetSizeInBytes(scope.ArchitectureSet);
-
-                if (baseSizeLeft == null || baseSizeRight == null || baseSizeLeft != baseSizeRight)
+                if (!leftPointerType.Base.IsEqualTo(rightPointerType.Base))
                     throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
+
+                var baseSize = leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet);
 
                 return new ArithmeticBinaryOperatorExpression(
                     new ArithmeticBinaryOperatorExpression(left, Operator, right),
                     BinaryOperator.Divide,
-                    new ConstantLiteralExpression(new IntegerConstant(baseSizeLeft.Value))
+                    baseSize
                 );
             }
 
