@@ -28,10 +28,10 @@ public class CodeGenPointersTests : CodeGenTestBase
     [Fact]
     public void CannotMultiplyPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = 1*x; }",
-        "Operator '*' does not suported on pointer types");
+        "Operator Multiply is not supported for value/pointer operands");
 
     [Fact]
     public void CannotAddPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = x +x; }",
-        "Operator '+': cannot add two pointers");
+        "Operator Add is not supported for pointer/pointer operands");
 }
