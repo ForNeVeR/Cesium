@@ -138,7 +138,7 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
             case (PointerType left, PointerType right):
                 Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) == right.Base.GetSizeInBytes(scope.ArchitectureSet));
 
-                return scope.CTypeSystem.Int; // ptrdiff_t, must be signed, int is "fine" (nint is not numeric anyway)
+                return scope.CTypeSystem.NativeInt; // ptrdiff_t, must be signed
         }
 
         return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
