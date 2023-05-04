@@ -346,4 +346,26 @@ int main()
 }
 ");
 
+    [Fact]
+    public Task ValidPointerSubtractionTest() => DoTest(@"int main() {
+    int foo[10];
+    return &foo[10] - &foo[1];
+}");
+
+    [Fact]
+    public void InvalidPointerWithIntSubtractionTest() => DoesNotCompile(@"int main() {
+    int foo[10];
+    return &foo[10] - 123;
+}", "Operator Subtract is not supported for pointer/value operands");
+
+    [Fact]
+    public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {
+    int a;
+} bar;
+
+int main() {
+    int foo[10];
+    bar* qux = (bar*) 123;
+    return &foo[10] - qux;
+}", "Invalid pointer subtraction - pointers are referencing different base types");
 }
