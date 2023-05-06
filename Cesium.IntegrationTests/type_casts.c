@@ -1,4 +1,4 @@
-typedef unsigned int size_t;
+#include <stddef.h>
 
 typedef struct foo_t
 {
