@@ -33,7 +33,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
                 $"This size is required to generate a field \"{fieldName}\" inside of a type \"{ownerType}\".");
 
         var itemType = Base.Resolve(context);
-        var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName, size.Value);
+        var bufferType = CreateFixedBufferType(context, itemType, fieldName, size.Value);
         ownerType.NestedTypes.Add(bufferType);
 
         return new FieldDefinition(fieldName, FieldAttributes.Public, bufferType)
@@ -43,16 +43,21 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
         CustomAttribute GenerateCustomFieldAttribute()
         {
-            var fixedBufferCtor = typeof(FixedBufferAttribute).GetConstructor(new[] { typeof(Type), typeof(int) });
-            if (fixedBufferCtor == null)
+            var typeType = context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type"));
+            var fixedBufferAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.FixedBufferAttribute");
+            if (fixedBufferAttributeType == null)
                 throw new AssertException(
-                    "Cannot find a constructor with signature (Type, Int32) in type FixedBufferAttribute.");
+                    "Cannot find a type System.Runtime.CompilerServices.FixedBufferAttribute.");
+
+            var fixedBufferCtor = new MethodReference(".ctor", context.TypeSystem.Void, fixedBufferAttributeType);
+            fixedBufferCtor.Parameters.Add(new ParameterDefinition(typeType));
+            fixedBufferCtor.Parameters.Add(new ParameterDefinition(context.TypeSystem.Int32));
 
             return new CustomAttribute(context.Module.ImportReference(fixedBufferCtor))
             {
                 ConstructorArguments =
                 {
-                    new CustomAttributeArgument(context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type")), itemType),
+                    new CustomAttributeArgument(typeType, itemType),
                     new CustomAttributeArgument(context.TypeSystem.Int32, size.Value)
                 }
             };
@@ -92,7 +97,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
     }
 
     private static TypeDefinition CreateFixedBufferType(
-        ModuleDefinition module,
+        TranslationUnitContext context,
         TypeReference fieldType,
         string fieldName,
         int sizeInBytes)
@@ -107,17 +112,28 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         //     public int FixedElementField;
         // }
 
-        var compilerGeneratedCtor = typeof(CompilerGeneratedAttribute).GetConstructor(Array.Empty<Type>());
+        ModuleDefinition module = context.Module;
+        var compilerGeneratedAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.CompilerGeneratedAttribute");
+        if (compilerGeneratedAttributeType == null)
+            throw new AssertException(
+                "Cannot find a type System.Runtime.CompilerServices.CompilerGeneratedAttribute.");
+
+        var compilerGeneratedCtor = new MethodReference(".ctor", context.TypeSystem.Void, compilerGeneratedAttributeType);
         var compilerGeneratedAttribute = new CustomAttribute(module.ImportReference(compilerGeneratedCtor));
 
-        var unsafeValueTypeCtor = typeof(UnsafeValueTypeAttribute).GetConstructor(Array.Empty<Type>());
+        var unsafeValueTypeAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.UnsafeValueTypeAttribute");
+        if (unsafeValueTypeAttributeType == null)
+            throw new AssertException(
+                "Cannot find a type System.Runtime.CompilerServices.UnsafeValueTypeAttribute.");
+
+        var unsafeValueTypeCtor = new MethodReference(".ctor", context.TypeSystem.Void, unsafeValueTypeAttributeType);
         var unsafeValueTypeAttribute = new CustomAttribute(module.ImportReference(unsafeValueTypeCtor));
 
         return new TypeDefinition(
             "",
             $"<SyntheticBuffer>{fieldName}",
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.NestedPublic,
-            module.ImportReference(typeof(ValueType)))
+            module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")))
         {
             PackingSize = 0,
             ClassSize = sizeInBytes,

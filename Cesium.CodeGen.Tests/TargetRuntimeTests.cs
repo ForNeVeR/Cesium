@@ -16,7 +16,6 @@ public class TargetRuntimeTests : CodeGenTestBase
         var frameworkName = (string)targetFrameworkAttribute.ConstructorArguments.Single().Value;
 
         var result = new StringBuilder();
-        result.AppendLine($"CoreLibrary: {assembly.MainModule.TypeSystem.CoreLibrary}");
         result.AppendLine($"TargetFrameworkAttribute.FrameworkName: {frameworkName}");
 
         var verify = Verify(result, GetSettings());
