@@ -5,15 +5,25 @@ param (
     $OutDir = "$PSScriptRoot/bin",
     $ObjDir = "$PSScriptRoot/obj",
     $TestCaseDir = "$PSScriptRoot",
+    $TargetFramework = "Net",
+    $Configuration = "Release",
     $TestCaseName = $null
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+function buildRuntime() {
+    Write-Host 'Building the Cesium.Runtime project.'
+    dotnet build --configuration $Configuration "$SourceRoot/Cesium.Runtime/Cesium.Runtime.csproj"
+    if (!$?) {
+        throw "Couldn't build the compiler: dotnet build returned $LASTEXITCODE."
+    }
+}
+
 function buildCompiler() {
     Write-Host 'Building the Cesium.Compiler project.'
-    dotnet build "$SourceRoot/Cesium.Compiler/Cesium.Compiler.csproj"
+    dotnet build --configuration $Configuration "$SourceRoot/Cesium.Compiler/Cesium.Compiler.csproj"
     if (!$?) {
         throw "Couldn't build the compiler: dotnet build returned $LASTEXITCODE."
     }
@@ -42,7 +52,17 @@ function buildFileWithCesium($inputFile, $outputFile) {
     $env:Platform = $null
     try {
         Write-Host "Compiling $inputFile with Cesium."
-        dotnet run --no-build --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile -D__TEST_DEFINE --out $outputFile | Out-Host
+        if ($TargetFramework -eq "NetFramework")
+        {
+            $CoreLib = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll"
+            $CesiumRuntime = "$SourceRoot/Cesium.Runtime/bin/$Configuration/netstandard2.0/Cesium.Runtime.dll"
+            dotnet run --no-build --configuration $Configuration --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile --out $outputFile -D__TEST_DEFINE --framework $TargetFramework --corelib $CoreLib --runtime $CesiumRuntime | Out-Host
+        }
+        else
+        {
+            dotnet run --no-build --configuration $Configuration --project "$SourceRoot/Cesium.Compiler" -- --nologo $inputFile --out $outputFile -D__TEST_DEFINE --framework $TargetFramework | Out-Host
+        }
+
         if (!$?) {
             Write-Host "Error: Cesium.Compiler returned exit code $LASTEXITCODE."
             return $false
@@ -77,7 +97,15 @@ function validateTestCase($testCase) {
         return $false
     }
 
-    dotnet $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
+    if ($TargetFramework -eq "NetFramework")
+    {
+        & $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
+    }
+    else
+    {
+        dotnet $cesiumBinOutput | Out-File -Encoding utf8 $cesiumRunLog
+    }
+
     if ($LASTEXITCODE -ne $expectedExitCode) {
         Write-Host "Binary $cesiumBinOutput returned code $LASTEXITCODE, but $expectedExitCode was expected."
         return $false
@@ -115,6 +143,7 @@ New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
 
 if (!$NoBuild) {
+    buildRuntime
     buildCompiler
 }
 

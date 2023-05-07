@@ -120,7 +120,11 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
     private TypeDefinition CreateTranslationUnitLevelType()
     {
-        var type = new TypeDefinition("", $"{Name}<Statics>", TypeAttributes.Abstract | TypeAttributes.Sealed);
+        var type = new TypeDefinition(
+            "",
+            $"{Name}<Statics>",
+            TypeAttributes.Abstract | TypeAttributes.Sealed,
+            Module.TypeSystem.Object);
         Module.Types.Add(type);
         return type;
     }

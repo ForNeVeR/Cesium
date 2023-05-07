@@ -59,8 +59,10 @@ public record TargetRuntimeDescriptor(
             _ => throw new CompilationException($"Unknown target runtime kind: {Kind}")
         } + $",Version=v{TargetFrameworkVersion}";
 
-        var constructor = typeof(TargetFrameworkAttribute).GetConstructor(new[] { typeof(string) });
-        var constructorRef = module.ImportReference(constructor);
+        var targetFrameworkAttributeRef = module.ImportReference(new TypeReference("System.Runtime.Versioning", "TargetFrameworkAttribute", module, GetSystemAssemblyReference()));
+        var constructorRef = new MethodReference(".ctor", module.TypeSystem.Void, targetFrameworkAttributeRef);
+        constructorRef.Parameters.Add(new ParameterDefinition(module.TypeSystem.String));
+        constructorRef = module.ImportReference(constructorRef);
         return new CustomAttribute(constructorRef)
         {
             ConstructorArguments = { new CustomAttributeArgument(module.TypeSystem.String, frameworkName) }

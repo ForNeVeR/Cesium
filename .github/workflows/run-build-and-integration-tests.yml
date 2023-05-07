@@ -18,6 +18,14 @@ jobs:
         environment:
           - ubuntu-latest
           - windows-latest
+        framework:
+          - Net
+        configuration:
+          - Release
+        include:
+          - environment: windows-latest
+            framework: NetFramework
+            configuration: Release
     env:
       DOTNET_NOLOGO: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -30,11 +38,11 @@ jobs:
         uses: ./.github/workflows/perform-common-steps
 
       - name: 🛠 Build Solution 🛠
-        run: dotnet build
+        run: dotnet build --configuration ${{ matrix.configuration }}
 
       - name: 🔃 Setup MSVC Environment 🔃
         uses: ilammy/msvc-dev-cmd@v1
         if: startsWith(runner.os, 'windows')
 
       - name: ☑ Run Integration Tests ☑
-        run: pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
+        run: pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild -TargetFramework ${{ matrix.framework }} -Configuration ${{ matrix.configuration }}

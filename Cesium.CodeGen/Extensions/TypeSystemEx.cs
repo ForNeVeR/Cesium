@@ -252,7 +252,15 @@ internal static class TypeSystemEx
 
     public static MethodReference GetArrayCopyToMethod(this TranslationUnitContext context)
     {
-        return context.Module.ImportReference(typeof(byte*[]).GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
+        var typeSystem = context.Module.TypeSystem;
+        var arrayRef = context.Module.ImportReference(new TypeReference("System", "Array", context.Module, typeSystem.CoreLibrary));
+        var copyToMethodRef = new MethodReference("CopyTo", typeSystem.Void, arrayRef);
+        copyToMethodRef.HasThis = true;
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(arrayRef));
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(typeSystem.Int32));
+        copyToMethodRef = context.Module.ImportReference(copyToMethodRef);
+
+        return context.Module.ImportReference(copyToMethodRef);
     }
     public static MethodReference GetTargetFrameworkAttributeConstructor(this TranslationUnitContext context)
     {
