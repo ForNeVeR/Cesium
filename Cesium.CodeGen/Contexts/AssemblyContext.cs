@@ -36,8 +36,8 @@ public class AssemblyContext
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
         var targetRuntime = compilationOptions.TargetRuntime;
-        module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
+        module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
         return assemblyContext;
     }
