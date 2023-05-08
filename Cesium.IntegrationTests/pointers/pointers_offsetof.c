@@ -1,22 +1,12 @@
 #include <stddef.h>
 
-typedef struct
-{
-    int asd;
-    int fgh;
-} bar_t;
-
-typedef struct foo
-{
-    int bar;
-    bar_t baz;
-    int qux;
-} foo;
+typedef struct { int quux; } qux_t;
+typedef struct { int bar, baz; qux_t qux; } foo_t;
 
 int main(int argc, char* argv[])
 {
-    // return ((size_t) (42));
-    // return offsetof(foo, bar) + offsetof(foo, baz) * offsetof(foo, qux) + 10;
+    foo_t foo;
+    *(int*)((char*) &foo + offsetof(foo_t, qux.quux)) = 42;
 
-    return offsetof(foo, bar) + offsetof(foo, baz.fgh) * offsetof(foo, qux) - 54;
+    return foo.qux.quux;
 }

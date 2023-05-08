@@ -38,17 +38,21 @@ internal class FunctionCallExpression : IExpression
     {
         if (_function.Identifier == "__builtin_offsetof_instance")
         {
-            if (_arguments is not [IdentifierExpression typeExpr])
+            if (_arguments is not [TypeCastExpression { TargetType: PointerType { Base: { } baseType } }])
             {
                 throw new CompilationException($"__builtin_offsetof_instance: invalid arguments");
             }
 
-            var type = typeExpr.Identifier;
+            var resolvedType = scope.ResolveType(baseType);
 
-            var resolvedType = scope.ResolveType(new NamedType(type));
             if (resolvedType is not StructType resolvedStruct)
             {
-                throw new CompilationException($"Type \"{type}\" is not a struct type.");
+                throw new CompilationException($"__builtin_offsetof_instance: type \"{resolvedType}\" is not a struct type.");
+            }
+
+            if (resolvedStruct.Members.Count == 0)
+            {
+                throw new CompilationException($"__builtin_offsetof_instance: struct type \"{resolvedType}\" has no members - is it declared?");
             }
 
             return new InstanceForOffsetOfExpression(resolvedStruct);
