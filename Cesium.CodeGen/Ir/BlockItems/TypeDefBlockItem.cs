@@ -33,6 +33,12 @@ internal class TypeDefBlockItem : IBlockItem
 
             type = scope.ResolveType(type);
             scope.AddTypeDefinition(identifier, type);
+
+            if (typeDef.Type is StructType { Identifier: { } tag })
+            {
+                scope.AddTagDefinition(tag, type);
+            }
+
             list.Add(new LocalDeclarationInfo(type, identifier, cliImportMemberName));
         }
 
