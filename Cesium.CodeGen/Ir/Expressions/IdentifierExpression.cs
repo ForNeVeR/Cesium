@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using System.Diagnostics;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -72,6 +73,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (fun is not null)
         {
+            Debug.Assert(fun.MethodReference is not null);
             return new FunctionValue(fun, fun.MethodReference);
         }
 

@@ -59,15 +59,15 @@ internal class FunctionDefinition : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new FunctionDefinition(_name, _storageClass, (FunctionType)scope.ResolveType(_functionType), _statement);
+        var resolvedFunctionType = (FunctionType)scope.ResolveType(_functionType);
+        return new FunctionDefinition(_name, _storageClass, resolvedFunctionType, _statement);
     }
 
     public void EmitTo(IEmitScope scope)
     {
         var context = scope.Context;
         var (parameters, returnType) = _functionType;
-        var resolvedReturnType = returnType.Resolve(context);
-        if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
+        if (IsMain && !returnType.Equals(context.CTypeSystem.Int))
             throw new CompilationException(
                 $"Invalid return type for the {_name} function: " +
                 $"int expected, got {returnType}.");
@@ -78,24 +78,31 @@ internal class FunctionDefinition : IBlockItem
         var declaration = context.GetFunctionInfo(_name);
         declaration?.VerifySignatureEquality(_name, parameters, returnType);
 
-        var method = declaration switch
-        {
-            null => context.GlobalType.DefineMethod(context, _name, resolvedReturnType, parameters),
-            { MethodReference: MethodDefinition md } => md,
-            _ => throw new CompilationException($"Function {_name} already defined as immutable.")
-        };
-
         if (declaration?.IsDefined == true)
-            throw new CompilationException($"Double definition of function {_name}.");
+            if (declaration.CliImportMember is null)
+                throw new CompilationException($"Double definition of function {_name}.");
+            else
+                throw new CompilationException($"Function {_name} already defined as immutable.");
 
+        var newDeclaration = new FunctionInfo(parameters, returnType, _storageClass, IsDefined: true);
         if (declaration == null)
         {
-            declaration = new FunctionInfo(parameters, returnType, _storageClass, method, IsDefined: true);
-            context.DeclareFunction(_name, declaration);
+            context.DeclareFunction(_name, newDeclaration);
         }
         else
         {
             context.UpdateFunctionDefinition(_name, _storageClass);
+        }
+
+        var method = declaration switch
+        {
+            null => context.DefineMethod(_name, returnType, parameters),
+            { MethodReference: MethodDefinition md } => md,
+            _ => throw new CompilationException($"Function {_name} already defined as immutable.")
+        };
+        if (declaration == null)
+        {
+            declaration = newDeclaration;
         }
 
         var functionScope = new FunctionScope(context, declaration, method);

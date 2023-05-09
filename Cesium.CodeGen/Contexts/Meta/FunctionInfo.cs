@@ -10,9 +10,11 @@ internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
     StorageClass StorageClass,
-    MethodReference MethodReference,
     bool IsDefined)
 {
+    public MethodReference? MethodReference { get; set; }
+    public string? CliImportMember { get; set; }
+
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {
         if (!returnType.Equals(ReturnType))
