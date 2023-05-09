@@ -24,7 +24,20 @@ internal class FunctionDeclaration : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new FunctionDeclaration(_identifier, _storageClass, (FunctionType)scope.ResolveType(_functionType), _cliImportMemberName);
+        var resolvedFunctionType = (FunctionType)scope.ResolveType(_functionType);
+        var (parametersInfo, returnType) = resolvedFunctionType;
+        if (_cliImportMemberName != null)
+        {
+            if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
+                throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
+        }
+
+        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: _cliImportMemberName is not null)
+        {
+            CliImportMember = _cliImportMemberName
+        };
+        scope.DeclareFunction(_identifier, cliImportFunctionInfo);
+        return new FunctionDeclaration(_identifier, _storageClass, resolvedFunctionType, _cliImportMemberName);
     }
 
     public void EmitTo(IEmitScope scope)
@@ -43,26 +56,12 @@ internal class FunctionDeclaration : IBlockItem
         string cliImportMemberName)
     {
         var (parametersInfo, returnType) = _functionType;
-        if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
-            throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
-
-        var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo, returnType);
-        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: true)
-        {
-            CliImportMember = cliImportMemberName
-        };
         var existingDeclaration = scope.Context.GetFunctionInfo(_identifier);
-        if (existingDeclaration is null)
+        if (existingDeclaration!.MethodReference is null)
         {
-            scope.Context.DeclareFunction(_identifier, cliImportFunctionInfo);
-            cliImportFunctionInfo.MethodReference = method;
+            var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo!, returnType);
+            existingDeclaration.MethodReference = method;
             return;
-        }
-
-        cliImportFunctionInfo.VerifySignatureEquality(_identifier, existingDeclaration.Parameters, existingDeclaration.ReturnType);
-        if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
-        {
-            throw new CompilationException($"Function {_identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
         }
     }
 
@@ -71,18 +70,12 @@ internal class FunctionDeclaration : IBlockItem
     {
         var (parametersInfo, returnType) = _functionType;
         var existingFunction = scope.Context.GetFunctionInfo(_identifier);
-        if (existingFunction != null)
+        if (existingFunction!.MethodReference is null)
         {
-            // The function with the same name is already defined. Then, just verify that it has the same signature and
-            // exit:
-            existingFunction.VerifySignatureEquality(_identifier, parametersInfo, returnType);
-            return;
+            scope.Context.DefineMethod(
+                _identifier,
+                returnType,
+                parametersInfo);
         }
-
-        scope.Context.DeclareFunction(_identifier, new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: false));
-        scope.Context.DefineMethod(
-            _identifier,
-            returnType,
-            parametersInfo);
     }
 }

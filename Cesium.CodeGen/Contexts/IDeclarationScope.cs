@@ -11,6 +11,7 @@ internal interface IDeclarationScope
     TargetArchitectureSet ArchitectureSet { get; }
     CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
+    void DeclareFunction(string identifier, FunctionInfo functionInfo);
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
     void AddVariable(StorageClass storageClass, string identifier, IType variable);
     VariableInfo? GetVariable(string identifier);

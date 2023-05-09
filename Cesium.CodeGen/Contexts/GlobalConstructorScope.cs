@@ -20,6 +20,9 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Context.GetFunctionInfo(identifier);
+
+    public void DeclareFunction(string identifier, FunctionInfo functionInfo)
+        => Context.DeclareFunction(identifier, functionInfo);
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
     private readonly Dictionary<string, VariableInfo> _variables = new();

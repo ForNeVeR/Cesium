@@ -17,6 +17,9 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Context.GetFunctionInfo(identifier);
 
+    public void DeclareFunction(string identifier, FunctionInfo functionInfo)
+        => Context.DeclareFunction(identifier, functionInfo);
+
     private readonly Dictionary<string, VariableInfo> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
