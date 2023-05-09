@@ -125,6 +125,25 @@ public abstract class CodeGenTestBase : VerifyTestBase
         return Verify(result, GetSettings(parameters));
     }
 
+    [MustUseReturnValue]
+    protected static Task VerifyMethods(IEnumerable<TypeDefinition> types, params object[] parameters)
+    {
+        var result = new StringBuilder();
+        int i = 0;
+        foreach (var type in types.Where(t => t is not null))
+        {
+            if (i != 0)
+            {
+                result.AppendLine();
+            }
+
+            DumpMethods(type, result);
+            i++;
+        }
+
+        return Verify(result, GetSettings(parameters));
+    }
+
     private static void DumpTypes(IEnumerable<TypeDefinition> types, StringBuilder result, int indent)
     {
         var first = true;
