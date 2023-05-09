@@ -52,7 +52,7 @@ internal class FunctionCallExpression : IExpression
 
             if (resolvedStruct.Members.Count == 0)
             {
-                throw new CompilationException($"__builtin_offsetof_instance: struct type \"{resolvedType}\" has no members - is it declared?");
+                throw new CompilationException($"__builtin_offsetof_instance: struct type \"{resolvedStruct.Identifier}\" has no members - is it declared?");
             }
 
             return new InstanceForOffsetOfExpression(resolvedStruct);
