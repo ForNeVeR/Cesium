@@ -1,3 +1,4 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
@@ -16,6 +17,7 @@ internal class FunctionDefinition : IBlockItem
     private const string MainFunctionName = "main";
 
     private readonly FunctionType _functionType;
+    private readonly StorageClass _storageClass;
     private readonly string _name;
     private readonly CompoundStatement _statement;
 
@@ -24,6 +26,14 @@ internal class FunctionDefinition : IBlockItem
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
+        _storageClass = StorageClass.Auto;
+        var staticMarker = specifiers.FirstOrDefault(_ => _ is StorageClassSpecifier storageClass && storageClass.Name == "static");
+        if (staticMarker is not null)
+        {
+            _storageClass = StorageClass.Static;
+            specifiers = specifiers.Remove(staticMarker);
+        }
+
         var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
         _functionType = type as FunctionType
                         ?? throw new AssertException($"Function of not a function type: {type}.");
@@ -39,8 +49,9 @@ internal class FunctionDefinition : IBlockItem
         _statement = astStatement.ToIntermediate();
     }
 
-    private FunctionDefinition(string name, FunctionType functionType, CompoundStatement statement)
+    private FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, CompoundStatement statement)
     {
+        _storageClass = storageClass;
         _name = name;
         _functionType = functionType;
         _statement = statement;
@@ -48,7 +59,7 @@ internal class FunctionDefinition : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new FunctionDefinition(_name, (FunctionType)scope.ResolveType(_functionType), _statement);
+        return new FunctionDefinition(_name, _storageClass, (FunctionType)scope.ResolveType(_functionType), _statement);
     }
 
     public void EmitTo(IEmitScope scope)
@@ -64,7 +75,7 @@ internal class FunctionDefinition : IBlockItem
         if (IsMain && parameters?.IsVarArg == true)
             throw new WipException(196, $"Variable arguments for the {_name} function aren't supported.");
 
-        var declaration = context.Functions.GetValueOrDefault(_name);
+        var declaration = context.GetFunctionInfo(_name);
         declaration?.VerifySignatureEquality(_name, parameters, returnType);
 
         var method = declaration switch
@@ -79,11 +90,13 @@ internal class FunctionDefinition : IBlockItem
 
         if (declaration == null)
         {
-            declaration = new FunctionInfo(parameters, returnType, method, IsDefined: true);
-            context.Functions.Add(_name, declaration);
+            declaration = new FunctionInfo(parameters, returnType, _storageClass, method, IsDefined: true);
+            context.DeclareFunction(_name, declaration);
         }
         else
-            context.Functions[_name] = declaration with { IsDefined = true };
+        {
+            context.UpdateFunctionDefinition(_name, _storageClass);
+        }
 
         var functionScope = new FunctionScope(context, declaration, method);
         if (IsMain)

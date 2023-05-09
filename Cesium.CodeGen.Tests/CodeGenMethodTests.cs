@@ -368,4 +368,32 @@ int main() {
     bar* qux = (bar*) 123;
     return &foo[10] - qux;
 }", "Invalid pointer subtraction - pointers are referencing different base types");
+
+    [Fact]
+    public Task StaticMethod() => DoTest(@"static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDeclaration() => DoTest(@"static int main();
+
+int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDefinition() => DoTest(@"int main();
+
+static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
 }

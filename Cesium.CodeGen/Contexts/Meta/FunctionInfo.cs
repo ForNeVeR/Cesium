@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -8,8 +9,9 @@ namespace Cesium.CodeGen.Contexts.Meta;
 internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
+    StorageClass StorageClass,
     MethodReference MethodReference,
-    bool IsDefined = false)
+    bool IsDefined)
 {
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {

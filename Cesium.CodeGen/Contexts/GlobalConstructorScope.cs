@@ -19,7 +19,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
-        Context.Functions.GetValueOrDefault(identifier);
+        Context.GetFunctionInfo(identifier);
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
