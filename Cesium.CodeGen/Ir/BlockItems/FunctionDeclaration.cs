@@ -47,16 +47,20 @@ internal class FunctionDeclaration : IBlockItem
             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
 
         var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo, returnType);
-        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, method, IsDefined: true);
+        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: true)
+        {
+            CliImportMember = cliImportMemberName
+        };
         var existingDeclaration = scope.Context.GetFunctionInfo(_identifier);
         if (existingDeclaration is null)
         {
             scope.Context.DeclareFunction(_identifier, cliImportFunctionInfo);
+            cliImportFunctionInfo.MethodReference = method;
             return;
         }
 
         cliImportFunctionInfo.VerifySignatureEquality(_identifier, existingDeclaration.Parameters, existingDeclaration.ReturnType);
-        if (!cliImportFunctionInfo.MethodReference.FullName.Equals(existingDeclaration.MethodReference.FullName))
+        if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
         {
             throw new CompilationException($"Function {_identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
         }
@@ -75,12 +79,10 @@ internal class FunctionDeclaration : IBlockItem
             return;
         }
 
-        var method = scope.Context.ModuleType.DefineMethod(
-            scope.Context,
+        scope.Context.DeclareFunction(_identifier, new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: false));
+        scope.Context.DefineMethod(
             _identifier,
-            returnType.Resolve(scope.Context),
+            returnType,
             parametersInfo);
-
-        scope.Context.DeclareFunction(_identifier, new FunctionInfo(parametersInfo, returnType, _storageClass, method, IsDefined: false));
     }
 }

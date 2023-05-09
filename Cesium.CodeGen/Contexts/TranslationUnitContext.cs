@@ -1,4 +1,3 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -7,7 +6,6 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using System.Diagnostics;
-using System.Xml.Linq;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -37,8 +35,11 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal FunctionInfo? GetFunctionInfo(string identifier) =>
         Functions.GetValueOrDefault(identifier);
 
-    internal void DeclareFunction(string identifier, FunctionInfo functionInfo) =>
+    internal void DeclareFunction(string identifier, FunctionInfo functionInfo)
+    {
         Functions.Add(identifier, functionInfo);
+    }
+
     internal void UpdateFunctionDefinition(string identifier, StorageClass storageClass)
     {
         var declaration = Functions.GetValueOrDefault(identifier);
@@ -48,6 +49,20 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             ? declaration.StorageClass
             : storageClass;
         Functions[identifier] = declaration with { IsDefined = true, StorageClass = mergedStorageClass };
+    }
+
+    internal MethodDefinition DefineMethod(
+        string name,
+        IType returnType,
+        ParametersInfo? parameters)
+    {
+        var method = GlobalType.DefineMethod(
+            this,
+            name,
+            returnType.Resolve(this),
+            parameters);
+        GetFunctionInfo(name)!.MethodReference = method;
+        return method;
     }
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
