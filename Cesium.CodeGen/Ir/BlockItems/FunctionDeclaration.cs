@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -9,11 +10,13 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class FunctionDeclaration : IBlockItem
 {
     private readonly string _identifier;
+    private readonly StorageClass _storageClass;
     private readonly FunctionType _functionType;
     private readonly string? _cliImportMemberName;
 
-    public FunctionDeclaration(string identifier, FunctionType functionType, string? cliImportMemberName)
+    public FunctionDeclaration(string identifier, StorageClass storageClass, FunctionType functionType, string? cliImportMemberName)
     {
+        _storageClass = storageClass;
         _identifier = identifier;
         _functionType = functionType;
         _cliImportMemberName = cliImportMemberName;
@@ -21,7 +24,7 @@ internal class FunctionDeclaration : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        return new FunctionDeclaration(_identifier, (FunctionType)scope.ResolveType(_functionType), _cliImportMemberName);
+        return new FunctionDeclaration(_identifier, _storageClass, (FunctionType)scope.ResolveType(_functionType), _cliImportMemberName);
     }
 
     public void EmitTo(IEmitScope scope)
@@ -44,10 +47,11 @@ internal class FunctionDeclaration : IBlockItem
             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
 
         var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo, returnType);
-        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, method, IsDefined: true);
-        if (!scope.Context.Functions.TryGetValue(_identifier, out var existingDeclaration))
+        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, method, IsDefined: true);
+        var existingDeclaration = scope.Context.GetFunctionInfo(_identifier);
+        if (existingDeclaration is null)
         {
-            scope.Context.Functions.Add(_identifier, cliImportFunctionInfo);
+            scope.Context.DeclareFunction(_identifier, cliImportFunctionInfo);
             return;
         }
 
@@ -62,7 +66,7 @@ internal class FunctionDeclaration : IBlockItem
         IEmitScope scope)
     {
         var (parametersInfo, returnType) = _functionType;
-        var existingFunction = scope.Context.Functions.GetValueOrDefault(_identifier);
+        var existingFunction = scope.Context.GetFunctionInfo(_identifier);
         if (existingFunction != null)
         {
             // The function with the same name is already defined. Then, just verify that it has the same signature and
@@ -77,6 +81,6 @@ internal class FunctionDeclaration : IBlockItem
             returnType.Resolve(scope.Context),
             parametersInfo);
 
-        scope.Context.Functions.Add(_identifier, new FunctionInfo(parametersInfo, returnType, method));
+        scope.Context.DeclareFunction(_identifier, new FunctionInfo(parametersInfo, returnType, _storageClass, method, IsDefined: false));
     }
 }

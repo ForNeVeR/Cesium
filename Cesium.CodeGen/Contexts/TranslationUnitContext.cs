@@ -1,3 +1,4 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -5,6 +6,8 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using System.Diagnostics;
+using System.Xml.Linq;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -30,6 +33,22 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     /// </remarks>
     internal GlobalConstructorScope GetInitializerScope() =>
         _initializerScope ??= new GlobalConstructorScope(this);
+
+    internal FunctionInfo? GetFunctionInfo(string identifier) =>
+        Functions.GetValueOrDefault(identifier);
+
+    internal void DeclareFunction(string identifier, FunctionInfo functionInfo) =>
+        Functions.Add(identifier, functionInfo);
+    internal void UpdateFunctionDefinition(string identifier, StorageClass storageClass)
+    {
+        var declaration = Functions.GetValueOrDefault(identifier);
+        Debug.Assert(declaration is not null, "Attempt to define undeclared function");
+
+        var mergedStorageClass = declaration.StorageClass != StorageClass.Auto
+            ? declaration.StorageClass
+            : storageClass;
+        Functions[identifier] = declaration with { IsDefined = true, StorageClass = mergedStorageClass };
+    }
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
     private readonly Dictionary<string, IType> _types = new();

@@ -102,6 +102,9 @@ internal record LocalDeclarationInfo(
                 case StorageClassSpecifier { Name: "typedef" }:
                     throw new CompilationException($"typedef not expected: {string.Join(", ", specifiers)}.");
 
+                case StorageClassSpecifier { Name: "static" }:
+                    throw new CompilationException($"static not expected: {string.Join(", ", specifiers)}.");
+
                 case StructOrUnionSpecifier typeSpecifier:
                 {
                     if (type != null)
