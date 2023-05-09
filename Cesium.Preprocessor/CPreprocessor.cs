@@ -278,6 +278,14 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             }
         }
 
+        IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
         var hash = ConsumeNext(Hash);
         line = hash.Range.Start.Line;
 
@@ -327,14 +335,14 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             }
             case "define":
             {
-                var expressionTokens = ConsumeLine();
+                var expressionTokens = ConsumeLineAll();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
                 MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "undef":
             {
-                var expressionTokens = ConsumeLine();
+                var expressionTokens = ConsumeLineAll();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
                 MacroContext.UndefineMacro(macroDefinition.Name);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
@@ -420,6 +428,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 macroReplacement.Add(token);
             }
+        }
+
+        if (macroDefinition.IsError)
+        {
+            throw new PreprocessorException($"Cannot parse macro definition. Expected: {string.Join(",", macroDefinition.Error.Elements.Values.Select(_ => $"{_.Context},{string.Join(",", _.Expected)}"))} got: {macroDefinition.Error.Got}");
         }
 
         return (macroDefinition.Ok.Value, macroReplacement);

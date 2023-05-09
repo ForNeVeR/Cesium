@@ -159,6 +159,20 @@ int main() { return foo(11,x,test); }
 ");
 
     [Fact]
+    public Task ReplaceWithMultipleParameters2() => DoTest(
+@"#define foo(x,y,z) (y z  x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task ReplaceWithMultipleParameters3() => DoTest(
+@"#define foo(x, y, z) (y,z,  x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
     public Task ReplaceWithHash() => DoTest(
 @"#define foo(x) #x
 int main() { char* x = foo(0); }
