@@ -70,10 +70,12 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
     internal MethodDefinition DefineMethod(
         string name,
+        StorageClass storageClass,
         IType returnType,
         ParametersInfo? parameters)
     {
-        var method = GlobalType.DefineMethod(
+        var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
+        var method = owningType.DefineMethod(
             this,
             name,
             returnType.Resolve(this),
@@ -178,8 +180,14 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         var type = _translationUnitLevelFieldTypes.GetValueOrDefault(name);
         if (type == null) return null;
 
-        var containingType = _translationUnitLevelType ??= CreateTranslationUnitLevelType();
+        var containingType = GetOrCreateTranslationUnitType();
         return containingType.GetOrAddField(this, type, name);
+    }
+
+    private TypeDefinition GetOrCreateTranslationUnitType()
+    {
+        _translationUnitLevelType ??= CreateTranslationUnitLevelType();
+        return _translationUnitLevelType;
     }
 
     private TypeDefinition CreateTranslationUnitLevelType()

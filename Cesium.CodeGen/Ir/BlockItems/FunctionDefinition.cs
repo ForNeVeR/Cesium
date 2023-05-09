@@ -91,7 +91,7 @@ internal class FunctionDefinition : IBlockItem
 
         var method = declaration switch
         {
-            { MethodReference: null } => context.DefineMethod(_name, returnType, parameters),
+            { MethodReference: null } => context.DefineMethod(_name, _storageClass, returnType, parameters),
             { MethodReference: MethodDefinition md } => md,
             _ => throw new CompilationException($"Function {_name} already defined as immutable.")
         };

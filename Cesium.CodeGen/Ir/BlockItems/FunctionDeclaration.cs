@@ -44,25 +44,10 @@ internal class FunctionDeclaration : IBlockItem
     {
         if (_cliImportMemberName != null)
         {
-            EmitCliImportDeclaration(scope, _cliImportMemberName);
             return;
         }
 
         EmitFunctionDeclaration(scope);
-    }
-
-    private void EmitCliImportDeclaration(
-        IEmitScope scope,
-        string cliImportMemberName)
-    {
-        var (parametersInfo, returnType) = _functionType;
-        var existingDeclaration = scope.Context.GetFunctionInfo(_identifier);
-        if (existingDeclaration!.MethodReference is null)
-        {
-            var method = scope.Context.MethodLookup(cliImportMemberName, parametersInfo!, returnType);
-            existingDeclaration.MethodReference = method;
-            return;
-        }
     }
 
     private void EmitFunctionDeclaration(
@@ -74,6 +59,7 @@ internal class FunctionDeclaration : IBlockItem
         {
             scope.Context.DefineMethod(
                 _identifier,
+                _storageClass,
                 returnType,
                 parametersInfo);
         }

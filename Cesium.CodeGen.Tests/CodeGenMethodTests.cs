@@ -10,8 +10,10 @@ public class CodeGenMethodTests : CodeGenTestBase
     {
         var assembly = GenerateAssembly(default, source);
 
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
     }
 
     [Fact]
