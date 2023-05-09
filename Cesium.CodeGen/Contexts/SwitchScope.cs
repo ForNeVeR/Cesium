@@ -16,6 +16,9 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier)
         => ((IDeclarationScope)Parent).GetFunctionInfo(identifier);
+
+    public void DeclareFunction(string identifier, FunctionInfo functionInfo)
+        => ((IDeclarationScope)Parent).DeclareFunction(identifier, functionInfo);
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
 

@@ -1,3 +1,4 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -37,18 +38,34 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
     internal void DeclareFunction(string identifier, FunctionInfo functionInfo)
     {
-        Functions.Add(identifier, functionInfo);
-    }
+        var existingDeclaration = Functions.GetValueOrDefault(identifier);
+        if (existingDeclaration is null)
+        {
+            Functions.Add(identifier, functionInfo);
+            if (functionInfo.CliImportMember is not null)
+            {
+                var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
+                functionInfo.MethodReference = method;
+            }
+        }
+        else
+        {
+            existingDeclaration.VerifySignatureEquality(identifier, functionInfo.Parameters, functionInfo.ReturnType);
+            if (functionInfo.CliImportMember is not null && existingDeclaration.CliImportMember is not null)
+            {
+                var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
+                if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
+                {
+                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
+                }
+            }
 
-    internal void UpdateFunctionDefinition(string identifier, StorageClass storageClass)
-    {
-        var declaration = Functions.GetValueOrDefault(identifier);
-        Debug.Assert(declaration is not null, "Attempt to define undeclared function");
-
-        var mergedStorageClass = declaration.StorageClass != StorageClass.Auto
-            ? declaration.StorageClass
-            : storageClass;
-        Functions[identifier] = declaration with { IsDefined = true, StorageClass = mergedStorageClass };
+            var mergedStorageClass = existingDeclaration.StorageClass != StorageClass.Auto
+                ? existingDeclaration.StorageClass
+                : functionInfo.StorageClass;
+            var mergedIsDefined = existingDeclaration.IsDefined || functionInfo.IsDefined;
+            Functions[identifier] = existingDeclaration with { StorageClass = mergedStorageClass, IsDefined = mergedIsDefined };
+        }
     }
 
     internal MethodDefinition DefineMethod(
@@ -61,7 +78,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             name,
             returnType.Resolve(this),
             parameters);
-        GetFunctionInfo(name)!.MethodReference = method;
+        var existingDeclaration = Functions.GetValueOrDefault(name);
+        Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
+        Functions[name] = existingDeclaration with { MethodReference = method };
         return method;
     }
 
