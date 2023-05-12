@@ -60,6 +60,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2
 		docs\tests.md = docs\tests.md
 		docs\type-system.md = docs\type-system.md
 		docs\architecture-sets.md = docs\architecture-sets.md
+		docs\builtins.md = docs\builtins.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
