@@ -85,9 +85,7 @@ public class CodeGenPointersTests : CodeGenTestBase
         "__builtin_offsetof_instance: struct type \"undeclared\" has no members - is it declared?"
     );
 
-    // Tests below rely on preprocessor, which is not supported in tests now
-
-    /*
+    /* TODO[#390]: Tests below rely on preprocessor, which is not supported in tests now
 
     [Fact]
     public Task CanUseOffsetOfOnDeclaredStruct() => DoTest(
