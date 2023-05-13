@@ -7,14 +7,14 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class DoWhileStatement : LoopStatement, IBlockItem
 {
     private readonly IExpression _testExpression;
-    private readonly IBlockItem _body;
+    public IBlockItem Body { get; set; }
 
     public DoWhileStatement(Ast.DoWhileStatement statement)
     {
         var (testExpression, body) = statement;
 
         _testExpression = testExpression.ToIntermediate();
-        _body = body.ToIntermediate();
+        Body = body.ToIntermediate();
     }
 
     public override IBlockItem Lower(IDeclarationScope scope)
@@ -29,7 +29,7 @@ internal class DoWhileStatement : LoopStatement, IBlockItem
             new GoToStatement(continueLabel),
             _testExpression,
             null,
-            _body,
+            Body,
             breakLabel,
             null,
             continueLabel,
@@ -37,5 +37,14 @@ internal class DoWhileStatement : LoopStatement, IBlockItem
         );
     }
 
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Body == original)
+        {
+            Body = replacement;
+            return true;
+        }
+
+        return Body.TryUnsafeSubstitute(original, replacement);
+    }
 }

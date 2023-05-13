@@ -15,4 +15,6 @@ internal class ContinueStatement : IBlockItem
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Continue statement should be lowered");
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

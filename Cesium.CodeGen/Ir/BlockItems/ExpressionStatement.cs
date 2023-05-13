@@ -33,4 +33,6 @@ internal class ExpressionStatement : IBlockItem
     }
 
     public void EmitTo(IEmitScope scope) => _expression?.EmitTo(scope);
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

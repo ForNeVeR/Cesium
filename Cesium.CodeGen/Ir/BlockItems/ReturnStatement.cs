@@ -14,12 +14,10 @@ internal class ReturnStatement : IBlockItem
         _expression = statement.Expression?.ToIntermediate();
     }
 
-    private ReturnStatement(IExpression? expression)
+    public ReturnStatement(IExpression? expression)
     {
         _expression = expression;
     }
-
-    bool IBlockItem.HasDefiniteReturn => true;
 
     public IBlockItem Lower(IDeclarationScope scope) => new ReturnStatement(_expression?.Lower(scope));
 
@@ -29,4 +27,6 @@ internal class ReturnStatement : IBlockItem
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

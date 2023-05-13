@@ -16,4 +16,6 @@ internal class BreakStatement : IBlockItem
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Break statement should be lowered");
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

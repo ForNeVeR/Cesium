@@ -69,4 +69,6 @@ internal class AmbiguousBlockItem : IBlockItem
         var realNode = new ExpressionStatement(functionCallExpression);
         return realNode.Lower(scope);
     }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

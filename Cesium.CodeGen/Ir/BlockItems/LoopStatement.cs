@@ -57,4 +57,9 @@ internal abstract class LoopStatement : IBlockItem
     {
         throw new CompilationException("Should be lowered");
     }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        throw new CompilationException("Should be lowered");
+    }
 }

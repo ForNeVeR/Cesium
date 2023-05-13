@@ -11,7 +11,9 @@ internal class ForStatement : LoopStatement, IBlockItem
     private readonly IExpression? _initExpression;
     private readonly IExpression? _testExpression;
     private readonly IExpression? _updateExpression;
-    private readonly IBlockItem _body;
+    public IBlockItem Body { get; set; }
+    public string? BreakLabel { get; }
+    public string? ContinueLabel { get; }
 
     public ForStatement(Ast.ForStatement statement)
     {
@@ -24,7 +26,7 @@ internal class ForStatement : LoopStatement, IBlockItem
 
         _testExpression = testExpression?.ToIntermediate();
         _updateExpression = updateExpression?.ToIntermediate();
-        _body = body.ToIntermediate();
+        Body = body.ToIntermediate();
     }
 
     public override IBlockItem Lower(IDeclarationScope scope)
@@ -39,7 +41,7 @@ internal class ForStatement : LoopStatement, IBlockItem
             _initDeclaration ?? new ExpressionStatement(_initExpression),
             _testExpression,
             _updateExpression,
-            _body,
+            Body,
             breakLabel,
             null,
             null,
@@ -47,5 +49,14 @@ internal class ForStatement : LoopStatement, IBlockItem
         );
     }
 
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Body == original)
+        {
+            Body = replacement;
+            return true;
+        }
+
+        return Body.TryUnsafeSubstitute(original, replacement);
+    }
 }
