@@ -10,14 +10,14 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class SwitchStatement : IBlockItem
 {
     private readonly IExpression _expression;
-    private readonly IBlockItem _body;
+    public IBlockItem Body { get; private set; }
 
     public SwitchStatement(Ast.SwitchStatement statement)
     {
         var (expression, body) = statement;
 
         _expression = expression.ToIntermediate();
-        _body = body.ToIntermediate();
+        Body = body.ToIntermediate();
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
@@ -26,7 +26,7 @@ internal class SwitchStatement : IBlockItem
         var breakLabel = Guid.NewGuid().ToString();
         var switchScope = new BlockScope((IEmitScope)scope, breakLabel, null, switchCases);
 
-        var loweredBody = _body.Lower(switchScope);
+        var loweredBody = Body.Lower(switchScope);
         var targetStmts = new List<IBlockItem>();
 
         if (switchCases.Count == 0)
@@ -78,7 +78,16 @@ internal class SwitchStatement : IBlockItem
         return new CompoundStatement(targetStmts, switchScope);
     }
 
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
-
     public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Body == original)
+        {
+            Body = replacement;
+            return true;
+        }
+
+        return Body.TryUnsafeSubstitute(original, replacement);
+    }
 }

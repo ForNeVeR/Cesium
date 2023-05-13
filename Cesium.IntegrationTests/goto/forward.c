@@ -10,13 +10,14 @@ void checkEvenOrNot(int num)
         // jump to odd
         goto odd;
 
+    printf("dead code");
+
 even:
     printf("%d is even", num);
     // return if even
     return;
 odd:
     printf("%d is odd", num);
-    return; // This statement needed since control flow analysis in Cesium is broken.
 }
 
 int main() {

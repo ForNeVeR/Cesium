@@ -5,37 +5,46 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class LabelStatement : IBlockItem
 {
-    private readonly IBlockItem _expression;
+    public IBlockItem Expression { get; set; }
+    public string Identifier { get; }
     private readonly bool _didLowered;
-    private readonly string _identifier;
 
     public LabelStatement(Ast.LabelStatement statement)
     {
-        _expression = statement.Body.ToIntermediate();
-        _identifier = statement.Identifier;
+        Expression = statement.Body.ToIntermediate();
+        Identifier = statement.Identifier;
     }
 
     public LabelStatement(string identifier, IBlockItem expression, bool didLowered = false)
     {
-        _identifier = identifier;
-        _expression = expression;
+        Identifier = identifier;
+        Expression = expression;
         _didLowered = didLowered;
     }
-
-    bool IBlockItem.HasDefiniteReturn => _expression.HasDefiniteReturn;
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
         if (!_didLowered)
-            scope.AddLabel(_identifier);
-        return new LabelStatement(_identifier, _expression.Lower(scope), true);
+            scope.AddLabel(Identifier);
+        return new LabelStatement(Identifier, Expression.Lower(scope), true);
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        var instruction = scope.ResolveLabel(_identifier);
+        var instruction = scope.ResolveLabel(Identifier);
         scope.Method.Body.Instructions.Add(instruction);
-        _expression.EmitTo(scope);
+        Expression.EmitTo(scope);
+    }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Expression == original)
+        {
+            Expression = replacement;
+            return true;
+        }
+
+        return Expression.TryUnsafeSubstitute(original, replacement);
     }
 }

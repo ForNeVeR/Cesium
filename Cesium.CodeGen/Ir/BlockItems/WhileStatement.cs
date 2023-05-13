@@ -7,14 +7,14 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class WhileStatement : LoopStatement, IBlockItem
 {
     private readonly IExpression _testExpression;
-    private readonly IBlockItem _body;
+    public IBlockItem Body { get; set; }
 
     public WhileStatement(Ast.WhileStatement statement)
     {
         var (testExpression, body) = statement;
 
         _testExpression = testExpression.ToIntermediate();
-        _body = body.ToIntermediate();
+        Body = body.ToIntermediate();
     }
 
     public override IBlockItem Lower(IDeclarationScope scope)
@@ -29,7 +29,7 @@ internal class WhileStatement : LoopStatement, IBlockItem
             null,
             _testExpression,
             null,
-            _body,
+            Body,
             breakLabel,
             continueLabel,
             null,
@@ -37,5 +37,14 @@ internal class WhileStatement : LoopStatement, IBlockItem
         );
     }
 
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Body == original)
+        {
+            Body = replacement;
+            return true;
+        }
+
+        return Body.TryUnsafeSubstitute(original, replacement);
+    }
 }

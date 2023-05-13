@@ -4,8 +4,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal interface IBlockItem
 {
-    bool HasDefiniteReturn => false;
-
+    bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement);
     IBlockItem Lower(IDeclarationScope scope);
     void EmitTo(IEmitScope scope);
 }

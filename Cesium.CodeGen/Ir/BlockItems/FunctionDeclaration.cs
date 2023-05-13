@@ -64,4 +64,6 @@ internal class FunctionDeclaration : IBlockItem
                 parametersInfo);
         }
     }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

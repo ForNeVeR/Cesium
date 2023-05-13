@@ -17,9 +17,7 @@ internal class CaseStatement : IBlockItem
         Statement = body.ToIntermediate();
     }
 
-    bool IBlockItem.HasDefiniteReturn => Statement.HasDefiniteReturn;
-
-    private IBlockItem Statement { get; }
+    private IBlockItem Statement { get; set; }
     private IExpression? Expression { get; }
 
     public IBlockItem Lower(IDeclarationScope scope)
@@ -37,5 +35,16 @@ internal class CaseStatement : IBlockItem
     public void EmitTo(IEmitScope scope)
     {
         throw new AssertException("Cannot emit case statement independently.");
+    }
+
+    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
+    {
+        if (Statement == original)
+        {
+            Statement = replacement;
+            return true;
+        }
+
+        return Statement.TryUnsafeSubstitute(original, replacement);
     }
 }
