@@ -36,7 +36,7 @@ internal class SubscriptingExpression : IExpression, IValueExpression
         var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
             new ArithmeticBinaryOperatorExpression(
-                new GetAddressValueExpression(value),
+                value.GetValueType() is InPlaceArrayType ? new GetAddressValueExpression(value) : new GetValueExpression(value),
                 BinaryOperator.Add,
                 offset.Lower(scope)
             ));

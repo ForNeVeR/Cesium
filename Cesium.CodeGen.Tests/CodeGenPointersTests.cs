@@ -26,6 +26,9 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task AddToPointerFromLeft() => DoTest("void foo (int *x) { x = 1+x; }");
 
     [Fact]
+    public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
+
+    [Fact]
     public void CannotMultiplyPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = 1*x; }",
         "Operator Multiply is not supported for value/pointer operands");
