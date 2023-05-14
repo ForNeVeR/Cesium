@@ -1,8 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Mono.Cecil.Cil;
-using System.Diagnostics;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -10,8 +9,6 @@ internal class DoWhileStatement : IBlockItem
 {
     private readonly IExpression _testExpression;
     private readonly IBlockItem _body;
-    private readonly string? _breakLabel;
-    private readonly string? _continueLabel;
 
     public DoWhileStatement(Ast.DoWhileStatement statement)
     {
@@ -19,18 +16,6 @@ internal class DoWhileStatement : IBlockItem
 
         _testExpression = testExpression.ToIntermediate();
         _body = body.ToIntermediate();
-    }
-
-    private DoWhileStatement(
-        IExpression testExpression,
-        IBlockItem body,
-        string breakLabel,
-        string continueLabel)
-    {
-        _testExpression = testExpression;
-        _body = body;
-        _breakLabel = breakLabel;
-        _continueLabel = continueLabel;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
@@ -41,37 +26,23 @@ internal class DoWhileStatement : IBlockItem
         scope.AddLabel(breakLabel);
         var continueLabel = loopScope.GetContinueLabel();
         scope.AddLabel(continueLabel);
-        return new DoWhileStatement(
+        var auxLabel = loopScope.GetAuxLabel();
+        scope.AddLabel(auxLabel);
+
+        return new GenericLoopStatement(
+            loopScope,
+            new GoToStatement(continueLabel),
             _testExpression.Lower(loopScope),
+            null,
             _body.Lower(loopScope),
             breakLabel,
-            continueLabel);
+            auxLabel,
+            continueLabel,
+            null
+        );
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
 
-    public void EmitTo(IEmitScope scope)
-    {
-        Debug.Assert(_breakLabel != null);
-        Debug.Assert(_continueLabel != null);
-        var loopScope = scope;
-
-        var bodyProcessor = loopScope.Method.Body.GetILProcessor();
-        var instructions = bodyProcessor.Body.Instructions;
-
-        var bodyStartIndex = instructions.Count;
-
-        _body.EmitTo(loopScope);
-
-        var loopIterationStart = scope.ResolveLabel(_continueLabel);
-        bodyProcessor.Append(loopIterationStart);
-
-        _testExpression.EmitTo(loopScope);
-        var bodyStart = instructions[bodyStartIndex];
-        var brToStart = bodyProcessor.Create(OpCodes.Brtrue, bodyStart);
-        bodyProcessor.Append(brToStart);
-
-        var exitLoop = scope.ResolveLabel(_breakLabel);
-        bodyProcessor.Append(exitLoop);
-    }
+    public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
 }
