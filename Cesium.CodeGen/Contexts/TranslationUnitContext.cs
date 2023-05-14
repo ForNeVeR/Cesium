@@ -96,7 +96,13 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         _generatedTypes.Add(type, typeReference);
     }
 
-    internal void AddTypeDefinition(string name, IType type) => _types.Add(name, type);
+    internal void AddTypeDefinition(string name, IType type)
+    {
+        if (_types.ContainsKey(name))
+            throw new CompilationException($"Type definition {name} was already defined.");
+
+        _types.Add(name, type);
+    }
 
     internal void AddTagDefinition(string name, IType type) => _tags.Add(name, type);
 

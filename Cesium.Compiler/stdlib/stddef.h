@@ -1,3 +1,4 @@
+#pragma once
 typedef __nint ptrdiff_t;
 typedef __nuint size_t;
 

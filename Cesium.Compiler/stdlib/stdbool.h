@@ -1,3 +1,4 @@
+#pragma once
 #define bool    _Bool
 
 #define true    1
