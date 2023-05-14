@@ -29,9 +29,10 @@ internal class ForStatement : LoopStatement, IBlockItem
 
     public override IBlockItem Lower(IDeclarationScope scope)
     {
-        var loopScope = new LoopScope((IEmitScope)scope);
-        var breakLabel = loopScope.GetBreakLabel();
-        var continueLabel = loopScope.GetContinueLabel();
+        var breakLabel = Guid.NewGuid().ToString();
+        var continueLabel = Guid.NewGuid().ToString();
+
+        var loopScope = new BlockScope((IEmitScope)scope, breakLabel, continueLabel);
 
         return MakeLoop(
             loopScope,

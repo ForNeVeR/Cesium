@@ -2,8 +2,8 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.Core;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -22,12 +22,14 @@ internal class SwitchStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var switchScope = new SwitchScope((IEmitScope)scope);
+        var switchCases = new List<SwitchCase>();
+        var breakLabel = Guid.NewGuid().ToString();
+        var switchScope = new BlockScope((IEmitScope)scope, breakLabel, null, switchCases);
 
         var loweredBody = _body.Lower(switchScope);
         var targetStmts = new List<IBlockItem>();
 
-        if (switchScope.SwitchCases.Count == 0)
+        if (switchCases.Count == 0)
         {
             return new ExpressionStatement(_expression).Lower(switchScope);
         }
@@ -50,7 +52,7 @@ internal class SwitchStatement : IBlockItem
 
         var hasDefaultCase = false;
 
-        foreach (var matchGroup in switchScope.SwitchCases)
+        foreach (var matchGroup in switchCases)
         {
             if (matchGroup.TestExpression != null)
             {
@@ -70,16 +72,16 @@ internal class SwitchStatement : IBlockItem
         }
 
         if (!hasDefaultCase)
-            targetStmts.Add(new GoToStatement(switchScope.GetBreakLabel()));
+            targetStmts.Add(new GoToStatement(breakLabel));
 
         targetStmts.Add(loweredBody);
-        targetStmts.Add(new LabelStatement(switchScope.GetBreakLabel(),  new ExpressionStatement((IExpression?) null)).Lower(switchScope));
+        targetStmts.Add(new LabelStatement(breakLabel,  new ExpressionStatement((IExpression?) null)).Lower(switchScope));
 
         // avoiding lowering twice
         return new CompoundStatement(targetStmts, switchScope);
     }
 
-    bool IBlockItem.HasDefiniteReturn => ((IBlockItem)_body).HasDefiniteReturn;
+    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
 
     public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
 }

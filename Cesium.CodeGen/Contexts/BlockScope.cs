@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -8,7 +9,9 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
+internal record SwitchCase(IExpression? TestExpression, string Label);
+
+internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? ContinueLabel, List<SwitchCase>? OwnSwitchCases = null) : IEmitScope, IDeclarationScope
 {
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
@@ -33,8 +36,24 @@ internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
             : ((IDeclarationScope)Parent).GetVariable(identifier);
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
+
     public void AddVariable(StorageClass storageClass, string identifier, IType variable)
-        => _variables.Add(identifier, new(identifier, storageClass, variable));
+    {
+        // quirk - passing Static variables to the parent
+        // we need more tests for that
+
+        switch (storageClass)
+        {
+            case StorageClass.Auto:
+                _variables.Add(identifier, new(identifier, storageClass, variable));
+                break;
+            case StorageClass.Static:
+                ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(storageClass), storageClass, null);
+        }
+    }
 
     public VariableDefinition ResolveVariable(string identifier)
     {
@@ -75,12 +94,11 @@ internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
         return Parent.ResolveLabel(label);
     }
 
-    private string _breakLabel = Guid.NewGuid().ToString();
-    private string _continueLabel = Guid.NewGuid().ToString();
+    /// <inheritdoc />
+    public string? GetBreakLabel() => BreakLabel ?? (Parent as IDeclarationScope)?.GetBreakLabel();
 
     /// <inheritdoc />
-    public string GetBreakLabel() => _breakLabel;
+    public string? GetContinueLabel() => ContinueLabel ?? (Parent as IDeclarationScope)?.GetContinueLabel();
 
-    /// <inheritdoc />
-    public string GetContinueLabel() => _continueLabel;
+    public List<SwitchCase>? SwitchCases => OwnSwitchCases ?? (Parent as IDeclarationScope)?.SwitchCases;
 }

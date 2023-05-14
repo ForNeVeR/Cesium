@@ -101,4 +101,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     /// <inheritdoc />
     public string? GetContinueLabel() => null;
+
+    public List<SwitchCase>? SwitchCases => null;
 }

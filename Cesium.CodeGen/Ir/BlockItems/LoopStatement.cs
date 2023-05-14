@@ -8,7 +8,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal abstract class LoopStatement : IBlockItem
 {
     protected IBlockItem MakeLoop(
-        LoopScope scope,
+        BlockScope scope,
         IBlockItem? initializer,
         IExpression? testExpression,
         IExpression? updateExpression,

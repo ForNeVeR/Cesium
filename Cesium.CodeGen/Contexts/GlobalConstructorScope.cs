@@ -71,4 +71,6 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     /// <inheritdoc />
     public string? GetContinueLabel() => null;
+
+    public List<SwitchCase>? SwitchCases => null;
 }

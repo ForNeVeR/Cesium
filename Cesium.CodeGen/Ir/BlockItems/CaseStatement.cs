@@ -26,7 +26,7 @@ internal class CaseStatement : IBlockItem
     {
         // TODO[#408]: optimize multiple cases at once
 
-        if (scope is not SwitchScope sws)
+        if (scope is not BlockScope sws || sws.SwitchCases == null)
             throw new AssertException("Cannot use case statement outside of switch");
 
         sws.SwitchCases.Add(new SwitchCase(Expression, _label));

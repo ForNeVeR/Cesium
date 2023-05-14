@@ -45,4 +45,6 @@ internal interface IDeclarationScope
     /// </summary>
     /// <returns>Name of the virtual label which can be used by continue statement</returns>
     string? GetContinueLabel();
+
+    List<SwitchCase>? SwitchCases { get; }
 }

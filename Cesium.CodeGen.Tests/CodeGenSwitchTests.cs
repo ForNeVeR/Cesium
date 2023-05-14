@@ -68,11 +68,10 @@ public class CodeGenSwitchTests : CodeGenTestBase
     switch(x) default: break;
 }");
 
-    // TODO[#407]: not supported atm (#397)
-//     [Fact]
-//     public Task DeepCase() => DoTest(@"int main()
-// {
-//     int x = 0;
-//     switch(x) while (0) { default: break; }
-// }");
+    [Fact]
+    public Task DeepCase() => DoTest(@"int main()
+{
+    int x = 0;
+    switch(x) while (0) { default: break; }
+}");
 }
