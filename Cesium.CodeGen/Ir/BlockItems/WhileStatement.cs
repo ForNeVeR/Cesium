@@ -1,11 +1,10 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class WhileStatement : IBlockItem
+internal class WhileStatement : LoopStatement, IBlockItem
 {
     private readonly IExpression _testExpression;
     private readonly IBlockItem _body;
@@ -18,13 +17,13 @@ internal class WhileStatement : IBlockItem
         _body = body.ToIntermediate();
     }
 
-    public IBlockItem Lower(IDeclarationScope scope)
+    public override IBlockItem Lower(IDeclarationScope scope)
     {
         var loopScope = new LoopScope((IEmitScope)scope);
         var breakLabel = loopScope.GetBreakLabel();
         var continueLabel = loopScope.GetContinueLabel();
 
-        return new GenericLoopStatement(
+        return MakeLoop(
             loopScope,
             null,
             _testExpression,
@@ -34,10 +33,8 @@ internal class WhileStatement : IBlockItem
             continueLabel,
             null,
             null
-        ).Lower(loopScope);
+        );
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
-
-    public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
 }
