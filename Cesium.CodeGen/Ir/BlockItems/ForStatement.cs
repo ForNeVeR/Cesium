@@ -25,7 +25,6 @@ internal class ForStatement : LoopStatement, IBlockItem
         var loopScope = new LoopScope((IEmitScope)scope);
         var breakLabel = loopScope.GetBreakLabel();
         var continueLabel = loopScope.GetContinueLabel();
-        var auxLabel = loopScope.GetAuxLabel();
 
         return MakeLoop(
             loopScope,
@@ -34,7 +33,7 @@ internal class ForStatement : LoopStatement, IBlockItem
             _updateExpression,
             _body,
             breakLabel,
-            auxLabel,
+            null,
             null,
             continueLabel
         );

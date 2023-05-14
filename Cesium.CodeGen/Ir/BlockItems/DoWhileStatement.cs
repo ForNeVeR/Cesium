@@ -22,7 +22,6 @@ internal class DoWhileStatement : LoopStatement, IBlockItem
         var loopScope = new LoopScope((IEmitScope)scope);
         var breakLabel = loopScope.GetBreakLabel();
         var continueLabel = loopScope.GetContinueLabel();
-        var auxLabel = loopScope.GetAuxLabel();
 
         return MakeLoop(
             loopScope,
@@ -31,7 +30,7 @@ internal class DoWhileStatement : LoopStatement, IBlockItem
             null,
             _body,
             breakLabel,
-            auxLabel,
+            null,
             continueLabel,
             null
         );

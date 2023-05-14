@@ -77,13 +77,10 @@ internal record LoopScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 
     private string _breakLabel = Guid.NewGuid().ToString();
     private string _continueLabel = Guid.NewGuid().ToString();
-    private string _auxLabel = Guid.NewGuid().ToString();
 
     /// <inheritdoc />
     public string GetBreakLabel() => _breakLabel;
 
     /// <inheritdoc />
     public string GetContinueLabel() => _continueLabel;
-
-    public string GetAuxLabel() => _auxLabel;
 }
