@@ -5,13 +5,16 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class CompoundStatement : IBlockItem
 {
-    public CompoundStatement(List<IBlockItem> items)
+    private readonly IEmitScope? _emitScope;
+
+    public CompoundStatement(List<IBlockItem> items, IEmitScope? emitScope = null)
     {
+        _emitScope = emitScope;
         Statements = items;
     }
 
     public CompoundStatement(Ast.CompoundStatement statement)
-        : this(statement.Block.Select(x => x.ToIntermediate()).ToList())
+        : this(statement.Block.Select(x => x.ToIntermediate()).ToList(), null)
     {
     }
 
@@ -37,14 +40,16 @@ internal class CompoundStatement : IBlockItem
             }
         }
 
-        return new CompoundStatement(newNestedStatements);
+        return new CompoundStatement(newNestedStatements, scope as IEmitScope);
     }
 
     public void EmitTo(IEmitScope scope)
     {
+        var realScope = _emitScope ?? scope;
+
         foreach (var item in Statements)
         {
-            item.EmitTo(scope);
+            item.EmitTo(realScope);
         }
     }
 }

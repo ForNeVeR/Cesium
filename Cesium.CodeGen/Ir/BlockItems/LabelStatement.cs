@@ -14,7 +14,7 @@ internal class LabelStatement : IBlockItem
         _identifier = statement.Identifier;
     }
 
-    private LabelStatement(string identifier, IBlockItem expression)
+    public LabelStatement(string identifier, IBlockItem expression)
     {
         _identifier = identifier;
         _expression = expression;

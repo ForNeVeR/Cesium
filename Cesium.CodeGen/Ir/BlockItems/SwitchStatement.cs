@@ -1,18 +1,23 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.Core;
-using Mono.Cecil.Cil;
-using System.Diagnostics;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class SwitchStatement : IBlockItem
 {
+    private record struct MatchGroup(
+        IExpression? TestExpression,
+        List<IBlockItem> Statements,
+        string Label
+    );
+
+    private enum SwitchControlState { Preamble, Cases, Body }
+
     private readonly IExpression _expression;
-    private readonly IBlockItem _body;
-    private readonly string? _breakLabel;
+    private readonly CompoundStatement _body;
 
     public SwitchStatement(Ast.SwitchStatement statement)
     {
@@ -22,144 +27,104 @@ internal class SwitchStatement : IBlockItem
         _body = body.ToIntermediate();
     }
 
-    private SwitchStatement(
-        IExpression expression,
-        IBlockItem body,
-        string breakLabel)
-    {
-        _expression = expression;
-        _body = body;
-        _breakLabel = breakLabel;
-    }
-
     public IBlockItem Lower(IDeclarationScope scope)
     {
         var switchScope = new SwitchScope((IEmitScope)scope);
-        var breakLabel = switchScope.GetBreakLabel();
-        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        scope.AddLabel(breakLabel);
-        List<IBlockItem> linearizedCases = new();
-        CompoundStatement? compoundStatement = _body as CompoundStatement;
-        if (compoundStatement is null)
-        {
-            compoundStatement = new CompoundStatement(new List<IBlockItem>(){ _body });
-        }
 
-        foreach (var statement in compoundStatement.Statements)
-        {
-            AddStatement(linearizedCases, statement);
-        }
+        var preamble = new List<IBlockItem>();
+        var matchGroups = new List<MatchGroup>();
 
-        foreach (var statement in linearizedCases)
+        var currentMatchGroup = new MatchGroup(null, new List<IBlockItem>(), "match-" + Guid.NewGuid());
+        var state = SwitchControlState.Preamble;
+
+        void AppendStatement(IBlockItem stmt)
         {
-            if (statement is CaseStatement caseStatement && caseStatement.Expression is not null)
+            if (stmt is CaseStatement aCase)
             {
-                var expression = caseStatement.Expression;
-                var evaluator = new ConstantEvaluator(expression);
-                var constant = evaluator.GetConstantValue();
-                if (constant is not IntegerConstant integerConstant && constant is not CharConstant charConstant)
+                var comparison = aCase.Expression == null ? null : new ComparisonBinaryOperatorExpression(_expression, BinaryOperator.EqualTo, aCase.Expression);
+
+                if (state == SwitchControlState.Preamble)
                 {
-                    throw new CompilationException("Constant expression should be convertable to integer value");
+                    currentMatchGroup.TestExpression = comparison;
                 }
-
-                // scope.AddLabel(breakLabel + "_" + integerConstant.Value);
-            }
-        }
-
-        return new SwitchStatement(
-            _expression.Lower(switchScope),
-            new CompoundStatement(linearizedCases).Lower(switchScope),
-            breakLabel);
-    }
-
-    private static void AddStatement(List<IBlockItem> linearizedCases, IBlockItem statement)
-    {
-        if (statement is CaseStatement caseStatement)
-        {
-            if (caseStatement.Statement is CaseStatement)
-            {
-                linearizedCases.Add(new CaseStatement(caseStatement.Expression, new CompoundStatement(new List<IBlockItem>())));
-                AddStatement(linearizedCases, caseStatement.Statement);
-            }
-            else
-            {
-                linearizedCases.Add(statement);
-            }
-        }
-        else
-        {
-            linearizedCases.Add(statement);
-        }
-    }
-
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
-
-    public void EmitTo(IEmitScope scope)
-    {
-        Debug.Assert(_breakLabel != null);
-        var switchScope = new SwitchScope(scope);
-        var bodyProcessor = switchScope.Method.Body.GetILProcessor();
-
-        var compoundStatement = _body as CompoundStatement;
-        Debug.Assert(compoundStatement != null);
-        Dictionary<IExpression, Instruction> caseExpressions = new();
-        Instruction? defaultCaseInstruction = Instruction.Create(OpCodes.Nop);
-        foreach (var caseStatement in compoundStatement.Statements.OfType<CaseStatement>())
-        {
-            if (caseStatement.Expression != null)
-            {
-                caseExpressions.Add(caseStatement.Expression, Instruction.Create(OpCodes.Nop));
-            }
-            else
-            {
-                defaultCaseInstruction = Instruction.Create(OpCodes.Nop);
-            }
-        }
-
-        _expression.EmitTo(switchScope);
-        var intermediateVar = new Mono.Cecil.Cil.VariableDefinition(switchScope.Context.TypeSystem.Int32);
-        switchScope.Method.Body.Variables.Add(intermediateVar);
-        bodyProcessor.Emit(OpCodes.Stloc, intermediateVar);
-        foreach (var caseExpression in caseExpressions)
-        {
-            bodyProcessor.Emit(OpCodes.Ldloc, intermediateVar);
-            caseExpression.Key.EmitTo(switchScope);
-            bodyProcessor.Emit(OpCodes.Ceq);
-            bodyProcessor.Emit(OpCodes.Brtrue, caseExpression.Value);
-        }
-
-        var exitLoop = switchScope.ResolveLabel(_breakLabel);
-        if (defaultCaseInstruction is null)
-        {
-            bodyProcessor.Emit(OpCodes.Br, exitLoop);
-        }
-        else
-        {
-            bodyProcessor.Emit(OpCodes.Br, defaultCaseInstruction);
-        }
-
-        foreach (var statement in compoundStatement.Statements)
-        {
-            if (statement is CaseStatement caseStatement)
-            {
-                if (caseStatement.Expression != null)
+                else if (state == SwitchControlState.Body)
                 {
-                    bodyProcessor.Append(caseExpressions[caseStatement.Expression]);
+                    matchGroups.Add(currentMatchGroup);
+                    currentMatchGroup = new MatchGroup(comparison, new List<IBlockItem>(), "match-" + Guid.NewGuid());
                 }
                 else
                 {
-                    bodyProcessor.Append(defaultCaseInstruction!);
+                    if (currentMatchGroup.TestExpression != null && comparison != null)
+                    {
+                        currentMatchGroup.TestExpression =
+                            new LogicalBinaryOperatorExpression(currentMatchGroup.TestExpression, BinaryOperator.LogicalOr, comparison);
+                    }
                 }
 
-                caseStatement.Statement.EmitTo(switchScope);
+                state = SwitchControlState.Cases;
+                AppendStatement(aCase.Statement);
+            }
+            else if (state == SwitchControlState.Preamble)
+            {
+                preamble.Add(stmt);
             }
             else
             {
-                statement.Lower(switchScope);
-                statement.EmitTo(switchScope);
+                state = SwitchControlState.Body;
+                currentMatchGroup.Statements.Add(stmt);
             }
         }
 
-        bodyProcessor.Append(exitLoop);
+        foreach (var stmt in _body.Statements)
+        {
+            AppendStatement(stmt);
+        }
+
+        if (currentMatchGroup.Statements.Count > 0)
+            matchGroups.Add(currentMatchGroup);
+
+
+        var targetStmts = new List<IBlockItem>();
+
+        foreach (var matchGroup in matchGroups)
+        {
+            if (matchGroup.TestExpression != null)
+            {
+                targetStmts.Add(
+                    new IfElseStatement(
+                        matchGroup.TestExpression,
+                        new GoToStatement(matchGroup.Label),
+                        null
+                    )
+                );
+            }
+            else
+            {
+                targetStmts.Add(new GoToStatement(matchGroup.Label));
+            }
+        }
+
+        foreach (var bodyStmt in preamble)
+        {
+            targetStmts.Add(bodyStmt);
+        }
+
+        foreach (var matchGroup in matchGroups)
+        {
+            targetStmts.Add(new LabelStatement(matchGroup.Label,  new ExpressionStatement((IExpression?) null)));
+
+            foreach (var bodyStmt in matchGroup.Statements)
+            {
+                targetStmts.Add(bodyStmt);
+            }
+        }
+
+        targetStmts.Add(new LabelStatement(switchScope.GetBreakLabel(),  new ExpressionStatement((IExpression?) null)));
+
+        return new CompoundStatement(targetStmts).Lower(switchScope);
     }
+
+    bool IBlockItem.HasDefiniteReturn => ((IBlockItem)_body).HasDefiniteReturn;
+
+    public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
 }

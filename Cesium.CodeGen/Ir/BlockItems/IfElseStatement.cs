@@ -11,7 +11,7 @@ internal class IfElseStatement : IBlockItem
     private readonly IBlockItem _trueBranch;
     private readonly IBlockItem? _falseBranch;
 
-    private IfElseStatement(IExpression expression, IBlockItem trueBranch, IBlockItem? falseBranch)
+    public IfElseStatement(IExpression expression, IBlockItem trueBranch, IBlockItem? falseBranch)
     {
         _expression = expression;
         _trueBranch = trueBranch;

@@ -7,7 +7,7 @@ namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
 {
-    private LogicalBinaryOperatorExpression(IExpression left, BinaryOperator @operator, IExpression right)
+    public LogicalBinaryOperatorExpression(IExpression left, BinaryOperator @operator, IExpression right)
         : base(left, @operator, right)
     {
         if(!Operator.IsLogical())
