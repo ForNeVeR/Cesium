@@ -1,3 +1,4 @@
+#pragma once
 #include <stddef.h>
 
 __cli_import("Cesium.Runtime.StringFunctions::StrLen")
