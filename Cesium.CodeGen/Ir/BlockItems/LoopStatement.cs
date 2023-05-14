@@ -24,7 +24,7 @@ internal abstract class LoopStatement : IBlockItem
         if (initializer != null)
             stmts.Add(initializer);
 
-        testConditionLabel ??= new Guid().ToString();
+        testConditionLabel ??= Guid.NewGuid().ToString();
 
         stmts.Add(new LabelStatement(testConditionLabel, new ExpressionStatement((IExpression?) null)));
 
