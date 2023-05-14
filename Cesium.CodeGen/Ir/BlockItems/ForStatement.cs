@@ -28,24 +28,20 @@ internal class ForStatement : IBlockItem
     {
         var loopScope = new LoopScope((IEmitScope)scope);
         var breakLabel = loopScope.GetBreakLabel();
-        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        scope.AddLabel(breakLabel);
         var continueLabel = loopScope.GetContinueLabel();
-        scope.AddLabel(continueLabel);
         var auxLabel = loopScope.GetAuxLabel();
-        scope.AddLabel(auxLabel);
 
         return new GenericLoopStatement(
             loopScope,
-            new ExpressionStatement(_initExpression).Lower(loopScope),
-            _testExpression?.Lower(loopScope),
-            _updateExpression?.Lower(loopScope),
-            _body.Lower(loopScope),
+            new ExpressionStatement(_initExpression),
+            _testExpression,
+            _updateExpression,
+            _body,
             breakLabel,
             auxLabel,
             null,
             continueLabel
-        );
+        ).Lower(loopScope);
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;

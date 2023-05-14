@@ -22,24 +22,20 @@ internal class DoWhileStatement : IBlockItem
     {
         var loopScope = new LoopScope((IEmitScope)scope);
         var breakLabel = loopScope.GetBreakLabel();
-        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        scope.AddLabel(breakLabel);
         var continueLabel = loopScope.GetContinueLabel();
-        scope.AddLabel(continueLabel);
         var auxLabel = loopScope.GetAuxLabel();
-        scope.AddLabel(auxLabel);
 
         return new GenericLoopStatement(
             loopScope,
             new GoToStatement(continueLabel),
-            _testExpression.Lower(loopScope),
+            _testExpression,
             null,
-            _body.Lower(loopScope),
+            _body,
             breakLabel,
             auxLabel,
             continueLabel,
             null
-        );
+        ).Lower(loopScope);
     }
 
     bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
