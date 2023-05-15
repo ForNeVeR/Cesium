@@ -53,4 +53,11 @@ public class CodeGenForTests : CodeGenTestBase
     int i;
     for(;;) ++i;
 }");
+
+    [Fact]
+    public Task For_WithDeclaration() => DoTest(
+        @"int main()
+{
+    for(int i = 0; i < 10; ++i) ++i;
+}");
 }

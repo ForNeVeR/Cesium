@@ -822,7 +822,21 @@ public partial class CParser
         Expression updateExpression,
         ICToken _____,
         IBlockItem body)
-        => new ForStatement(initExpression, testExpression, updateExpression, body);
+        => new ForStatement(null, initExpression, testExpression, updateExpression, body);
+
+    [Rule("iteration_statement: 'for' '(' declaration expression? ';' expression? ')' statement")]
+    private static Statement MakeForStatement(
+        ICToken _,
+        ICToken __,
+        IBlockItem initDeclaration,
+        Expression testExpression,
+        ICToken ____,
+        Expression updateExpression,
+        ICToken _____,
+        IBlockItem body)
+    {
+        return new ForStatement(initDeclaration, null, testExpression, updateExpression, body);
+    }
 
     // 6.8.6 Jump statements
     [Rule("jump_statement: 'goto' Identifier ';'")]

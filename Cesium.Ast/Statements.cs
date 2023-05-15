@@ -41,6 +41,7 @@ public record DoWhileStatement(
     IBlockItem Body) : Statement;
 
 public record ForStatement(
+    IBlockItem? InitDeclaration,
     Expression? InitExpression,
     Expression? TestExpression,
     Expression? UpdateExpression,

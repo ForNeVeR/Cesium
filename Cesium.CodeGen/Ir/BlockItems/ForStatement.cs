@@ -9,6 +9,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ForStatement : IBlockItem
 {
+    private readonly IBlockItem? _initDeclaration;
     private readonly IExpression? _initExpression;
     private readonly IExpression _testExpression;
     private readonly IExpression? _updateExpression;
@@ -18,7 +19,8 @@ internal class ForStatement : IBlockItem
 
     public ForStatement(Ast.ForStatement statement)
     {
-        var (initExpression, testExpression, updateExpression, body) = statement;
+        var (initDeclaration, initExpression, testExpression, updateExpression, body) = statement;
+        _initDeclaration = initDeclaration?.ToIntermediate();
         _initExpression = initExpression?.ToIntermediate();
         // 6.8.5.3.2 if testExpression is null it should be replaced by nonzero constant
         _testExpression = testExpression?.ToIntermediate() ?? new ConstantLiteralExpression(new IntegerConstant("1"));
@@ -27,6 +29,7 @@ internal class ForStatement : IBlockItem
     }
 
     private ForStatement(
+        IBlockItem? initDeclaration,
         IExpression? initExpression,
         IExpression testExpression,
         IExpression? updateExpression,
@@ -34,6 +37,7 @@ internal class ForStatement : IBlockItem
         string breakLabel,
         string continueLabel)
     {
+        _initDeclaration = initDeclaration;
         _initExpression = initExpression;
         _testExpression = testExpression;
         _updateExpression = updateExpression;
@@ -51,6 +55,7 @@ internal class ForStatement : IBlockItem
         var continueLabel = loopScope.GetContinueLabel();
         scope.AddLabel(continueLabel);
         return new ForStatement(
+            _initDeclaration?.Lower(scope),
             _initExpression?.Lower(loopScope),
             _testExpression.Lower(loopScope),
             _updateExpression?.Lower(loopScope),
@@ -71,6 +76,7 @@ internal class ForStatement : IBlockItem
         var instructions = bodyProcessor.Body.Instructions;
         var stub = bodyProcessor.Create(OpCodes.Nop);
 
+        _initDeclaration?.EmitTo(scope);
         _initExpression?.EmitTo(forScope);
         var brToTest = bodyProcessor.Create(OpCodes.Br, stub);
         bodyProcessor.Append(brToTest);
