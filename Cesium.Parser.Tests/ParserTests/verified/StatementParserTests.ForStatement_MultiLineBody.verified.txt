@@ -1,5 +1,6 @@
 ﻿{
   "$type": "Cesium.Ast.ForStatement, Cesium.Ast",
+  "InitDeclaration": null,
   "InitExpression": {
     "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
     "Left": {
