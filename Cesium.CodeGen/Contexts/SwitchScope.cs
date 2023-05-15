@@ -1,12 +1,15 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Contexts;
+
+internal record SwitchCase(IExpression? TestExpression, string Label);
 
 internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 {
@@ -83,4 +86,6 @@ internal record SwitchScope(IEmitScope Parent) : IEmitScope, IDeclarationScope
 
     /// <inheritdoc />
     public string? GetContinueLabel() => null;
+
+    public List<SwitchCase> SwitchCases { get; } = new();
 }

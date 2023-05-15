@@ -781,13 +781,13 @@ public partial class CParser
         // TODO[#115]: These direct casts should't be necessary. They are here because of the "lexer hack".
         => new IfElseStatement(expression, (Statement)trueBranch, (Statement)falseBranch);
 
-    [Rule("selection_statement: 'switch' '(' expression ')' compound_statement")]
+    [Rule("selection_statement: 'switch' '(' expression ')' statement")]
     private static Statement MakeSwitchStatement(
         IToken _, // switch
         IToken __, // (
         Expression expression,
         IToken ___, // )
-        CompoundStatement body)
+        Statement body)
         => new SwitchStatement(expression, body);
 
     // TODO[#210]: 6.8.5 Iteration statements

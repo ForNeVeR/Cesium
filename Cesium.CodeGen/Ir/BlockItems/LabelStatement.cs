@@ -6,6 +6,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class LabelStatement : IBlockItem
 {
     private readonly IBlockItem _expression;
+    private readonly bool _didLowered;
     private readonly string _identifier;
 
     public LabelStatement(Ast.LabelStatement statement)
@@ -14,10 +15,11 @@ internal class LabelStatement : IBlockItem
         _identifier = statement.Identifier;
     }
 
-    public LabelStatement(string identifier, IBlockItem expression)
+    public LabelStatement(string identifier, IBlockItem expression, bool didLowered = false)
     {
         _identifier = identifier;
         _expression = expression;
+        _didLowered = didLowered;
     }
 
     bool IBlockItem.HasDefiniteReturn => _expression.HasDefiniteReturn;
@@ -25,8 +27,9 @@ internal class LabelStatement : IBlockItem
     public IBlockItem Lower(IDeclarationScope scope)
     {
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        scope.AddLabel(_identifier);
-        return new LabelStatement(_identifier, _expression.Lower(scope));
+        if (!_didLowered)
+            scope.AddLabel(_identifier);
+        return new LabelStatement(_identifier, _expression.Lower(scope), true);
     }
 
     public void EmitTo(IEmitScope scope)

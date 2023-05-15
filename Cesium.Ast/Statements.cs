@@ -29,7 +29,7 @@ public record AmbiguousBlockItem(string Item1, string Item2) : IBlockItem;
 // 6.8.4 Selection statements
 public record IfElseStatement(Expression Expression, Statement TrueBranch, Statement? FalseBranch) : Statement;
 
-public record SwitchStatement(Expression Expression, CompoundStatement Body) : Statement;
+public record SwitchStatement(Expression Expression, Statement Body) : Statement;
 
 // 6.8.5 Iteration statements
 public record WhileStatement(

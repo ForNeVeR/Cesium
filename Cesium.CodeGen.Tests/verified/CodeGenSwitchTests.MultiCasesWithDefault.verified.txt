@@ -3,28 +3,24 @@
     System.Int32 V_0
   IL_0000: ldc.i4.0
   IL_0001: stloc.0
-  IL_0002: ldloc.0
-  IL_0003: ldc.i4.0
-  IL_0004: ceq
-  IL_0006: brfalse IL_0010
-  IL_000b: br IL_0025
-  IL_0010: nop
-  IL_0011: ldloc.0
-  IL_0012: ldc.i4.1
-  IL_0013: ceq
-  IL_0015: brfalse IL_001f
+  IL_0002: ldc.i4.0
+  IL_0003: brfalse IL_000d
+  IL_0008: br IL_001f
+  IL_000d: nop
+  IL_000e: ldc.i4.1
+  IL_000f: brfalse IL_0019
+  IL_0014: br IL_0025
+  IL_0019: nop
   IL_001a: br IL_002b
   IL_001f: nop
   IL_0020: br IL_0031
   IL_0025: nop
-  IL_0026: br IL_0037
+  IL_0026: br IL_0031
   IL_002b: nop
-  IL_002c: br IL_0037
+  IL_002c: br IL_0031
   IL_0031: nop
-  IL_0032: br IL_0037
-  IL_0037: nop
-  IL_0038: ldc.i4.0
-  IL_0039: ret
+  IL_0032: ldc.i4.0
+  IL_0033: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

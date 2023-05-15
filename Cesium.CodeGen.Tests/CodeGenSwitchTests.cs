@@ -60,4 +60,19 @@ public class CodeGenSwitchTests : CodeGenTestBase
         default: break;
     }
 }");
+
+    [Fact]
+    public Task Blockless() => DoTest(@"int main()
+{
+    int x = 0;
+    switch(x) default: break;
+}");
+
+    // not supported atm (#397)
+//     [Fact]
+//     public Task DeepCase() => DoTest(@"int main()
+// {
+//     int x = 0;
+//     switch(x) while (0) { default: break; }
+// }");
 }
