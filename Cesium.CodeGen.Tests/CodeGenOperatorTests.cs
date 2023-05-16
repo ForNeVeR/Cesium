@@ -36,4 +36,13 @@ public class CodeGenOperatorTests: CodeGenTestBase
 
     [Fact]
     public Task TertiaryOperatorWithoutAssignment() => DoTest(@"int main() { 1 > 2 ? 1 : 2; }");
+
+    [Fact]
+    public Task CompoundAssignment() => DoTest(@"int main() { int i = 0; i += 1; }");
+
+    [Fact]
+    public Task CompoundAssignmentAsValue() => DoTest(@"int main() { int i = 0; i = i += 1; }");
+
+    [Fact]
+    public Task IncrementAsValue() => DoTest(@"int main() { int i = 0; i = i++; }");
 }

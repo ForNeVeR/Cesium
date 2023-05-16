@@ -8,16 +8,28 @@ internal class SetValueExpression : IExpression
 {
     private readonly ILValue _value;
     private readonly IExpression _expression;
+    private readonly bool _doReturn;
 
-    public SetValueExpression(ILValue value, IExpression expression)
+    public SetValueExpression(ILValue value, IExpression expression, bool doReturn = true)
     {
         _value = value;
         _expression = expression;
+        _doReturn = doReturn;
     }
 
     public IExpression Lower(IDeclarationScope scope) => this;
 
-    public void EmitTo(IEmitScope scope) => _value.EmitSetValue(scope, _expression);
+    public void EmitTo(IEmitScope scope)
+    {
+        _value.EmitSetValue(scope, _expression);
 
-    public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType();
+        if (_doReturn)
+            _value.EmitGetValue(scope);
+    }
+
+    public IType GetExpressionType(IDeclarationScope scope) => _doReturn
+        ? _value.GetValueType()
+        : new PrimitiveType(PrimitiveTypeKind.Void);
+
+    public IExpression NoReturn() => new SetValueExpression(_value, _expression, false);
 }
