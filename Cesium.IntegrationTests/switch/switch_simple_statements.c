@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     if (j != 42) return -1;
 
     /* infinite loop in Cesium */
+    // TODO[#404]
     /*
     int k = 42;
     switch (i) k = 53;
