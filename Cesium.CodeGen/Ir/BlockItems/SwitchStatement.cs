@@ -61,6 +61,8 @@ internal class SwitchStatement : IBlockItem
             }
         }
 
+        targetStmts.Add(new GoToStatement(switchScope.GetBreakLabel()));
+
         targetStmts.Add(loweredBody);
         targetStmts.Add(new LabelStatement(switchScope.GetBreakLabel(),  new ExpressionStatement((IExpression?) null)).Lower(switchScope));
 
