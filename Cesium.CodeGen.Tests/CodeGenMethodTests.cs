@@ -398,4 +398,24 @@ static int main()
     ++x;
     return x + 1;
 }");
+
+    [Fact]
+    public Task FunctionPointerCallTest() => DoTest(@"int foo(int a) { return a; }
+
+int main()
+{
+    int (*fooptr)(int) = &foo;
+
+    return fooptr(123);
+}");
+
+    [Fact]
+    public void NonFunctionPointerCallTest() => DoesNotCompile(@"int foo(int a) { return a; }
+
+int main()
+{
+    void *fooptr = &foo;
+
+    return fooptr(123);
+}", "Attempted to call non-function pointer");
 }

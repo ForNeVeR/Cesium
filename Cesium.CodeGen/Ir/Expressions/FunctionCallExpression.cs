@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -59,6 +60,45 @@ internal class FunctionCallExpression : IExpression
         }
 
         var functionName = _function.Identifier;
+
+        if (scope.GetVariable(functionName) is { } var)
+        {
+            if (var.Type is not PointerType { Base: FunctionType f })
+            {
+                throw new CompilationException("Attempted to call non-function pointer");
+            }
+
+
+            return new IndirectFunctionCallExpression(
+                _function,
+                new GetValueExpression(new LValueLocalVariable(var.Type, var.Identifier)),
+                f,
+                _arguments.Select((a, index) =>
+                {
+                    int firstVarArgArgument = 0;
+                    if (f.Parameters?.IsVarArg == true)
+                    {
+                        firstVarArgArgument = f.Parameters.Parameters.Count;
+                    }
+
+                    if (index >= firstVarArgArgument)
+                    {
+                        var expressionType = a.GetExpressionType(scope);
+                        if (expressionType.Equals(scope.CTypeSystem.Float))
+                        {
+                            // Seems to be float always use float-point registers and as such we need to covert to double.
+                            return new TypeCastExpression(scope.CTypeSystem.Double, a.Lower(scope));
+                        }
+                        else
+                        {
+                            return a.Lower(scope);
+                        }
+                    }
+
+                    return a.Lower(scope);
+                }).ToList());
+        }
+
         var callee = scope.GetFunctionInfo(functionName);
         if (callee is null)
         {
