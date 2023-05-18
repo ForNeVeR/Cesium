@@ -43,6 +43,8 @@ internal class SwitchStatement : IBlockItem
 
         var idExpr = new IdentifierExpression("$switch_tmp");
 
+        var hasDefaultCase = false;
+
         foreach (var matchGroup in switchScope.SwitchCases)
         {
             if (matchGroup.TestExpression != null)
@@ -57,11 +59,13 @@ internal class SwitchStatement : IBlockItem
             }
             else
             {
+                hasDefaultCase = true;
                 targetStmts.Add(new GoToStatement(matchGroup.Label));
             }
         }
 
-        targetStmts.Add(new GoToStatement(switchScope.GetBreakLabel()));
+        if (!hasDefaultCase)
+            targetStmts.Add(new GoToStatement(switchScope.GetBreakLabel()));
 
         targetStmts.Add(loweredBody);
         targetStmts.Add(new LabelStatement(switchScope.GetBreakLabel(),  new ExpressionStatement((IExpression?) null)).Lower(switchScope));
