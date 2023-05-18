@@ -27,6 +27,11 @@ internal class SwitchStatement : IBlockItem
         var loweredBody = _body.Lower(switchScope);
         var targetStmts = new List<IBlockItem>();
 
+        if (switchScope.SwitchCases.Count == 0)
+        {
+            return new ExpressionStatement(_expression).Lower(switchScope);
+        }
+
         var dbi = new DeclarationBlockItem(
             new ScopedIdentifierDeclaration(
                 StorageClass.Auto,
