@@ -43,10 +43,7 @@ internal class SwitchStatement : IBlockItem
                         _expression)
                 }));
 
-        foreach (var dbiBlock in dbi.LowerInitializers())
-        {
-            targetStmts.Add(dbiBlock.Lower(switchScope));
-        }
+        targetStmts.Add(dbi.Lower(switchScope));
 
         var idExpr = new IdentifierExpression("$switch_tmp");
 

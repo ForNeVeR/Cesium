@@ -11,6 +11,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal class DeclarationBlockItem : IBlockItem
 {
     private readonly ScopedIdentifierDeclaration _declaration;
+
     internal DeclarationBlockItem(ScopedIdentifierDeclaration declaration)
     {
         _declaration = declaration;
@@ -19,7 +20,8 @@ internal class DeclarationBlockItem : IBlockItem
     public IBlockItem Lower(IDeclarationScope scope)
     {
         var (storageClass, items) = _declaration;
-        var newItems = new List<InitializableDeclarationInfo>();
+        var newItems = new List<InitializerPart>();
+
         foreach (var (declaration, initializer) in items)
         {
             var (type, identifier, cliImportMemberName) = declaration;
@@ -47,63 +49,31 @@ internal class DeclarationBlockItem : IBlockItem
                 }
             }
 
-            var newDeclaration = new LocalDeclarationInfo(type, identifier, cliImportMemberName);
-            var initializableDeclaration = new InitializableDeclarationInfo(newDeclaration, initializerExpression?.Lower(scope));
+            if (initializerExpression != null)
+            {
+                initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier), BinaryOperator.Assign, initializerExpression);
+
+                if (initializerExpression.GetExpressionType(scope) is not PrimitiveType { Kind: PrimitiveTypeKind.Void })
+                    initializerExpression = new ConsumeExpression(initializerExpression);
+            }
+
+            IExpression? primaryInitializerExpression = null;
+            if (type is InPlaceArrayType i)
+            {
+                primaryInitializerExpression = new ConsumeExpression(
+                    new AssignmentExpression(new IdentifierExpression(identifier), BinaryOperator.Assign, new LocalAllocationExpression(i))
+                );
+            }
+
+            var initializableDeclaration = new InitializerPart(primaryInitializerExpression?.Lower(scope), initializerExpression?.Lower(scope));
             newItems.Add(initializableDeclaration);
         }
 
-        return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, newItems));
-    }
-
-    public IEnumerable<IBlockItem> LowerInitializers()
-    {
-        var (storageClass, items) = _declaration;
-        foreach (var (declaration, initializer) in items)
-        {
-            var (type, identifier, cliImportMemberName) = declaration;
-            if (identifier is null)
-                throw new CompilationException("An anonymous local declaration isn't supported.");
-
-            var initializableDeclaration = new InitializableDeclarationInfo(declaration, null);
-            yield return new DeclarationBlockItem(new ScopedIdentifierDeclaration(storageClass, new[] { initializableDeclaration }));
-            if (initializer is not null)
-            {
-                yield return new ExpressionStatement(new AssignmentExpression(new IdentifierExpression(identifier), BinaryOperator.Assign, initializer));
-            }
-        }
+        return new InitializationBlockItem(newItems);
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        var (storageClass, declarations) = _declaration;
-        foreach (var (declaration, initializer) in declarations)
-        {
-            var (type, identifier, _) = declaration;
-            switch (initializer)
-            {
-                case null when type is not InPlaceArrayType:
-                    continue;
-                case null when type is InPlaceArrayType arrayType:
-                    arrayType.EmitInitializer(scope);
-                    break;
-                default:
-                    initializer?.EmitTo(scope);
-                    break;
-            }
-
-            switch (storageClass)
-            {
-                case StorageClass.Auto:
-                    var variable = scope.ResolveVariable(identifier!);
-                    scope.StLoc(variable);
-                    break;
-                case StorageClass.Static:
-                    var field = scope.ResolveGlobalField(identifier!);
-                    scope.StSFld(field);
-                    break;
-                default:
-                    throw new CompilationException($"Storage class {storageClass} is not supported");
-            } 
-        }
+        throw new AssertException("Should be lowered");
     }
 }

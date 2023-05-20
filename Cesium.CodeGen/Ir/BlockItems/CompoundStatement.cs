@@ -29,17 +29,7 @@ internal class CompoundStatement : IBlockItem
         var newNestedStatements = new List<IBlockItem>();
         foreach (var blockItem in Statements)
         {
-            if (blockItem is DeclarationBlockItem declaration)
-            {
-                foreach (var splittedBlockItem in declaration.LowerInitializers())
-                {
-                    newNestedStatements.Add(splittedBlockItem.Lower(blockScope));
-                }
-            }
-            else
-            {
-                newNestedStatements.Add(blockItem.Lower(blockScope));
-            }
+            newNestedStatements.Add(blockItem.Lower(blockScope));
         }
 
         return new CompoundStatement(newNestedStatements, blockScope);
