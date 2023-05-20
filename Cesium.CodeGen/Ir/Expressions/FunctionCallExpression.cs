@@ -9,7 +9,7 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class FunctionCallExpression : IExpression
+internal class FunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IdentifierExpression _function;
     private readonly IReadOnlyList<IExpression> _arguments;
@@ -35,7 +35,7 @@ internal class FunctionCallExpression : IExpression
         _callee = null;
     }
 
-    public IExpression Lower(IDeclarationScope scope)
+    public override IExpression Lower(IDeclarationScope scope)
     {
         if (_function.Identifier == "__builtin_offsetof_instance")
         {
@@ -70,7 +70,6 @@ internal class FunctionCallExpression : IExpression
 
 
             return new IndirectFunctionCallExpression(
-                _function,
                 new GetValueExpression(new LValueLocalVariable(var.Type, var.Identifier)),
                 f,
                 _arguments.Select((a, index) =>
@@ -134,51 +133,12 @@ internal class FunctionCallExpression : IExpression
             }).ToList());
     }
 
-    public void EmitTo(IEmitScope scope)
+    public override void EmitTo(IEmitScope scope)
     {
         if (_callee == null)
             throw new AssertException("Should be lowered");
 
-        VariableDefinition? varArgBuffer = null;
-        var explicitParametersCount = _callee!.Parameters?.Parameters.Count ?? 0;
-        var varArgParametersCount = _arguments.Count - explicitParametersCount;
-        if (_callee!.Parameters?.IsVarArg == true)
-        {
-            // TODO: See https://github.com/ForNeVeR/Cesium/issues/285
-            // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
-            // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
-            if (varArgParametersCount == 0)
-            {
-                scope.AddInstruction(OpCodes.Ldnull);
-            }
-            else
-            {
-                scope.AddInstruction(OpCodes.Ldc_I4, varArgParametersCount * 8);
-                scope.AddInstruction(OpCodes.Localloc);
-            }
-
-            varArgBuffer = new VariableDefinition(scope.Context.TypeSystem.Void.MakePointerType());
-            scope.Method.Body.Variables.Add(varArgBuffer);
-            scope.AddInstruction(OpCodes.Stloc, varArgBuffer);
-        }
-
-        foreach (var argument in _arguments.Take(explicitParametersCount))
-            argument.EmitTo(scope);
-
-        if (_callee!.Parameters?.IsVarArg == true)
-        {
-            for (var i = 0; i < varArgParametersCount; i++)
-            {
-                var argument = _arguments[i + explicitParametersCount];
-                scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
-                scope.AddInstruction(OpCodes.Ldc_I4, i * 8);
-                scope.AddInstruction(OpCodes.Add);
-                argument.EmitTo(scope);
-                scope.AddInstruction(OpCodes.Stind_I);
-            }
-
-            scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
-        }
+        EmitArgumentList(scope, _callee.Parameters, _arguments);
 
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
@@ -186,7 +146,7 @@ internal class FunctionCallExpression : IExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
     }
 
-    public IType GetExpressionType(IDeclarationScope scope)
+    public override IType GetExpressionType(IDeclarationScope scope)
     {
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new AssertException($"Function \"{functionName}\" was not lowered.");

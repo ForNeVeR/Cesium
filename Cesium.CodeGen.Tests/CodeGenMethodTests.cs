@@ -418,4 +418,15 @@ int main()
 
     return fooptr(123);
 }", "Attempted to call non-function pointer");
+
+    // TODO [#196]
+    /* [Fact]
+    public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
+
+int main()
+{
+    int (*fooptr)(int, ...) = &foo;
+
+    return fooptr(123, 456);
+}"); */
 }
