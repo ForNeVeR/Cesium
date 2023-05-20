@@ -790,7 +790,7 @@ public partial class CParser
         Statement body)
         => new SwitchStatement(expression, body);
 
-    // TODO[#210]: 6.8.5 Iteration statements
+    // 6.8.5 Iteration statements
     [Rule("iteration_statement: 'while' '(' expression ')' statement")]
     private static Statement MakeWhileStatement(
         ICToken _,
