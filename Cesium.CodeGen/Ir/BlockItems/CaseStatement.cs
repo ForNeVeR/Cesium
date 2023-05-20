@@ -7,14 +7,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class CaseStatement : IBlockItem
 {
-    private string _label = Guid.NewGuid().ToString();
-
-    private CaseStatement(IExpression? expression, IBlockItem statement, string label)
-    {
-        _label = label;
-        Expression = expression;
-        Statement = statement;
-    }
+    private readonly string _label = Guid.NewGuid().ToString();
 
     public CaseStatement(Ast.CaseStatement statement)
     {
@@ -26,8 +19,8 @@ internal class CaseStatement : IBlockItem
 
     bool IBlockItem.HasDefiniteReturn => Statement.HasDefiniteReturn;
 
-    internal IBlockItem Statement { get; }
-    internal IExpression? Expression { get; }
+    private IBlockItem Statement { get; }
+    private IExpression? Expression { get; }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
