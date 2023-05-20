@@ -24,7 +24,7 @@ internal class CaseStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        // todo: optimize multiple cases at once
+        // TODO[#408]: optimize multiple cases at once
 
         if (scope is not SwitchScope sws)
             throw new AssertException("Cannot use case statement outside of switch");
