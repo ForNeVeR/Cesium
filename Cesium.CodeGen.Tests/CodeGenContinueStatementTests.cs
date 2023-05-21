@@ -57,7 +57,7 @@ public class CodeGenContinueStatementTests : CodeGenTestBase
     default:
         continue;
     }
-}", "Can't break not from loop statement");
+}", "Can't use continue outside of a loop construct.");
 
     [Fact]
     public Task ContinueInSwitchEnclosedWithLoop() => DoTest(@"int main(int argc, char *argv[])
