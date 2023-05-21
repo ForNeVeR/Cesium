@@ -40,7 +40,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public void AddVariable(StorageClass storageClass, string identifier, IType variable)
     {
         // quirk - passing Static variables to the parent
-        // we need more tests for that
+        // TODO[#410]: we need more tests for that
 
         switch (storageClass)
         {
