@@ -3,7 +3,7 @@ int main()
     int j = 0;
     int c = 42;
 
-    // assignments are broken as expressions currently
+    // TODO[#411] assignments are broken as expressions currently
     // switch(c&3) while((c-=4)>=0) {
     switch(c&3) while(c >= 4) {
         c -= 4;
