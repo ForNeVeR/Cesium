@@ -13,7 +13,7 @@ public static class TokenExtensions
         if (token.Kind != CTokenType.StringLiteral)
             throw new ParseException($"Non-string literal token: {token.Kind} {token.Text}");
 
-        var result = token.Text.Trim('"');
+        var result = token.Text[1..^1];
 
         // simple escape sequences
         var builder = new StringBuilder(result.Length);
