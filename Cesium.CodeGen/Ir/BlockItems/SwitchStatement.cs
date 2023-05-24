@@ -79,15 +79,4 @@ internal class SwitchStatement : IBlockItem
     }
 
     public void EmitTo(IEmitScope scope) => throw new CompilationException("Should be lowered");
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        if (Body == original)
-        {
-            Body = replacement;
-            return true;
-        }
-
-        return Body.TryUnsafeSubstitute(original, replacement);
-    }
 }
