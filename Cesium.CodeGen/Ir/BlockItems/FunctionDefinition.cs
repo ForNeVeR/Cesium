@@ -58,7 +58,9 @@ internal class FunctionDefinition : IBlockItem
         Statement = statement;
     }
 
-    public void EmitTo(IEmitScope scope)
+    public void EmitTo(IEmitScope scope) => EmitCode(scope);
+
+    public void EmitCode(IEmitScope scope)
     {
         var context = scope.Context;
         var (parameters, returnType) = FunctionType;

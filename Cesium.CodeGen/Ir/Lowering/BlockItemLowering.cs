@@ -8,7 +8,6 @@ using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Lowering;
 

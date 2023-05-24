@@ -5,11 +5,11 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal record CompoundStatement : IBlockItem
 {
-    private readonly IEmitScope? _emitScope;
+    public IEmitScope? EmitScope { get; }
 
     public CompoundStatement(List<IBlockItem> items, IEmitScope? emitScope = null)
     {
-        _emitScope = emitScope;
+        EmitScope = emitScope;
         Statements = items;
     }
 
@@ -22,7 +22,7 @@ internal record CompoundStatement : IBlockItem
 
     public void EmitTo(IEmitScope scope)
     {
-        var realScope = _emitScope ?? scope;
+        var realScope = EmitScope ?? scope;
 
         foreach (var item in Statements)
         {
