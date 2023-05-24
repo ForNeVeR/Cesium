@@ -35,17 +35,27 @@ public unsafe static class StdLibFunctions
     public static int System(byte* command)
     {
         string? shellCommand = StdIoFunctions.Unmarshal(command);
-        var startParameters = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? new ProcessStartInfo("cmd", $"/c {shellCommand}")
-            : new ProcessStartInfo("/bin/sh", $"-c \"{shellCommand}\"");
-        Process? pa11yCiInstallation = Process.Start(startParameters);
-        if (pa11yCiInstallation is null)
+        if (shellCommand is null)
         {
             return 8 /*ENOEXEC*/;
         }
 
-        pa11yCiInstallation.WaitForExit();
-        return pa11yCiInstallation.ExitCode;
+        var startParameters = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new ProcessStartInfo($"cmd", $"/c {shellCommand}") { UseShellExecute = false }
+            : new ProcessStartInfo("/bin/sh", $"-c \"{EscapeShell(shellCommand)}\"");
+        Process? process = Process.Start(startParameters);
+        if (process is null)
+        {
+            return 8 /*ENOEXEC*/;
+        }
+
+        process.WaitForExit();
+        return process.ExitCode;
+    }
+
+    private static string EscapeShell(string command)
+    {
+        return command.Replace("\"", "\\\"");
     }
 
     public static void* Malloc(UIntPtr size)
