@@ -10,16 +10,16 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class DeclarationBlockItem : IBlockItem
 {
-    private readonly ScopedIdentifierDeclaration _declaration;
+    public ScopedIdentifierDeclaration Declaration { get; }
 
     internal DeclarationBlockItem(ScopedIdentifierDeclaration declaration)
     {
-        _declaration = declaration;
+        Declaration = declaration;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var (storageClass, items) = _declaration;
+        var (storageClass, items) = Declaration;
         var newItems = new List<InitializerPart>();
 
         foreach (var (declaration, initializer) in items)

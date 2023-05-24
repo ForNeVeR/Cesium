@@ -6,10 +6,11 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ExpressionStatement : IBlockItem
 {
-    private readonly IExpression? _expression;
+    public IExpression? Expression { get; }
+
     internal ExpressionStatement(IExpression? expression)
     {
-        _expression = expression;
+        Expression = expression;
     }
 
     public ExpressionStatement(Ast.ExpressionStatement statement) : this(statement.Expression?.ToIntermediate())
@@ -18,7 +19,7 @@ internal class ExpressionStatement : IBlockItem
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var loweredExpression = _expression?.Lower(scope);
+        var loweredExpression = Expression?.Lower(scope);
 
         if (loweredExpression is SetValueExpression setValue)
             return new ExpressionStatement(setValue.NoReturn());
@@ -32,5 +33,5 @@ internal class ExpressionStatement : IBlockItem
         return new ExpressionStatement(loweredExpression);
     }
 
-    public void EmitTo(IEmitScope scope) => _expression?.EmitTo(scope);
+    public void EmitTo(IEmitScope scope) => Expression?.EmitTo(scope);
 }

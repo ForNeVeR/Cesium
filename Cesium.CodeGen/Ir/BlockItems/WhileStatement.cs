@@ -6,14 +6,14 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class WhileStatement : LoopStatement, IBlockItem
 {
-    private readonly IExpression _testExpression;
-    public IBlockItem Body { get; set; }
+    public IExpression TestExpression { get; }
+    public IBlockItem Body { get; }
 
     public WhileStatement(Ast.WhileStatement statement)
     {
         var (testExpression, body) = statement;
 
-        _testExpression = testExpression.ToIntermediate();
+        TestExpression = testExpression.ToIntermediate();
         Body = body.ToIntermediate();
     }
 
@@ -27,7 +27,7 @@ internal class WhileStatement : LoopStatement, IBlockItem
         return MakeLoop(
             loopScope,
             null,
-            _testExpression,
+            TestExpression,
             null,
             Body,
             breakLabel,

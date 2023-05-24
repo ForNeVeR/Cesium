@@ -7,23 +7,23 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ReturnStatement : IBlockItem
 {
-    private readonly IExpression? _expression;
+    public IExpression? Expression { get; }
 
     public ReturnStatement(Ast.ReturnStatement statement)
     {
-        _expression = statement.Expression?.ToIntermediate();
+        Expression = statement.Expression?.ToIntermediate();
     }
 
     public ReturnStatement(IExpression? expression)
     {
-        _expression = expression;
+        Expression = expression;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => new ReturnStatement(_expression?.Lower(scope));
+    public IBlockItem Lower(IDeclarationScope scope) => new ReturnStatement(Expression?.Lower(scope));
 
     public void EmitTo(IEmitScope scope)
     {
-        _expression?.EmitTo(scope);
+        Expression?.EmitTo(scope);
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }

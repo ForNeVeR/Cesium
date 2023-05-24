@@ -8,16 +8,15 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal record IfElseStatement : IBlockItem
 {
-    private readonly IExpression _expression;
-
-    public IBlockItem TrueBranch { get; set; }
-    public IBlockItem? FalseBranch { get; set; }
+    public IExpression Expression { get; init; }
+    public IBlockItem TrueBranch { get; init; }
+    public IBlockItem? FalseBranch { get; init; }
 
     public bool? IsEscapeBranchRequired { get; set; }
 
     public IfElseStatement(IExpression expression, IBlockItem trueBranch, IBlockItem? falseBranch)
     {
-        _expression = expression;
+        Expression = expression;
         TrueBranch = trueBranch;
         FalseBranch = falseBranch;
     }
@@ -25,12 +24,12 @@ internal record IfElseStatement : IBlockItem
     public IfElseStatement(Ast.IfElseStatement statement)
     {
         var (expression, trueBranch, falseBranch) = statement;
-        _expression = expression.ToIntermediate();
+        Expression = expression.ToIntermediate();
         TrueBranch = trueBranch.ToIntermediate();
         FalseBranch = falseBranch?.ToIntermediate();
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => new IfElseStatement(_expression.Lower(scope), TrueBranch.Lower(scope), FalseBranch?.Lower(scope));
+    public IBlockItem Lower(IDeclarationScope scope) => new IfElseStatement(Expression.Lower(scope), TrueBranch.Lower(scope), FalseBranch?.Lower(scope));
 
     public void EmitTo(IEmitScope scope)
     {
@@ -40,7 +39,7 @@ internal record IfElseStatement : IBlockItem
         var bodyProcessor = scope.Method.Body.GetILProcessor();
         var ifFalseLabel = bodyProcessor.Create(OpCodes.Nop);
 
-        _expression.EmitTo(scope);
+        Expression.EmitTo(scope);
         bodyProcessor.Emit(OpCodes.Brfalse, ifFalseLabel);
 
         TrueBranch.EmitTo(scope);

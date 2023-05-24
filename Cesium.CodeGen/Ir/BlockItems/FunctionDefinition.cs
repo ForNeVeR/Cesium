@@ -17,28 +17,28 @@ internal class FunctionDefinition : IBlockItem
 {
     private const string MainFunctionName = "main";
 
-    private readonly FunctionType _functionType;
-    private readonly StorageClass _storageClass;
-    private readonly string _name;
-    private readonly CompoundStatement _statement;
+    public FunctionType FunctionType { get; }
+    public StorageClass StorageClass { get; }
+    public string Name { get; }
+    public CompoundStatement Statement { get; }
 
-    private bool IsMain => _name == MainFunctionName;
+    public bool IsMain => Name == MainFunctionName;
 
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
-        _storageClass = StorageClass.Auto;
+        StorageClass = StorageClass.Auto;
         var staticMarker = specifiers.FirstOrDefault(_ => _ is StorageClassSpecifier storageClass && storageClass.Name == "static");
         if (staticMarker is not null)
         {
-            _storageClass = StorageClass.Static;
+            StorageClass = StorageClass.Static;
             specifiers = specifiers.Remove(staticMarker);
         }
 
         var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
-        _functionType = type as FunctionType
+        FunctionType = type as FunctionType
                         ?? throw new AssertException($"Function of not a function type: {type}.");
-        _name = name ?? throw new AssertException($"Function without name: {function}.");
+        Name = name ?? throw new AssertException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)
             throw new WipException(
@@ -47,54 +47,54 @@ internal class FunctionDefinition : IBlockItem
 
         if (cliImportMemberName != null)
             throw new CompilationException($"CLI import specifier on a function declaration: {function}.");
-        _statement = astStatement.ToIntermediate();
+        Statement = astStatement.ToIntermediate();
     }
 
-    private FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, CompoundStatement statement)
+    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, CompoundStatement statement)
     {
-        _storageClass = storageClass;
-        _name = name;
-        _functionType = functionType;
-        _statement = statement;
+        StorageClass = storageClass;
+        Name = name;
+        FunctionType = functionType;
+        Statement = statement;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var resolvedFunctionType = (FunctionType)scope.ResolveType(_functionType);
+        var resolvedFunctionType = (FunctionType)scope.ResolveType(FunctionType);
         var (parameters, returnType) = resolvedFunctionType;
         if (IsMain && !returnType.Equals(scope.CTypeSystem.Int))
             throw new CompilationException(
-                $"Invalid return type for the {_name} function: " +
+                $"Invalid return type for the {Name} function: " +
                 $"int expected, got {returnType}.");
 
         if (IsMain && parameters?.IsVarArg == true)
-            throw new WipException(196, $"Variable arguments for the {_name} function aren't supported.");
+            throw new WipException(196, $"Variable arguments for the {Name} function aren't supported.");
 
-        var declaration = scope.GetFunctionInfo(_name);
+        var declaration = scope.GetFunctionInfo(Name);
         if (declaration?.IsDefined == true)
             if (declaration.CliImportMember is null)
-                throw new CompilationException($"Double definition of function {_name}.");
+                throw new CompilationException($"Double definition of function {Name}.");
             else
-                throw new CompilationException($"Function {_name} already defined as immutable.");
+                throw new CompilationException($"Function {Name} already defined as immutable.");
 
-        var newDeclaration = new FunctionInfo(parameters, returnType, _storageClass, IsDefined: true);
-        scope.DeclareFunction(_name, newDeclaration);
+        var newDeclaration = new FunctionInfo(parameters, returnType, StorageClass, IsDefined: true);
+        scope.DeclareFunction(Name, newDeclaration);
 
-        return new FunctionDefinition(_name, _storageClass, resolvedFunctionType, _statement);
+        return new FunctionDefinition(Name, StorageClass, resolvedFunctionType, Statement);
     }
 
     public void EmitTo(IEmitScope scope)
     {
         var context = scope.Context;
-        var (parameters, returnType) = _functionType;
+        var (parameters, returnType) = FunctionType;
 
-        var declaration = context.GetFunctionInfo(_name);
+        var declaration = context.GetFunctionInfo(Name);
 
         var method = declaration switch
         {
-            { MethodReference: null } => context.DefineMethod(_name, _storageClass, returnType, parameters),
+            { MethodReference: null } => context.DefineMethod(Name, StorageClass, returnType, parameters),
             { MethodReference: MethodDefinition md } => md,
-            _ => throw new CompilationException($"Function {_name} already defined as immutable.")
+            _ => throw new CompilationException($"Function {Name} already defined as immutable.")
         };
 
         var functionScope = new FunctionScope(context, declaration, method);
@@ -106,7 +106,7 @@ internal class FunctionDefinition : IBlockItem
             var currentEntryPoint = assembly.EntryPoint;
             if (currentEntryPoint != null)
                 throw new CompilationException(
-                    $"Function {_name} cannot override existing entry point for assembly {assembly}.");
+                    $"Function {Name} cannot override existing entry point for assembly {assembly}.");
 
             assembly.EntryPoint = entryPoint;
         }
@@ -124,24 +124,24 @@ internal class FunctionDefinition : IBlockItem
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {
-        if (_functionType.Parameters == null)
+        if (FunctionType.Parameters == null)
         {
             // TODO[#87]: Decide whether this is normal or not.
             return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
         }
 
-        var (parameterList, isVoid, isVarArg) = _functionType.Parameters;
+        var (parameterList, isVoid, isVarArg) = FunctionType.Parameters;
         if (isVoid)
         {
             return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
         }
 
         if (isVarArg)
-            throw new WipException(196, $"Variable arguments for the {_name} function aren't supported, yet.");
+            throw new WipException(196, $"Variable arguments for the {Name} function aren't supported, yet.");
 
         if (parameterList.Count != 2)
             throw new CompilationException(
-                $"Invalid parameter count for the {_name} function: " +
+                $"Invalid parameter count for the {Name} function: " +
                 $"2 expected, got {parameterList.Count}.");
 
         bool isValid = true;
@@ -157,7 +157,7 @@ internal class FunctionDefinition : IBlockItem
 
         if (!isValid)
             throw new CompilationException(
-                $"Invalid parameter types for the {_name} function: " +
+                $"Invalid parameter types for the {Name} function: " +
                 "int, char*[] expected.");
 
         return GenerateSyntheticEntryPointStrArray(context, userEntrypoint);
@@ -286,12 +286,12 @@ internal class FunctionDefinition : IBlockItem
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
-        var loweredStmt = (CompoundStatement) _statement.Lower(scope);
+        var loweredStmt = (CompoundStatement) Statement.Lower(scope);
         var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
             context,
             scope,
             loweredStmt,
-            _functionType.ReturnType,
+            FunctionType.ReturnType,
             IsMain
         );
 

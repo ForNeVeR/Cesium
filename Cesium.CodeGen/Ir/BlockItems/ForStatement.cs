@@ -7,25 +7,23 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class ForStatement : LoopStatement, IBlockItem
 {
-    private readonly IBlockItem? _initDeclaration;
-    private readonly IExpression? _initExpression;
-    private readonly IExpression? _testExpression;
-    private readonly IExpression? _updateExpression;
-    public IBlockItem Body { get; set; }
-    public string? BreakLabel { get; }
-    public string? ContinueLabel { get; }
+    public IBlockItem? InitDeclaration { get; }
+    public IExpression? InitExpression { get; }
+    public IExpression? TestExpression { get; }
+    public IExpression? UpdateExpression { get; }
+    public IBlockItem Body { get; }
 
     public ForStatement(Ast.ForStatement statement)
     {
         var (initDeclaration, initExpression, testExpression, updateExpression, body) = statement;
-        _initDeclaration = initDeclaration?.ToIntermediate();
-        _initExpression = initExpression?.ToIntermediate();
+        InitDeclaration = initDeclaration?.ToIntermediate();
+        InitExpression = initExpression?.ToIntermediate();
 
-        if (_initDeclaration != null && _initExpression != null)
+        if (InitDeclaration != null && InitExpression != null)
             throw new CompilationException("for statement: can't have both init declaration and expression");
 
-        _testExpression = testExpression?.ToIntermediate();
-        _updateExpression = updateExpression?.ToIntermediate();
+        TestExpression = testExpression?.ToIntermediate();
+        UpdateExpression = updateExpression?.ToIntermediate();
         Body = body.ToIntermediate();
     }
 
@@ -38,9 +36,9 @@ internal class ForStatement : LoopStatement, IBlockItem
 
         return MakeLoop(
             loopScope,
-            _initDeclaration ?? new ExpressionStatement(_initExpression),
-            _testExpression,
-            _updateExpression,
+            InitDeclaration ?? new ExpressionStatement(InitExpression),
+            TestExpression,
+            UpdateExpression,
             Body,
             breakLabel,
             null,

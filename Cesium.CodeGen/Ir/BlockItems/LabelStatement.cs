@@ -5,9 +5,9 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal record LabelStatement : IBlockItem
 {
-    public IBlockItem Expression { get; set; }
+    public IBlockItem Expression { get; init; }
+    public bool DidLowered { get; }
     public string Identifier { get; }
-    private readonly bool _didLowered;
 
     public LabelStatement(Ast.LabelStatement statement)
     {
@@ -19,13 +19,13 @@ internal record LabelStatement : IBlockItem
     {
         Identifier = identifier;
         Expression = expression;
-        _didLowered = didLowered;
+        DidLowered = didLowered;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
         // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        if (!_didLowered)
+        if (!DidLowered)
             scope.AddLabel(Identifier);
         return new LabelStatement(Identifier, Expression.Lower(scope), true);
     }

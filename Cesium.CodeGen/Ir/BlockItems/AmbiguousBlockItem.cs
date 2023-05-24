@@ -16,30 +16,30 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 /// </summary>
 internal class AmbiguousBlockItem : IBlockItem
 {
-    private readonly string _item1;
-    private readonly string _item2;
+    public string Item1 { get; }
+    public string Item2 { get; }
 
     public AmbiguousBlockItem(Ast.AmbiguousBlockItem item)
     {
-        (_item1, _item2) = item;
+        (Item1, Item2) = item;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
         // Check if this can be a valid variable declaration:
-        var isValidVariableDeclaration = scope.GetVariable(_item1) != null;
+        var isValidVariableDeclaration = scope.GetVariable(Item1) != null;
 
         // Check if this can be a function call:
-        var function = scope.GetFunctionInfo(_item1);
+        var function = scope.GetFunctionInfo(Item1);
         var isValidFunctionCall = function != null;
         if (!isValidVariableDeclaration && !isValidFunctionCall)
             throw new CompilationException(
-                $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
+                $"{Item1}({Item2}) is supposed to be either a variable declaration or a function call," +
                 " but wasn't resolved to be either.");
         else if (isValidVariableDeclaration && isValidFunctionCall)
             throw new CompilationException(
-                $"{_item1}({_item2}) is supposed to be either a variable declaration or a function call," +
-                $" but it's ambiguous which it is, since both a function and a type of name {_item1} exist.");
+                $"{Item1}({Item2}) is supposed to be either a variable declaration or a function call," +
+                $" but it's ambiguous which it is, since both a function and a type of name {Item1} exist.");
 
         if (isValidFunctionCall)
         {
@@ -59,8 +59,8 @@ internal class AmbiguousBlockItem : IBlockItem
     {
         CToken CreateFakeToken(string id) => new(new Range(), id, new Range(), id, CTokenType.Identifier);
 
-        var functionNameToken = CreateFakeToken(_item1);
-        var argumentToken = CreateFakeToken(_item2);
+        var functionNameToken = CreateFakeToken(Item1);
+        var argumentToken = CreateFakeToken(Item2);
 
         var functionCallExpression = new Expressions.FunctionCallExpression(new FunctionCallExpression(
             new ConstantLiteralExpression(functionNameToken),

@@ -9,40 +9,40 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class FunctionDeclaration : IBlockItem
 {
-    private readonly string _identifier;
-    private readonly StorageClass _storageClass;
-    private readonly FunctionType _functionType;
-    private readonly string? _cliImportMemberName;
+    public string Identifier { get; }
+    public StorageClass StorageClass { get; }
+    public FunctionType FunctionType { get; }
+    public string? CliImportMemberName { get; }
 
-    public FunctionDeclaration(string identifier, StorageClass storageClass, FunctionType functionType, string? cliImportMemberName)
+    public FunctionDeclaration(string identifier, StorageClass storageStorageClass, FunctionType functionType, string? cliImportMemberName)
     {
-        _storageClass = storageClass;
-        _identifier = identifier;
-        _functionType = functionType;
-        _cliImportMemberName = cliImportMemberName;
+        StorageClass = storageStorageClass;
+        Identifier = identifier;
+        FunctionType = functionType;
+        CliImportMemberName = cliImportMemberName;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
-        var resolvedFunctionType = (FunctionType)scope.ResolveType(_functionType);
+        var resolvedFunctionType = (FunctionType)scope.ResolveType(FunctionType);
         var (parametersInfo, returnType) = resolvedFunctionType;
-        if (_cliImportMemberName != null)
+        if (CliImportMemberName != null)
         {
             if (parametersInfo is null or { Parameters.Count: 0, IsVoid: false })
-                throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {_identifier}.");
+                throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {Identifier}.");
         }
 
-        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, _storageClass, IsDefined: _cliImportMemberName is not null)
+        var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, StorageClass, IsDefined: CliImportMemberName is not null)
         {
-            CliImportMember = _cliImportMemberName
+            CliImportMember = CliImportMemberName
         };
-        scope.DeclareFunction(_identifier, cliImportFunctionInfo);
-        return new FunctionDeclaration(_identifier, _storageClass, resolvedFunctionType, _cliImportMemberName);
+        scope.DeclareFunction(Identifier, cliImportFunctionInfo);
+        return new FunctionDeclaration(Identifier, StorageClass, resolvedFunctionType, CliImportMemberName);
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        if (_cliImportMemberName != null)
+        if (CliImportMemberName != null)
         {
             return;
         }
@@ -53,13 +53,13 @@ internal class FunctionDeclaration : IBlockItem
     private void EmitFunctionDeclaration(
         IEmitScope scope)
     {
-        var (parametersInfo, returnType) = _functionType;
-        var existingFunction = scope.Context.GetFunctionInfo(_identifier);
+        var (parametersInfo, returnType) = FunctionType;
+        var existingFunction = scope.Context.GetFunctionInfo(Identifier);
         if (existingFunction!.MethodReference is null)
         {
             scope.Context.DefineMethod(
-                _identifier,
-                _storageClass,
+                Identifier,
+                StorageClass,
                 returnType,
                 parametersInfo);
         }

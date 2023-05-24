@@ -7,22 +7,22 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class TypeDefBlockItem : IBlockItem
 {
-    private readonly ICollection<LocalDeclarationInfo> types;
+    public ICollection<LocalDeclarationInfo> Types { get; }
 
     public TypeDefBlockItem(TypeDefDeclaration declaration)
     {
-        declaration.Deconstruct(out types);
+        Types = declaration.Types;
     }
 
     public TypeDefBlockItem(ICollection<LocalDeclarationInfo> types)
     {
-        this.types = types;
+        Types = types;
     }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
         List<LocalDeclarationInfo> list = new List<LocalDeclarationInfo>();
-        foreach (var typeDef in types)
+        foreach (var typeDef in Types)
         {
             var (type, identifier, cliImportMemberName) = typeDef;
             if (identifier == null)
@@ -47,7 +47,7 @@ internal class TypeDefBlockItem : IBlockItem
 
     public void EmitTo(IEmitScope scope)
     {
-        foreach (var typeDef in types)
+        foreach (var typeDef in Types)
         {
             var (type, identifier, _) = typeDef;
             if (type is IGeneratedType t)

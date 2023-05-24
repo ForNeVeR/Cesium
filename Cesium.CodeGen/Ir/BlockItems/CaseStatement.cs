@@ -7,8 +7,6 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class CaseStatement : IBlockItem
 {
-    private readonly string _label = Guid.NewGuid().ToString();
-
     public CaseStatement(Ast.CaseStatement statement)
     {
         var (constant, body) = statement;
@@ -17,8 +15,9 @@ internal class CaseStatement : IBlockItem
         Statement = body.ToIntermediate();
     }
 
-    private IBlockItem Statement { get; set; }
-    private IExpression? Expression { get; }
+    public string Label { get; } = Guid.NewGuid().ToString();
+    public IBlockItem Statement { get; }
+    public IExpression? Expression { get; }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {
@@ -27,9 +26,9 @@ internal class CaseStatement : IBlockItem
         if (scope is not BlockScope sws || sws.SwitchCases == null)
             throw new AssertException("Cannot use case statement outside of switch");
 
-        sws.SwitchCases.Add(new SwitchCase(Expression, _label));
+        sws.SwitchCases.Add(new SwitchCase(Expression, Label));
 
-        return new LabelStatement(_label, Statement).Lower(scope);
+        return new LabelStatement(Label, Statement).Lower(scope);
     }
 
     public void EmitTo(IEmitScope scope)

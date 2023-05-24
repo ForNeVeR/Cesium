@@ -9,14 +9,14 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 
 internal class SwitchStatement : IBlockItem
 {
-    private readonly IExpression _expression;
-    public IBlockItem Body { get; private set; }
+    public IExpression Expression { get; }
+    public IBlockItem Body { get; }
 
     public SwitchStatement(Ast.SwitchStatement statement)
     {
         var (expression, body) = statement;
 
-        _expression = expression.ToIntermediate();
+        Expression = expression.ToIntermediate();
         Body = body.ToIntermediate();
     }
 
@@ -31,7 +31,7 @@ internal class SwitchStatement : IBlockItem
 
         if (switchCases.Count == 0)
         {
-            return new ExpressionStatement(_expression).Lower(switchScope);
+            return new ExpressionStatement(Expression).Lower(switchScope);
         }
 
         var dbi = new DeclarationBlockItem(
@@ -39,8 +39,8 @@ internal class SwitchStatement : IBlockItem
                 StorageClass.Auto,
                 new List<InitializableDeclarationInfo>
                 {
-                    new(new LocalDeclarationInfo(_expression.GetExpressionType(scope), "$switch_tmp", null),
-                        _expression)
+                    new(new LocalDeclarationInfo(Expression.GetExpressionType(scope), "$switch_tmp", null),
+                        Expression)
                 }));
 
         targetStmts.Add(dbi.Lower(switchScope));
