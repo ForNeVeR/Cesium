@@ -1,5 +1,3 @@
-using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 
@@ -18,20 +16,5 @@ internal class FunctionDeclaration : IBlockItem
         Identifier = identifier;
         FunctionType = functionType;
         CliImportMemberName = cliImportMemberName;
-    }
-
-    private void EmitFunctionDeclaration(
-        IEmitScope scope)
-    {
-        var (parametersInfo, returnType) = FunctionType;
-        var existingFunction = scope.Context.GetFunctionInfo(Identifier);
-        if (existingFunction!.MethodReference is null)
-        {
-            scope.Context.DefineMethod(
-                Identifier,
-                StorageClass,
-                returnType,
-                parametersInfo);
-        }
     }
 }

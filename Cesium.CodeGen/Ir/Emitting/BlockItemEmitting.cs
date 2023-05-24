@@ -1,4 +1,3 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
@@ -6,22 +5,6 @@ using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using AmbiguousBlockItem = Cesium.CodeGen.Ir.BlockItems.AmbiguousBlockItem;
-using BreakStatement = Cesium.CodeGen.Ir.BlockItems.BreakStatement;
-using CaseStatement = Cesium.CodeGen.Ir.BlockItems.CaseStatement;
-using CompoundStatement = Cesium.CodeGen.Ir.BlockItems.CompoundStatement;
-using ContinueStatement = Cesium.CodeGen.Ir.BlockItems.ContinueStatement;
-using DoWhileStatement = Cesium.CodeGen.Ir.BlockItems.DoWhileStatement;
-using ExpressionStatement = Cesium.CodeGen.Ir.BlockItems.ExpressionStatement;
-using ForStatement = Cesium.CodeGen.Ir.BlockItems.ForStatement;
-using FunctionDefinition = Cesium.CodeGen.Ir.BlockItems.FunctionDefinition;
-using GoToStatement = Cesium.CodeGen.Ir.BlockItems.GoToStatement;
-using IBlockItem = Cesium.CodeGen.Ir.BlockItems.IBlockItem;
-using IfElseStatement = Cesium.CodeGen.Ir.BlockItems.IfElseStatement;
-using LabelStatement = Cesium.CodeGen.Ir.BlockItems.LabelStatement;
-using ReturnStatement = Cesium.CodeGen.Ir.BlockItems.ReturnStatement;
-using SwitchStatement = Cesium.CodeGen.Ir.BlockItems.SwitchStatement;
-using WhileStatement = Cesium.CodeGen.Ir.BlockItems.WhileStatement;
 
 namespace Cesium.CodeGen.Ir.Emitting;
 
@@ -31,7 +14,7 @@ internal static class BlockItemEmitting
     {
         switch (blockItem)
         {
-            case AmbiguousBlockItem ambiguousBlockItem:
+            case AmbiguousBlockItem:
             {
                 throw new WipException(213, "Ambiguous variable declarations aren't supported, yet.");
             }
