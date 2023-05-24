@@ -4,6 +4,7 @@ using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -46,7 +47,7 @@ public class AssemblyContext
         var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
-        nodes = nodes.Select(node => node.Lower(scope));
+        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node));
         foreach (var node in nodes)
             node.EmitTo(scope);
     }
