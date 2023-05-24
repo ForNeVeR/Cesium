@@ -3,7 +3,7 @@ using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class CompoundStatement : IBlockItem
+internal record CompoundStatement : IBlockItem
 {
     private readonly IEmitScope? _emitScope;
 
@@ -18,7 +18,7 @@ internal class CompoundStatement : IBlockItem
     {
     }
 
-    internal List<IBlockItem> Statements { get; }
+    internal List<IBlockItem> Statements { get; init; }
 
     public IBlockItem Lower(IDeclarationScope scope)
     {

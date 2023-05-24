@@ -3,7 +3,7 @@ using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class LabelStatement : IBlockItem
+internal record LabelStatement : IBlockItem
 {
     public IBlockItem Expression { get; set; }
     public string Identifier { get; }
