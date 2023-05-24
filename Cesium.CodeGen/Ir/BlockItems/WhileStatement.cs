@@ -1,7 +1,5 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -16,10 +14,5 @@ internal class WhileStatement : IBlockItem
 
         TestExpression = testExpression.ToIntermediate();
         Body = body.ToIntermediate();
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        throw new AssertException("Should be lowered");
     }
 }

@@ -1,4 +1,3 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
@@ -25,10 +24,5 @@ internal class ForStatement : IBlockItem
         TestExpression = testExpression?.ToIntermediate();
         UpdateExpression = updateExpression?.ToIntermediate();
         Body = body.ToIntermediate();
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        throw new AssertException("Should be lowered");
     }
 }

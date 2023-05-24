@@ -1,7 +1,5 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
@@ -17,12 +15,5 @@ internal class ReturnStatement : IBlockItem
     public ReturnStatement(IExpression? expression)
     {
         Expression = expression;
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        Expression?.EmitTo(scope);
-
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
 }

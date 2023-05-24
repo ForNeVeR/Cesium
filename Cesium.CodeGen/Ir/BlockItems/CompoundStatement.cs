@@ -19,14 +19,4 @@ internal record CompoundStatement : IBlockItem
     }
 
     internal List<IBlockItem> Statements { get; init; }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        var realScope = EmitScope ?? scope;
-
-        foreach (var item in Statements)
-        {
-            item.EmitTo(realScope);
-        }
-    }
 }

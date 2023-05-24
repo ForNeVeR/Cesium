@@ -20,16 +20,6 @@ internal class FunctionDeclaration : IBlockItem
         CliImportMemberName = cliImportMemberName;
     }
 
-    public void EmitTo(IEmitScope scope)
-    {
-        if (CliImportMemberName != null)
-        {
-            return;
-        }
-
-        EmitFunctionDeclaration(scope);
-    }
-
     private void EmitFunctionDeclaration(
         IEmitScope scope)
     {

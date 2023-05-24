@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
 using Cesium.Ast;
-using Cesium.CodeGen.Contexts;
-using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Range = Yoakke.SynKit.Text.Range;
 
@@ -22,10 +20,5 @@ internal class AmbiguousBlockItem : IBlockItem
     public AmbiguousBlockItem(Ast.AmbiguousBlockItem item)
     {
         (Item1, Item2) = item;
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        throw new WipException(213, "Ambiguous variable declarations aren't supported, yet.");
     }
 }

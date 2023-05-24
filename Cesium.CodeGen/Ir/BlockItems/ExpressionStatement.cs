@@ -1,4 +1,3 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
@@ -16,6 +15,4 @@ internal class ExpressionStatement : IBlockItem
     public ExpressionStatement(Ast.ExpressionStatement statement) : this(statement.Expression?.ToIntermediate())
     {
     }
-
-    public void EmitTo(IEmitScope scope) => Expression?.EmitTo(scope);
 }

@@ -130,6 +130,9 @@ internal static class BlockItemEmitting
             }
             case IfElseStatement s:
             {
+                if (s.IsEscapeBranchRequired == null)
+                    throw new CompilationException("CFG Graph pass missing");
+
                 var bodyProcessor = scope.Method.Body.GetILProcessor();
                 var ifFalseLabel = bodyProcessor.Create(OpCodes.Nop);
 
@@ -144,12 +147,7 @@ internal static class BlockItemEmitting
                     return;
                 }
 
-                if (s.TrueBranch.HasDefiniteReturn)
-                {
-                    bodyProcessor.Append(ifFalseLabel);
-                    EmitCode(scope, s.FalseBranch);
-                }
-                else
+                if (s.IsEscapeBranchRequired.Value)
                 {
                     var statementEndLabel = bodyProcessor.Create(OpCodes.Nop);
                     bodyProcessor.Emit(OpCodes.Br, statementEndLabel);
@@ -157,6 +155,11 @@ internal static class BlockItemEmitting
                     bodyProcessor.Append(ifFalseLabel);
                     EmitCode(scope, s.FalseBranch);
                     bodyProcessor.Append(statementEndLabel);
+                }
+                else
+                {
+                    bodyProcessor.Append(ifFalseLabel);
+                    EmitCode(scope, s.FalseBranch);
                 }
 
                 return;

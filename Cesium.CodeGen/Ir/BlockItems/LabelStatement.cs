@@ -1,4 +1,3 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -20,12 +19,5 @@ internal record LabelStatement : IBlockItem
         Identifier = identifier;
         Expression = expression;
         DidLowered = didLowered;
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        var instruction = scope.ResolveLabel(Identifier);
-        scope.Method.Body.Instructions.Add(instruction);
-        Expression.EmitTo(scope);
     }
 }

@@ -3,6 +3,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Emitting;
 using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -57,8 +58,6 @@ internal class FunctionDefinition : IBlockItem
         FunctionType = functionType;
         Statement = statement;
     }
-
-    public void EmitTo(IEmitScope scope) => EmitCode(scope);
 
     public void EmitCode(IEmitScope scope)
     {
@@ -272,6 +271,6 @@ internal class FunctionDefinition : IBlockItem
             IsMain
         );
 
-        transformed.EmitTo(scope);
+        BlockItemEmitting.EmitCode(scope, transformed);
     }
 }
