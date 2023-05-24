@@ -297,9 +297,4 @@ internal class FunctionDefinition : IBlockItem
 
         transformed.EmitTo(scope);
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        throw new NotSupportedException();
-    }
 }

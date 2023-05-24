@@ -36,15 +36,4 @@ internal class CaseStatement : IBlockItem
     {
         throw new AssertException("Cannot emit case statement independently.");
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        if (Statement == original)
-        {
-            Statement = replacement;
-            return true;
-        }
-
-        return Statement.TryUnsafeSubstitute(original, replacement);
-    }
 }

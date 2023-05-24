@@ -36,15 +36,4 @@ internal record LabelStatement : IBlockItem
         scope.Method.Body.Instructions.Add(instruction);
         Expression.EmitTo(scope);
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        if (Expression == original)
-        {
-            Expression = replacement;
-            return true;
-        }
-
-        return Expression.TryUnsafeSubstitute(original, replacement);
-    }
 }

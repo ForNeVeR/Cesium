@@ -54,6 +54,4 @@ internal class TypeDefBlockItem : IBlockItem
                 scope.Context.GenerateType(identifier!, t);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

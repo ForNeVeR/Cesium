@@ -53,6 +53,4 @@ internal record GlobalVariableDefinition(
             scope.StSFld(field);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

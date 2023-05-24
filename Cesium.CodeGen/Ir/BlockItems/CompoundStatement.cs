@@ -42,22 +42,4 @@ internal record CompoundStatement : IBlockItem
             item.EmitTo(realScope);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        var index = Statements.IndexOf(original);
-        if (index >= 0)
-        {
-            Statements[index] = replacement;
-            return true;
-        }
-
-        foreach (var stmt in Statements)
-        {
-            if (stmt.TryUnsafeSubstitute(original, replacement))
-                return true;
-        }
-
-        return false;
-    }
 }

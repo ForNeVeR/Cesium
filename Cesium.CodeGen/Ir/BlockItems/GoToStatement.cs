@@ -24,6 +24,4 @@ internal class GoToStatement : IBlockItem
         var instruction = scope.ResolveLabel(Identifier);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Br, instruction));
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

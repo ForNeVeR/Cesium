@@ -48,6 +48,4 @@ internal class TagBlockItem : IBlockItem
                 scope.Context.GenerateType(identifier!, t);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

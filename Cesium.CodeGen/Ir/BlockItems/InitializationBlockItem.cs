@@ -17,6 +17,4 @@ internal record InitializationBlockItem(ICollection<InitializerPart> Items) : IB
             secInt?.EmitTo(scope);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

@@ -27,6 +27,4 @@ internal class ReturnStatement : IBlockItem
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

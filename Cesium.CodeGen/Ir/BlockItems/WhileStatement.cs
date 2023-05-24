@@ -36,15 +36,4 @@ internal class WhileStatement : LoopStatement, IBlockItem
             null
         );
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        if (Body == original)
-        {
-            Body = replacement;
-            return true;
-        }
-
-        return Body.TryUnsafeSubstitute(original, replacement);
-    }
 }

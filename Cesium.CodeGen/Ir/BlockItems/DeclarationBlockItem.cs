@@ -76,6 +76,4 @@ internal class DeclarationBlockItem : IBlockItem
     {
         throw new AssertException("Should be lowered");
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement) => false;
 }

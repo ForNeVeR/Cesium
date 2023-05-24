@@ -66,24 +66,4 @@ internal record IfElseStatement : IBlockItem
             FalseBranch.EmitTo(scope);
         }
     }
-
-    public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
-    {
-        if (TrueBranch == original)
-        {
-            TrueBranch = replacement;
-            return true;
-        }
-
-        if (TrueBranch.TryUnsafeSubstitute(original, replacement))
-            return true;
-
-        if (FalseBranch == original)
-        {
-            FalseBranch = replacement;
-            return true;
-        }
-
-        return FalseBranch?.TryUnsafeSubstitute(original, replacement) ?? false;
-    }
 }
