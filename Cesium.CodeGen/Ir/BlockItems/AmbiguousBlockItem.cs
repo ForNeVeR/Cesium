@@ -24,49 +24,8 @@ internal class AmbiguousBlockItem : IBlockItem
         (Item1, Item2) = item;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        // Check if this can be a valid variable declaration:
-        var isValidVariableDeclaration = scope.GetVariable(Item1) != null;
-
-        // Check if this can be a function call:
-        var function = scope.GetFunctionInfo(Item1);
-        var isValidFunctionCall = function != null;
-        if (!isValidVariableDeclaration && !isValidFunctionCall)
-            throw new CompilationException(
-                $"{Item1}({Item2}) is supposed to be either a variable declaration or a function call," +
-                " but wasn't resolved to be either.");
-        else if (isValidVariableDeclaration && isValidFunctionCall)
-            throw new CompilationException(
-                $"{Item1}({Item2}) is supposed to be either a variable declaration or a function call," +
-                $" but it's ambiguous which it is, since both a function and a type of name {Item1} exist.");
-
-        if (isValidFunctionCall)
-        {
-            return CreateFuctionCallStatement(scope);
-
-        }
-
-        return this;
-    }
-
     public void EmitTo(IEmitScope scope)
     {
         throw new WipException(213, "Ambiguous variable declarations aren't supported, yet.");
-    }
-
-    private IBlockItem CreateFuctionCallStatement(IDeclarationScope scope)
-    {
-        CToken CreateFakeToken(string id) => new(new Range(), id, new Range(), id, CTokenType.Identifier);
-
-        var functionNameToken = CreateFakeToken(Item1);
-        var argumentToken = CreateFakeToken(Item2);
-
-        var functionCallExpression = new Expressions.FunctionCallExpression(new FunctionCallExpression(
-            new ConstantLiteralExpression(functionNameToken),
-            ImmutableArray.Create<Expression>(new ConstantLiteralExpression(argumentToken))
-        ));
-        var realNode = new ExpressionStatement(functionCallExpression);
-        return realNode.Lower(scope);
     }
 }

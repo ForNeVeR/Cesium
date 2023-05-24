@@ -17,8 +17,6 @@ internal class GoToStatement : IBlockItem
         Identifier = identifier;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => this;
-
     public void EmitTo(IEmitScope scope)
     {
         var instruction = scope.ResolveLabel(Identifier);

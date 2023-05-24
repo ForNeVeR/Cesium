@@ -22,14 +22,6 @@ internal record LabelStatement : IBlockItem
         DidLowered = didLowered;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        if (!DidLowered)
-            scope.AddLabel(Identifier);
-        return new LabelStatement(Identifier, Expression.Lower(scope), true);
-    }
-
     public void EmitTo(IEmitScope scope)
     {
         var instruction = scope.ResolveLabel(Identifier);

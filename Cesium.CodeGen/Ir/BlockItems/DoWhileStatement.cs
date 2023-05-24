@@ -1,10 +1,11 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class DoWhileStatement : LoopStatement, IBlockItem
+internal class DoWhileStatement : IBlockItem
 {
     public IExpression TestExpression { get; }
     public IBlockItem Body { get; }
@@ -17,23 +18,8 @@ internal class DoWhileStatement : LoopStatement, IBlockItem
         Body = body.ToIntermediate();
     }
 
-    public override IBlockItem Lower(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
-        var breakLabel = Guid.NewGuid().ToString();
-        var continueLabel = Guid.NewGuid().ToString();
-
-        var loopScope = new BlockScope((IEmitScope)scope, breakLabel, continueLabel);
-
-        return MakeLoop(
-            loopScope,
-            new GoToStatement(continueLabel),
-            TestExpression,
-            null,
-            Body,
-            breakLabel,
-            null,
-            continueLabel,
-            null
-        );
+        throw new AssertException("Should be lowered");
     }
 }

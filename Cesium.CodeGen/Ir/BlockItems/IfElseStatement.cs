@@ -29,8 +29,6 @@ internal record IfElseStatement : IBlockItem
         FalseBranch = falseBranch?.ToIntermediate();
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => new IfElseStatement(Expression.Lower(scope), TrueBranch.Lower(scope), FalseBranch?.Lower(scope));
-
     public void EmitTo(IEmitScope scope)
     {
         if (IsEscapeBranchRequired == null)

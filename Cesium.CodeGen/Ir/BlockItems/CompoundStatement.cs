@@ -20,19 +20,6 @@ internal record CompoundStatement : IBlockItem
 
     internal List<IBlockItem> Statements { get; init; }
 
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        var blockScope = new BlockScope((IEmitScope) scope, null, null);
-
-        var newNestedStatements = new List<IBlockItem>();
-        foreach (var blockItem in Statements)
-        {
-            newNestedStatements.Add(blockItem.Lower(blockScope));
-        }
-
-        return new CompoundStatement(newNestedStatements, blockScope);
-    }
-
     public void EmitTo(IEmitScope scope)
     {
         var realScope = _emitScope ?? scope;

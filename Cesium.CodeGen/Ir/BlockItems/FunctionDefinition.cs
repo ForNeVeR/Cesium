@@ -1,9 +1,9 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -56,31 +56,6 @@ internal class FunctionDefinition : IBlockItem
         Name = name;
         FunctionType = functionType;
         Statement = statement;
-    }
-
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        var resolvedFunctionType = (FunctionType)scope.ResolveType(FunctionType);
-        var (parameters, returnType) = resolvedFunctionType;
-        if (IsMain && !returnType.Equals(scope.CTypeSystem.Int))
-            throw new CompilationException(
-                $"Invalid return type for the {Name} function: " +
-                $"int expected, got {returnType}.");
-
-        if (IsMain && parameters?.IsVarArg == true)
-            throw new WipException(196, $"Variable arguments for the {Name} function aren't supported.");
-
-        var declaration = scope.GetFunctionInfo(Name);
-        if (declaration?.IsDefined == true)
-            if (declaration.CliImportMember is null)
-                throw new CompilationException($"Double definition of function {Name}.");
-            else
-                throw new CompilationException($"Function {Name} already defined as immutable.");
-
-        var newDeclaration = new FunctionInfo(parameters, returnType, StorageClass, IsDefined: true);
-        scope.DeclareFunction(Name, newDeclaration);
-
-        return new FunctionDefinition(Name, StorageClass, resolvedFunctionType, Statement);
     }
 
     public void EmitTo(IEmitScope scope)
@@ -286,7 +261,7 @@ internal class FunctionDefinition : IBlockItem
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
-        var loweredStmt = (CompoundStatement) Statement.Lower(scope);
+        var loweredStmt = (CompoundStatement) BlockItemLowering.Lower(scope, Statement);
         var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
             context,
             scope,

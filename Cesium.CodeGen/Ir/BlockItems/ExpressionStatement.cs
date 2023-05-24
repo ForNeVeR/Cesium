@@ -17,21 +17,5 @@ internal class ExpressionStatement : IBlockItem
     {
     }
 
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        var loweredExpression = Expression?.Lower(scope);
-
-        if (loweredExpression is SetValueExpression setValue)
-            return new ExpressionStatement(setValue.NoReturn());
-
-        if (loweredExpression is not null
-            && !loweredExpression.GetExpressionType(scope).IsEqualTo(scope.CTypeSystem.Void))
-        {
-            loweredExpression = new ConsumeExpression(loweredExpression);
-        }
-
-        return new ExpressionStatement(loweredExpression);
-    }
-
     public void EmitTo(IEmitScope scope) => Expression?.EmitTo(scope);
 }

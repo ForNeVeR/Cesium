@@ -19,8 +19,6 @@ internal class ReturnStatement : IBlockItem
         Expression = expression;
     }
 
-    public IBlockItem Lower(IDeclarationScope scope) => new ReturnStatement(Expression?.Lower(scope));
-
     public void EmitTo(IEmitScope scope)
     {
         Expression?.EmitTo(scope);

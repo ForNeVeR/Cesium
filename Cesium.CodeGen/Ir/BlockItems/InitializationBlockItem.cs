@@ -7,8 +7,6 @@ internal record InitializerPart(IExpression? PrimaryInitializer, IExpression? Se
 
 internal record InitializationBlockItem(ICollection<InitializerPart> Items) : IBlockItem
 {
-    public IBlockItem Lower(IDeclarationScope scope) => this; // already lowered
-
     public void EmitTo(IEmitScope scope)
     {
         foreach (var (primInt, secInt) in Items)

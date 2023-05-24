@@ -5,7 +5,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ForStatement : LoopStatement, IBlockItem
+internal class ForStatement : IBlockItem
 {
     public IBlockItem? InitDeclaration { get; }
     public IExpression? InitExpression { get; }
@@ -27,23 +27,8 @@ internal class ForStatement : LoopStatement, IBlockItem
         Body = body.ToIntermediate();
     }
 
-    public override IBlockItem Lower(IDeclarationScope scope)
+    public void EmitTo(IEmitScope scope)
     {
-        var breakLabel = Guid.NewGuid().ToString();
-        var continueLabel = Guid.NewGuid().ToString();
-
-        var loopScope = new BlockScope((IEmitScope)scope, breakLabel, continueLabel);
-
-        return MakeLoop(
-            loopScope,
-            InitDeclaration ?? new ExpressionStatement(InitExpression),
-            TestExpression,
-            UpdateExpression,
-            Body,
-            breakLabel,
-            null,
-            null,
-            continueLabel
-        );
+        throw new AssertException("Should be lowered");
     }
 }

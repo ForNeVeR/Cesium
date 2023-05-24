@@ -15,13 +15,6 @@ internal record GlobalVariableDefinition(
     string Identifier,
     IExpression? Initializer) : IBlockItem
 {
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        scope.AddVariable(StorageClass, Identifier, Type);
-
-        return this with { Initializer = Initializer?.Lower(scope) };
-    }
-
     public void EmitTo(IEmitScope scope)
     {
         var field = scope.ResolveGlobalField(Identifier);

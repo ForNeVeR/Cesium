@@ -19,18 +19,6 @@ internal class CaseStatement : IBlockItem
     public IBlockItem Statement { get; }
     public IExpression? Expression { get; }
 
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        // TODO[#408]: optimize multiple cases at once
-
-        if (scope is not BlockScope sws || sws.SwitchCases == null)
-            throw new AssertException("Cannot use case statement outside of switch");
-
-        sws.SwitchCases.Add(new SwitchCase(Expression, Label));
-
-        return new LabelStatement(Label, Statement).Lower(scope);
-    }
-
     public void EmitTo(IEmitScope scope)
     {
         throw new AssertException("Cannot emit case statement independently.");
