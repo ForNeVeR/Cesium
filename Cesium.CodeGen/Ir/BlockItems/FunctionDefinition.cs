@@ -2,17 +2,13 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
-using Cesium.CodeGen.Ir.Expressions;
-using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using QuikGraph;
-using QuikGraph.Graphviz;
-using ConstantLiteralExpression = Cesium.CodeGen.Ir.Expressions.ConstantLiteralExpression;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -291,274 +287,16 @@ internal class FunctionDefinition : IBlockItem
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
         var loweredStmt = (CompoundStatement) _statement.Lower(scope);
+        var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
+            context,
+            scope,
+            loweredStmt,
+            _functionType.ReturnType,
+            IsMain
+        );
 
-        var dset = new AdjacencyGraph<CodeBlockVertex, CodeBlockEdge>();
-        var terminator = FillGraph(dset, loweredStmt);
-
-        var preTerminators = dset.Edges.Where(x => x.Target == terminator).Select(x => x.Source).ToArray();
-        if (preTerminators.Length == 0)
-            // log
-            Console.WriteLine("Code does not terminate");
-
-        var isVoidFn = _functionType.ReturnType.Resolve(context) == context.TypeSystem.Void;
-        var isReturnRequired = !isVoidFn && !IsMain;
-
-        foreach (var preTerminator in preTerminators)
-        {
-            if (preTerminator.BlockItem is ReturnStatement) continue;
-
-            if (isReturnRequired)
-            {
-                // bad error message
-                throw new CompilationException($"Function {scope.Method.Name} has no return statement.");
-            }
-
-            // inserting fake return
-            var retn = new ReturnStatement(IsMain ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
-
-            if (preTerminator.BlockItem is {} original)
-            {
-                var result = loweredStmt.TryUnsafeSubstitute(original, new CompoundStatement(new List<IBlockItem> { original, retn }));
-
-                if (!result)
-                    throw new CompilationException("[internal] Unable to insert fake return.");
-            }
-            else
-            {
-                // terminator directly follows start node
-                if (loweredStmt.Statements.Count != 0)
-                    throw new CompilationException("[internal] Function terminates immediately, but there was statements");
-
-                loweredStmt.Statements.Add(retn);
-            }
-        }
-
-        loweredStmt.EmitTo(scope);
+        transformed.EmitTo(scope);
     }
-
-    private (CodeBlockVertex, List<CodeBlockVertex>) AddStatementToGraph(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, IBlockItem stmt)
-    {
-        switch (stmt)
-        {
-            case ExpressionStatement:
-            case DeclarationBlockItem:
-            case AmbiguousBlockItem:
-            case InitializationBlockItem:
-                return Atom();
-            case LabelStatement label:
-            {
-                var labelVtx = new CodeBlockVertex(label);
-                graph.AddVertex(labelVtx);
-
-                var (nextVtx, unboundedNext) = AddStatementToGraph(graph, label.Expression);
-                graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
-
-                return (labelVtx, unboundedNext);
-            }
-            case IfElseStatement ifElse:
-            {
-                var ifVtx = new CodeBlockVertex(stmt);
-                graph.AddVertex(ifVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, ifElse.TrueBranch);
-                graph.AddEdge(new CodeBlockEdge(ifVtx, vtx));
-
-                // true case does not have terminating goto or return or something
-                ifElse.IsEscapeBranchRequired = unboundedNext.Count > 0;
-
-                if (ifElse.FalseBranch != null)
-                {
-                    var (falseVtx, falseUnboundedNext) = AddStatementToGraph(graph, ifElse.FalseBranch);
-                    graph.AddEdge(new CodeBlockEdge(ifVtx, falseVtx));
-
-                    unboundedNext.AddRange(falseUnboundedNext);
-                }
-                else
-                {
-                    unboundedNext.Add(ifVtx);
-                }
-
-                return (ifVtx, unboundedNext);
-            }
-            case DoWhileStatement doWhile:
-            {
-                var doWhileVtx = new CodeBlockVertex(doWhile);
-                graph.AddVertex(doWhileVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, doWhile.Body);
-                graph.AddEdge(new CodeBlockEdge(doWhileVtx, vtx));
-
-                foreach (var unbounded in unboundedNext)
-                {
-                    graph.AddEdge(new CodeBlockEdge(unbounded, doWhileVtx));
-                }
-
-                unboundedNext.Clear();
-                unboundedNext.Add(doWhileVtx);
-
-                return (doWhileVtx, unboundedNext);
-            }
-            // copypasted
-            case WhileStatement doWhile:
-            {
-                var doWhileVtx = new CodeBlockVertex(doWhile);
-                graph.AddVertex(doWhileVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, doWhile.Body);
-                graph.AddEdge(new CodeBlockEdge(doWhileVtx, vtx));
-
-                foreach (var unbounded in unboundedNext)
-                {
-                    graph.AddEdge(new CodeBlockEdge(unbounded, doWhileVtx));
-                }
-
-                unboundedNext.Clear();
-                unboundedNext.Add(doWhileVtx);
-
-                return (doWhileVtx, unboundedNext);
-            }
-            // copypasted
-            case ForStatement doWhile:
-            {
-                var doWhileVtx = new CodeBlockVertex(doWhile);
-                graph.AddVertex(doWhileVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, doWhile.Body);
-                graph.AddEdge(new CodeBlockEdge(doWhileVtx, vtx));
-
-                foreach (var unbounded in unboundedNext)
-                {
-                    graph.AddEdge(new CodeBlockEdge(unbounded, doWhileVtx));
-                }
-
-                unboundedNext.Clear();
-                unboundedNext.Add(doWhileVtx);
-
-                return (doWhileVtx, unboundedNext);
-            }
-            case CompoundStatement compound:
-            {
-                // copypasted from code below (think how to generalize)
-                var compoundVtx = new CodeBlockVertex(compound);
-                graph.AddVertex(compoundVtx);
-
-                List<CodeBlockVertex> unboundVertices = new List<CodeBlockVertex>
-                {
-                    compoundVtx
-                };
-
-                foreach (var cs in compound.Statements)
-                {
-                    (var csv, var newUnboundVertices) = AddStatementToGraph(graph, cs);
-
-                    foreach (var ubv in unboundVertices)
-                    {
-                        graph.AddEdge(new CodeBlockEdge(ubv, csv));
-                    }
-
-                    unboundVertices = newUnboundVertices;
-                }
-
-                return (compoundVtx, unboundVertices);
-            }
-            case ReturnStatement:
-            case GoToStatement:
-                return Terminator();
-            case ContinueStatement:
-            case BreakStatement:
-                throw new ArgumentOutOfRangeException(stmt.GetType().Name + " should be lowered");
-            default:
-                throw new ArgumentOutOfRangeException(nameof(stmt) + " " + stmt.GetType().Name);
-        }
-
-        (CodeBlockVertex, List<CodeBlockVertex>) Atom()
-        {
-            var vtx = new CodeBlockVertex(stmt);
-            graph.AddVertex(vtx);
-            return (vtx, new List<CodeBlockVertex> { vtx });
-        }
-
-        (CodeBlockVertex, List<CodeBlockVertex>) Terminator()
-        {
-            var vtx = new CodeBlockVertex(stmt);
-            graph.AddVertex(vtx);
-            return (vtx, new List<CodeBlockVertex>() /* empty */);
-        }
-    }
-
-    private CodeBlockVertex FillGraph(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, CompoundStatement statement)
-    {
-        var start = new CodeBlockVertex(null);
-        var terminator = new CodeBlockVertex(null, true);
-
-        graph.AddVertex(start);
-        graph.AddVertex(terminator);
-
-        List<CodeBlockVertex> unboundVertices = new List<CodeBlockVertex>
-        {
-            start
-        };
-
-        foreach (var cs in statement.Statements)
-        {
-            (var csv, var newUnboundVertices) = AddStatementToGraph(graph, cs);
-
-            foreach (var ubv in unboundVertices)
-            {
-                graph.AddEdge(new CodeBlockEdge(ubv, csv));
-            }
-
-            unboundVertices = newUnboundVertices;
-        }
-
-        foreach (var ubv in unboundVertices)
-        {
-            graph.AddEdge(new CodeBlockEdge(ubv, terminator));
-        }
-
-        foreach (var vtx in graph.Vertices)
-        {
-            if (vtx.BlockItem is GoToStatement goTo)
-            {
-                var label = graph.Vertices.First(x =>
-                {
-                    switch (x.BlockItem)
-                    {
-                        case LabelStatement { Identifier: { } id } when id == goTo.Identifier:
-                            return true;
-                        default:
-                            return false;
-                    }
-                });
-
-                graph.AddEdge(new CodeBlockEdge(vtx, label));
-            }
-
-            if (vtx.BlockItem is ReturnStatement)
-            {
-                graph.AddEdge(new CodeBlockEdge(vtx, terminator));
-            }
-        }
-
-        /*
-        var gviz = graph.ToGraphviz(algo =>
-        {
-            algo.FormatVertex += (o, e) =>
-            {
-                if (e.Vertex.Terminator)
-                    e.VertexFormat.Label = "<terminator>";
-                else
-                    e.VertexFormat.Label = e.Vertex.BlockItem?.ToString() ?? "<start>";
-            };
-        });
-
-        Console.WriteLine(gviz); */
-
-        return terminator;
-    }
-
-    public record CodeBlockVertex(IBlockItem? BlockItem, bool Terminator = false);
-    public record CodeBlockEdge(CodeBlockVertex Source, CodeBlockVertex Target) : IEdge<CodeBlockVertex>;
 
     public bool TryUnsafeSubstitute(IBlockItem original, IBlockItem replacement)
     {

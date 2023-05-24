@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class IfElseStatement : IBlockItem
+internal record IfElseStatement : IBlockItem
 {
     private readonly IExpression _expression;
 
