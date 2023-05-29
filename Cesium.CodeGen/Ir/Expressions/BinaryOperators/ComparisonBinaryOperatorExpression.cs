@@ -32,38 +32,7 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
             || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
             throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
-        var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
-        if (!leftType.IsEqualTo(commonType))
-        {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(leftType, commonType));
-            left = new TypeCastExpression(commonType, left).Lower(scope);
-        }
-
-        if (!rightType.IsEqualTo(commonType))
-        {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(rightType, commonType));
-            right = new TypeCastExpression(commonType, right).Lower(scope);
-        }
-
-        return Operator switch
-        {
-            BinaryOperator.GreaterThanOrEqualTo => new ComparisonBinaryOperatorExpression(
-                new ComparisonBinaryOperatorExpression(left, BinaryOperator.LessThan, right),
-                BinaryOperator.EqualTo,
-                new ConstantLiteralExpression(new IntegerConstant("0"))
-            ),
-            BinaryOperator.LessThanOrEqualTo => new ComparisonBinaryOperatorExpression(
-                new ComparisonBinaryOperatorExpression(left, BinaryOperator.GreaterThan, right),
-                BinaryOperator.EqualTo,
-                new ConstantLiteralExpression(new IntegerConstant("0"))
-            ),
-            BinaryOperator.NotEqualTo => new ComparisonBinaryOperatorExpression(
-                new ComparisonBinaryOperatorExpression(left, BinaryOperator.EqualTo, right),
-                BinaryOperator.EqualTo,
-                new ConstantLiteralExpression(new IntegerConstant("0"))
-            ),
-            _ => new ComparisonBinaryOperatorExpression(left, Operator, right),
-        };
+        return new ComparisonBinaryOperatorExpression(left, Operator, right);
     }
 
     public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
