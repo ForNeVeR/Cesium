@@ -54,8 +54,6 @@ internal class AssignmentExpression : BinaryOperatorExpression
         return new SetValueExpression(lvalue, right);
     }
 
-    public override void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
-
     // `x = v` expression returns type of x (and v)
     // e.g `int x; int y; x = (y = 10);`
     public override IType GetExpressionType(IDeclarationScope scope) => _target.Resolve(scope).GetValueType();

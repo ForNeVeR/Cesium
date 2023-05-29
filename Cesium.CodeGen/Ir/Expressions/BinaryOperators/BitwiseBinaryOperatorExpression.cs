@@ -22,24 +22,6 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
 
     public override IExpression Lower(IDeclarationScope scope) => new BitwiseBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
 
-    public override void EmitTo(IEmitScope scope)
-    {
-        Left.EmitTo(scope);
-        Right.EmitTo(scope);
-
-        var opcode = Operator switch
-        {
-            BinaryOperator.BitwiseAnd => OpCodes.And,
-            BinaryOperator.BitwiseOr => OpCodes.Or,
-            BinaryOperator.BitwiseXor => OpCodes.Xor,
-            BinaryOperator.BitwiseLeftShift => OpCodes.Shl,
-            BinaryOperator.BitwiseRightShift => OpCodes.Shr,
-            _ => throw new AssertException($"Operator {Operator} is not bitwise.")
-        };
-
-        scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
-    }
-
     public override IType GetExpressionType(IDeclarationScope scope)
     {
         var leftType = Left.GetExpressionType(scope);

@@ -108,23 +108,6 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
         }
     }
 
-    public override void EmitTo(IEmitScope scope)
-    {
-        Left.EmitTo(scope);
-        Right.EmitTo(scope);
-
-        var opcode = Operator switch
-        {
-            BinaryOperator.Add => OpCodes.Add,
-            BinaryOperator.Subtract => OpCodes.Sub,
-            BinaryOperator.Multiply => OpCodes.Mul,
-            BinaryOperator.Divide => OpCodes.Div,
-            BinaryOperator.Remainder => OpCodes.Rem,
-            _ => throw new AssertException($"Operator {Operator} is not arithmetic.")
-        };
-        scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
-    }
-
     public override IType GetExpressionType(IDeclarationScope scope)
     {
         var leftType = Left.GetExpressionType(scope);

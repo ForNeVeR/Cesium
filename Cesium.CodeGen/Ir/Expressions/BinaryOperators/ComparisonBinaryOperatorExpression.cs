@@ -66,20 +66,5 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
         };
     }
 
-    public override void EmitTo(IEmitScope scope)
-    {
-        Left.EmitTo(scope);
-        Right.EmitTo(scope);
-        scope.Method.Body.Instructions.Add(GetInstruction());
-
-        Instruction GetInstruction() => Operator switch
-        {
-            BinaryOperator.GreaterThan => Instruction.Create(OpCodes.Cgt),
-            BinaryOperator.LessThan => Instruction.Create(OpCodes.Clt),
-            BinaryOperator.EqualTo => Instruction.Create(OpCodes.Ceq),
-            _ => throw new AssertException($"Unsupported binary operator: {Operator}.")
-        };
-    }
-
     public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
 }
