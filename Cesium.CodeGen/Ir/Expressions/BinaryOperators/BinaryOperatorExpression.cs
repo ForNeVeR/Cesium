@@ -40,50 +40,24 @@ internal abstract class BinaryOperatorExpression : IExpression
 
     private void EmitShortCircuitingLogical(IEmitScope scope)
     {
-        void EmitLogicalAnd(IEmitScope scope)
-        {
-            var bodyProcessor = scope.Method.Body.GetILProcessor();
-            var fastExitLabel = bodyProcessor.Create(OpCodes.Ldc_I4_0);
+        var (shortCircuitResult, shortCircuitBranch) =
+            Operator == BinaryOperator.LogicalOr
+                ? (OpCodes.Ldc_I4_1, OpCodes.Brtrue)
+                : (OpCodes.Ldc_I4_0, OpCodes.Brfalse);
 
-            Left.EmitTo(scope);
-            bodyProcessor.Emit(OpCodes.Ldc_I4_0);
-            bodyProcessor.Emit(OpCodes.Beq, fastExitLabel);
+        var bodyProcessor = scope.Method.Body.GetILProcessor();
+        var fastExitLabel = bodyProcessor.Create(shortCircuitResult);
 
-            Right.EmitTo(scope);
-            bodyProcessor.Emit(OpCodes.Ldc_I4_1);
-            bodyProcessor.Emit(OpCodes.Ceq);
+        Left.EmitTo(scope);
+        bodyProcessor.Emit(shortCircuitBranch, fastExitLabel);
 
-            var exitLabel = bodyProcessor.Create(OpCodes.Nop);
-            bodyProcessor.Emit(OpCodes.Br, exitLabel);
+        Right.EmitTo(scope);
 
-            bodyProcessor.Append(fastExitLabel);
-            bodyProcessor.Append(exitLabel);
-        }
+        var exitLabel = bodyProcessor.Create(OpCodes.Nop);
+        bodyProcessor.Emit(OpCodes.Br, exitLabel);
 
-        void EmitLogicalOr(IEmitScope scope)
-        {
-            var bodyProcessor = scope.Method.Body.GetILProcessor();
-            var fastExitLabel = bodyProcessor.Create(OpCodes.Ldc_I4_1);
-
-            Left.EmitTo(scope);
-            bodyProcessor.Emit(OpCodes.Ldc_I4_1);
-            bodyProcessor.Emit(OpCodes.Beq, fastExitLabel);
-
-            Right.EmitTo(scope);
-            bodyProcessor.Emit(OpCodes.Ldc_I4_1);
-            bodyProcessor.Emit(OpCodes.Ceq);
-
-            var exitLabel = bodyProcessor.Create(OpCodes.Nop);
-            bodyProcessor.Emit(OpCodes.Br, exitLabel);
-
-            bodyProcessor.Append(fastExitLabel);
-            bodyProcessor.Append(exitLabel);
-        }
-
-        if (Operator == BinaryOperator.LogicalOr)
-            EmitLogicalOr(scope);
-        else
-            EmitLogicalAnd(scope);
+        bodyProcessor.Append(fastExitLabel);
+        bodyProcessor.Append(exitLabel);
     }
 
     private void EmitPlain(IEmitScope scope)
