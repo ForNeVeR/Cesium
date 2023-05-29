@@ -103,9 +103,9 @@ internal class ControlFlowChecker
             case ForStatement:
             case SwitchStatement:
             case DeclarationBlockItem:
-                throw new ArgumentOutOfRangeException(stmt.GetType().Name + " should be lowered");
+                throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name + " should be lowered");
             default:
-                throw new ArgumentOutOfRangeException(nameof(stmt) + " " + stmt.GetType().Name);
+                throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name);
         }
 
         (CodeBlockVertex, List<CodeBlockVertex>) Atom()
