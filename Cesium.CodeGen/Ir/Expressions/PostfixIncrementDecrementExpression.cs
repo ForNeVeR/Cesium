@@ -25,7 +25,7 @@ internal class PostfixIncrementDecrementExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var target = _target.Lower(scope);
-        var newValueExpression = new ArithmeticBinaryOperatorExpression(
+        var newValueExpression = new BinaryOperatorExpression(
             target,
             _operator,
             new ConstantLiteralExpression(new IntegerConstant("1"))

@@ -47,14 +47,14 @@ internal class AssignmentExpression : IExpression
         var rightExpanded = Operator switch
         {
             AssignmentOperator.Assign => Right,
-            AssignmentOperator.AddAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Add, Right),
-            AssignmentOperator.SubtractAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
-            AssignmentOperator.MultiplyAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
-            AssignmentOperator.BitwiseLeftShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
-            AssignmentOperator.BitwiseRightShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
-            AssignmentOperator.BitwiseOrAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
-            AssignmentOperator.BitwiseAndAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
-            AssignmentOperator.BitwiseXorAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
+            AssignmentOperator.AddAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Add, Right),
+            AssignmentOperator.SubtractAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
+            AssignmentOperator.MultiplyAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
+            AssignmentOperator.BitwiseLeftShiftAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
+            AssignmentOperator.BitwiseRightShiftAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
+            AssignmentOperator.BitwiseOrAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
+            AssignmentOperator.BitwiseAndAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
+            AssignmentOperator.BitwiseXorAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
             _ => throw new WipException(226, $"Assignment operator not supported, yet: {Operator}.")
         };
 

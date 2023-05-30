@@ -371,7 +371,7 @@ internal static class BlockItemLowering
                     {
                         targetStmts.Add(
                             new IfElseStatement(
-                                new ComparisonBinaryOperatorExpression(idExpr, BinaryOperator.EqualTo, matchGroup.TestExpression).Lower(switchScope),
+                                new BinaryOperatorExpression(idExpr, BinaryOperator.EqualTo, matchGroup.TestExpression).Lower(switchScope),
                                 new GoToStatement(matchGroup.Label),
                                 null
                             )

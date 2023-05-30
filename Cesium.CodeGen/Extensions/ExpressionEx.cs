@@ -26,10 +26,10 @@ internal static class ExpressionEx
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
-        Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
-        Ast.ArithmeticBinaryOperatorExpression e => new ArithmeticBinaryOperatorExpression(e),
-        Ast.BitwiseBinaryOperatorExpression e => new BitwiseBinaryOperatorExpression(e),
-        Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
+        Ast.LogicalBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ArithmeticBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.BitwiseBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ComparisonBinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
         Ast.ConditionalExpression e => new ConditionalExpression(e),
 

@@ -89,7 +89,7 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         var constSize = GetSizeInBytes(arch);
         if (constSize != null) return ConstantLiteralExpression.OfInt32(constSize.Value);
 
-        return new ArithmeticBinaryOperatorExpression(
+        return new BinaryOperatorExpression(
             Base.GetSizeInBytesExpression(arch),
             BinaryOperator.Multiply,
             ConstantLiteralExpression.OfInt32(Size)

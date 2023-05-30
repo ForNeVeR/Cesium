@@ -31,11 +31,11 @@ internal class SubscriptingExpression : IExpression, IValueExpression
         var expression = LowerExpression(_expression, scope);
         var elementSize = GetElementSize(expression.GetExpressionType(scope));
         var offset = elementSize != 1
-            ? new ArithmeticBinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
+            ? new BinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
             : _index;
         var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
-            new ArithmeticBinaryOperatorExpression(
+            new BinaryOperatorExpression(
                 value.GetValueType() is InPlaceArrayType ? new GetAddressValueExpression(value) : new GetValueExpression(value),
                 BinaryOperator.Add,
                 offset.Lower(scope)
