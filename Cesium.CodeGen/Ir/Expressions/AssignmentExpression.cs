@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
@@ -6,34 +7,54 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class AssignmentExpression : BinaryOperatorExpression
+public enum AssignmentOperator
 {
-    private readonly IValueExpression _target;
+    Assign, // =
+    AddAndAssign, // +=
+    SubtractAndAssign, // -=
+    MultiplyAndAssign, // *=
 
-    internal AssignmentExpression(IExpression left, BinaryOperator @operator, IExpression right)
-        : base(left, @operator, right)
+    BitwiseLeftShiftAndAssign, // <<=
+    BitwiseRightShiftAndAssign, // >>=
+    BitwiseOrAndAssign, // |=
+    BitwiseAndAndAssign, // &=
+    BitwiseXorAndAssign, // ^=
+}
+
+internal class AssignmentExpression : IExpression
+{
+    public IValueExpression Left { get; }
+    public IExpression Right{ get; }
+    public AssignmentOperator Operator { get; }
+
+    public AssignmentExpression(Ast.AssignmentExpression expression)
     {
-        _target = left as IValueExpression ?? throw new AssertException($"Not a value expression: {left}.");
+        Operator = GetOperatorKind(expression.Operator);
+        Left = expression.Left.ToIntermediate() as IValueExpression
+               ?? throw new AssertException($"Not a value expression: {expression.Left}.");
+        Right = expression.Right.ToIntermediate();
     }
 
-    public AssignmentExpression(Ast.AssignmentExpression expression) : base(expression)
+    public AssignmentExpression(IValueExpression left, AssignmentOperator @operator, IExpression right)
     {
-        _target = Left as IValueExpression ?? throw new AssertException($"Not a value expression: {Left}.");
+        Left = left;
+        Operator = @operator;
+        Right = right;
     }
 
-    public override IExpression Lower(IDeclarationScope scope)
+    public IExpression Lower(IDeclarationScope scope)
     {
         var rightExpanded = Operator switch
         {
-            BinaryOperator.Assign => Right,
-            BinaryOperator.AddAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Add, Right),
-            BinaryOperator.SubtractAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
-            BinaryOperator.MultiplyAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
-            BinaryOperator.BitwiseLeftShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
-            BinaryOperator.BitwiseRightShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
-            BinaryOperator.BitwiseOrAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
-            BinaryOperator.BitwiseAndAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
-            BinaryOperator.BitwiseXorAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
+            AssignmentOperator.Assign => Right,
+            AssignmentOperator.AddAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Add, Right),
+            AssignmentOperator.SubtractAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
+            AssignmentOperator.MultiplyAndAssign => new ArithmeticBinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
+            AssignmentOperator.BitwiseLeftShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
+            AssignmentOperator.BitwiseRightShiftAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
+            AssignmentOperator.BitwiseOrAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
+            AssignmentOperator.BitwiseAndAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseAnd, Right),
+            AssignmentOperator.BitwiseXorAndAssign => new BitwiseBinaryOperatorExpression(Left, BinaryOperator.BitwiseXor, Right),
             _ => throw new WipException(226, $"Assignment operator not supported, yet: {Operator}.")
         };
 
@@ -56,5 +77,24 @@ internal class AssignmentExpression : BinaryOperatorExpression
 
     // `x = v` expression returns type of x (and v)
     // e.g `int x; int y; x = (y = 10);`
-    public override IType GetExpressionType(IDeclarationScope scope) => _target.Resolve(scope).GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => Left.Resolve(scope).GetValueType();
+
+    public void EmitTo(IEmitScope scope)
+    {
+        throw new AssertException("Should be lowered");
+    }
+
+    private static AssignmentOperator GetOperatorKind(string @operator) => @operator switch
+    {
+        "=" => AssignmentOperator.Assign,
+        "+=" => AssignmentOperator.AddAndAssign,
+        "-=" => AssignmentOperator.SubtractAndAssign,
+        "*=" => AssignmentOperator.MultiplyAndAssign,
+        "<<=" => AssignmentOperator.BitwiseLeftShiftAndAssign,
+        ">>=" => AssignmentOperator.BitwiseRightShiftAndAssign,
+        "|=" => AssignmentOperator.BitwiseOrAndAssign,
+        "&=" => AssignmentOperator.BitwiseAndAndAssign,
+        "^=" => AssignmentOperator.BitwiseXorAndAssign,
+        _ => throw new AssertException($"Invalid assignment operator: {@operator}.")
+    };
 }

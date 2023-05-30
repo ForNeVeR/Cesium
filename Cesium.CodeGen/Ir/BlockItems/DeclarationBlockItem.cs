@@ -1,4 +1,3 @@
-using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 
 namespace Cesium.CodeGen.Ir.BlockItems;

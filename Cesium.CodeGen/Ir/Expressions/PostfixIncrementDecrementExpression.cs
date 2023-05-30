@@ -30,14 +30,15 @@ internal class PostfixIncrementDecrementExpression : IExpression
             _operator,
             new ConstantLiteralExpression(new IntegerConstant("1"))
         );
-        if (_target is not IValueExpression)
+
+        if (target is not IValueExpression valueTarget)
         {
             throw new CompilationException($"'{_prefixOperator.Text}' needs l-value");
         }
 
         return new AssignmentExpression(
-            target,
-            BinaryOperator.Assign,
+            valueTarget,
+            AssignmentOperator.Assign,
             newValueExpression
         ).Lower(scope);
     }

@@ -164,7 +164,7 @@ internal static class BlockItemLowering
                     if (initializerExpression != null)
                     {
                         initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier),
-                            BinaryOperator.Assign, initializerExpression);
+                            AssignmentOperator.Assign, initializerExpression);
 
                         if (initializerExpression.GetExpressionType(scope) is not PrimitiveType
                             {
@@ -177,7 +177,7 @@ internal static class BlockItemLowering
                     if (type is InPlaceArrayType i)
                     {
                         primaryInitializerExpression = new ConsumeExpression(
-                            new AssignmentExpression(new IdentifierExpression(identifier), BinaryOperator.Assign,
+                            new AssignmentExpression(new IdentifierExpression(identifier), AssignmentOperator.Assign,
                                 new LocalAllocationExpression(i))
                         );
                     }
