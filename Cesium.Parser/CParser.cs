@@ -60,7 +60,7 @@ public partial class CParser
     private static Expression CreateExpressionIdentity(Expression expression) => expression;
 
     [Rule("constant_expression: conditional_expression")] // 6.6 Constant expressions
-    private static ConstantExpression CreateConstantExpression(Expression expression) => new ConstantExpression(expression);
+    private static Expression MakeConstantExpression(Expression expression) => expression;
 
     // 6.5.1 Primary expressions
     [Rule("primary_expression: constant")]
@@ -732,7 +732,7 @@ public partial class CParser
         new LabelStatement(identifier.Text, block);
 
     [Rule("labeled_statement: 'case' constant_expression ':' statement")]
-    private static Statement MakeCaseStatement(IToken _, ConstantExpression constant, IToken __, Statement block) =>
+    private static Statement MakeCaseStatement(IToken _, Expression constant, IToken __, Statement block) =>
         new CaseStatement(constant, block);
 
     [Rule("labeled_statement: 'default' ':' statement")]
