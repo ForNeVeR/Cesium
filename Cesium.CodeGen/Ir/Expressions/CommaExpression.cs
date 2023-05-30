@@ -30,7 +30,10 @@ internal class CommaExpression : IExpression
 
         _left.EmitTo(scope);
 
-        bodyProcessor.Emit(OpCodes.Pop);
+        if (_left.GetExpressionType((IDeclarationScope)scope) is not PrimitiveType { Kind: PrimitiveTypeKind.Void })
+        {
+            bodyProcessor.Emit(OpCodes.Pop);
+        }
 
         _right.EmitTo(scope);
     }

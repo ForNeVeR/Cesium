@@ -1,4 +1,9 @@
+void voidfn()
+{
+    // do nothing
+}
+
 int main(void)
 {
-    return (1 + 2, 40 + 2);
+    return (1 + 2, voidfn(), 40 + 2);
 }
