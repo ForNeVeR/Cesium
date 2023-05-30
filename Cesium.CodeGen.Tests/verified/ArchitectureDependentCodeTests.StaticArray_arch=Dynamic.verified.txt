@@ -1,4 +1,4 @@
-Module: Primary
+﻿Module: Primary
   Type: <Module>
   Methods:
     System.Int32 <Module>::main()
@@ -11,23 +11,19 @@ Module: Primary
       IL_000d: localloc
       IL_000f: stloc.0
       IL_0010: ldloc.0
-      IL_0011: conv.u
-      IL_0012: sizeof System.Int32*
-      IL_0018: ldc.i4 299
-      IL_001d: mul
-      IL_001e: conv.i
-      IL_001f: add
-      IL_0020: ldc.i4.0
-      IL_0021: stind.i
-      IL_0022: ldloc.0
-      IL_0023: conv.u
-      IL_0024: sizeof System.Int32*
-      IL_002a: ldc.i4 299
-      IL_002f: mul
-      IL_0030: conv.i
-      IL_0031: add
-      IL_0032: ldind.i
-      IL_0033: ret
+      IL_0011: sizeof System.Int32*
+      IL_0017: ldc.i4 299
+      IL_001c: mul
+      IL_001d: add
+      IL_001e: ldc.i4.0
+      IL_001f: stind.i
+      IL_0020: ldloc.0
+      IL_0021: sizeof System.Int32*
+      IL_0027: ldc.i4 299
+      IL_002c: mul
+      IL_002d: add
+      IL_002e: ldind.i
+      IL_002f: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

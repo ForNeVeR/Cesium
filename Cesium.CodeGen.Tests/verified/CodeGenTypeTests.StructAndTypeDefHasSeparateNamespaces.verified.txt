@@ -6,15 +6,13 @@
         tagFoo V_0
         <typedef>Foo V_1
       IL_0000: ldloca.s V_0
-      IL_0002: conv.u
-      IL_0003: ldc.i4.0
-      IL_0004: stfld System.Int32 tagFoo::A
-      IL_0009: ldloca.s V_1
-      IL_000b: conv.u
-      IL_000c: ldc.i4.0
-      IL_000d: stfld System.Int32 <typedef>Foo::B
-      IL_0012: ldc.i4.0
-      IL_0013: ret
+      IL_0002: ldc.i4.0
+      IL_0003: stfld System.Int32 tagFoo::A
+      IL_0008: ldloca.s V_1
+      IL_000a: ldc.i4.0
+      IL_000b: stfld System.Int32 <typedef>Foo::B
+      IL_0010: ldc.i4.0
+      IL_0011: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

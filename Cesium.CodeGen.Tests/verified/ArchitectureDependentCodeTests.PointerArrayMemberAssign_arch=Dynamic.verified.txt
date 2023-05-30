@@ -11,32 +11,26 @@
       IL_0009: localloc
       IL_000b: stloc.0
       IL_000c: ldloc.0
-      IL_000d: conv.u
-      IL_000e: sizeof System.Void*
-      IL_0014: ldc.i4.2
-      IL_0015: mul
-      IL_0016: conv.i
-      IL_0017: add
-      IL_0018: ldc.i4.0
-      IL_0019: stind.i
-      IL_001a: ldloc.0
-      IL_001b: conv.u
-      IL_001c: sizeof System.Void*
-      IL_0022: ldc.i4.0
-      IL_0023: mul
-      IL_0024: conv.i
-      IL_0025: add
-      IL_0026: ldloc.0
-      IL_0027: conv.u
-      IL_0028: sizeof System.Void*
-      IL_002e: ldc.i4.2
-      IL_002f: mul
-      IL_0030: conv.i
-      IL_0031: add
-      IL_0032: ldind.i
-      IL_0033: stind.i
-      IL_0034: ldc.i4.0
-      IL_0035: ret
+      IL_000d: sizeof System.Void*
+      IL_0013: ldc.i4.2
+      IL_0014: mul
+      IL_0015: add
+      IL_0016: ldc.i4.0
+      IL_0017: stind.i
+      IL_0018: ldloc.0
+      IL_0019: sizeof System.Void*
+      IL_001f: ldc.i4.0
+      IL_0020: mul
+      IL_0021: add
+      IL_0022: ldloc.0
+      IL_0023: sizeof System.Void*
+      IL_0029: ldc.i4.2
+      IL_002a: mul
+      IL_002b: add
+      IL_002c: ldind.i
+      IL_002d: stind.i
+      IL_002e: ldc.i4.0
+      IL_002f: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
