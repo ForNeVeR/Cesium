@@ -21,17 +21,4 @@ internal class BitwiseBinaryOperatorExpression: BinaryOperatorExpression
     }
 
     public override IExpression Lower(IDeclarationScope scope) => new BitwiseBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
-
-    public override IType GetExpressionType(IDeclarationScope scope)
-    {
-        var leftType = Left.GetExpressionType(scope);
-        if (!scope.CTypeSystem.IsInteger(leftType))
-            throw new CompilationException($"Left operand of '{Operator}' is not of integer type: {Left}");
-
-        var rightType = Right.GetExpressionType(scope);
-        if (!scope.CTypeSystem.IsInteger(rightType))
-            throw new CompilationException($"Right operand of '{Operator}' is not of integer type: {Right}");
-
-        return leftType;
-    }
 }

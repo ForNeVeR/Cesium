@@ -107,22 +107,4 @@ internal class ArithmeticBinaryOperatorExpression: BinaryOperatorExpression
             return new ArithmeticBinaryOperatorExpression(left, Operator, right);
         }
     }
-
-    public override IType GetExpressionType(IDeclarationScope scope)
-    {
-        var leftType = Left.GetExpressionType(scope);
-        var rightType = Right.GetExpressionType(scope);
-
-        switch (leftType, rightType)
-        {
-            case (PointerType, not PointerType): return leftType;
-            case (not PointerType, PointerType): return rightType;
-            case (PointerType left, PointerType right):
-                Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) == right.Base.GetSizeInBytes(scope.ArchitectureSet));
-
-                return scope.CTypeSystem.NativeInt; // ptrdiff_t, must be signed
-        }
-
-        return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
-    }
 }

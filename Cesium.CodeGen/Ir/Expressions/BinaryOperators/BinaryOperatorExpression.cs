@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
@@ -28,7 +29,33 @@ internal abstract class BinaryOperatorExpression : IExpression
     }
 
     public abstract IExpression Lower(IDeclarationScope scope);
-    public abstract IType GetExpressionType(IDeclarationScope scope);
+
+    public IType GetExpressionType(IDeclarationScope scope)
+    {
+        if (Operator.IsComparison() || Operator.IsLogical())
+            return scope.CTypeSystem.Bool;
+
+        var leftType = Left.GetExpressionType(scope);
+        var rightType = Right.GetExpressionType(scope);
+
+        if (Operator.IsArithmetic())
+        {
+            switch (leftType, rightType)
+            {
+                case (PointerType, not PointerType): return leftType;
+                case (not PointerType, PointerType): return rightType;
+                case (PointerType left, PointerType right):
+                    Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) ==
+                                 right.Base.GetSizeInBytes(scope.ArchitectureSet));
+
+                    return scope.CTypeSystem.NativeInt; // ptrdiff_t, must be signed
+            }
+        }
+
+        // both bitwise and arithmetic operators obey same arithmetic conversions
+        // https://en.cppreference.com/w/c/language/operator_arithmetic
+        return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+    }
 
     public void EmitTo(IEmitScope scope)
     {

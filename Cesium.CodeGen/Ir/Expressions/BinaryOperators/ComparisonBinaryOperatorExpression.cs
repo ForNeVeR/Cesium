@@ -34,6 +34,4 @@ internal class ComparisonBinaryOperatorExpression: BinaryOperatorExpression
 
         return new ComparisonBinaryOperatorExpression(left, Operator, right);
     }
-
-    public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
 }

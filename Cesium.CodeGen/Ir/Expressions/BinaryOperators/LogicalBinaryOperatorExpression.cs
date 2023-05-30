@@ -20,6 +20,4 @@ internal class LogicalBinaryOperatorExpression : BinaryOperatorExpression
     }
 
     public override IExpression Lower(IDeclarationScope scope) => new LogicalBinaryOperatorExpression(Left.Lower(scope), Operator, Right.Lower(scope));
-
-    public override IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.Bool;
 }
