@@ -32,6 +32,9 @@ public class CodeGenOperatorTests: CodeGenTestBase
     public Task CommaOperator() => DoTest(@"int main() { int x = (1, 2); }");
 
     [Fact]
+    public Task VoidCommaOperator() => DoTest(@"void a() { } int main() { int x = (a(), 2); }");
+
+    [Fact]
     public Task TertiaryOperator() => DoTest(@"int main() { int x = 1 > 2 ? 1 : 2; }");
 
     [Fact]
