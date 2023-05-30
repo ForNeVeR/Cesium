@@ -5,11 +5,10 @@
       Locals:
         <typedef>foo V_0
       IL_0000: ldloca.s V_0
-      IL_0002: conv.u
-      IL_0003: ldc.i4.s 42
-      IL_0005: stfld System.Int32 <typedef>foo::x
-      IL_000a: ldc.i4.0
-      IL_000b: ret
+      IL_0002: ldc.i4.s 42
+      IL_0004: stfld System.Int32 <typedef>foo::x
+      IL_0009: ldc.i4.0
+      IL_000a: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

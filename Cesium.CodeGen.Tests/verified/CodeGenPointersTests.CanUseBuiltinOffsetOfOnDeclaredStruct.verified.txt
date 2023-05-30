@@ -2,7 +2,5 @@
   Locals:
     <typedef>a V_0
   IL_0000: ldloca V_0
-  IL_0004: conv.u
-  IL_0005: ldflda System.Int32 <typedef>a::x
-  IL_000a: conv.u
-  IL_000b: ret
+  IL_0004: ldflda System.Int32 <typedef>a::x
+  IL_0009: ret

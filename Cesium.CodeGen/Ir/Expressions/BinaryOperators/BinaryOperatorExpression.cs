@@ -101,12 +101,11 @@ internal class BinaryOperatorExpression : IExpression
                 throw new CompilationException($"Operator {Operator} is not supported for pointer/value operands");
             }
 
-            right = new TypeCastExpression(
-                scope.CTypeSystem.NativeInt,
-                new BinaryOperatorExpression(
-                    leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                    BinaryOperator.Multiply,
-                    right));
+            right = new BinaryOperatorExpression(
+                leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
+                BinaryOperator.Multiply,
+                right
+            );
 
             return new BinaryOperatorExpression(left, Operator, right);
         }
@@ -119,12 +118,11 @@ internal class BinaryOperatorExpression : IExpression
                 throw new CompilationException($"Operator {Operator} is not supported for value/pointer operands");
             }
 
-            left = new TypeCastExpression(
-                scope.CTypeSystem.NativeInt,
-                new BinaryOperatorExpression(
-                    rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                    BinaryOperator.Multiply,
-                    left));
+            left = new BinaryOperatorExpression(
+                rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
+                BinaryOperator.Multiply,
+                left
+            );
 
             return new BinaryOperatorExpression(left, Operator, right);
         }
