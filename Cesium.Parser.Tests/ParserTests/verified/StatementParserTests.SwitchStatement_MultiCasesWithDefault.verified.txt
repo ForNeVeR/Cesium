@@ -13,13 +13,10 @@
       {
         "$type": "Cesium.Ast.CaseStatement, Cesium.Ast",
         "Constant": {
-          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-          "Expression": {
-            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-            "Constant": {
-              "Kind": "IntLiteral",
-              "Text": "0"
-            }
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "0"
           }
         },
         "Body": {
@@ -29,13 +26,10 @@
       {
         "$type": "Cesium.Ast.CaseStatement, Cesium.Ast",
         "Constant": {
-          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
-          "Expression": {
-            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-            "Constant": {
-              "Kind": "IntLiteral",
-              "Text": "1"
-            }
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "1"
           }
         },
         "Body": {

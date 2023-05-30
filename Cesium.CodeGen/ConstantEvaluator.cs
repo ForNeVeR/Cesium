@@ -91,7 +91,7 @@ internal static class ConstantEvaluator
             }
 
             default:
-                throw new AssertException($"Expression {expression} cannot be evaluated as constant expression.");
+                throw new CompilationException($"Expression {expression} cannot be evaluated as constant expression.");
         }
     }
 }
