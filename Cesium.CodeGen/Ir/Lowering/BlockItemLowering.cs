@@ -105,7 +105,16 @@ internal static class BlockItemLowering
                 if (scope is not BlockScope sws || sws.SwitchCases == null)
                     throw new AssertException("Cannot use case statement outside of switch");
 
-                sws.SwitchCases.Add(new SwitchCase(c.Expression, c.Label));
+                if (c.Expression != null)
+                {
+                    var constValue = ConstantEvaluator.GetConstantValue(c.Expression);
+
+                    sws.SwitchCases.Add(new SwitchCase(new ConstantLiteralExpression(constValue), c.Label));
+                }
+                else
+                {
+                    sws.SwitchCases.Add(new SwitchCase(null, c.Label));
+                }
 
                 return Lower(scope, new LabelStatement(c.Label, c.Statement));
             }

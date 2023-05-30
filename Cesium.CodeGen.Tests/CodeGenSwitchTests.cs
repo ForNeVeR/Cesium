@@ -30,6 +30,22 @@ public class CodeGenSwitchTests : CodeGenTestBase
 }");
 
     [Fact]
+    public Task ConstEval() => DoTest(@"int main()
+{
+    int x = 0;
+    switch(x) { case 1 + 2: break; };
+    return 1;
+}");
+
+    [Fact]
+    public void NonConstEval() => DoesNotCompile(@"int main()
+{
+    int x = 0;
+    switch(x) { case 1 + x: break; };
+    return 1;
+}", "Expression Cesium.CodeGen.Ir.Expressions.IdentifierExpression cannot be evaluated as constant expression.");
+
+    [Fact]
     public Task MultiCases() => DoTest(@"int main()
 {
     int x = 0;
