@@ -9,9 +9,9 @@ namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
 internal class BinaryOperatorExpression : IExpression
 {
-    protected readonly IExpression Left;
-    protected readonly BinaryOperator Operator;
-    protected readonly IExpression Right;
+    public IExpression Left { get; }
+    public BinaryOperator Operator { get; }
+    public IExpression Right { get; }
 
     internal BinaryOperatorExpression(IExpression left, BinaryOperator @operator, IExpression right)
     {
