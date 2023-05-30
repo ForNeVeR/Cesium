@@ -48,6 +48,3 @@ public record AssignmentExpression(Expression Left, string Operator, Expression 
 
 // 6.5.17 Comma operator
 public record CommaExpression(Expression Left, Expression Right) : Expression;
-
-// 6.6 Constant expressions
-public record ConstantExpression(Expression Expression) : Expression;

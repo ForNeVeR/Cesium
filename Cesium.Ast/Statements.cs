@@ -8,7 +8,7 @@ public abstract record Statement : IBlockItem;
 // 6.8.1 Labeled statement
 public record LabelStatement(string Identifier, Statement Body) : Statement;
 
-public record CaseStatement(ConstantExpression? Constant, Statement Body) : Statement;
+public record CaseStatement(Expression? Constant, Statement Body) : Statement;
 
 // 6.8.2 Compound statement
 public record CompoundStatement(ImmutableArray<IBlockItem> Block) : Statement;

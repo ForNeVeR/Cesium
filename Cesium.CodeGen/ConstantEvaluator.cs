@@ -16,10 +16,6 @@ internal class ConstantEvaluator
     public IConstant GetConstantValue()
     {
         var expression = _expression;
-        if (expression is ConstantExpression constantExpression)
-        {
-            expression = constantExpression.Expression;
-        }
 
         if (expression is not ConstantLiteralExpression literalExpression)
         {
