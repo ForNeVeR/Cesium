@@ -65,36 +65,45 @@ internal abstract class BinaryOperatorExpression : IExpression
         Left.EmitTo(scope);
         Right.EmitTo(scope);
 
-        var (opcode, negateComparison) = Operator switch
+        var opcode = Operator switch
         {
             // arithmetic operators
-            BinaryOperator.Add => (OpCodes.Add, false),
-            BinaryOperator.Subtract => (OpCodes.Sub, false),
-            BinaryOperator.Multiply => (OpCodes.Mul, false),
-            BinaryOperator.Divide => (OpCodes.Div, false),
-            BinaryOperator.Remainder => (OpCodes.Rem, false),
+            BinaryOperator.Add => OpCodes.Add,
+            BinaryOperator.Subtract => OpCodes.Sub,
+            BinaryOperator.Multiply => OpCodes.Mul,
+            BinaryOperator.Divide => OpCodes.Div,
+            BinaryOperator.Remainder => OpCodes.Rem,
 
             // bitwise operators
-            BinaryOperator.BitwiseAnd => (OpCodes.And, false),
-            BinaryOperator.BitwiseOr => (OpCodes.Or, false),
-            BinaryOperator.BitwiseXor => (OpCodes.Xor, false),
-            BinaryOperator.BitwiseLeftShift => (OpCodes.Shl, false),
-            BinaryOperator.BitwiseRightShift => (OpCodes.Shr, false),
+            BinaryOperator.BitwiseAnd => OpCodes.And,
+            BinaryOperator.BitwiseOr => OpCodes.Or,
+            BinaryOperator.BitwiseXor => OpCodes.Xor,
+            BinaryOperator.BitwiseLeftShift => OpCodes.Shl,
+            BinaryOperator.BitwiseRightShift => OpCodes.Shr,
 
             // comparison operators
-            BinaryOperator.GreaterThan => (OpCodes.Cgt, false),
-            BinaryOperator.LessThan => (OpCodes.Clt, false),
-            BinaryOperator.EqualTo => (OpCodes.Ceq, false),
-            BinaryOperator.GreaterThanOrEqualTo => (OpCodes.Clt, true),
-            BinaryOperator.LessThanOrEqualTo => (OpCodes.Cgt, true),
-            BinaryOperator.NotEqualTo => (OpCodes.Ceq, true),
+            BinaryOperator.GreaterThan => OpCodes.Cgt,
+            BinaryOperator.LessThan => OpCodes.Clt,
+            BinaryOperator.EqualTo => OpCodes.Ceq,
+
+            // comparison operators (negated)
+            BinaryOperator.GreaterThanOrEqualTo => OpCodes.Clt,
+            BinaryOperator.LessThanOrEqualTo => OpCodes.Cgt,
+            BinaryOperator.NotEqualTo => OpCodes.Ceq,
 
             _ => throw new AssertException($"Unsupported or non-lowered binary operator: {Operator}.")
         };
 
         scope.Method.Body.Instructions.Add(Instruction.Create(opcode));
 
-        if (negateComparison)
+        // negate result of that operators
+        // a >= b <-> !(a < b)
+        // a <= b <-> !(a > b)
+        // a != b <-> !(a == b)
+        if (Operator
+            is BinaryOperator.GreaterThanOrEqualTo
+            or BinaryOperator.LessThanOrEqualTo
+            or BinaryOperator.NotEqualTo)
         {
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ceq));
