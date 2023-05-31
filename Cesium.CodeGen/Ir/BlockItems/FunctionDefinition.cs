@@ -21,7 +21,7 @@ internal class FunctionDefinition : IBlockItem
     public FunctionType FunctionType { get; }
     public StorageClass StorageClass { get; }
     public string Name { get; }
-    public CompoundStatement Statement { get; }
+    public IBlockItem Statement { get; }
 
     public bool IsMain => Name == MainFunctionName;
 
@@ -51,7 +51,7 @@ internal class FunctionDefinition : IBlockItem
         Statement = astStatement.ToIntermediate();
     }
 
-    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, CompoundStatement statement)
+    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, IBlockItem statement)
     {
         StorageClass = storageClass;
         Name = name;
@@ -162,22 +162,22 @@ internal class FunctionDefinition : IBlockItem
         var exit = context.GetRuntimeHelperMethod("Exit");
         var arrayCopyTo = context.GetArrayCopyToMethod();
 
-        var argC = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 0
+        var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
         syntheticEntrypoint.Body.Variables.Add(argC);
 
-        var argV = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 1
+        var argV = new VariableDefinition(bytePtrArrayType); // 1
         syntheticEntrypoint.Body.Variables.Add(argV);
 
         // argVCopy is a copy for the user which could be changed during the program execution. Only original argV
         // strings will be freed at the end of the execution, though, since we don't know how any other strings may have
         // been allocated by the user.
-        var argVCopy = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 2
+        var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
         syntheticEntrypoint.Body.Variables.Add(argVCopy);
 
-        var argVPinned = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
+        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
         syntheticEntrypoint.Body.Variables.Add(argVPinned);
 
-        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
@@ -244,7 +244,7 @@ internal class FunctionDefinition : IBlockItem
 
         var exit = context.GetRuntimeHelperMethod("Exit");
 
-        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
