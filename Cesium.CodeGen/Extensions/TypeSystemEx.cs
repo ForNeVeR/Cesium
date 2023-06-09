@@ -172,7 +172,7 @@ internal static class TypeSystemEx
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
-    public static IType GetCommonNumericType(this CTypeSystem ts, IType a, IType b)
+    public static IType GetCommonNumericType(IType a, IType b)
     {
         // First, if the corresponding real type of either operand is (long) double,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is (long) double.

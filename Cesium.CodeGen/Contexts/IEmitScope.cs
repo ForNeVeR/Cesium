@@ -7,7 +7,6 @@ namespace Cesium.CodeGen.Contexts;
 
 internal interface IEmitScope
 {
-    CTypeSystem CTypeSystem { get; }
     MethodDefinition Method { get; }
     AssemblyContext AssemblyContext { get; }
     ModuleDefinition Module { get; }

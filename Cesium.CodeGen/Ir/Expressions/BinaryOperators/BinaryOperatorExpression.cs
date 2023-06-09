@@ -57,7 +57,7 @@ internal class BinaryOperatorExpression : IExpression
             return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
 
-        var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        var commonType = TypeSystemEx.GetCommonNumericType(leftType, rightType);
         if (!leftType.IsEqualTo(commonType))
         {
             Debug.Assert(CTypeSystem.IsConversionAvailable(leftType, commonType));
@@ -152,7 +152,7 @@ internal class BinaryOperatorExpression : IExpression
 
         // both bitwise and arithmetic operators obey same arithmetic conversions
         // https://en.cppreference.com/w/c/language/operator_arithmetic
-        return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        return TypeSystemEx.GetCommonNumericType(leftType, rightType);
     }
 
     public void EmitTo(IEmitScope scope)

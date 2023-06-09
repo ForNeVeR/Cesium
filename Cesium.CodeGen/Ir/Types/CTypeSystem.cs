@@ -3,7 +3,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class CTypeSystem
+internal static class CTypeSystem
 {
     public static IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
     public static IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Int); // TODO[#179]: Figure out the right type.

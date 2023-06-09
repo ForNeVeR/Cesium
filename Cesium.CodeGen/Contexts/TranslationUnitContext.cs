@@ -16,7 +16,6 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
-    internal CTypeSystem CTypeSystem { get; } = new();
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public TypeDefinition GlobalType => AssemblyContext.GlobalType;
 

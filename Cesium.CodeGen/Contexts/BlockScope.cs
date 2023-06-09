@@ -15,7 +15,6 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
 {
     public AssemblyContext AssemblyContext => Parent.AssemblyContext;
     public ModuleDefinition Module => Parent.Module;
-    public CTypeSystem CTypeSystem => Parent.CTypeSystem;
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
 
     public FunctionInfo? GetFunctionInfo(string identifier)

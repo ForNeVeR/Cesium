@@ -47,7 +47,7 @@ internal class ConditionalExpression : IExpression
             falseExpressionType.IsNumeric())
         {
             // Both operands have arithmetic type. Convert them to the same type by usual arithmetic conversions.
-            var commonType = scope.CTypeSystem.GetCommonNumericType(trueExpressionType, falseExpressionType);
+            var commonType = TypeSystemEx.GetCommonNumericType(trueExpressionType, falseExpressionType);
             if (!trueExpressionType.IsEqualTo(commonType))
             {
                 trueExpression = new TypeCastExpression(commonType, trueExpression).Lower(scope);
@@ -101,7 +101,7 @@ internal class ConditionalExpression : IExpression
         // Arithmetic types.
         if (trueExpressionType.IsNumeric() && falseExpressionType.IsNumeric())
         {
-            return scope.CTypeSystem.GetCommonNumericType(trueExpressionType, falseExpressionType);
+            return TypeSystemEx.GetCommonNumericType(trueExpressionType, falseExpressionType);
         }
 
         // Void types.
