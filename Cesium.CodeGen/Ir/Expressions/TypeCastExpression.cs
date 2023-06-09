@@ -4,6 +4,7 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using C = Cesium.CodeGen.Ir.Types.CTypeSystem;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -31,28 +32,27 @@ internal sealed class TypeCastExpression : IExpression
     {
         Expression.EmitTo(scope);
 
-        var ts = scope.CTypeSystem;
-        if (TargetType.Equals(ts.SignedChar))
+        if (TargetType.Equals(C.SignedChar))
             Add(OpCodes.Conv_I1);
-        else if (TargetType.Equals(ts.Short))
+        else if (TargetType.Equals(C.Short))
             Add(OpCodes.Conv_I2);
-        else if (TargetType.Equals(ts.Int))
+        else if (TargetType.Equals(C.Int))
             Add(OpCodes.Conv_I4);
-        else if (TargetType.Equals(ts.Long))
+        else if (TargetType.Equals(C.Long))
             Add(OpCodes.Conv_I8);
-        else if (TargetType.Equals(ts.Char))
+        else if (TargetType.Equals(C.Char))
             Add(OpCodes.Conv_U1);
-        else if (TargetType.Equals(ts.UnsignedShort))
+        else if (TargetType.Equals(C.UnsignedShort))
             Add(OpCodes.Conv_U2);
-        else if (TargetType.Equals(ts.UnsignedInt))
+        else if (TargetType.Equals(C.UnsignedInt))
             Add(OpCodes.Conv_U4);
-        else if (TargetType.Equals(ts.UnsignedLong))
+        else if (TargetType.Equals(C.UnsignedLong))
             Add(OpCodes.Conv_U8);
-        else if (TargetType.Equals(ts.Float))
+        else if (TargetType.Equals(C.Float))
             Add(OpCodes.Conv_R4);
-        else if (TargetType.Equals(ts.Double))
+        else if (TargetType.Equals(C.Double))
             Add(OpCodes.Conv_R8);
-        else if (TargetType is PointerType || TargetType.Equals(ts.NativeInt) || TargetType.Equals(ts.NativeUInt))
+        else if (TargetType is PointerType || TargetType.Equals(C.NativeInt) || TargetType.Equals(C.NativeUInt))
             Add(OpCodes.Conv_I);
         else
             throw new AssertException($"Type {TargetType} is not supported.");

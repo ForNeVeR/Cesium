@@ -7,5 +7,5 @@ internal interface IConstant
 {
     void EmitTo(IEmitScope scope);
 
-    IType GetConstantType(IDeclarationScope scope);
+    IType GetConstantType();
 }

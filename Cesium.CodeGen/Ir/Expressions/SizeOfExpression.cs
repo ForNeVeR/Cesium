@@ -14,5 +14,5 @@ internal record SizeOfExpression(IType Type) : IExpression
         scope.SizeOf(type);
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.UnsignedInt;
+    public IType GetExpressionType(IDeclarationScope scope) => CTypeSystem.UnsignedInt;
 }

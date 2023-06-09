@@ -225,7 +225,7 @@ internal static class BlockItemLowering
                     return new ExpressionStatement(setValue.NoReturn());
 
                 if (loweredExpression is not null
-                    && !loweredExpression.GetExpressionType(scope).IsEqualTo(scope.CTypeSystem.Void))
+                    && !loweredExpression.GetExpressionType(scope).IsEqualTo(CTypeSystem.Void))
                 {
                     loweredExpression = new ConsumeExpression(loweredExpression);
                 }
@@ -273,7 +273,7 @@ internal static class BlockItemLowering
             {
                 var resolvedFunctionType = (FunctionType)scope.ResolveType(d.FunctionType);
                 var (parameters, returnType) = resolvedFunctionType;
-                if (d.IsMain && !returnType.Equals(scope.CTypeSystem.Int))
+                if (d.IsMain && !returnType.IsEqualTo(CTypeSystem.Int))
                     throw new CompilationException(
                         $"Invalid return type for the {d.Name} function: " +
                         $"int expected, got {returnType}.");

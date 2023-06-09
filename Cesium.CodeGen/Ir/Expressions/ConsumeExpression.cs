@@ -17,7 +17,7 @@ internal class ConsumeExpression : IExpression
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
-        return scope.CTypeSystem.Void;
+        return CTypeSystem.Void;
     }
 
     public void EmitTo(IEmitScope scope)

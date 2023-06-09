@@ -131,7 +131,7 @@ internal class BinaryOperatorExpression : IExpression
     public IType GetExpressionType(IDeclarationScope scope)
     {
         if (Operator.IsComparison() || Operator.IsLogical())
-            return scope.CTypeSystem.Bool;
+            return CTypeSystem.Bool;
 
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
@@ -146,7 +146,7 @@ internal class BinaryOperatorExpression : IExpression
                     Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) ==
                                  right.Base.GetSizeInBytes(scope.ArchitectureSet));
 
-                    return scope.CTypeSystem.NativeInt; // ptrdiff_t, must be signed
+                    return CTypeSystem.NativeInt; // ptrdiff_t, must be signed
             }
         }
 

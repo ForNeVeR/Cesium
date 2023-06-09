@@ -38,7 +38,7 @@ internal class InstanceForOffsetOfExpression : IExpression, IValueExpression, IA
         scope.AddInstruction(OpCodes.Ldloca, var);
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.NativeInt;
+    public IType GetExpressionType(IDeclarationScope scope) => CTypeSystem.NativeInt;
 
     public IValue Resolve(IDeclarationScope scope) => this;
 

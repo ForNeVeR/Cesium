@@ -58,8 +58,8 @@ internal class ConditionalExpression : IExpression
                 falseExpression = new TypeCastExpression(commonType, falseExpression).Lower(scope);
             }
         }
-        else if (trueExpressionType.IsEqualTo(scope.CTypeSystem.Void) &&
-                 falseExpressionType.IsEqualTo(scope.CTypeSystem.Void))
+        else if (trueExpressionType.IsEqualTo(CTypeSystem.Void) &&
+                 falseExpressionType.IsEqualTo(CTypeSystem.Void))
         {
             // Both operands have void type. No conversion is needed.
         }
@@ -106,10 +106,10 @@ internal class ConditionalExpression : IExpression
         }
 
         // Void types.
-        if (trueExpressionType.IsEqualTo(scope.CTypeSystem.Void) &&
-            falseExpressionType.IsEqualTo(scope.CTypeSystem.Void))
+        if (trueExpressionType.IsEqualTo(CTypeSystem.Void) &&
+            falseExpressionType.IsEqualTo(CTypeSystem.Void))
         {
-            return scope.CTypeSystem.Void;
+            return CTypeSystem.Void;
         }
 
         // TODO[#208]: Support operands of same struct or union type; pointers to compatible types;
