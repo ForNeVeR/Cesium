@@ -24,11 +24,11 @@ internal class CTypeSystem
     public bool IsConversionAvailable(IType type, IType targetType)
     {
         if (type.IsEqualTo(targetType)
-            || (this.IsBool(type) && this.IsInteger(targetType))
-            || (this.IsBool(targetType) && this.IsInteger(type)))
+            || (type.IsBool() && targetType.IsInteger())
+            || (targetType.IsBool() && type.IsInteger()))
             return true;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsNumeric())
             return false;
 
         if (targetType.Equals(SignedChar))
@@ -60,7 +60,7 @@ internal class CTypeSystem
         if (type.IsEqualTo(targetType))
             return false;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsNumeric())
             throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
 
         if (targetType.Equals(SignedChar))

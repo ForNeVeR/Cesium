@@ -31,7 +31,7 @@ internal class ConditionalExpression : IExpression
         var condition = _condition.Lower(scope);
         var conditionType = _condition.GetExpressionType(scope);
 
-        if (!(scope.CTypeSystem.IsNumeric(conditionType) || conditionType is PointerType))
+        if (!(conditionType.IsNumeric() || conditionType is PointerType))
         {
             throw new CompilationException("Conditional expression must have a condition of scalar type.");
         }
@@ -43,8 +43,8 @@ internal class ConditionalExpression : IExpression
         var falseExpressionType = falseExpression.GetExpressionType(scope);
 
         // Check if both expressions are compatible and convert them to the same type if needed.
-        if (scope.CTypeSystem.IsNumeric(trueExpressionType) &&
-            scope.CTypeSystem.IsNumeric(falseExpressionType))
+        if (trueExpressionType.IsNumeric() &&
+            falseExpressionType.IsNumeric())
         {
             // Both operands have arithmetic type. Convert them to the same type by usual arithmetic conversions.
             var commonType = scope.CTypeSystem.GetCommonNumericType(trueExpressionType, falseExpressionType);
@@ -99,8 +99,7 @@ internal class ConditionalExpression : IExpression
         var falseExpressionType = _falseExpression.GetExpressionType(scope);
 
         // Arithmetic types.
-        if (scope.CTypeSystem.IsNumeric(trueExpressionType) &&
-            scope.CTypeSystem.IsNumeric(falseExpressionType))
+        if (trueExpressionType.IsNumeric() && falseExpressionType.IsNumeric())
         {
             return scope.CTypeSystem.GetCommonNumericType(trueExpressionType, falseExpressionType);
         }

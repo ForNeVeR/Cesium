@@ -146,7 +146,7 @@ internal static class TypeSystemEx
     public static bool IsEqualTo(this TypeReference a, TypeReference b) => a.FullName == b.FullName;
     public static bool IsEqualTo(this IType a, IType b) => a.Equals(b);
 
-    public static bool IsSignedInteger(this CTypeSystem ts, IType t)
+    public static bool IsSignedInteger(this IType t)
     {
         return t.IsEqualTo(CTypeSystem.SignedChar)
             || t.IsEqualTo(CTypeSystem.Short)
@@ -155,7 +155,7 @@ internal static class TypeSystemEx
             || t.IsEqualTo(CTypeSystem.NativeInt);
     }
 
-    public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
+    public static bool IsUnsignedInteger(this IType t)
     {
         return t.IsEqualTo(CTypeSystem.Bool)
             || t.IsEqualTo(CTypeSystem.Char)
@@ -165,10 +165,10 @@ internal static class TypeSystemEx
             || t.IsEqualTo(CTypeSystem.NativeUInt);
     }
 
-    public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(CTypeSystem.Double) || t.IsEqualTo(CTypeSystem.Float);
-    public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
-    public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(CTypeSystem.Bool);
+    public static bool IsFloatingPoint(this IType t) => t.IsEqualTo(CTypeSystem.Double) || t.IsEqualTo(CTypeSystem.Float);
+    public static bool IsInteger(this IType t) => t.IsSignedInteger() || t.IsUnsignedInteger();
+    public static bool IsNumeric(this IType t) => t.IsInteger() || t.IsFloatingPoint();
+    public static bool IsBool(this IType t) => t.IsEqualTo(CTypeSystem.Bool);
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
