@@ -60,13 +60,13 @@ internal class BinaryOperatorExpression : IExpression
         var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
         if (!leftType.IsEqualTo(commonType))
         {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(leftType, commonType));
+            Debug.Assert(CTypeSystem.IsConversionAvailable(leftType, commonType));
             left = new TypeCastExpression(commonType, left).Lower(scope);
         }
 
         if (!rightType.IsEqualTo(commonType))
         {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(rightType, commonType));
+            Debug.Assert(CTypeSystem.IsConversionAvailable(rightType, commonType));
             right = new TypeCastExpression(commonType, right).Lower(scope);
         }
 

@@ -21,7 +21,7 @@ internal class CTypeSystem
     public static IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
     public static IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
 
-    public bool IsConversionAvailable(IType type, IType targetType)
+    public static bool IsConversionAvailable(IType type, IType targetType)
     {
         if (type.IsEqualTo(targetType)
             || (type.IsBool() && targetType.IsInteger())
@@ -53,39 +53,5 @@ internal class CTypeSystem
             return true;
         else
             return false;
-    }
-
-    internal bool IsConversionRequired(IType type, IType targetType)
-    {
-        if (type.IsEqualTo(targetType))
-            return false;
-
-        if (!type.IsNumeric())
-            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
-
-        if (targetType.Equals(SignedChar))
-            return true;
-        else if (targetType.Equals(Short))
-            return true;
-        else if (targetType.Equals(Int))
-            return true;
-        else if (targetType.Equals(Long))
-            return true;
-        else if (targetType.Equals(Char))
-            return true;
-        else if (targetType.Equals(UnsignedShort))
-            return true;
-        else if (targetType.Equals(UnsignedInt))
-            return true;
-        else if (targetType.Equals(UnsignedLong))
-            return true;
-        else if (targetType.Equals(Float))
-            return true;
-        else if (targetType.Equals(Double))
-            return true;
-        else if (targetType.Equals(NativeInt) || targetType is PointerType)
-            return true;
-        else
-            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
     }
 }
