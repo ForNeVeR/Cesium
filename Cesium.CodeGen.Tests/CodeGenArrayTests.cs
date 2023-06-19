@@ -21,6 +21,13 @@ public class CodeGenArrayTests : CodeGenTestBase
  }");
 
     [Fact]
+    public Task SymmetricArrayAssignment() => DoTest(@"int main() {
+    int a[10];
+    1[a] = 2;
+    return a[1];
+ }");
+
+    [Fact]
     public Task GlobalArrayAssignment() => DoTest(@"
 int a[10];
 int main() {

@@ -29,10 +29,24 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var expression = LowerExpression(_expression, scope);
-        var elementSize = GetElementSize(expression.GetExpressionType(scope));
+        var index = LowerExpression(_index, scope);
+        var expressionType = expression.GetExpressionType(scope);
+        var indexType = index.GetExpressionType(scope);
+
+        switch ((CheckIfTypeIsSubscriptable(expressionType), CheckIfTypeIsSubscriptable(indexType)))
+        {
+            case (false, true):
+                (expression, index) = (index, expression);
+                (expressionType, indexType) = (indexType, expressionType);
+                break;
+            case (false, false):
+                throw new AssertException($"Cannot index over type {expressionType} or {indexType}");
+        }
+
+        var elementSize = GetElementSize(expressionType);
         var offset = elementSize != 1
-            ? new BinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
-            : _index;
+            ? new BinaryOperatorExpression(index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
+            : index;
         var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
             new BinaryOperatorExpression(
@@ -42,6 +56,11 @@ internal class SubscriptingExpression : IExpression, IValueExpression
             ));
         var lowered = indirection.Lower(scope);
         return lowered;
+    }
+
+    private static bool CheckIfTypeIsSubscriptable(IType type)
+    {
+        return type is InPlaceArrayType or PointerType;
     }
 
     private static int GetElementSize(IType type)
