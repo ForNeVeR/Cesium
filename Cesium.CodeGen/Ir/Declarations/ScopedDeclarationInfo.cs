@@ -147,6 +147,9 @@ internal interface IScopedDeclarationInfo
                 throw new CompilationException(
                     $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
 
+            if (scs.Name == "extern")
+                continue;
+
             storageClass = scs.Name switch
             {
                 "static" => StorageClass.Static,
