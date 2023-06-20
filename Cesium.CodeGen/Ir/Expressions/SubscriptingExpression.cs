@@ -8,7 +8,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class SubscriptingExpression : IExpression, IValueExpression
+internal class SubscriptingExpression : IValueExpression
 {
     private readonly IExpression _expression;
     private readonly IExpression _index;
@@ -33,14 +33,16 @@ internal class SubscriptingExpression : IExpression, IValueExpression
         var expressionType = expression.GetExpressionType(scope);
         var indexType = index.GetExpressionType(scope);
 
-        switch ((CheckIfTypeIsSubscriptable(expressionType), CheckIfTypeIsSubscriptable(indexType)))
+        var isBaseSubscriptable = CheckIfTypeIsSubscriptable(expressionType);
+        var isIndexSubscriptable = CheckIfTypeIsSubscriptable(indexType);
+        if (!isBaseSubscriptable && isIndexSubscriptable)
         {
-            case (false, true):
-                (expression, index) = (index, expression);
-                (expressionType, indexType) = (indexType, expressionType);
-                break;
-            case (false, false):
-                throw new AssertException($"Cannot index over type {expressionType} or {indexType}");
+            (expression, index) = (index, expression);
+            (expressionType, indexType) = (indexType, expressionType);
+        }
+        else if (!isBaseSubscriptable && !isIndexSubscriptable)
+        {
+            throw new AssertException($"Cannot index over type {expressionType} or {indexType}");
         }
 
         var elementSize = GetElementSize(expressionType);
