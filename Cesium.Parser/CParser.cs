@@ -364,13 +364,13 @@ public partial class CParser
 
     // 6.7.1 Storage-class specifiers
     [Rule("storage_class_specifier: 'typedef'")]
+    [Rule("storage_class_specifier: 'extern'")]
+    [Rule("storage_class_specifier: 'static'")]
     // TODO[#211]:
     // storage-class-specifier:
     //     _Thread_local
     //     auto
     //     register
-    [Rule("storage_class_specifier: 'extern'")]
-    [Rule("storage_class_specifier: 'static'")]
     private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
 
     // 6.7.2 Type specifiers
