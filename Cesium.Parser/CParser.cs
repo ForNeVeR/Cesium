@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Ast;
+using Yoakke.Collections.Values;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
@@ -395,8 +396,6 @@ public partial class CParser
     private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
         structOrUnionSpecifier;
 
-    // TODO[#211]: [Rule("type_specifier: enum_specifier")]
-
     [Rule("type_specifier: typedef_name")]
     private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
         new NamedTypeSpecifier(typeDefName.Text);
@@ -475,6 +474,26 @@ public partial class CParser
         SpecifierQualifierList specifiersQualifiers,
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
+
+    [Rule("type_specifier: enum_specifier")]
+    private static ITypeSpecifier MakeTypeSpecifier(EnumSpecifier enumDeclaration) =>
+        enumDeclaration;
+
+    [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
+        new EnumSpecifier(identifier.Text, enumeratorList);
+
+    [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
+    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
+        declarations.Values.ToImmutableArray();
+
+    [Rule("enumerator: Identifier")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier) =>
+        new EnumDeclaration(identifier.Text, null);
+
+    [Rule("enumerator: Identifier '=' constant_expression")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier, IToken _, Expression expression) =>
+        new EnumDeclaration(identifier.Text, expression);
 
     // TODO[#211]: struct-declaration: static_assert-declaration
 

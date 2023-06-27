@@ -1,0 +1,27 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.EnumSpecifier, Cesium.Ast",
+      "Identifier": "Colour",
+      "StructDeclarations": [
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "Red",
+          "Constant": null
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "Green",
+          "Constant": null
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "Blue",
+          "Constant": null
+        }
+      ]
+    }
+  ],
+  "InitDeclarators": null
+}

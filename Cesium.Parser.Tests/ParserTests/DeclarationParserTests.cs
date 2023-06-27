@@ -58,4 +58,7 @@ void *malloc(size_t);");
 
     [Fact]
     public Task StructTypeDeclaration() => DoDeclarationParserTest(@"struct Foo { int A; };");
+
+    [Fact]
+    public Task EnumDeclaration() => DoDeclarationParserTest(@"enum Colour { Red, Green, Blue };");
 }

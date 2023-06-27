@@ -23,6 +23,9 @@ public record StructOrUnionSpecifier(
     ComplexTypeKind TypeKind,
     string? Identifier,
     ImmutableArray<StructDeclaration> StructDeclarations) : ITypeSpecifier;
+public record EnumSpecifier(
+    string? Identifier,
+    ImmutableArray<EnumDeclaration> StructDeclarations) : ITypeSpecifier;
 
 public record NamedTypeSpecifier(string TypeDefName) : ITypeSpecifier;
 
@@ -39,6 +42,8 @@ public record StructDeclaration(
 public interface ISpecifierQualifierListItem : IDeclarationSpecifier {}
 
 public record StructDeclarator(Declarator Declarator);
+
+public record EnumDeclaration(string Identifier, Expression? Constant);
 
 // 6.7.3 Type qualifiers
 public record TypeQualifier(string Name) : ISpecifierQualifierListItem;
