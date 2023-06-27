@@ -396,6 +396,10 @@ public partial class CParser
     private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
         structOrUnionSpecifier;
 
+    [Rule("type_specifier: enum_specifier")]
+    private static ITypeSpecifier MakeTypeSpecifier(EnumSpecifier enumDeclaration) =>
+        enumDeclaration;
+
     [Rule("type_specifier: typedef_name")]
     private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
         new NamedTypeSpecifier(typeDefName.Text);
@@ -474,10 +478,6 @@ public partial class CParser
         SpecifierQualifierList specifiersQualifiers,
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
-
-    [Rule("type_specifier: enum_specifier")]
-    private static ITypeSpecifier MakeTypeSpecifier(EnumSpecifier enumDeclaration) =>
-        enumDeclaration;
 
     [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
