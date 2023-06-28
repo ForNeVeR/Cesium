@@ -90,6 +90,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                             {
                                 int parameterIndex = -1;
                                 int openParensCount = 0;
+                                bool hitOpenToken = false;
                                 List<IToken<CPreprocessorTokenType>> currentParameter = new();
                                 IToken<CPreprocessorTokenType> parametersParsingToken;
                                 do
@@ -103,6 +104,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                                 currentParameter.Add(parametersParsingToken);
                                             }
 
+                                            hitOpenToken = true;
                                             openParensCount++;
                                             if (parameterIndex == -1)
                                             {
@@ -134,11 +136,16 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                             }
                                             break;
                                         default:
+                                            if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
+                                            {
+                                                continue;
+                                            }
+
                                             currentParameter.Add(parametersParsingToken);
                                             break;
                                     }
                                 }
-                                while (openParensCount > 0);
+                                while (openParensCount > 0 || !hitOpenToken);
                                 replacement.Add(parameters[parameterIndex], currentParameter);
                             }
 
