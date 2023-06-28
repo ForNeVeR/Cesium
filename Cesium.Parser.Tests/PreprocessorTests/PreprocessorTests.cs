@@ -152,6 +152,12 @@ int main() { return foo(0); }
 ");
 
     [Fact]
+    public Task ReplaceWithParameterAndWhitespace() => DoTest(
+@"#define foo(x) x
+int main() { return foo (0); }
+");
+
+    [Fact]
     public Task ReplaceWithMultipleParameters() => DoTest(
 @"#define foo(x,y,z) (y,z,x)
 int x,test;
@@ -182,6 +188,12 @@ int main() { char* x = foo(0); }
     public Task ReplaceWithHashNested() => DoTest(
 @"#define foo(x) #x
 int main() { char* x = foo(int x; printf(""some string"")); }
+");
+
+    [Fact]
+    public Task ReplaceWithoutParameters() => DoTest(
+@"#define foo(x)
+int main() { foo(0) return 0; }
 ");
 
     [Fact]
