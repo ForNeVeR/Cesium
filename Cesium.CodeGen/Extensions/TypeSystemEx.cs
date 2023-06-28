@@ -167,8 +167,9 @@ internal static class TypeSystemEx
 
     public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
     public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
+    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || ts.IsEnum(t);
     public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Bool);
+    public static bool IsEnum(this CTypeSystem ts, IType t) => t is EnumType;
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>

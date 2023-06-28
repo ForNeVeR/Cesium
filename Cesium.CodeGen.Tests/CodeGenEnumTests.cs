@@ -30,4 +30,14 @@ void test()
 {
     enum Colour x = 42;
 }");
+
+    [Fact]
+    public Task EnumUsageInIf() => DoTest(@"
+enum Colour { Red, Green, Blue };
+
+void test()
+{
+    enum Colour x = 42;
+    if (x == Green) ;
+}");
 }

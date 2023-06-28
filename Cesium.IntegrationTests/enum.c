@@ -4,7 +4,7 @@ enum InterestingEnum
     StartingValue = 100,
     AnotherValue,
     AnotherStartingValue = 200,
-    DuplicateValue = 200,
+    DuplicateValue = 200
 };
 int main(void)
 {
