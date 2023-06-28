@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -13,7 +14,7 @@ internal interface IDeclarationScope
     FunctionInfo? GetFunctionInfo(string identifier);
     void DeclareFunction(string identifier, FunctionInfo functionInfo);
     IReadOnlyDictionary<string, IType> GlobalFields { get; }
-    void AddVariable(StorageClass storageClass, string identifier, IType variable);
+    void AddVariable(StorageClass storageClass, string identifier, IType variable, IExpression? constant);
     VariableInfo? GetVariable(string identifier);
 
     /// <summary>

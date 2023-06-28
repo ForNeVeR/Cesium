@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -50,6 +51,40 @@ internal static class TranslationUnitEx
                     {
                         var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
+                        continue;
+                    }
+
+                    if (type is EnumType enumType)
+                    {
+                        int currentValue = -1;
+                        foreach (var enumeratorDeclaration in enumType.Members)
+                        {
+                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier;
+                            if (enumeratorName is null)
+                            {
+                                throw new CompilationException(
+                                    $"Enum type {enumType.Identifier} has enumerator without name");
+                            }
+
+                            if (enumeratorDeclaration.Initializer is null)
+                            {
+                                currentValue++;
+                            }
+                            else
+                            {
+                                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                                if (constantValue is not IntegerConstant intConstant)
+                                {
+                                    throw new CompilationException(
+                                        $"Enumerator {enumeratorName} has non-integer initializer");
+                                }
+
+                                currentValue = intConstant.Value;
+                            }
+
+                            var variable = new EnumeratorDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+                            yield return variable;
+                        }
                         continue;
                     }
 

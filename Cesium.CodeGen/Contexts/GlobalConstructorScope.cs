@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -27,11 +28,17 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
 
-    public void AddVariable(StorageClass storageClass, string identifier, IType variableType)
+    public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
+        if (constant is not null)
+        {
+            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+            return;
+        }
+
         if (storageClass == StorageClass.Static)
         {
-            _variables.Add(identifier, new(identifier, storageClass, variableType));
+            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
         }
 
         Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);

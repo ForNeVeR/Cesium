@@ -61,4 +61,7 @@ void *malloc(size_t);");
 
     [Fact]
     public Task EnumDeclaration() => DoDeclarationParserTest(@"enum Colour { Red, Green, Blue };");
+
+    [Fact]
+    public Task EnumVariableDeclaration() => DoDeclarationParserTest(@"enum Colour x;");
 }

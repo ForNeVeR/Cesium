@@ -104,6 +104,9 @@ internal static class BlockItemEmitting
 
                 return;
             }
+            case EnumeratorDefinition d:
+                // This is fake declaration
+                break;
             case GoToStatement s:
             {
                 var instruction = scope.ResolveLabel(s.Identifier);

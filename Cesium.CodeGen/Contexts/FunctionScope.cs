@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -24,9 +25,9 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
     public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
-    public void AddVariable(StorageClass storageClass, string identifier, IType variableType)
+    public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
-        _variables.Add(identifier, new(identifier, storageClass, variableType));
+        _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
         if (storageClass == StorageClass.Static)
         {
             Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);

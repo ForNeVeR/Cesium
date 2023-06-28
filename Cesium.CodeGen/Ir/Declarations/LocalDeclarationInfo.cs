@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
@@ -23,6 +24,11 @@ internal record LocalDeclarationInfo(
             if (type is StructType structType)
             {
                 return new LocalDeclarationInfo(type, structType.Identifier, null);
+            }
+
+            if (type is EnumType enumType)
+            {
+                return new LocalDeclarationInfo(type, enumType.Identifier, null);
             }
 
             return new LocalDeclarationInfo(type, null, null);
@@ -116,6 +122,21 @@ internal record LocalDeclarationInfo(
                         throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
 
                     type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
+                    break;
+                }
+
+                case EnumSpecifier enumTypeSpecifier:
+                {
+                    if (type != null)
+                        throw new CompilationException(
+                            $"Cannot update type {type} with a enum specifier {enumTypeSpecifier}.");
+
+                    var ( identifier, enumDeclarations) = enumTypeSpecifier;
+                    if (identifier is null && enumDeclarations is null)
+                        throw new CompilationException(
+                            $"Incomplete enum specifier {enumTypeSpecifier}.");
+
+                    type = new EnumType(GetEnumMemberDeclarations(enumDeclarations).ToList(), identifier);
                     break;
                 }
 
@@ -302,6 +323,23 @@ internal record LocalDeclarationInfo(
                 d.Deconstruct(out var declarator);
                 return Of(collection, declarator);
             });
+        });
+    }
+
+    private static IEnumerable<InitializableDeclarationInfo> GetEnumMemberDeclarations(
+        IEnumerable<EnumDeclaration>? structDeclarations)
+    {
+        if (structDeclarations is null)
+        {
+            return Array.Empty<InitializableDeclarationInfo>();
+        }
+
+        return structDeclarations.Select(memberDeclarator =>
+        {
+            var (identifier, declarators) = memberDeclarator;
+            return new InitializableDeclarationInfo(
+                new LocalDeclarationInfo(null!, identifier, null),
+                declarators?.ToIntermediate());
         });
     }
 

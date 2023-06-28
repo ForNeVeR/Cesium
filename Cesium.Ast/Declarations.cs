@@ -25,7 +25,7 @@ public record StructOrUnionSpecifier(
     ImmutableArray<StructDeclaration> StructDeclarations) : ITypeSpecifier;
 public record EnumSpecifier(
     string? Identifier,
-    ImmutableArray<EnumDeclaration> StructDeclarations) : ITypeSpecifier;
+    ImmutableArray<EnumDeclaration>? StructDeclarations) : ITypeSpecifier;
 
 public record NamedTypeSpecifier(string TypeDefName) : ITypeSpecifier;
 

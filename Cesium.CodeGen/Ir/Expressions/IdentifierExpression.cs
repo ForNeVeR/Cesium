@@ -32,6 +32,10 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
+        var var = scope.GetVariable(Identifier);
+        if (var is not null && var.Constant is not null)
+            return var.Constant;
+
         return new GetValueExpression(Resolve(scope));
     }
 

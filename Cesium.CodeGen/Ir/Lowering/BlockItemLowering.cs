@@ -157,7 +157,7 @@ internal static class BlockItemLowering
                             $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
                     type = scope.ResolveType(type);
-                    scope.AddVariable(storageClass, identifier, type);
+                    scope.AddVariable(storageClass, identifier, type, null);
 
                     var initializerExpression = initializer;
                     if (initializerExpression != null)
@@ -295,9 +295,15 @@ internal static class BlockItemLowering
             }
             case GlobalVariableDefinition d:
             {
-                scope.AddVariable(d.StorageClass, d.Identifier, d.Type);
+                scope.AddVariable(d.StorageClass, d.Identifier, d.Type, null);
 
                 return d with { Initializer = d.Initializer?.Lower(scope) };
+            }
+            case EnumeratorDefinition d:
+            {
+                scope.AddVariable(StorageClass.Static, d.Identifier, d.Type, d.Value);
+
+                return d;
             }
             case GoToStatement:
             {

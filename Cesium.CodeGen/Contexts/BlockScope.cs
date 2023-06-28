@@ -37,7 +37,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     }
     public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
 
-    public void AddVariable(StorageClass storageClass, string identifier, IType variable)
+    public void AddVariable(StorageClass storageClass, string identifier, IType variable, IExpression? constant)
     {
         // quirk - passing Static variables to the parent
         // TODO[#410]: we need more tests for that
@@ -45,10 +45,10 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         switch (storageClass)
         {
             case StorageClass.Auto:
-                _variables.Add(identifier, new(identifier, storageClass, variable));
+                _variables.Add(identifier, new(identifier, storageClass, variable, constant));
                 break;
             case StorageClass.Static:
-                ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable);
+                ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable, constant);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(storageClass), storageClass, null);

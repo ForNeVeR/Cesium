@@ -479,6 +479,10 @@ public partial class CParser
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
 
+    [Rule("enum_specifier: 'enum' Identifier")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
+        new EnumSpecifier(identifier.Text, null);
+
     [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
         new EnumSpecifier(identifier.Text, enumeratorList);

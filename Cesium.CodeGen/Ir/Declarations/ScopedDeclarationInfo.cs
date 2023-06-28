@@ -25,7 +25,7 @@ internal interface IScopedDeclarationInfo
             return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
         }
 
-        if (specifiers.Length > 0 && specifiers[0] is StructOrUnionSpecifier structOrUnionSpecifier)
+        if (specifiers.Length > 0 && (specifiers[0] is StructOrUnionSpecifier || specifiers[0] is EnumSpecifier))
         {
             if (initDeclarators == null)
             {
