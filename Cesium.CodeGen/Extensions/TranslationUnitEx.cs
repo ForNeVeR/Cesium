@@ -82,7 +82,7 @@ internal static class TranslationUnitEx
                                 currentValue = intConstant.Value;
                             }
 
-                            var variable = new EnumeratorDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+                            var variable = new EnumConstantDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
                             yield return variable;
                         }
                         continue;

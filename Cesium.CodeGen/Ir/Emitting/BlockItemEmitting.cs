@@ -104,7 +104,7 @@ internal static class BlockItemEmitting
 
                 return;
             }
-            case EnumeratorDefinition d:
+            case EnumConstantDefinition d:
                 // This is fake declaration
                 break;
             case GoToStatement s:
