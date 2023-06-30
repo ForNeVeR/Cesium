@@ -140,6 +140,12 @@ int main() { return foo; }
 ");
 
     [Fact]
+    public Task ReplaceAfterStar() => DoTest(
+@"# define __getopt_argv_const const
+int int main(char *__getopt_argv_const *___argv) { return 0; }
+");
+
+    [Fact]
     public Task ReplaceFunctionParameter() => DoTest(
 @"#define foo 0
 int main() { return abs(foo); }
