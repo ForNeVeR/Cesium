@@ -1,0 +1,1 @@
+int int main(char *const *___argv) { return 0; }
