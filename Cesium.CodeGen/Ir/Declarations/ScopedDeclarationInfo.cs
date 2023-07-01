@@ -147,12 +147,10 @@ internal interface IScopedDeclarationInfo
                 throw new CompilationException(
                     $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
 
-            if (scs.Name == "extern")
-                continue;
-
             storageClass = scs.Name switch
             {
                 "static" => StorageClass.Static,
+                "extern" => StorageClass.Extern,
                 _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
             };
         }
@@ -171,5 +169,6 @@ internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, I
 internal enum StorageClass
 {
     Static,
-    Auto
+    Auto,
+    Extern,
 }

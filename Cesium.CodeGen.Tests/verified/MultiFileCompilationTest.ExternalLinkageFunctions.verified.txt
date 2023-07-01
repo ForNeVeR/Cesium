@@ -2,7 +2,7 @@
   Type: <Module>
   Methods:
     System.Int32 <Module>::main()
-      IL_0000: call System.Int32 testInput<Statics>::foo()
+      IL_0000: call System.Int32 testInput<Statics>::test()
       IL_0005: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
@@ -17,6 +17,6 @@
 
   Type: testInput<Statics>
   Methods:
-    System.Int32 testInput<Statics>::foo()
+    System.Int32 testInput<Statics>::test()
       IL_0000: ldc.i4.0
       IL_0001: ret

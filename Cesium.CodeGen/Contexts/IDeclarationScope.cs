@@ -13,7 +13,7 @@ internal interface IDeclarationScope
     CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
     void DeclareFunction(string identifier, FunctionInfo functionInfo);
-    IReadOnlyDictionary<string, IType> GlobalFields { get; }
+    VariableInfo? GetGlobalField(string identifier);
     void AddVariable(StorageClass storageClass, string identifier, IType variable, IExpression? constant);
     VariableInfo? GetVariable(string identifier);
 
