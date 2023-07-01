@@ -24,7 +24,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     public void DeclareFunction(string identifier, FunctionInfo functionInfo)
         => Context.DeclareFunction(identifier, functionInfo);
-    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
+    public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
 

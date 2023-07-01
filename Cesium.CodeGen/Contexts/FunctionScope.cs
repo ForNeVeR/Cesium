@@ -24,7 +24,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     private readonly Dictionary<string, VariableInfo> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
-    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
+    public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
         _variables.Add(identifier, new(identifier, storageClass, variableType, constant));

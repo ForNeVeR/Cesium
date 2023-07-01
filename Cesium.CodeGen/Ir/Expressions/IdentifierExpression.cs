@@ -48,7 +48,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
         var var = scope.GetVariable(Identifier);
         var fun = scope.GetFunctionInfo(Identifier);
         var par = scope.GetParameterInfo(Identifier);
-        scope.GlobalFields.TryGetValue(Identifier, out var globalType);
+        var globalType = scope.GetGlobalField(Identifier);
 
         if (var is not null && par is not null)
             throw new CompilationException($"Variable {Identifier} is both available as a local and as a function parameter.");
@@ -83,7 +83,7 @@ internal class IdentifierExpression : IExpression, IValueExpression
 
         if (globalType != null)
         {
-            return new LValueGlobalVariable(globalType, Identifier);
+            return new LValueGlobalVariable(globalType.Type, Identifier);
         }
 
         throw new CompilationException($"Cannot find a local variable, a function parameter, a global variable or a function {Identifier}.");

@@ -25,8 +25,8 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-    private readonly Dictionary<string, IType> _globalFields = new();
-    internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
+    private readonly Dictionary<string, VariableInfo> _globalFields = new();
+
     public CompilationOptions CompilationOptions { get; }
 
     public static AssemblyContext Create(
@@ -117,12 +117,24 @@ public class AssemblyContext
         }
     }
 
-    internal void AddAssemblyLevelField(string name, IType type)
+    internal VariableInfo? GetGlobalField(string identifier)
     {
-        if (_globalFields.ContainsKey(name))
-            throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+        if (_globalFields.TryGetValue(identifier, out var value)) return value;
 
-        _globalFields.Add(name, type);
+        return null;
+    }
+
+    internal void AddAssemblyLevelField(string name, Ir.Declarations.StorageClass storageClass, IType type)
+    {
+        if (_globalFields.TryGetValue(name, out var globalField))
+        {
+            if (globalField.StorageClass != Ir.Declarations.StorageClass.Extern && storageClass != Ir.Declarations.StorageClass.Extern)
+                throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+
+            return;
+        }
+
+        _globalFields.Add(name, new (name, storageClass, type, null));
     }
 
     public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)
@@ -132,7 +144,7 @@ public class AssemblyContext
             return null;
         }
 
-        return GlobalType.GetOrAddField(context, type, name);
+        return GlobalType.GetOrAddField(context, type.Type, name);
     }
 
     /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>

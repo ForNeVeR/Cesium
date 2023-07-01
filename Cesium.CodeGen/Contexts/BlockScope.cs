@@ -35,7 +35,8 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
             ? variable
             : ((IDeclarationScope)Parent).GetVariable(identifier);
     }
-    public IReadOnlyDictionary<string, IType> GlobalFields => ((IDeclarationScope)Parent).GlobalFields;
+
+    public VariableInfo? GetGlobalField(string identifier) => ((IDeclarationScope)Parent).GetGlobalField(identifier);
 
     public void AddVariable(StorageClass storageClass, string identifier, IType variable, IExpression? constant)
     {

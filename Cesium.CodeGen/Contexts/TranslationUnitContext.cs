@@ -174,7 +174,8 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
                 _translationUnitLevelFieldTypes.Add(identifier, type);
                 break;
             case StorageClass.Auto: // assembly-level
-                AssemblyContext.AddAssemblyLevelField(identifier, type);
+            case StorageClass.Extern: // assembly-level
+                AssemblyContext.AddAssemblyLevelField(identifier, storageClass, type);
                 break;
             default:
                 throw new CompilationException($"Global variable of storage class {storageClass} is not supported.");
