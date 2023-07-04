@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+	
+    <ItemGroup>
+        <Content Include="**/*.c">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="**/*.h">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Remove="bin/**/*.c" />
+        <Content Remove="bin/**/*.h" />
+        <Content Include="Run-Tests.ps1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+        <PackageReference Include="xunit" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.TestAdapter\Cesium.TestAdapter.csproj" />
+    </ItemGroup>
+
+    <Target Name="FindTestAdapter">
+
+        <MSBuild Projects="@(ProjectReference)" Targets="GetTargetPath">
+            <Output TaskParameter="TargetOutputs" ItemName="TestAdapter" />
+        </MSBuild>
+        <PropertyGroup>
+            <VSTestTestAdapterPath>@(TestAdapter)</VSTestTestAdapterPath>
+        </PropertyGroup>
+    </Target>
+
+    <Target BeforeTargets="VSTest" Name="ApplyTestAdapter" DependsOnTargets="FindTestAdapter">
+
+        <PropertyGroup>
+            <VSTestTestAdapterPath>@(TestAdapter)</VSTestTestAdapterPath>
+            <VSTestCLIRunSettings>/TestAdapterLoadingStrategy NextToSource</VSTestCLIRunSettings>
+        </PropertyGroup>
+    </Target>
+
+</Project>
