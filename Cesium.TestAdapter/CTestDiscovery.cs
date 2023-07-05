@@ -1,7 +1,8 @@
+using Cesium.TestAdapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using System.ComponentModel;
+using System.Diagnostics;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Cesium.IntegrationTests;
@@ -30,10 +31,14 @@ public class CTestDiscovery : ITestDiscoverer, ITestExecutor
         }
     }
 
-    CancellationTokenSource cts;
-    public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
+    CancellationTokenSource? cts;
+    public void RunTests(IEnumerable<TestCase>? tests, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
-        // Logic to run xml based test cases and report back results.
+        if (tests is null || frameworkHandle is null)
+        {
+            return;
+        }
+
         cts = new CancellationTokenSource();
         try
         {
@@ -48,8 +53,13 @@ public class CTestDiscovery : ITestDiscoverer, ITestExecutor
         }
     }
 
-    public void RunTests(IEnumerable<string> containers, IRunContext runContext, IFrameworkHandle frameworkHandle)
+    public void RunTests(IEnumerable<string>? containers, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
+        if (containers is null || frameworkHandle is null)
+        {
+            return;
+        }
+
         cts = new CancellationTokenSource();
         try
         {
@@ -71,21 +81,32 @@ public class CTestDiscovery : ITestDiscoverer, ITestExecutor
 
     private static void ExecuteTestCase(TestCase testCase, IFrameworkHandle frameworkHandle)
     {
-        var sourceCodeFile = (string)testCase.GetPropertyValue(CFileProperty);
+        var sourceCodeFile = (string)testCase.GetPropertyValue(CFileProperty)!;  
         frameworkHandle.RecordStart(testCase);
+        TestResult testResult = new TestResult(testCase);
         try
         {
             if (!File.Exists(sourceCodeFile))
             {
-                frameworkHandle.RecordEnd(testCase, TestOutcome.NotFound);
+                frameworkHandle.SendMessage(TestMessageLevel.Warning, $"{sourceCodeFile} not found.");
+                testResult.Outcome = TestOutcome.NotFound;
                 return;
             }
 
-            frameworkHandle.RecordEnd(testCase, TestOutcome.Passed);
+            var verifier = new CompilerVerifier(testCase.Source);
+            verifier.VerifySourceCode(sourceCodeFile, frameworkHandle);
+            testResult.Outcome = TestOutcome.Passed;
         }
-        catch
+        catch (Exception ex)
         {
-            frameworkHandle.RecordEnd(testCase, TestOutcome.Failed);
+            testResult.Outcome = TestOutcome.Failed;
+            testResult.ErrorMessage = ex.Message;
+            testResult.ErrorStackTrace = ex.StackTrace;
+        }
+        finally
+        {
+            frameworkHandle.RecordResult(testResult);
+            frameworkHandle.RecordEnd(testCase, testResult.Outcome);
         }
     }
 
@@ -97,7 +118,7 @@ public class CTestDiscovery : ITestDiscoverer, ITestExecutor
             if (Path.GetExtension(container) == ".exe" || Path.GetExtension(container) == ".dll")
             {
                 var directory = Path.GetDirectoryName(container);
-                if (directories.Contains(directory)) continue;
+                if (directory is null || directories.Contains(directory)) continue;
 
                 var files = Directory.GetFiles(directory, "*.c", SearchOption.AllDirectories);
                 foreach (var file in files)
