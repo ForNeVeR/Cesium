@@ -9,9 +9,11 @@ namespace Cesium.TestAdapter;
 internal class CompilerVerifier
 {
     private readonly string _sourceFolder;
+    private readonly string _container;
 
     public CompilerVerifier(string container)
     {
+        _container = Path.GetDirectoryName(container)!;
         _sourceFolder = FindRootFolder(container);
     }
 
@@ -34,15 +36,16 @@ internal class CompilerVerifier
             cesiumSolution = Path.Combine(directory, "Cesium.sln");
         }
 
-        return cesiumSolution;
+        return directory;
     }
 
     public void VerifySourceCode(string sourceCodeFile, IMessageLogger logger)
     {
-        var nativeCompilerBinOutput = $"{OutDir}/out_native.exe";
-        var cesiumBinOutput = $"{OutDir}/out_cs.exe";
-        var nativeCompilerRunLog = $"{OutDir}/out_native.log";
-        var cesiumRunLog = $"{OutDir}/out_cs.log";
+        var nativeCompilerBinOutput = $"{OutDir}/{Path.GetRelativePath(_container, sourceCodeFile)}.native.exe";
+        var cesiumBinOutput = $"{OutDir}/{Path.GetRelativePath(_container, sourceCodeFile)}.cs.exe";
+        Directory.CreateDirectory(Path.GetDirectoryName(nativeCompilerBinOutput)!);
+        //var nativeCompilerRunLog = $"{OutDir}/out_native.log";
+        //var cesiumRunLog = $"{OutDir}/out_cs.log";
 
         var expectedExitCode = 42;
         if (!BuildFileWithNativeCompiler(sourceCodeFile, nativeCompilerBinOutput, logger))
@@ -50,7 +53,7 @@ internal class CompilerVerifier
             throw new InvalidOperationException("Native compilation failed");
         }
 
-        var exitCode = RunApplication(nativeCompilerBinOutput, "", nativeCompilerRunLog);
+        var exitCode = RunApplication(nativeCompilerBinOutput, "", out var nativeCompilerRunLog);
         if (exitCode != expectedExitCode)
         {
             throw new InvalidOperationException($"Binary {nativeCompilerBinOutput} returned code {exitCode}, but {expectedExitCode} was expected.");
@@ -61,13 +64,14 @@ internal class CompilerVerifier
             throw new InvalidOperationException("Cesium compilation failed");
         }
 
+        string cesiumRunLog;
         if (TargetFramework == "NetFramework")
         {
-            exitCode = RunApplication(cesiumBinOutput, "", cesiumRunLog);
+            exitCode = RunApplication(cesiumBinOutput, "", out cesiumRunLog);
         }
         else
         {
-            exitCode = RunApplication("dotnet", cesiumBinOutput, cesiumRunLog);
+            exitCode = RunApplication("dotnet", cesiumBinOutput, out cesiumRunLog);
         }
 
         if (exitCode != expectedExitCode)
@@ -75,8 +79,8 @@ internal class CompilerVerifier
             throw new InvalidOperationException($"Binary {cesiumBinOutput} returned code {exitCode}, but {expectedExitCode} was expected.");
         }
 
-        var nativeCompilerOutput = File.ReadAllText(nativeCompilerRunLog);
-        var cesiumOutput = File.ReadAllText(cesiumRunLog);
+        var nativeCompilerOutput = nativeCompilerRunLog;//File.ReadAllText(nativeCompilerRunLog);
+        var cesiumOutput = cesiumRunLog;//File.ReadAllText(cesiumRunLog);
         if (nativeCompilerOutput != cesiumOutput)
         {
             throw new InvalidOperationException($"""
@@ -89,8 +93,9 @@ internal class CompilerVerifier
         }
     }
 
-    private static int RunApplication(string application, string arguments, string log)
+    private static int RunApplication(string application, string arguments, out string outputLog)
     {
+        StringBuilder log = new();
         var process = new Process();
         process.StartInfo.FileName = application;
         process.StartInfo.Arguments = arguments;
@@ -104,12 +109,22 @@ internal class CompilerVerifier
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         process.WaitForExit();
+        outputLog = log.ToString();
         return process.ExitCode;
 
         void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
-            File.AppendAllLines(log, new[] { outLine.Data ?? string.Empty });
+            lock (log)
+            {
+                log.AppendLine(outLine.Data);
+            }
         }
+    }
+
+    private static string RunApplication(string application, string arguments)
+    {
+        _ = RunApplication(application, arguments, out var log);
+        return log;
     }
 
     private bool BuildFileWithNativeCompiler(string inputFile, string outputFile, IMessageLogger logger)
@@ -118,9 +133,12 @@ internal class CompilerVerifier
         if (System.OperatingSystem.IsWindows())
         {
             var objDir = ObjDir;
-            var commandLine = $"cl.exe /nologo {inputFile} -D__TEST_DEFINE /Fo:{objDir} /Fe:{outputFile}";
+            Directory.CreateDirectory(objDir);
+            var pathToCL = FindPathToVCCompiler();
+
+            var commandLine = $"{pathToCL} /nologo {inputFile} -D__TEST_DEFINE /Fo:{objDir} /Fe:{outputFile}";
             logger.SendMessage(TestMessageLevel.Informational, $"Compiling {inputFile} with cl.exe using command line {commandLine}.");
-            process = Process.Start($"cl.exe", new[] { "/nologo", inputFile, "-D__TEST_DEFINE", $"/Fo:{objDir}", $"/Fe:{outputFile}" });
+            process = Process.Start(pathToCL, new[] { "/nologo", inputFile, "-D__TEST_DEFINE", $"/Fo:{objDir}/", $"/Fe:{outputFile}" });
         }
         else
         {
@@ -147,6 +165,46 @@ internal class CompilerVerifier
         }
 
         return true;
+    }
+
+    private static string FindPathToVCCompiler()
+    {
+        var vswhereLocation =
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe");
+        var installationPath =
+            RunApplication(vswhereLocation, "-latest -format value -property installationPath -nologo -nocolor");
+        if (string.IsNullOrWhiteSpace(installationPath))
+        {
+            installationPath = RunApplication(vswhereLocation,
+                "-latest -format value -property installationPath -nologo -nocolor -prerelease");
+        }
+
+        if (string.IsNullOrWhiteSpace(installationPath))
+        {
+            throw new InvalidOperationException("Visual Studio Installation location was not found");
+        }
+
+        var vcRootLocation = Path.Combine(installationPath.Trim(), "VC", "Tools", "MSVC");
+        if (!Directory.Exists(vcRootLocation))
+        {
+            throw new InvalidOperationException($"Visual Studio Installation does not have VC++ compiler installed at {vcRootLocation}|{installationPath}");
+        }
+
+        string? pathToCL = null;
+        foreach (var folder in Directory.EnumerateDirectories(vcRootLocation, "14.*", SearchOption.TopDirectoryOnly))
+        {
+            var clPath = Path.Combine(folder, @"bin\HostX64\x64\cl.exe");
+            if (File.Exists(clPath))
+                pathToCL = clPath;
+        }
+
+        if (pathToCL is null)
+        {
+            throw new InvalidOperationException(
+                "Visual Studio Installation does not have VC++ compiler installed, or it is corrupted");
+        }
+
+        return pathToCL;
     }
 
     private bool BuildFileWithCesium(string inputFile, string outputFile, IMessageLogger logger)
