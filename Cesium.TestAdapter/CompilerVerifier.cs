@@ -1,7 +1,9 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace Cesium.TestAdapter;
@@ -127,47 +129,95 @@ internal class CompilerVerifier
         return log;
     }
 
+    [SupportedOSPlatform("windows")]
+    string FindWin10Sdk()
+    {
+        string? path = FindWin10SdkHelper(Registry.LocalMachine, @"SOFTWARE\\Wow6432Node");
+        path ??= FindWin10SdkHelper(Registry.CurrentUser, @"SOFTWARE\\Wow6432Node");
+        path ??= FindWin10SdkHelper(Registry.LocalMachine, @"SOFTWARE");
+        path ??= FindWin10SdkHelper(Registry.CurrentUser, @"SOFTWARE");
+        return path ?? throw new InvalidOperationException("Win10 SDK not found");
+    }
+    [SupportedOSPlatform("windows")]
+    string? FindWin10SdkHelper(RegistryKey hive, string searchLocation)
+    {
+        return (string?)hive.OpenSubKey($@"{searchLocation}\Microsoft\Microsoft SDKs\Windows\v10.0")?.GetValue("InstallationFolder");
+    }
+
     private bool BuildFileWithNativeCompiler(string inputFile, string outputFile, IMessageLogger logger)
     {
         Process? process;
+        int exitCode;
+        string output;
         if (System.OperatingSystem.IsWindows())
         {
             var objDir = ObjDir;
             Directory.CreateDirectory(objDir);
-            var pathToCL = FindPathToVCCompiler();
+            var vcInstallationFolder = FindVCCompilerInstallationFolder();
+            var pathToCL = Path.Combine(vcInstallationFolder, @"bin\HostX64\x64\cl.exe");
+            var pathToLibs = Path.Combine(vcInstallationFolder, @"lib\x64");
+            var pathToIncludes = Path.Combine(vcInstallationFolder, @"include");
+            var win10SdkPath = FindWin10Sdk();
+            string win10Libs = FindLibsFolder(win10SdkPath);
+            string win10Include = FindIncludeFolder(win10SdkPath);
 
-            var commandLine = $"{pathToCL} /nologo {inputFile} -D__TEST_DEFINE /Fo:{objDir} /Fe:{outputFile}";
+            var commandLine = $"\"{pathToCL}\" /nologo {inputFile} -D__TEST_DEFINE /Fo:{objDir} /Fe:{outputFile} /I\"{pathToIncludes}\" /I\"{win10Include}\\ucrt\" /link /LIBPATH:\"{pathToLibs}\" /LIBPATH:\"{win10Libs}\\um\\x64\" /LIBPATH:\"{win10Libs}\\ucrt\\x64\"";
             logger.SendMessage(TestMessageLevel.Informational, $"Compiling {inputFile} with cl.exe using command line {commandLine}.");
-            process = Process.Start(pathToCL, new[] { "/nologo", inputFile, "-D__TEST_DEFINE", $"/Fo:{objDir}/", $"/Fe:{outputFile}" });
+            exitCode = RunApplication(pathToCL, $"/nologo {inputFile} -D__TEST_DEFINE /Fo:{objDir} /Fe:{outputFile} /I\"{pathToIncludes}\" /I\"{win10Include}\\ucrt\" /link /LIBPATH:\"{pathToLibs}\" /LIBPATH:\"{win10Libs}\\um\\x64\" /LIBPATH:\"{win10Libs}\\ucrt\\x64\"", out output);
         }
         else
         {
             var commandLine = $"gcc {inputFile} -o {outputFile} -D__TEST_DEFINE";
             logger.SendMessage(TestMessageLevel.Informational, $"Compiling {inputFile} with gcc using command line {commandLine}.");
-            process = Process.Start($"gcc", new[] { inputFile, "-o", outputFile, "-D__TEST_DEFINE" });
-        }
-
-        int exitCode;
-        if (process is null)
-        {
-            exitCode = 8 /*ENOEXEC*/;
-        }
-        else
-        {
-            process.WaitForExit();
-            exitCode = process.ExitCode;
+            exitCode = RunApplication("gcc", $"{inputFile} -o {outputFile} -D__TEST_DEFINE", out output);
         }
 
         if (exitCode != 0)
         {
-            logger.SendMessage(TestMessageLevel.Informational, $"Error: native compiler returned exit code {exitCode}.");
+            logger.SendMessage(TestMessageLevel.Warning, $"Error: native compiler returned exit code {exitCode}. {output}");
             return false;
         }
 
         return true;
     }
 
-    private static string FindPathToVCCompiler()
+    private static string FindLibsFolder(string win10SdkPath)
+    {
+        string? win10Libs = null;
+        foreach (var versionFolder in Directory.EnumerateDirectories(Path.Combine(win10SdkPath, "Lib")))
+        {
+            var win10LibPathCandidate = Path.Combine(versionFolder, @"um\x64");
+            if (Directory.Exists(win10LibPathCandidate))
+                win10Libs = versionFolder;
+        }
+
+        if (win10Libs is null)
+        {
+            throw new InvalidOperationException("Windows libs files was not found");
+        }
+
+        return win10Libs;
+    }
+
+    private static string FindIncludeFolder(string win10SdkPath)
+    {
+        string? win10Libs = null;
+        foreach (var versionFolder in Directory.EnumerateDirectories(Path.Combine(win10SdkPath, "Include")))
+        {
+            var win10LibPathCandidate = Path.Combine(versionFolder, @"um");
+            if (Directory.Exists(win10LibPathCandidate))
+                win10Libs = versionFolder;
+        }
+
+        if (win10Libs is null)
+        {
+            throw new InvalidOperationException("Windows libs files was not found");
+        }
+
+        return win10Libs;
+    }
+
+    private static string FindVCCompilerInstallationFolder()
     {
         var vswhereLocation =
             Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe");
@@ -195,7 +245,7 @@ internal class CompilerVerifier
         {
             var clPath = Path.Combine(folder, @"bin\HostX64\x64\cl.exe");
             if (File.Exists(clPath))
-                pathToCL = clPath;
+                pathToCL = folder;
         }
 
         if (pathToCL is null)
