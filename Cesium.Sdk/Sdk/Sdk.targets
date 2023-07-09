@@ -1,0 +1,17 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
+
+    <Target Name="Compile" BeforeTargets="Build"
+            Inputs="@(Compile)"
+            Outputs="@(IntermediateAssembly)">
+
+        <PropertyGroup>
+            <_CompilerOutput>@(IntermediateAssembly->'%(FullPath)')</_CompilerOutput>
+        </PropertyGroup>
+
+        <Exec Command="@(MainCompile -> '$(CesiumCompilerCommand) $(_PascalAbcCompilerArguments) &quot;/Output:$(_CompilerOutput)&quot; %(FullPath)')"
+              Condition=" '%(Identity)' != ''"/>
+    </Target>
+
+</Project>

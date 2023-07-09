@@ -7,6 +7,7 @@
         <PublishAot Condition="$(NETCoreSdkRuntimeIdentifier) != 'osx-x64'">true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +35,14 @@
 
     <ItemGroup>
         <RdXmlFile Include="rd.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(PublishDir)$(AssemblyName)*">
+            <Pack>true</Pack>
+            <PackagePath>tools</PackagePath>
+            <Visible>false</Visible>
+        </None>
     </ItemGroup>
 
 </Project>
