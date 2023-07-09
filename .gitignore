@@ -3,6 +3,7 @@
 
 bin/
 obj/
+artifacts/
 
 *.dll
 *.exe

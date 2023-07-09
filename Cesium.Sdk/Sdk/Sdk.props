@@ -1,0 +1,29 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="SdkCustomization">
+        <EnableDefaultItems>false</EnableDefaultItems>
+    </PropertyGroup>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+    <PropertyGroup Label="DefaultProperties">
+        <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
+        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler</CesiumCompilerPackageName>
+        <CesiumCompilerPackageVersionPrefix Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersionPrefix>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
+        <PackageReference Include="$(CesiumCompilerPackageName)"
+                          Version="$(CesiumCompilerPackageVersionPrefix)$(CesiumCompilerPackageVersionSuffix)"
+                          GeneratePathProperty="true"
+                          PrivateAssets="All"/>
+    </ItemGroup>
+
+    <PropertyGroup Label="PostInstallProperties">
+        <CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == '' AND $(PkgCesium_Compiler) != ''">$(PkgCesium_Compiler)</CesiumCompilerPackagePath>
+        <!-- TODO[seclerp]: OSX support -->
+        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName).exe</CesiumCompilerPath>
+        <CesiumCompilerCommand Condition="$(CesiumCompilerPath) == ''">$(CesiumCompilerPath)</CesiumCompilerCommand>
+    </PropertyGroup>
+
+</Project>
