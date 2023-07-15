@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -384,14 +383,9 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 if (identifier == "once")
                 {
                     IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
-                    return Array.Empty<IToken<CPreprocessorTokenType>>();
                 }
-                else
-                {
-                    throw new WipException(
-                        77,
-                        $"Preprocessor #pragma directive not supported: {keyword.Kind} {keyword.Text}.");
-                }
+
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             default:
                 throw new WipException(
