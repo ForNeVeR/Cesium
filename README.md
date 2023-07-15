@@ -81,7 +81,7 @@ Implementation Dashboard
 ------------------------
 
 - [ ] [C17 standard compatibility][issue.c17-standard]: poor
-    - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
+    - [ ] [Preprocessor][issue.preprocessor]: about **30%** of all features are supported
     - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
     - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
 - [ ] **Compiler**
