@@ -6,16 +6,24 @@ namespace Cesium.IntegrationTests;
 public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>
 {
     private readonly ITestOutputHelper _output;
-    private readonly string _solutionRootPath;
     public IntegrationTestRunner(IntegrationTestContext context, ITestOutputHelper output)
     {
         _output = output;
         context.EnsureInitialized(output);
-        _solutionRootPath = context.SolutionRootPath;
+    }
+
+    public static IEnumerable<object[]> TestCaseProvider()
+    {
+        var testCaseDirectory = Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.IntegrationTests");
+        var cFiles = Directory.EnumerateFileSystemEntries(testCaseDirectory, "*.c", SearchOption.AllDirectories);
+        return cFiles
+            .Where(file => !file.EndsWith(".ignore.c"))
+            .Select(file => Path.GetRelativePath(testCaseDirectory, file))
+            .Select(path => new object[] { path });
     }
 
     [Theory]
-    [InlineData("arithmetics.c")]
+    [MemberData(nameof(TestCaseProvider))]
     public void TestCompiler(string relativeFilePath)
     {
         var outRootPath = CreateTempDir();
@@ -28,7 +36,10 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>
             Directory.CreateDirectory(binDirPath);
             Directory.CreateDirectory(objDirPath);
 
-            var sourceFilePath = Path.Combine(_solutionRootPath, "Cesium.IntegrationTests", relativeFilePath);
+            var sourceFilePath = Path.Combine(
+                IntegrationTestContext.SolutionRootPath,
+                "Cesium.IntegrationTests",
+                relativeFilePath);
 
             var nativeExecutable = BuildExecutableWithNativeCompiler(binDirPath, objDirPath, sourceFilePath);
             var nativeResult = ExecUtil.Run(_output, nativeExecutable, outRootPath, Array.Empty<string>());
@@ -38,7 +49,9 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>
             var managedResult = ExecUtil.Run(_output, "dotnet", outRootPath, new[] { managedExecutable }); // TODO: Only .NET for now
             Assert.Equal(42, managedResult.ExitCode);
 
-            Assert.Equal(nativeResult.StandardOutput, managedResult.StandardOutput);
+            Assert.Equal(
+                nativeResult.StandardOutput.ReplaceLineEndings("\n"),
+                managedResult.StandardOutput.ReplaceLineEndings("\n"));
             Assert.Empty(nativeResult.StandardError);
             Assert.Empty(managedResult.StandardError);
         }
@@ -48,12 +61,16 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>
         }
     }
 
+    private static readonly object _tempDirCreator = new();
     private string CreateTempDir()
     {
-        var path = Path.GetTempFileName();
-        File.Delete(path);
-        Directory.CreateDirectory(path);
-        return path;
+        lock (_tempDirCreator)
+        {
+            var path = Path.GetTempFileName();
+            File.Delete(path);
+            Directory.CreateDirectory(path);
+            return path;
+        }
     }
 
     private string BuildExecutableWithNativeCompiler(
@@ -130,7 +147,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>
                 "run",
                 "--no-build",
                 "--configuration", IntegrationTestContext.BuildConfiguration,
-                "--project", Path.Combine(_solutionRootPath, "Cesium.Compiler"),
+                "--project", Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.Compiler"),
                 "--",
                 "--nologo",
                 sourceFilePath,
