@@ -16,10 +16,12 @@
         </Content>
         <Content Remove="bin/**/*.c" />
         <Content Remove="bin/**/*.h" />
-        <Content Include="Run-Tests.ps1" />
+        <None Remove="xunit.runner.json" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
+        <PackageReference Include="MedallionShell" Version="1.6.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
         <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
@@ -27,23 +29,5 @@
     <ItemGroup>
       <ProjectReference Include="..\Cesium.TestAdapter\Cesium.TestAdapter.csproj" />
     </ItemGroup>
-
-    <Target Name="FindTestAdapter">
-
-        <MSBuild Projects="@(ProjectReference)" Targets="GetTargetPath">
-            <Output TaskParameter="TargetOutputs" ItemName="TestAdapter" />
-        </MSBuild>
-        <PropertyGroup>
-            <VSTestTestAdapterPath>@(TestAdapter)</VSTestTestAdapterPath>
-        </PropertyGroup>
-    </Target>
-
-    <Target BeforeTargets="VSTest" Name="ApplyTestAdapter" DependsOnTargets="FindTestAdapter">
-
-        <PropertyGroup>
-            <VSTestTestAdapterPath>@(TestAdapter)</VSTestTestAdapterPath>
-            <VSTestCLIRunSettings>/TestAdapterLoadingStrategy NextToSource</VSTestCLIRunSettings>
-        </PropertyGroup>
-    </Target>
 
 </Project>

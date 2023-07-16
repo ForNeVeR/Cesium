@@ -1,6 +1,5 @@
+# TODO: Remove this file
 param (
-    [switch] $NoBuild,
-
     $SourceRoot = "$PSScriptRoot/..",
     $OutDir = "$PSScriptRoot/bin",
     $ObjDir = "$PSScriptRoot/obj",
@@ -12,22 +11,6 @@ param (
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
-function buildRuntime() {
-    Write-Host 'Building the Cesium.Runtime project.'
-    dotnet build --configuration $Configuration "$SourceRoot/Cesium.Runtime/Cesium.Runtime.csproj"
-    if (!$?) {
-        throw "Couldn't build the compiler: dotnet build returned $LASTEXITCODE."
-    }
-}
-
-function buildCompiler() {
-    Write-Host 'Building the Cesium.Compiler project.'
-    dotnet build --configuration $Configuration "$SourceRoot/Cesium.Compiler/Cesium.Compiler.csproj"
-    if (!$?) {
-        throw "Couldn't build the compiler: dotnet build returned $LASTEXITCODE."
-    }
-}
 
 function buildFileWithNativeCompiler($inputFile, $outputFile) {
     if ($IsWindows) {
@@ -141,11 +124,6 @@ if (Test-Path $OutDir) {
 
 New-Item $ObjDir -Type Directory | Out-Null
 New-Item $OutDir -Type Directory | Out-Null
-
-if (!$NoBuild) {
-    buildRuntime
-    buildCompiler
-}
 
 $successfulTests = @()
 $failedTests = @()
