@@ -78,8 +78,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Core", "Cesium.Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime.Tests", "Cesium.Runtime.Tests\Cesium.Runtime.Tests.csproj", "{526D8E61-6143-490F-BB9D-E7CD78512E55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.TestAdapter", "Cesium.TestAdapter\Cesium.TestAdapter.csproj", "{44AE427D-0B53-49BB-B83F-839833002CCE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,10 +132,6 @@ Global
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44AE427D-0B53-49BB-B83F-839833002CCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44AE427D-0B53-49BB-B83F-839833002CCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44AE427D-0B53-49BB-B83F-839833002CCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44AE427D-0B53-49BB-B83F-839833002CCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

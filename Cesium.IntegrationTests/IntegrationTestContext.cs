@@ -5,9 +5,9 @@ using Xunit.Abstractions;
 namespace Cesium.IntegrationTests;
 
 [UsedImplicitly]
-public class IntegrationTestContext
+public class IntegrationTestContext : IDisposable
 {
-    public readonly string SolutionRootPath = GetSolutionRoot();
+    public static readonly string SolutionRootPath = GetSolutionRoot();
     public const string BuildConfiguration = "Release";
     private readonly object _lock = new();
     private bool _initialized;
@@ -38,6 +38,15 @@ public class IntegrationTestContext
                 _initialized = true;
             }
         }
+    }
+
+    public void Dispose()
+    {
+        ExecUtil.RunToSuccess(null, "dotnet", SolutionRootPath, new[]
+        {
+            "build-server",
+            "shutdown"
+        });
     }
 
     private static string GetSolutionRoot()
