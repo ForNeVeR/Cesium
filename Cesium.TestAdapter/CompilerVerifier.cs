@@ -1,13 +1,12 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Microsoft.Win32;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Microsoft.Win32;
 
 namespace Cesium.TestAdapter;
 
+// TODO: Delete this file and the whole project if no longer needed
 internal class CompilerVerifier
 {
     private readonly string _sourceFolder;
