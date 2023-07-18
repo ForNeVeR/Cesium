@@ -1,21 +1,22 @@
 using System.Reflection;
 using JetBrains.Annotations;
+using NeoSmart.AsyncLock;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
 
 [UsedImplicitly]
-public class IntegrationTestContext : IDisposable
+public class IntegrationTestContext : IAsyncDisposable
 {
     public static readonly string SolutionRootPath = GetSolutionRoot();
     public const string BuildConfiguration = "Release";
-    private readonly object _lock = new();
+    private readonly AsyncLock _lock = new();
     private bool _initialized;
     private Exception? _initializationException;
 
-    public void EnsureInitialized(ITestOutputHelper output)
+    public async Task EnsureInitialized(ITestOutputHelper output)
     {
-        lock (_lock)
+        using (await _lock.LockAsync())
         {
             if (_initialized)
             {
@@ -25,8 +26,8 @@ public class IntegrationTestContext : IDisposable
 
             try
             {
-                BuildRuntime(output);
-                BuildCompiler(output);
+                await BuildRuntime(output);
+                await BuildCompiler(output);
             }
             catch (Exception ex)
             {
@@ -40,9 +41,9 @@ public class IntegrationTestContext : IDisposable
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        ExecUtil.RunToSuccess(null, "dotnet", SolutionRootPath, new[]
+        await ExecUtil.RunToSuccess(null, "dotnet", SolutionRootPath, new[]
         {
             "build-server",
             "shutdown"
@@ -64,27 +65,23 @@ public class IntegrationTestContext : IDisposable
         throw new Exception($"Could not find the solution directory going up from directory \"{assemblyDirectory}\".");
     }
 
-    private void BuildRuntime(ITestOutputHelper output)
+    private async Task BuildRuntime(ITestOutputHelper output)
     {
         var runtimeProjectFile = Path.Combine(SolutionRootPath, "Cesium.Runtime/Cesium.Runtime.csproj");
-        BuildDotNetProject(output, runtimeProjectFile);
+        await BuildDotNetProject(output, runtimeProjectFile);
     }
 
-    private void BuildCompiler(ITestOutputHelper output)
+    private async Task BuildCompiler(ITestOutputHelper output)
     {
         var compilerProjectFile = Path.Combine(SolutionRootPath, "Cesium.Compiler/Cesium.Compiler.csproj");
-        BuildDotNetProject(output, compilerProjectFile);
+        await BuildDotNetProject(output, compilerProjectFile);
     }
 
-    private void BuildDotNetProject(ITestOutputHelper output, string projectFilePath)
-    {
+    private Task BuildDotNetProject(ITestOutputHelper output, string projectFilePath) =>
         ExecUtil.RunToSuccess(output, "dotnet", Path.GetDirectoryName(projectFilePath)!, new[]
         {
             "build",
             "--configuration", BuildConfiguration,
             projectFilePath
         });
-    }
-
-
 }

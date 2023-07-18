@@ -6,11 +6,11 @@ namespace Cesium.IntegrationTests;
 
 internal static class WindowsEnvUtil
 {
-    public static string FindVCCompilerInstallationFolder(ITestOutputHelper output)
+    public static async Task<string> FindVCCompilerInstallationFolder(ITestOutputHelper output)
     {
         var vswhereLocation =
             Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe");
-        var installationPath = ExecUtil.Run(
+        var installationPath = (await ExecUtil.Run(
             output,
             vswhereLocation,
             ".",
@@ -21,10 +21,10 @@ internal static class WindowsEnvUtil
                 "-property", "installationPath",
                 "-nologo",
                 "-nocolor"
-            }).StandardOutput;
+            })).StandardOutput;
         if (string.IsNullOrWhiteSpace(installationPath))
         {
-            installationPath =ExecUtil.Run(
+            installationPath = (await ExecUtil.Run(
                 output,
                 vswhereLocation,
                 ".",
@@ -36,7 +36,7 @@ internal static class WindowsEnvUtil
                     "-nologo",
                     "-nocolor",
                     "-prerelease"
-                }).StandardOutput;
+                })).StandardOutput;
         }
 
         if (string.IsNullOrWhiteSpace(installationPath))
