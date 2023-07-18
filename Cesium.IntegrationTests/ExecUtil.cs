@@ -6,24 +6,24 @@ namespace Cesium.IntegrationTests;
 
 internal static class ExecUtil
 {
-    public static void RunToSuccess(
+    public static async Task RunToSuccess(
         ITestOutputHelper? output,
         string executable,
         string workingDirectory,
         string[] args)
     {
-        var result = Run(output, executable, workingDirectory, args);
+        var result = await Run(output, executable, workingDirectory, args);
         Assert.True(result.Success);
     }
 
-    public static CommandResult Run(
+    public static async Task<CommandResult> Run(
         ITestOutputHelper? output,
         string executable,
         string workingDirectory,
         string[] args)
     {
         output?.WriteLine($"$ {executable} {string.Join(" ", args)}");
-        var result = Command.Run(executable, args, o => o.WorkingDirectory(workingDirectory)).Result;
+        var result = await Command.Run(executable, args, o => o.WorkingDirectory(workingDirectory)).Task;
         foreach (var s in result.StandardOutput.Split("\n"))
             output?.WriteLine(s.TrimEnd());
         if (result.StandardError.Trim() != "")
