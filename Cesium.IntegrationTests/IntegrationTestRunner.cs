@@ -92,9 +92,9 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             var vcInstallationFolder = _context.VisualStudioPath;
             Assert.NotNull(vcInstallationFolder);
 
-            var clExePath = Path.Combine(vcInstallationFolder, @"bin\HostX64\x64\cl.exe");
-            var pathToLibs = Path.Combine(vcInstallationFolder, @"lib\x64");
-            var pathToIncludes = Path.Combine(vcInstallationFolder, @"include");
+            var clExePath = Path.Combine(vcInstallationFolder, @"bin\Hostx86\x86\cl.exe");
+            var pathToLibs = Path.Combine(vcInstallationFolder, @"lib\x86");
+            var pathToIncludes = Path.Combine(vcInstallationFolder, "include");
             var win10SdkPath = WindowsEnvUtil.FindWin10Sdk();
             string win10Libs = WindowsEnvUtil.FindLibsFolder(win10SdkPath);
             string win10Include = WindowsEnvUtil.FindIncludeFolder(win10SdkPath);
@@ -113,8 +113,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                     $@"/I{win10Include}\ucrt",
                     "/link",
                     $"/LIBPATH:{pathToLibs}",
-                    $@"/LIBPATH:{win10Libs}\um\x64",
-                    $@"/LIBPATH:{win10Libs}\ucrt\x64"
+                    $@"/LIBPATH:{win10Libs}\um\x86",
+                    $@"/LIBPATH:{win10Libs}\ucrt\x86"
                 });
         }
         else

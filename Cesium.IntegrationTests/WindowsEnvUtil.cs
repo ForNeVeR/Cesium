@@ -53,7 +53,7 @@ internal static class WindowsEnvUtil
         string? pathToCL = null;
         foreach (var folder in Directory.EnumerateDirectories(vcRootLocation, "14.*", SearchOption.TopDirectoryOnly))
         {
-            var clPath = Path.Combine(folder, @"bin\HostX64\x64\cl.exe");
+            var clPath = Path.Combine(folder, @"bin\Hostx86\x86\cl.exe");
             if (File.Exists(clPath))
                 pathToCL = folder;
         }
@@ -88,7 +88,7 @@ internal static class WindowsEnvUtil
         string? win10Libs = null;
         foreach (var versionFolder in Directory.EnumerateDirectories(Path.Combine(win10SdkPath, "Lib")))
         {
-            var win10LibPathCandidate = Path.Combine(versionFolder, @"um\x64");
+            var win10LibPathCandidate = Path.Combine(versionFolder, @"um\x86");
             if (Directory.Exists(win10LibPathCandidate))
                 win10Libs = versionFolder;
         }
