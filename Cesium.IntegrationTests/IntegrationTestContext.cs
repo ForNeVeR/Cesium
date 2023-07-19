@@ -14,6 +14,8 @@ public class IntegrationTestContext : IAsyncDisposable
     private bool _initialized;
     private Exception? _initializationException;
 
+    public string? VisualStudioPath { get; private set; }
+
     public async Task EnsureInitialized(ITestOutputHelper output)
     {
         using (await _lock.LockAsync())
@@ -26,8 +28,7 @@ public class IntegrationTestContext : IAsyncDisposable
 
             try
             {
-                await BuildRuntime(output);
-                await BuildCompiler(output);
+                await InitializeOnce(output);
             }
             catch (Exception ex)
             {
@@ -39,6 +40,17 @@ public class IntegrationTestContext : IAsyncDisposable
                 _initialized = true;
             }
         }
+    }
+
+    private async Task InitializeOnce(ITestOutputHelper output)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            VisualStudioPath = await WindowsEnvUtil.FindVCCompilerInstallationFolder(output);
+        }
+
+        await BuildRuntime(output);
+        await BuildCompiler(output);
     }
 
     public async ValueTask DisposeAsync()

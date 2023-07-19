@@ -89,7 +89,9 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         {
             _output.WriteLine($"Compiling \"{sourceFilePath}\" with cl.exe.");
 
-            var vcInstallationFolder = await WindowsEnvUtil.FindVCCompilerInstallationFolder(_output);
+            var vcInstallationFolder = _context.VisualStudioPath;
+            Assert.NotNull(vcInstallationFolder);
+
             var clExePath = Path.Combine(vcInstallationFolder, @"bin\HostX64\x64\cl.exe");
             var pathToLibs = Path.Combine(vcInstallationFolder, @"lib\x64");
             var pathToIncludes = Path.Combine(vcInstallationFolder, @"include");
