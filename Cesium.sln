@@ -19,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\run-build-and-integration-tests.yml = .github\workflows\run-build-and-integration-tests.yml
 		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
 	EndProjectSection
 EndProject
