@@ -6,6 +6,8 @@ namespace Cesium.IntegrationTests;
 
 internal static class WindowsEnvUtil
 {
+    public const string MsCorLibPath = @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll";
+
     public static async Task<string> FindVCCompilerInstallationFolder(ITestOutputHelper output)
     {
         var vswhereLocation =
