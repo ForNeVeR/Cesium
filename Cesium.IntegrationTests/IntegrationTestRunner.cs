@@ -28,14 +28,32 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             .Select(path => new object[] { path });
     }
 
+    private enum TargetFramework
+    {
+        NetFramework,
+        Net
+    }
+
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public async Task TestCompiler(string relativeFilePath)
+    public async Task TestNetFramework(string relativeSourcePath)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            await DoTest(relativeSourcePath, TargetFramework.NetFramework);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TestCaseProvider))]
+    public Task TestNet(string relativeSourcePath) => DoTest(relativeSourcePath, TargetFramework.Net);
+
+    private async Task DoTest(string relativeSourcePath, TargetFramework targetFramework)
     {
         var outRootPath = CreateTempDir();
         try
         {
-            _output.WriteLine($"Testing file \"{relativeFilePath}\" in directory \"{outRootPath}\".");
+            _output.WriteLine($"Testing file \"{relativeSourcePath}\" in directory \"{outRootPath}\".");
 
             var binDirPath = Path.Combine(outRootPath, "bin");
             var objDirPath = Path.Combine(outRootPath, "obj");
@@ -45,14 +63,25 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             var sourceFilePath = Path.Combine(
                 IntegrationTestContext.SolutionRootPath,
                 "Cesium.IntegrationTests",
-                relativeFilePath);
+                relativeSourcePath);
 
             var nativeExecutable = await BuildExecutableWithNativeCompiler(binDirPath, objDirPath, sourceFilePath);
             var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRootPath, Array.Empty<string>());
             Assert.Equal(42, nativeResult.ExitCode);
 
-            var managedExecutable = await BuildExecutableWithCesium(binDirPath, objDirPath, sourceFilePath);
-            var managedResult = await ExecUtil.Run(_output, "dotnet", outRootPath, new[] { managedExecutable }); // TODO: Only .NET for now
+            var managedExecutable = await BuildExecutableWithCesium(
+                binDirPath,
+                objDirPath,
+                sourceFilePath,
+                targetFramework);
+            var managedResult = await (targetFramework switch
+            {
+                TargetFramework.Net => ExecUtil.Run(_output, "dotnet", outRootPath, new[] { managedExecutable }),
+                TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRootPath,
+                    Array.Empty<string>()),
+                _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
+            });
+
             Assert.Equal(42, managedResult.ExitCode);
 
             Assert.Equal(
@@ -139,30 +168,43 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         string binDirPath,
         string objDirPath,
         string sourceFilePath,
-        string targetFramework = "Net") // TODO: NET Framework support
+        TargetFramework targetFramework)
     {
         _output.WriteLine($"Compiling \"{sourceFilePath}\" with Cesium.");
-        // TODO: Workaround for .NET Framework, see in Run-Tests.ps1
 
         var executableFilePath = Path.Combine(binDirPath, "out_cs.exe");
 
-        await ExecUtil.RunToSuccess(
-            _output,
-            "dotnet",
-            objDirPath,
-            new[]
+        var args = new List<string>
+        {
+            "run",
+            "--no-build",
+            "--configuration", IntegrationTestContext.BuildConfiguration,
+            "--project", Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.Compiler"),
+            "--",
+            "--nologo",
+            sourceFilePath,
+            "--out", executableFilePath,
+            "-D__TEST_DEFINE",
+            "--framework", targetFramework.ToString()
+        };
+
+        if (targetFramework == TargetFramework.NetFramework)
+        {
+            var coreLibPath = WindowsEnvUtil.MsCorLibPath;
+            var runtimeLibPath = Path.Combine(
+                IntegrationTestContext.SolutionRootPath,
+                "Cesium.Runtime/bin",
+                IntegrationTestContext.BuildConfiguration,
+                "netstandard2.0/Cesium.Runtime.dll"
+            );
+            args.AddRange(new[]
             {
-                "run",
-                "--no-build",
-                "--configuration", IntegrationTestContext.BuildConfiguration,
-                "--project", Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.Compiler"),
-                "--",
-                "--nologo",
-                sourceFilePath,
-                "--out", executableFilePath,
-                "-D__TEST_DEFINE",
-                "--framework", targetFramework
+                "--corelib", coreLibPath,
+                "--runtime", runtimeLibPath
             });
+        }
+
+        await ExecUtil.RunToSuccess(_output, "dotnet", objDirPath, args.ToArray());
 
         return executableFilePath;
     }
