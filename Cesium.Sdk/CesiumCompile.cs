@@ -41,6 +41,7 @@ public class CesiumCompile : Task
     public ITaskItem? RuntimePath { get; set; }
     public ITaskItem[] ImportItems { get; set; } = Array.Empty<ITaskItem>();
     public ITaskItem[] PreprocessorItems { get; set; } = Array.Empty<ITaskItem>();
+    public bool DryRun = false;
 
     [Output] public string? ResultingCommandLine { get; private set; }
 
@@ -66,8 +67,11 @@ public class CesiumCompile : Task
             compilerProcess.StartInfo.ArgumentList.Add(arg);
         }
 
-        compilerProcess.Start();
-        compilerProcess.WaitForExit();
+        if (!DryRun)
+        {
+            compilerProcess.Start();
+            compilerProcess.WaitForExit();
+        }
 
         return true;
     }
