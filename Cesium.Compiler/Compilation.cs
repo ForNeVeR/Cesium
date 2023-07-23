@@ -64,8 +64,7 @@ internal static class Compilation
         var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
         var compilationSourcePath = Path.GetFullPath(inputFilePath);
 
-        await using var input = new FileStream(inputFilePath, FileMode.Open);
-        using var reader = new StreamReader(input, Encoding.UTF8);
+        using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
 
         var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, context.CompilationOptions);
         var lexer = new CLexer(content);
