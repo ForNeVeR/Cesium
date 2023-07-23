@@ -52,7 +52,13 @@ internal static class Compilation
         var outOfFileRange = new Yoakke.SynKit.Text.Range();
         foreach (var define in compilationOptions.DefineConstants)
         {
-            definesContext.DefineMacro(define, null, new[] { new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken) });
+            definesContext.DefineMacro(
+                define,
+                parameters: null,
+                replacement: new IToken<CPreprocessorTokenType>[]
+                {
+                    new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken)
+                });
         }
 
         var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
