@@ -1,0 +1,6 @@
+namespace Cesium.Sdk.Tests.TestProjects;
+
+public class ValidDefinition_msbuild
+{
+    
+}
