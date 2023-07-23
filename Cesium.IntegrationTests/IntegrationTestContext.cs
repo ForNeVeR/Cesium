@@ -10,11 +10,28 @@ public class IntegrationTestContext : IAsyncDisposable
 {
     public static readonly string SolutionRootPath = GetSolutionRoot();
     public const string BuildConfiguration = "Release";
+
+    /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
+    private readonly SemaphoreSlim _testSemaphore = new(Environment.ProcessorCount);
+
     private readonly AsyncLock _lock = new();
     private bool _initialized;
     private Exception? _initializationException;
 
     public string? VisualStudioPath { get; private set; }
+
+    public async Task WrapTestBody(Func<Task> testBody)
+    {
+        await _testSemaphore.WaitAsync();
+        try
+        {
+            await testBody();
+        }
+        finally
+        {
+            _testSemaphore.Release();
+        }
+    }
 
     public async Task EnsureInitialized(ITestOutputHelper output)
     {

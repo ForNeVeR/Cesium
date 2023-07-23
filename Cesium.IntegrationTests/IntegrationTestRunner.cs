@@ -40,13 +40,13 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     {
         if (OperatingSystem.IsWindows())
         {
-            await DoTest(relativeSourcePath, TargetFramework.NetFramework);
+            await _context.WrapTestBody(() => DoTest(relativeSourcePath, TargetFramework.NetFramework));
         }
     }
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public Task TestNet(string relativeSourcePath) => DoTest(relativeSourcePath, TargetFramework.Net);
+    public Task TestNet(string relativeSourcePath) => _context.WrapTestBody(() => DoTest(relativeSourcePath, TargetFramework.Net));
 
     private async Task DoTest(string relativeSourcePath, TargetFramework targetFramework)
     {
