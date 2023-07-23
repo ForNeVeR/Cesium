@@ -52,21 +52,23 @@ public class CesiumCompile : Task
             return false;
         }
 
-        var args = CollectCommandLineArguments(options);
+        var argumentsBuilder = new CommandArgumentsBuilder();
+        foreach (var argument in CollectCommandLineArguments(options))
+        {
+            argumentsBuilder.Argument(argument);
+        }
+
         var compilerProcess = new Process
         {
             StartInfo =
             {
                 FileName = options.CompilerExe,
+                Arguments = argumentsBuilder.Build(),
                 UseShellExecute = false,
             }
         };
 
-        foreach (var arg in args)
-        {
-            compilerProcess.StartInfo.ArgumentList.Add(arg);
-        }
-
+        ResultingCommandLine = $"{compilerProcess.StartInfo.FileName} {compilerProcess.StartInfo.Arguments}";
         if (!DryRun)
         {
             compilerProcess.Start();
@@ -252,6 +254,11 @@ public class CesiumCompile : Task
 
     private void ReportValidationWarning(string code, string message) =>
         BuildEngine.LogWarningEvent(new BuildWarningEventArgs(nameof(CesiumCompile), code, string.Empty, -1, -1, -1, -1, message, string.Empty, nameof(CesiumCompile)));
+
+    private string GetResultingCommandLine(string executable, IReadOnlyCollection<string> arguments)
+    {
+        return $"{executable} {string.Join(" ", arguments)}";
+    }
 
     private enum FrameworkKind
     {
