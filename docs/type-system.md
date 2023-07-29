@@ -31,12 +31,12 @@ All the pointer types are mapped to the CLI pointers of the corresponding type o
 
 The **wide** architecture set supports mapping to raw pointers as well, but also supports special mapping types that have architecture-independent size and memory alignment, according to the following table.
 
-| C type                                                 | CLI Type                 |
-|--------------------------------------------------------|--------------------------|
-| `void*`                                                | `Cesium.Runtime.VoidPtr` |
-| Function pointer                                       | `Cesium.Runtime.FuncPtr` |
-| `T*` (where `T` is not `void` and not a function type) | `Cesium.Runtime.CPtr<T>` |
+| C type                                                 | CLI Type                            |
+|--------------------------------------------------------|-------------------------------------|
+| `void*`                                                | `Cesium.Runtime.VoidPtr`            |
+| Function pointer                                       | `Cesium.Runtime.FuncPtr<TDelegate>` |
+| `T*` (where `T` is not `void` and not a function type) | `Cesium.Runtime.CPtr<T>`            |
 
-Note that function and function pointer signatures (i.e. the arguments and the return types) still use raw pointers even in the **wide** architecture set, because this has no effect on memory requirement and alignment, and thus type safety is preferred by default.
+Note that function and function pointer signatures (i.e. the arguments and the return types) still use raw pointers even in the **wide** architecture set, because this has no effect on memory requirement and alignment, and thus more type safety is preferred by default.
 
-To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `CPtr` and `FPtr`, where appropriate, in all of its standard APIs.
+To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `VoidPtr`, `CPtr<T>` and `FuncPtr<TDelegate>`, where appropriate, in all of its standard APIs.

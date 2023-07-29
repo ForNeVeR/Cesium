@@ -29,6 +29,6 @@ Cesium aims to support the following architecture sets:
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.
 
-Specifically for the **wide** architecture, the types `VoidPtr`, `CPtr<T>` and `FuncPtr<T>` were introduced. They correspond to 64-bit pointers universally, and the **wide** architecture uses it in place of normal pointer types everywhere in the API. For cross-compatibility with any architecture, these types are also used in the Cesium.Runtime library. See [the type system documentation][docs.type-system] for more information.
+Specifically for the **wide** architecture, the types `VoidPtr`, `CPtr<T>` and `FuncPtr<TDelegate>` were introduced. They correspond to 64-bit pointers universally, and the **wide** architecture uses it in place of normal pointer types everywhere in the API. For cross-compatibility with any architecture, these types are also used in the Cesium.Runtime library. See [the type system documentation][docs.type-system] for more information.
 
 [docs.type-system]: type-system.md
