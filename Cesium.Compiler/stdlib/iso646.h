@@ -1,3 +1,4 @@
+#pragma once
 #define and     &&
 #define and_eq  &=
 #define bitand  &

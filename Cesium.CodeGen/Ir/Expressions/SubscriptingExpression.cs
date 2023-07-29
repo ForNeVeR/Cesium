@@ -8,7 +8,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class SubscriptingExpression : IExpression, IValueExpression
+internal class SubscriptingExpression : IValueExpression
 {
     private readonly IExpression _expression;
     private readonly IExpression _index;
@@ -29,19 +29,40 @@ internal class SubscriptingExpression : IExpression, IValueExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var expression = LowerExpression(_expression, scope);
-        var elementSize = GetElementSize(expression.GetExpressionType(scope));
+        var index = LowerExpression(_index, scope);
+        var expressionType = expression.GetExpressionType(scope);
+        var indexType = index.GetExpressionType(scope);
+
+        var isBaseSubscriptable = CheckIfTypeIsSubscriptable(expressionType);
+        var isIndexSubscriptable = CheckIfTypeIsSubscriptable(indexType);
+        if (!isBaseSubscriptable && isIndexSubscriptable)
+        {
+            (expression, index) = (index, expression);
+            (expressionType, indexType) = (indexType, expressionType);
+        }
+        else if (!isBaseSubscriptable && !isIndexSubscriptable)
+        {
+            throw new AssertException($"Cannot index over type {expressionType} or {indexType}");
+        }
+
+        var elementSize = GetElementSize(expressionType);
         var offset = elementSize != 1
-            ? new ArithmeticBinaryOperatorExpression(_index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
-            : _index;
+            ? new BinaryOperatorExpression(index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
+            : index;
         var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
-            new ArithmeticBinaryOperatorExpression(
-                new GetAddressValueExpression(value),
+            new BinaryOperatorExpression(
+                value.GetValueType() is InPlaceArrayType ? new GetAddressValueExpression(value) : new GetValueExpression(value),
                 BinaryOperator.Add,
                 offset.Lower(scope)
             ));
         var lowered = indirection.Lower(scope);
         return lowered;
+    }
+
+    private static bool CheckIfTypeIsSubscriptable(IType type)
+    {
+        return type is InPlaceArrayType or PointerType;
     }
 
     private static int GetElementSize(IType type)

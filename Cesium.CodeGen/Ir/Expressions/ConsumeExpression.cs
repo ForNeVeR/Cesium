@@ -13,7 +13,7 @@ internal class ConsumeExpression : IExpression
         _expression = expression;
     }
 
-    public IExpression Lower(IDeclarationScope scope) => this;
+    public IExpression Lower(IDeclarationScope scope) => new ConsumeExpression(_expression.Lower(scope));
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
@@ -22,6 +22,13 @@ internal class ConsumeExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
+        if (_expression is SetValueExpression sv)
+        {
+            sv.NoReturn().EmitTo(scope);
+
+            return;
+        }
+
         _expression.EmitTo(scope);
         var processor = scope.Method.Body.GetILProcessor();
         processor.Emit(OpCodes.Pop);

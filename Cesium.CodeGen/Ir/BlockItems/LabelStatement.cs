@@ -1,38 +1,23 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class LabelStatement : IBlockItem
+internal record LabelStatement : IBlockItem
 {
-    private readonly IBlockItem _expression;
-    private readonly string _identifier;
+    public IBlockItem Expression { get; init; }
+    public bool DidLowered { get; }
+    public string Identifier { get; }
 
     public LabelStatement(Ast.LabelStatement statement)
     {
-        _expression = statement.Body.ToIntermediate();
-        _identifier = statement.Identifier;
+        Expression = statement.Body.ToIntermediate();
+        Identifier = statement.Identifier;
     }
 
-    private LabelStatement(string identifier, IBlockItem expression)
+    public LabelStatement(string identifier, IBlockItem expression, bool didLowered = false)
     {
-        _identifier = identifier;
-        _expression = expression;
-    }
-
-    bool IBlockItem.HasDefiniteReturn => _expression.HasDefiniteReturn;
-
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-        scope.AddLabel(_identifier);
-        return new LabelStatement(_identifier, _expression.Lower(scope));
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        var instruction = scope.ResolveLabel(_identifier);
-        scope.Method.Body.Instructions.Add(instruction);
-        _expression.EmitTo(scope);
+        Identifier = identifier;
+        Expression = expression;
+        DidLowered = didLowered;
     }
 }

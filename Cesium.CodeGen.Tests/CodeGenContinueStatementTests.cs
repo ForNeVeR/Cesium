@@ -17,14 +17,14 @@ public class CodeGenContinueStatementTests : CodeGenTestBase
     [Fact]
     public Task ContinueInFor() => DoTest(@"int main()
 {
-    int i; 
+    int i;
     for(i = 0; i < 10; ++i) continue;
 }");
 
     [Fact]
     public Task ContinueInWhile() => DoTest(@"int main()
 {
-    int i = 0; 
+    int i = 0;
     while (i < 10) {
         ++i;
         if (i == 0) continue;
@@ -48,4 +48,31 @@ public class CodeGenContinueStatementTests : CodeGenTestBase
 {
     continue;
 }"));
+
+    [Fact]
+    public void ContinueInSwitch() => DoesNotCompile(@"int main()
+{
+    switch (1)
+    {
+    default:
+        continue;
+    }
+}", "Can't use continue outside of a loop construct.");
+
+    [Fact]
+    public Task ContinueInSwitchEnclosedWithLoop() => DoTest(@"int main(int argc, char *argv[])
+{
+    for (;;)
+    {
+        switch (1)
+        {
+        case 42:
+            break;
+        default:
+            continue;
+        }
+
+        break;
+    }
+}");
 }

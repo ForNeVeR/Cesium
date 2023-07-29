@@ -45,6 +45,7 @@ internal enum PrimitiveTypeKind
 
     // This is band-aid type until we would be able perform lowering in controlled fashion.
     NativeInt,
+    NativeUInt
 }
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
@@ -90,6 +91,8 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => typeSystem.Int64,
             PrimitiveTypeKind.LongDouble => typeSystem.Double,
 
+            PrimitiveTypeKind.NativeUInt => typeSystem.UIntPtr,
+
             _ => throw new AssertException($"Primitive type not supported: {Kind}.")
         };
     }
@@ -133,6 +136,13 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.LongDouble => 8,
 
             PrimitiveTypeKind.NativeInt => arch switch
+            {
+                TargetArchitectureSet.Dynamic => null,
+                TargetArchitectureSet.Bit32 => 4,
+                TargetArchitectureSet.Bit64 => 8,
+                _ => throw new AssertException($"Architecture set not supported: {arch}.")
+            },
+            PrimitiveTypeKind.NativeUInt => arch switch
             {
                 TargetArchitectureSet.Dynamic => null,
                 TargetArchitectureSet.Bit32 => 4,

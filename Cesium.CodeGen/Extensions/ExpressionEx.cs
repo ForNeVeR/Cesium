@@ -12,21 +12,23 @@ internal static class ExpressionEx
         Ast.IdentifierExpression e => new IdentifierExpression(e),
         Ast.ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
         Ast.ConstantLiteralExpression e => new ConstantLiteralExpression(e),
-        Ast.ConstantExpression e => new ConstantExpression(e),
+        Ast.ParenExpression e => ToIntermediate(e.Contents),
 
+        Ast.TypeCastOrNamedFunctionCallExpression e => new TypeCastOrNamedFunctionCallExpression(e),
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
         // Unary operators:
         Ast.PrefixIncrementDecrementExpression e => new PrefixIncrementDecrementExpression(e),
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
+        Ast.CastExpression e => new TypeCastExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
-        Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
-        Ast.ArithmeticBinaryOperatorExpression e => new ArithmeticBinaryOperatorExpression(e),
-        Ast.BitwiseBinaryOperatorExpression e => new BitwiseBinaryOperatorExpression(e),
-        Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
+        Ast.LogicalBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ArithmeticBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.BitwiseBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ComparisonBinaryOperatorExpression e => new BinaryOperatorExpression(e),
 
         Ast.ConditionalExpression e => new ConditionalExpression(e),
 

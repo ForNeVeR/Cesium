@@ -59,7 +59,7 @@ public partial class CParser
     private static Expression CreateExpressionIdentity(Expression expression) => expression;
 
     [Rule("constant_expression: conditional_expression")] // 6.6 Constant expressions
-    private static ConstantExpression CreateConstantExpression(Expression expression) => new ConstantExpression(expression);
+    private static Expression MakeConstantExpression(Expression expression) => expression;
 
     // 6.5.1 Primary expressions
     [Rule("primary_expression: constant")]
@@ -73,7 +73,7 @@ public partial class CParser
         new ConstantLiteralExpression(stringLiteral);
 
     [Rule("primary_expression: '(' expression ')'")]
-    private static Expression MakeParens(IToken _, Expression expression, IToken __) => expression;
+    private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
 
     // TODO[#207]:
     // primary-expression:
@@ -90,7 +90,16 @@ public partial class CParser
         Expression function,
         IToken _,
         ArgumentExpressionList? arguments,
-        IToken __) => new FunctionCallExpression(function, arguments);
+        IToken __)
+    {
+        if (function is ParenExpression { Contents: ConstantLiteralExpression { Constant: CToken { Kind: CTokenType.Identifier, Text: var name } } } &&
+            arguments != null && arguments.Value.Length > 0)
+        {
+            return new TypeCastOrNamedFunctionCallExpression(name, arguments.Value);
+        }
+
+        return new FunctionCallExpression(function, arguments);
+    }
 
     [Rule("postfix_expression: postfix_expression '.' Identifier")]
     private static Expression MakeMemberAccessExpression(
@@ -134,6 +143,7 @@ public partial class CParser
     [Rule("unary_expression: '--' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
         new PrefixIncrementDecrementExpression(prefixOperator, target);
+
     // TODO[#207]:
     // unary-expression:
     //    * unary-expression
@@ -142,7 +152,7 @@ public partial class CParser
     //    sizeof ( type-name )
     //    _Alignof ( type-name )
 
-    [Rule("unary_expression: '*' unary_expression")]
+    [Rule("unary_expression: '*' cast_expression")]
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
         new IndirectionExpression(target);
 
@@ -159,7 +169,10 @@ public partial class CParser
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
-    // TODO[#207]: 6.5.4 Cast operators
+    // 6.5.4 Cast operators
+    [Rule("cast_expression: '(' type_name ')' cast_expression")]
+    private static Expression MakeCastExpression(ICToken _, TypeName typeName, ICToken __, Expression target) =>
+        new CastExpression(typeName, target);
 
     // 6.5.5 Multiplicative operators
     [Rule("multiplicative_expression: multiplicative_expression '*' cast_expression")]
@@ -350,16 +363,14 @@ public partial class CParser
 
     // 6.7.1 Storage-class specifiers
     [Rule("storage_class_specifier: 'typedef'")]
-    // TODO[#211]:
-    // storage-class-specifier:
-    //     extern
+    [Rule("storage_class_specifier: 'extern'")]
     [Rule("storage_class_specifier: 'static'")]
-    private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
     // TODO[#211]:
     // storage-class-specifier:
     //     _Thread_local
     //     auto
     //     register
+    private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
 
     // 6.7.2 Type specifiers
     [Rule("type_specifier: 'void'")]
@@ -373,6 +384,8 @@ public partial class CParser
     [Rule("type_specifier: 'unsigned'")]
     [Rule("type_specifier: '_Bool'")]
     [Rule("type_specifier: '_Complex'")]
+    [Rule("type_specifier: '__nint'")]
+    [Rule("type_specifier: '__nuint'")]
     private static ITypeSpecifier MakeSimpleTypeSpecifier(ICToken specifier) => new SimpleTypeSpecifier(specifier.Text);
 
     // TODO[#211]: [Rule("type_specifier: atomic_type_specifier")]
@@ -381,7 +394,9 @@ public partial class CParser
     private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
         structOrUnionSpecifier;
 
-    // TODO[#211]: [Rule("type_specifier: enum_specifier")]
+    [Rule("type_specifier: enum_specifier")]
+    private static ITypeSpecifier MakeTypeSpecifier(EnumSpecifier enumDeclaration) =>
+        enumDeclaration;
 
     [Rule("type_specifier: typedef_name")]
     private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
@@ -396,6 +411,11 @@ public partial class CParser
         IToken _,
         StructDeclarationList structDeclarationList,
         IToken __) => new(structOrUnion, identifier?.Text, structDeclarationList);
+
+    [Rule("struct_or_union_specifier: struct_or_union Identifier")]
+    private static StructOrUnionSpecifier MakeStructOrUnionSpecifier(
+        ComplexTypeKind structOrUnion,
+        IToken identifier) => new(structOrUnion, identifier?.Text, ImmutableArray<StructDeclaration>.Empty);
 
     // TODO[#211]: struct-or-union-specifier: struct-or-union identifier
 
@@ -456,6 +476,26 @@ public partial class CParser
         SpecifierQualifierList specifiersQualifiers,
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
+
+    [Rule("enum_specifier: 'enum' Identifier")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
+        new EnumSpecifier(identifier.Text, null);
+
+    [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
+        new EnumSpecifier(identifier.Text, enumeratorList);
+
+    [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
+    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
+        declarations.Values.ToImmutableArray();
+
+    [Rule("enumerator: Identifier")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier) =>
+        new EnumDeclaration(identifier.Text, null);
+
+    [Rule("enumerator: Identifier '=' constant_expression")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier, IToken _, Expression expression) =>
+        new EnumDeclaration(identifier.Text, expression);
 
     // TODO[#211]: struct-declaration: static_assert-declaration
 
@@ -608,9 +648,8 @@ public partial class CParser
 
     // 6.7.7 Type names
 
-    // TODO[#211]:
-    // type-name:
-    //     specifier-qualifier-list abstract-declarator?
+    [Rule("type_name: specifier_qualifier_list abstract_declarator?")]
+    private static TypeName MakeTypeName(SpecifierQualifierList specifierQualifierList, AbstractDeclarator? abstractDeclarator) => new(specifierQualifierList, abstractDeclarator);
 
     [Rule("abstract_declarator: pointer")]
     private static AbstractDeclarator MakeAbstractDeclarator(Pointer pointer) => new(pointer);
@@ -663,13 +702,26 @@ public partial class CParser
     // 6.7.9 Initialization
 
     [Rule("initializer: assignment_expression")]
-    private static AssignmentInitializer MakeInitializer(Expression assignmentExpression) =>
-        new(assignmentExpression);
+    private static Initializer MakeInitializer(Expression assignmentExpression) =>
+        new AssignmentInitializer(assignmentExpression);
+
+    [Rule("initializer: '{' initializer_list '}' ")]
+    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>
+        new ArrayInitializer(initializers);
+
+    [Rule("initializer: '{' initializer_list ',' '}' ")]
+    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __, IToken ___) =>
+        new ArrayInitializer(initializers);
+
+    [Rule("initializer_list: initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(Initializer initializer) =>
+        ImmutableArray.Create<Initializer>(initializer);
+
+    [Rule("initializer_list: initializer_list ',' initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(ImmutableArray<Initializer> initializers, IToken _, Initializer initializer) =>
+        initializers.Add(initializer);
 
     // TODO[#211]:
-    // initializer:
-    //     { initializer-list }
-    //     { initializer-list , }
     // initializer-list:
     //     designation? initializer
     //     initializer-list , designation? initializer
@@ -699,7 +751,7 @@ public partial class CParser
         new LabelStatement(identifier.Text, block);
 
     [Rule("labeled_statement: 'case' constant_expression ':' statement")]
-    private static Statement MakeCaseStatement(IToken _, ConstantExpression constant, IToken __, Statement block) =>
+    private static Statement MakeCaseStatement(IToken _, Expression constant, IToken __, Statement block) =>
         new CaseStatement(constant, block);
 
     [Rule("labeled_statement: 'default' ':' statement")]
@@ -757,7 +809,7 @@ public partial class CParser
         Statement body)
         => new SwitchStatement(expression, body);
 
-    // TODO[#210]: 6.8.5 Iteration statements
+    // 6.8.5 Iteration statements
     [Rule("iteration_statement: 'while' '(' expression ')' statement")]
     private static Statement MakeWhileStatement(
         ICToken _,
@@ -789,7 +841,21 @@ public partial class CParser
         Expression updateExpression,
         ICToken _____,
         IBlockItem body)
-        => new ForStatement(initExpression, testExpression, updateExpression, body);
+        => new ForStatement(null, initExpression, testExpression, updateExpression, body);
+
+    [Rule("iteration_statement: 'for' '(' declaration expression? ';' expression? ')' statement")]
+    private static Statement MakeForStatement(
+        ICToken _,
+        ICToken __,
+        IBlockItem initDeclaration,
+        Expression testExpression,
+        ICToken ____,
+        Expression updateExpression,
+        ICToken _____,
+        IBlockItem body)
+    {
+        return new ForStatement(initDeclaration, null, testExpression, updateExpression, body);
+    }
 
     // 6.8.6 Jump statements
     [Rule("jump_statement: 'goto' Identifier ';'")]
@@ -874,69 +940,6 @@ public partial class CParser
         declarations.Add((Declaration)newDeclaration);
 
     // TODO[#78]: 6.9.2 External object definitions
-
-    // 6.10 Preprocessing directives
-
-    // TODO[#77]:
-    // preprocessing-file:
-    //     group?
-    // group:
-    //     group-part
-    //     group group-part
-    // group-part:
-    //     if-section
-    //     control-line
-    //     text-line
-    //     # non-directive
-    // if-section:
-    //     if-group elif-groups? else-group? endif-line
-    // if-group:
-    //     # if constant-expression new-line group?
-    //     # ifdef identifier new-line group?
-    //     # ifndef identifier new-line group?
-    // elif-groups:
-    //     elif-group
-    //     elif-groups elif-group
-    // elif-group:
-    //     # elif constant-expression new-line group?
-    // else-group:
-    //     # else new-line group?
-    // endif-line:
-    //     # endif new-line
-    // control-line:
-    //     # include pp-tokens new-line
-    //     # define identifier replacement-list new-line
-    //     # define identifier lparen identifier-list? ) replacement-list new-line
-    //     # define identifier lparen ... ) replacement-list new-line
-    //     # define identifier lparen identifier-list , ... ) replacement-list new-line
-    //     # undef identifier new-line
-    //     # line pp-tokens new-line
-    //     # error pp-tokens? new-line
-    //     # pragma pp-tokens? new-line
-    //     # new-line
-    // text-line:
-    //     pp-tokens? new-line
-    // non-directive:
-    //     pp-tokens new-line
-    // lparen:
-    //     a ( character not immediately preceded by white space
-    // replacement-list:
-    //     pp-tokens?
-    // pp-tokens:
-    //     preprocessing-token
-    //     pp-tokens preprocessing-token
-    // new-line:
-    //     the new-line character
-
-    // TODO[#77]: 6.10.1 Conditional inclusion
-    // TODO[#77]: 6.10.2 Source file inclusion
-    // TODO[#77]: 6.10.3 Macro replacement
-    // TODO[#77]: 6.10.4 Line control
-    // TODO[#77]: 6.10.5 Error directive
-    // TODO[#77]: 6.10.6 Pragma directive
-    // TODO[#77]: 6.10.7 Null directive
-    // TODO[#77]: 6.10.8 Predefined macro names
-    // TODO[#77]: 6.10.9 Pragma operator
 
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {

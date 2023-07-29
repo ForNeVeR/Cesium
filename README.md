@@ -35,10 +35,12 @@ Documentation
 
 - [C17 Language Standard Draft][c17-draft]
 
+- [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
 - [Architecture Sets][docs.architecture-sets]
 - [CLI-Related Language Extensions][docs.language-extensions]
+- [Built-in Functions][docs.builtins]
 - [Exceptions in the Compiler Code][docs.exceptions]
 
 - [License (MIT)][docs.license]
@@ -80,7 +82,7 @@ Implementation Dashboard
 ------------------------
 
 - [ ] [C17 standard compatibility][issue.c17-standard]: poor
-    - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
+    - [ ] [Preprocessor][issue.preprocessor]: about **30%** of all features are supported
     - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
     - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
 - [ ] **Compiler**
@@ -105,19 +107,6 @@ If you're interested in certain project areas, check the per-area issue labels:
 - [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
 - [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
 
-Documentation
--------------
-
-- [C17 Language Standard Draft][c17-draft]
-
-- [Contributor Guide][docs.contributing]
-- [Cesium Tests][docs.tests]
-- [Cesium Type System][docs.type-system]
-- [CLI-Related Language Extensions][docs.language-extensions]
-- [Exceptions in the Compiler Code][docs.exceptions]
-
-- [License (MIT)][docs.license]
-
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
@@ -128,6 +117,7 @@ Documentation
 [docs.license]: LICENSE.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
+[docs.builtins]: docs/builtins.md
 [issue.c17-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61

@@ -25,19 +25,20 @@ internal class PostfixIncrementDecrementExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var target = _target.Lower(scope);
-        var newValueExpression = new ArithmeticBinaryOperatorExpression(
+        var newValueExpression = new BinaryOperatorExpression(
             target,
             _operator,
             new ConstantLiteralExpression(new IntegerConstant("1"))
         );
-        if (_target is not IValueExpression)
+
+        if (target is not IValueExpression valueTarget)
         {
             throw new CompilationException($"'{_prefixOperator.Text}' needs l-value");
         }
 
         return new AssignmentExpression(
-            target,
-            BinaryOperator.Assign,
+            valueTarget,
+            AssignmentOperator.Assign,
             newValueExpression
         ).Lower(scope);
     }

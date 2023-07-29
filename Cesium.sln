@@ -19,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\run-build-and-integration-tests.yml = .github\workflows\run-build-and-integration-tests.yml
 		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
 	EndProjectSection
 EndProject
@@ -60,13 +59,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2
 		docs\tests.md = docs\tests.md
 		docs\type-system.md = docs\type-system.md
 		docs\architecture-sets.md = docs\architecture-sets.md
+		docs\builtins.md = docs\builtins.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime", "Cesium.Runtime\Cesium.Runtime.csproj", "{309E8DE2-673A-4A6B-83A6-328ED480DB2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.IntegrationTests", "Cesium.IntegrationTests\Cesium.IntegrationTests.proj", "{6A8E561A-70DF-41BB-BABE-79B31904E67C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.IntegrationTests", "Cesium.IntegrationTests\Cesium.IntegrationTests.csproj", "{6A8E561A-70DF-41BB-BABE-79B31904E67C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perform-common-steps", "perform-common-steps", "{BDB20BB2-0C0E-4EEA-8D65-AF53A3E65837}"
 	ProjectSection(SolutionItems) = preProject
@@ -75,7 +75,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perform-common-steps", "per
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Core", "Cesium.Core\Cesium.Core.csproj", "{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Runtime.Tests", "Cesium.Runtime.Tests\Cesium.Runtime.Tests.csproj", "{526D8E61-6143-490F-BB9D-E7CD78512E55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime.Tests", "Cesium.Runtime.Tests\Cesium.Runtime.Tests.csproj", "{526D8E61-6143-490F-BB9D-E7CD78512E55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,10 +119,10 @@ Global
 		{309E8DE2-673A-4A6B-83A6-328ED480DB2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{309E8DE2-673A-4A6B-83A6-328ED480DB2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{309E8DE2-673A-4A6B-83A6-328ED480DB2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Debug|Any CPU.Build.0 = Debug|x86
-		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Release|Any CPU.ActiveCfg = Debug|x86
-		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Release|Any CPU.Build.0 = Debug|x86
+		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8E561A-70DF-41BB-BABE-79B31904E67C}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -8,13 +9,13 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class FunctionCallExpression : IExpression
+internal class FunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IdentifierExpression _function;
-    private readonly IList<IExpression> _arguments;
+    private readonly IReadOnlyList<IExpression> _arguments;
     private readonly FunctionInfo? _callee;
 
-    private FunctionCallExpression(IdentifierExpression function, FunctionInfo callee, IList<IExpression> arguments)
+    public FunctionCallExpression(IdentifierExpression function, FunctionInfo? callee, IReadOnlyList<IExpression> arguments)
     {
         _function = function;
         _arguments = arguments;
@@ -29,14 +30,74 @@ internal class FunctionCallExpression : IExpression
                     ?? throw new WipException(
                         229,
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
-        _arguments = (IList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
+        _arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
                      ?? Array.Empty<IExpression>();
         _callee = null;
     }
 
-    public IExpression Lower(IDeclarationScope scope)
+    public override IExpression Lower(IDeclarationScope scope)
     {
+        if (_function.Identifier == "__builtin_offsetof_instance")
+        {
+            if (_arguments is not [TypeCastExpression { TargetType: PointerType { Base: { } baseType } }])
+            {
+                throw new CompilationException($"__builtin_offsetof_instance: invalid arguments");
+            }
+
+            var resolvedType = scope.ResolveType(baseType);
+
+            if (resolvedType is not StructType resolvedStruct)
+            {
+                throw new CompilationException($"__builtin_offsetof_instance: type \"{resolvedType}\" is not a struct type.");
+            }
+
+            if (resolvedStruct.Members.Count == 0)
+            {
+                throw new CompilationException($"__builtin_offsetof_instance: struct type \"{resolvedStruct.Identifier}\" has no members - is it declared?");
+            }
+
+            return new InstanceForOffsetOfExpression(resolvedStruct);
+        }
+
         var functionName = _function.Identifier;
+
+        if (scope.GetVariable(functionName) is { } var)
+        {
+            if (var.Type is not PointerType { Base: FunctionType f })
+            {
+                throw new CompilationException("Attempted to call non-function pointer");
+            }
+
+
+            return new IndirectFunctionCallExpression(
+                new GetValueExpression(new LValueLocalVariable(var.Type, var.Identifier)),
+                f,
+                _arguments.Select((a, index) =>
+                {
+                    int firstVarArgArgument = 0;
+                    if (f.Parameters?.IsVarArg == true)
+                    {
+                        firstVarArgArgument = f.Parameters.Parameters.Count;
+                    }
+
+                    if (index >= firstVarArgArgument)
+                    {
+                        var expressionType = a.GetExpressionType(scope);
+                        if (expressionType.Equals(scope.CTypeSystem.Float))
+                        {
+                            // Seems to be float always use float-point registers and as such we need to covert to double.
+                            return new TypeCastExpression(scope.CTypeSystem.Double, a.Lower(scope));
+                        }
+                        else
+                        {
+                            return a.Lower(scope);
+                        }
+                    }
+
+                    return a.Lower(scope);
+                }).ToList());
+        }
+
         var callee = scope.GetFunctionInfo(functionName);
         if (callee is null)
         {
@@ -72,48 +133,12 @@ internal class FunctionCallExpression : IExpression
             }).ToList());
     }
 
-    public void EmitTo(IEmitScope scope)
+    public override void EmitTo(IEmitScope scope)
     {
-        VariableDefinition? varArgBuffer = null;
-        var explicitParametersCount = _callee!.Parameters?.Parameters.Count ?? 0;
-        var varArgParametersCount = _arguments.Count - explicitParametersCount;
-        if (_callee!.Parameters?.IsVarArg == true)
-        {
-            // TODO: See https://github.com/ForNeVeR/Cesium/issues/285
-            // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
-            // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
-            if (varArgParametersCount == 0)
-            {
-                scope.AddInstruction(OpCodes.Ldnull);
-            }
-            else
-            {
-                scope.AddInstruction(OpCodes.Ldc_I4, varArgParametersCount * 8);
-                scope.AddInstruction(OpCodes.Localloc);
-            }
+        if (_callee == null)
+            throw new AssertException("Should be lowered");
 
-            varArgBuffer = new VariableDefinition(scope.Context.TypeSystem.Void.MakePointerType());
-            scope.Method.Body.Variables.Add(varArgBuffer);
-            scope.AddInstruction(OpCodes.Stloc, varArgBuffer);
-        }
-
-        foreach (var argument in _arguments.Take(explicitParametersCount))
-            argument.EmitTo(scope);
-
-        if (_callee!.Parameters?.IsVarArg == true)
-        {
-            for (var i = 0; i < varArgParametersCount; i++)
-            {
-                var argument = _arguments[i + explicitParametersCount];
-                scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
-                scope.AddInstruction(OpCodes.Ldc_I4, i * 8);
-                scope.AddInstruction(OpCodes.Add);
-                argument.EmitTo(scope);
-                scope.AddInstruction(OpCodes.Stind_I);
-            }
-
-            scope.AddInstruction(OpCodes.Ldloc, varArgBuffer!);
-        }
+        EmitArgumentList(scope, _callee.Parameters, _arguments);
 
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
@@ -121,7 +146,7 @@ internal class FunctionCallExpression : IExpression
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
     }
 
-    public IType GetExpressionType(IDeclarationScope scope)
+    public override IType GetExpressionType(IDeclarationScope scope)
     {
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new AssertException($"Function \"{functionName}\" was not lowered.");

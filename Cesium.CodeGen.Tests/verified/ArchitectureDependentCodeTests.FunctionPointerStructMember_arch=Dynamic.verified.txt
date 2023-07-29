@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: Foo
+  Fields:
+    method System.Void *(System.Int32) Foo::x

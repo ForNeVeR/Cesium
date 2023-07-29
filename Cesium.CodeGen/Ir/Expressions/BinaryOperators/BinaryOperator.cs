@@ -8,22 +8,11 @@ public enum BinaryOperator
     Divide, // /
     Remainder, // %
 
-    Assign, // =
-    AddAndAssign, // +=
-    SubtractAndAssign, // -=
-    MultiplyAndAssign, // *=
-
     BitwiseLeftShift, // <<
     BitwiseRightShift, // >>
     BitwiseOr, // |
     BitwiseAnd, // &
     BitwiseXor, // ^
-
-    BitwiseLeftShiftAndAssign, // <<=
-    BitwiseRightShiftAndAssign, // >>=
-    BitwiseOrAndAssign, // |=
-    BitwiseAndAndAssign, // &=
-    BitwiseXorAndAssign, // ^=
 
     GreaterThan, // >
     LessThan, // <

@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values
 {
@@ -26,7 +27,22 @@ namespace Cesium.CodeGen.Ir.Expressions.Values
         public void EmitSetValue(IEmitScope scope, IExpression value)
         {
             value.EmitTo(scope);
-            scope.StSFld(GetVariableReference(scope));
+            if (value is CompoundInitializationExpression)
+            {
+                // for compound initialization copy memory.s
+                scope.AddInstruction(OpCodes.Ldflda, GetVariableReference(scope));
+                var expression = ((InPlaceArrayType)_type).GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+                expression.EmitTo(scope);
+                scope.AddInstruction(OpCodes.Conv_U);
+
+                var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
+                scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
+            }
+            else
+            {
+                // Regular initialization.
+                scope.StSFld(GetVariableReference(scope));
+            }
         }
 
         public IType GetValueType() => _type;

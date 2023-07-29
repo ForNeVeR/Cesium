@@ -7,6 +7,7 @@ using Cesium.Preprocessor;
 using Mono.Cecil;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Compiler;
 
@@ -39,7 +40,7 @@ internal static class Compilation
             compilationOptions);
     }
 
-    private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
+    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
         var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
@@ -48,18 +49,30 @@ internal static class Compilation
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
-        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext, definesContext);
+        var outOfFileRange = new Yoakke.SynKit.Text.Range();
+        foreach (var define in compilationOptions.DefineConstants)
+        {
+            definesContext.DefineMacro(
+                define,
+                parameters: null,
+                replacement: new IToken<CPreprocessorTokenType>[]
+                {
+                    new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken)
+                });
+        }
+
+        var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
     }
 
     private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
     {
         var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
+        var compilationSourcePath = Path.GetFullPath(inputFilePath);
 
-        await using var input = new FileStream(inputFilePath, FileMode.Open);
-        using var reader = new StreamReader(input, Encoding.UTF8);
+        using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
 
-        var content = await Preprocess(compilationFileDirectory, reader);
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, context.CompilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
@@ -78,9 +91,9 @@ internal static class Compilation
 
         var translationUnit = translationUnitParseError.Ok.Value;
 
-        var lastUnprocessedToken = parser.TokenStream.Peek();
-        if (lastUnprocessedToken.Kind != CTokenType.End)
-            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
+        var firstUnprocessedToken = parser.TokenStream.Peek();
+        if (firstUnprocessedToken.Kind != CTokenType.End)
+            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}. Next token {firstUnprocessedToken.Text}.");
 
         var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
         context.EmitTranslationUnit(translationUnitName, translationUnit);

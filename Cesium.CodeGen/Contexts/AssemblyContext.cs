@@ -1,7 +1,11 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Emitting;
+using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -21,8 +25,9 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-    private readonly Dictionary<string, IType> _globalFields = new();
-    internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
+    private readonly Dictionary<string, VariableInfo> _globalFields = new();
+
+    public CompilationOptions CompilationOptions { get; }
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
@@ -34,19 +39,18 @@ public class AssemblyContext
 
         var targetRuntime = compilationOptions.TargetRuntime;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
-        module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
         return assemblyContext;
     }
 
-    public void EmitTranslationUnit(string name, Ast.TranslationUnit translationUnit)
+    public void EmitTranslationUnit(string name, TranslationUnit translationUnit)
     {
         var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
-        nodes = nodes.Select(node => node.Lower(scope));
+        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node));
         foreach (var node in nodes)
-            node.EmitTo(scope);
+            BlockItemEmitting.EmitCode(scope, node);
     }
 
     /// <summary>Do final code generation tasks, analogous to linkage.</summary>
@@ -65,7 +69,7 @@ public class AssemblyContext
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
-    private readonly Dictionary<string, FieldReference> _stringConstantHolders = new();
+    private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
@@ -78,9 +82,11 @@ public class AssemblyContext
         Assembly = assembly;
         ArchitectureSet = compilationOptions.TargetArchitectureSet;
         Module = module;
+        CompilationOptions = compilationOptions;
+
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
-        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
+        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).Distinct().ToArray();
         _constantPool = new(
             () =>
             {
@@ -111,12 +117,24 @@ public class AssemblyContext
         }
     }
 
-    internal void AddAssemblyLevelField(string name, IType type)
+    internal VariableInfo? GetGlobalField(string identifier)
     {
-        if (_globalFields.ContainsKey(name))
-            throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+        if (_globalFields.TryGetValue(identifier, out var value)) return value;
 
-        _globalFields.Add(name, type);
+        return null;
+    }
+
+    internal void AddAssemblyLevelField(string name, Ir.Declarations.StorageClass storageClass, IType type)
+    {
+        if (_globalFields.TryGetValue(name, out var globalField))
+        {
+            if (globalField.StorageClass != Ir.Declarations.StorageClass.Extern && storageClass != Ir.Declarations.StorageClass.Extern)
+                throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+
+            return;
+        }
+
+        _globalFields.Add(name, new (name, storageClass, type, null));
     }
 
     public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)
@@ -126,7 +144,7 @@ public class AssemblyContext
             return null;
         }
 
-        return GlobalType.GetOrAddField(context, type, name);
+        return GlobalType.GetOrAddField(context, type.Type, name);
     }
 
     /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>
@@ -152,18 +170,24 @@ public class AssemblyContext
 
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
-        if (_stringConstantHolders.TryGetValue(stringConstant, out var field))
-            return field;
-
         var encoding = Encoding.UTF8;
         var bufferSize = encoding.GetByteCount(stringConstant) + 1;
         var data = new byte[bufferSize];
         var writtenBytes = encoding.GetBytes(stringConstant, data);
         Debug.Assert(writtenBytes == bufferSize - 1);
+        return GetConstantPoolReference(data);
+    }
 
+    public FieldReference GetConstantPoolReference(byte[] dataConstant)
+    {
+        var wrapper = new ByteArrayWrapper(dataConstant);
+        if (_dataConstantHolders.TryGetValue(wrapper, out var field))
+            return field;
+
+        var bufferSize = dataConstant.Length;
         var type = GetStubType(bufferSize);
-        field = GenerateFieldForStringConstant(type, data);
-        _stringConstantHolders.Add(stringConstant, field);
+        field = GenerateFieldForDataConstant(type, dataConstant);
+        _dataConstantHolders.Add(wrapper, field);
 
         return field;
     }
@@ -191,12 +215,12 @@ public class AssemblyContext
         return type;
     }
 
-    private FieldReference GenerateFieldForStringConstant(
+    private FieldReference GenerateFieldForDataConstant(
         TypeReference stubStructType,
         byte[] contentWithTerminatingZero)
     {
-        var number = _stringConstantHolders.Count;
-        var fieldName = $"ConstStringBuffer{number}";
+        var number = _dataConstantHolders.Count;
+        var fieldName = $"ConstDataBuffer{number}";
 
         var field = new FieldDefinition(fieldName, FieldAttributes.Static | FieldAttributes.InitOnly, stubStructType)
         {
@@ -206,5 +230,26 @@ public class AssemblyContext
         var constantPool = _constantPool.Value;
         constantPool.Fields.Add(field);
         return field;
+    }
+
+    private struct ByteArrayWrapper
+    {
+        private readonly byte[] _value;
+        private int? _hash;
+
+        public ByteArrayWrapper(byte[] value)
+        {
+            _value = value;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is ByteArrayWrapper other && _value.AsSpan().SequenceEqual(other._value);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hash ??= StructuralComparisons.StructuralEqualityComparer.GetHashCode(_value);
+        }
     }
 }

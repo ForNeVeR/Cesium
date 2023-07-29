@@ -1,7 +1,5 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.Core;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -21,6 +19,7 @@ internal class CTypeSystem
     public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
     public IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
+    public IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
 
     public bool IsConversionAvailable(IType type, IType targetType)
     {

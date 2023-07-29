@@ -7,8 +7,6 @@
   IL_0003: add
   IL_0004: stloc.0
   IL_0005: br IL_0000
-  IL_000a: ldc.i4.0
-  IL_000b: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

@@ -32,6 +32,7 @@ internal class CharConstant : IConstant
         return text[1] switch
         {
             '\'' => '\'',
+            '0' => '\0',
             '"' => '"',
             '\\' => '\\',
             'a' => '\a',

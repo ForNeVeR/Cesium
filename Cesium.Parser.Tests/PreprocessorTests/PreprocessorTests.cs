@@ -9,12 +9,18 @@ public class PreprocessorTests : VerifyTestBase
 {
     private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
+        string result = await DoPreprocess(source, standardHeaders, defines);
+        await Verify(result, GetSettings());
+    }
+
+    private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+    {
         var lexer = new CPreprocessorLexer(source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
-        var preprocessor = new CPreprocessor(lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(source, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
-        await Verify(result, GetSettings());
+        return result;
     }
 
     [Fact]
@@ -64,6 +70,14 @@ int test()
 int test()
 {
 }", new() { ["foo.h"] = "#include <bar.h>", ["bar.h"] = "#include <baz.h>", ["baz.h"] = "int bar = 0;" });
+
+    [Fact]
+    public Task PragmaOnce() => DoTest(@"
+int test()
+{
+#include <foo.h>
+#include <foo.h>
+}", new() { ["foo.h"] = "#pragma once\nprintfn();" });
 
     [Fact]
     public async Task ErrorMsg()
@@ -126,6 +140,12 @@ int main() { return foo; }
 ");
 
     [Fact]
+    public Task ReplaceAfterStar() => DoTest(
+@"# define __getopt_argv_const const
+int int main(char *__getopt_argv_const *___argv) { return 0; }
+");
+
+    [Fact]
     public Task ReplaceFunctionParameter() => DoTest(
 @"#define foo 0
 int main() { return abs(foo); }
@@ -138,8 +158,28 @@ int main() { return foo(0); }
 ");
 
     [Fact]
+    public Task ReplaceWithParameterAndWhitespace() => DoTest(
+@"#define foo(x) x
+int main() { return foo (0); }
+");
+
+    [Fact]
     public Task ReplaceWithMultipleParameters() => DoTest(
 @"#define foo(x,y,z) (y,z,x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task ReplaceWithMultipleParameters2() => DoTest(
+@"#define foo(x,y,z) (y z  x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task ReplaceWithMultipleParameters3() => DoTest(
+@"#define foo(x, y, z) (y,z,  x)
 int x,test;
 int main() { return foo(11,x,test); }
 ");
@@ -157,12 +197,21 @@ int main() { char* x = foo(int x; printf(""some string"")); }
 ");
 
     [Fact]
-    public Task IfExpressionDefinedLiteral() => DoTest(
+    public Task ReplaceWithoutParameters() => DoTest(
+@"#define foo(x)
+int main() { foo(0) return 0; }
+");
+
+    [Fact]
+    public Task IfExpressionCannotConsumeNonInteger()
+    {
+        return Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(
 @"#define mycondition
 #if mycondition
 int foo() { return 0; }
 #endif
-");
+"));
+    }
 
     [Fact]
     public Task IfExpressionEqualsLiteral() => DoTest(
@@ -207,6 +256,50 @@ int foo() { return 0; }
     [Fact]
     public Task IfExpressionNotDefinedFunction() => DoTest(
 @"#if !defined(not_existing_condition)
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionNotDefined() => DoTest(
+@"#define mycondition
+#if (!defined mycondition)
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionMultiline() => DoTest(
+@"#define mycondition
+#if (!defined \
+    mycondition)
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionOr() => DoTest(
+@"#define mycondition 0
+#define mycondition2 1
+#if mycondition || mycondition2
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionAnd() => DoTest(
+@"#define mycondition 0
+#define mycondition2 1
+#if mycondition && mycondition2
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task UndefMacro() => DoTest(
+@"#define mycondition 1
+#undef mycondition
+#if !(defined mycondition)
 int foo() { return 0; }
 #endif
 ");

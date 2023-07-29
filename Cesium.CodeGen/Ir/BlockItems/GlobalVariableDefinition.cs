@@ -1,5 +1,3 @@
-using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -14,35 +12,4 @@ internal record GlobalVariableDefinition(
     string Identifier,
     IExpression? Initializer) : IBlockItem
 {
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        return this with { Initializer = Initializer?.Lower(scope) };
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        switch (StorageClass)
-        {
-            case StorageClass.Static: // file-level
-                scope.Context.AddTranslationUnitLevelField(Identifier, Type);
-                break;
-            case StorageClass.Auto: // assembly-level
-                scope.AssemblyContext.AddAssemblyLevelField(Identifier, Type);
-                break;
-            default:
-                throw new CompilationException($"Global variable of storage class {StorageClass} is not supported.");
-        }
-
-        var field = scope.ResolveGlobalField(Identifier);
-        if (Initializer != null)
-        {
-            Initializer.EmitTo(scope);
-            scope.StSFld(field);
-        }
-        else if (Type is InPlaceArrayType arrayType)
-        {
-            arrayType.EmitInitializer(scope);
-            scope.StSFld(field);
-        }
-    }
 }

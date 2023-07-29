@@ -151,7 +151,8 @@ internal static class TypeSystemEx
         return t.IsEqualTo(ts.SignedChar)
             || t.IsEqualTo(ts.Short)
             || t.IsEqualTo(ts.Int)
-            || t.IsEqualTo(ts.Long);
+            || t.IsEqualTo(ts.Long)
+            || t.IsEqualTo(ts.NativeInt);
     }
 
     public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
@@ -160,13 +161,15 @@ internal static class TypeSystemEx
             || t.IsEqualTo(ts.Char)
             || t.IsEqualTo(ts.UnsignedShort)
             || t.IsEqualTo(ts.UnsignedInt)
-            || t.IsEqualTo(ts.UnsignedLong);
+            || t.IsEqualTo(ts.UnsignedLong)
+            || t.IsEqualTo(ts.NativeUInt);
     }
 
     public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
     public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
+    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || ts.IsEnum(t);
     public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Bool);
+    public static bool IsEnum(this CTypeSystem ts, IType t) => t is EnumType;
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
@@ -184,8 +187,9 @@ internal static class TypeSystemEx
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
+        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt};
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt};
+        // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
@@ -249,7 +253,15 @@ internal static class TypeSystemEx
 
     public static MethodReference GetArrayCopyToMethod(this TranslationUnitContext context)
     {
-        return context.Module.ImportReference(typeof(byte*[]).GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
+        var typeSystem = context.Module.TypeSystem;
+        var arrayRef = context.Module.ImportReference(new TypeReference("System", "Array", context.Module, typeSystem.CoreLibrary));
+        var copyToMethodRef = new MethodReference("CopyTo", typeSystem.Void, arrayRef);
+        copyToMethodRef.HasThis = true;
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(arrayRef));
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(typeSystem.Int32));
+        copyToMethodRef = context.Module.ImportReference(copyToMethodRef);
+
+        return context.Module.ImportReference(copyToMethodRef);
     }
     public static MethodReference GetTargetFrameworkAttributeConstructor(this TranslationUnitContext context)
     {

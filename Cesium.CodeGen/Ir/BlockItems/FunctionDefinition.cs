@@ -1,7 +1,10 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Emitting;
+using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -15,19 +18,28 @@ internal class FunctionDefinition : IBlockItem
 {
     private const string MainFunctionName = "main";
 
-    private readonly FunctionType _functionType;
-    private readonly string _name;
-    private readonly CompoundStatement _statement;
+    public FunctionType FunctionType { get; }
+    public StorageClass StorageClass { get; }
+    public string Name { get; }
+    public IBlockItem Statement { get; }
 
-    private bool IsMain => _name == MainFunctionName;
+    public bool IsMain => Name == MainFunctionName;
 
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
+        StorageClass = StorageClass.Auto;
+        var staticMarker = specifiers.FirstOrDefault(_ => _ is StorageClassSpecifier storageClass && storageClass.Name == "static");
+        if (staticMarker is not null)
+        {
+            StorageClass = StorageClass.Static;
+            specifiers = specifiers.Remove(staticMarker);
+        }
+
         var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
-        _functionType = type as FunctionType
+        FunctionType = type as FunctionType
                         ?? throw new AssertException($"Function of not a function type: {type}.");
-        _name = name ?? throw new AssertException($"Function without name: {function}.");
+        Name = name ?? throw new AssertException($"Function without name: {function}.");
 
         if (declarations?.IsEmpty == false)
             throw new WipException(
@@ -36,47 +48,30 @@ internal class FunctionDefinition : IBlockItem
 
         if (cliImportMemberName != null)
             throw new CompilationException($"CLI import specifier on a function declaration: {function}.");
-        _statement = astStatement.ToIntermediate();
+        Statement = astStatement.ToIntermediate();
     }
 
-    public IBlockItem Lower(IDeclarationScope scope)
+    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, IBlockItem statement)
     {
-        return this; // TODO: scope.ResolveType(_functionType)
+        StorageClass = storageClass;
+        Name = name;
+        FunctionType = functionType;
+        Statement = statement;
     }
 
-    public void EmitTo(IEmitScope scope)
+    public void EmitCode(IEmitScope scope)
     {
         var context = scope.Context;
-        var (parameters, returnType) = _functionType;
-        var resolvedReturnType = returnType.Resolve(context);
-        if (IsMain && resolvedReturnType != context.TypeSystem.Int32)
-            throw new CompilationException(
-                $"Invalid return type for the {_name} function: " +
-                $"int expected, got {returnType}.");
+        var (parameters, returnType) = FunctionType;
 
-        if (IsMain && parameters?.IsVarArg == true)
-            throw new WipException(196, $"Variable arguments for the {_name} function aren't supported.");
-
-        var declaration = context.Functions.GetValueOrDefault(_name);
-        declaration?.VerifySignatureEquality(_name, parameters, returnType);
+        var declaration = context.GetFunctionInfo(Name);
 
         var method = declaration switch
         {
-            null => context.GlobalType.DefineMethod(context, _name, resolvedReturnType, parameters),
+            { MethodReference: null } => context.DefineMethod(Name, StorageClass, returnType, parameters),
             { MethodReference: MethodDefinition md } => md,
-            _ => throw new CompilationException($"Function {_name} already defined as immutable.")
+            _ => throw new CompilationException($"Function {Name} already defined as immutable.")
         };
-
-        if (declaration?.IsDefined == true)
-            throw new CompilationException($"Double definition of function {_name}.");
-
-        if (declaration == null)
-        {
-            declaration = new FunctionInfo(parameters, returnType, method, IsDefined: true);
-            context.Functions.Add(_name, declaration);
-        }
-        else
-            context.Functions[_name] = declaration with { IsDefined = true };
 
         var functionScope = new FunctionScope(context, declaration, method);
         if (IsMain)
@@ -87,7 +82,7 @@ internal class FunctionDefinition : IBlockItem
             var currentEntryPoint = assembly.EntryPoint;
             if (currentEntryPoint != null)
                 throw new CompilationException(
-                    $"Function {_name} cannot override existing entry point for assembly {assembly}.");
+                    $"Function {Name} cannot override existing entry point for assembly {assembly}.");
 
             assembly.EntryPoint = entryPoint;
         }
@@ -105,24 +100,24 @@ internal class FunctionDefinition : IBlockItem
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {
-        if (_functionType.Parameters == null)
+        if (FunctionType.Parameters == null)
         {
             // TODO[#87]: Decide whether this is normal or not.
             return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
         }
 
-        var (parameterList, isVoid, isVarArg) = _functionType.Parameters;
+        var (parameterList, isVoid, isVarArg) = FunctionType.Parameters;
         if (isVoid)
         {
             return GenerateSyntheticEntryPointSimple(context, userEntrypoint);
         }
 
         if (isVarArg)
-            throw new WipException(196, $"Variable arguments for the {_name} function aren't supported, yet.");
+            throw new WipException(196, $"Variable arguments for the {Name} function aren't supported, yet.");
 
         if (parameterList.Count != 2)
             throw new CompilationException(
-                $"Invalid parameter count for the {_name} function: " +
+                $"Invalid parameter count for the {Name} function: " +
                 $"2 expected, got {parameterList.Count}.");
 
         bool isValid = true;
@@ -138,7 +133,7 @@ internal class FunctionDefinition : IBlockItem
 
         if (!isValid)
             throw new CompilationException(
-                $"Invalid parameter types for the {_name} function: " +
+                $"Invalid parameter types for the {Name} function: " +
                 "int, char*[] expected.");
 
         return GenerateSyntheticEntryPointStrArray(context, userEntrypoint);
@@ -167,26 +162,25 @@ internal class FunctionDefinition : IBlockItem
         var exit = context.GetRuntimeHelperMethod("Exit");
         var arrayCopyTo = context.GetArrayCopyToMethod();
 
-        var argC = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 0
+        var argC = new VariableDefinition(context.TypeSystem.Int32); // 0
         syntheticEntrypoint.Body.Variables.Add(argC);
 
-        var argV = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 1
+        var argV = new VariableDefinition(bytePtrArrayType); // 1
         syntheticEntrypoint.Body.Variables.Add(argV);
 
         // argVCopy is a copy for the user which could be changed during the program execution. Only original argV
         // strings will be freed at the end of the execution, though, since we don't know how any other strings may have
         // been allocated by the user.
-        var argVCopy = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType); // 2
+        var argVCopy = new VariableDefinition(bytePtrArrayType); // 2
         syntheticEntrypoint.Body.Variables.Add(argVCopy);
 
-        var argVPinned = new Mono.Cecil.Cil.VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
+        var argVPinned = new VariableDefinition(bytePtrArrayType.MakePinnedType()); // 3
         syntheticEntrypoint.Body.Variables.Add(argVPinned);
 
-        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
-        var atExitLdLocExitCode = Instruction.Create(OpCodes.Ldloc_S, exitCode);
 
         // argC = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
@@ -220,7 +214,6 @@ internal class FunctionDefinition : IBlockItem
                 instructions.Add(Instruction.Create(OpCodes.Ldelema, bytePtrType));
                 instructions.Add(Instruction.Create(OpCodes.Call, userEntrypoint));
                 instructions.Add(Instruction.Create(OpCodes.Stloc_S, exitCode));
-                instructions.Add(Instruction.Create(OpCodes.Leave_S, atExitLdLocExitCode));
             }
             //unpin
             {
@@ -232,7 +225,7 @@ internal class FunctionDefinition : IBlockItem
             instructions.Add(Instruction.Create(OpCodes.Ldloc_1)); // 1 = argV.Index
             instructions.Add(Instruction.Create(OpCodes.Call, freeArgv));
         }
-        instructions.Add(atExitLdLocExitCode);
+        instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Call, exit)); // exit(exitCode)
         instructions.Add(Instruction.Create(OpCodes.Ldloc_S, exitCode));
         instructions.Add(Instruction.Create(OpCodes.Ret));
@@ -251,7 +244,7 @@ internal class FunctionDefinition : IBlockItem
 
         var exit = context.GetRuntimeHelperMethod("Exit");
 
-        var exitCode = new Mono.Cecil.Cil.VariableDefinition(context.TypeSystem.Int32); // 4
+        var exitCode = new VariableDefinition(context.TypeSystem.Int32); // 4
         syntheticEntrypoint.Body.Variables.Add(exitCode);
 
         var instructions = syntheticEntrypoint.Body.Instructions;
@@ -269,25 +262,15 @@ internal class FunctionDefinition : IBlockItem
 
     private void EmitCode(TranslationUnitContext context, FunctionScope scope)
     {
-        var statement = _statement.Lower(scope);
-        statement.EmitTo(scope);
-        if (statement.HasDefiniteReturn == false)
-        {
-            if (_functionType.ReturnType.Resolve(context) == context.TypeSystem.Void)
-            {
-                var instructions = scope.Method.Body.Instructions;
-                instructions.Add(Instruction.Create(OpCodes.Ret));
-            }
-            else if (IsMain)
-            {
-                var instructions = scope.Method.Body.Instructions;
-                instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
-                instructions.Add(Instruction.Create(OpCodes.Ret));
-            }
-            else
-            {
-                throw new CompilationException($"Function {scope.Method.Name} has no return statement.");
-            }
-        }
+        var loweredStmt = (CompoundStatement) BlockItemLowering.Lower(scope, Statement);
+        var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
+            context,
+            scope,
+            loweredStmt,
+            FunctionType.ReturnType,
+            IsMain
+        );
+
+        BlockItemEmitting.EmitCode(scope, transformed);
     }
 }

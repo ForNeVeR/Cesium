@@ -10,8 +10,10 @@ public class CodeGenMethodTests : CodeGenTestBase
     {
         var assembly = GenerateAssembly(default, source);
 
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
     }
 
     [Fact]
@@ -142,6 +144,15 @@ void test()
     console_read(5, 32);
     console_read(5, 2.21f);
     console_read(5, 67.44);
+}");
+
+    [Fact]
+    public Task TypeDefDeclaration() => DoTest(@"typedef void FILE;
+FILE* console_read(FILE* stream);
+
+FILE* console_read(FILE* stream)
+{
+    return 0;
 }");
 
     [Fact]
@@ -337,4 +348,85 @@ int main()
 }
 ");
 
+    [Fact]
+    public Task ValidPointerSubtractionTest() => DoTest(@"int main() {
+    int foo[10];
+    return &foo[10] - &foo[1];
+}");
+
+    [Fact]
+    public void InvalidPointerWithIntSubtractionTest() => DoesNotCompile(@"int main() {
+    int foo[10];
+    return &foo[10] - 123;
+}", "Operator Subtract is not supported for pointer/value operands");
+
+    [Fact]
+    public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {
+    int a;
+} bar;
+
+int main() {
+    int foo[10];
+    bar* qux = (bar*) 123;
+    return &foo[10] - qux;
+}", "Invalid pointer subtraction - pointers are referencing different base types");
+
+    [Fact]
+    public Task StaticMethod() => DoTest(@"static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDeclaration() => DoTest(@"static int main();
+
+int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDefinition() => DoTest(@"int main();
+
+static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task FunctionPointerCallTest() => DoTest(@"int foo(int a) { return a; }
+
+int main()
+{
+    int (*fooptr)(int) = &foo;
+
+    return fooptr(123);
+}");
+
+    [Fact]
+    public void NonFunctionPointerCallTest() => DoesNotCompile(@"int foo(int a) { return a; }
+
+int main()
+{
+    void *fooptr = &foo;
+
+    return fooptr(123);
+}", "Attempted to call non-function pointer");
+
+    // TODO [#196]
+    /* [Fact]
+    public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
+
+int main()
+{
+    int (*fooptr)(int, ...) = &foo;
+
+    return fooptr(123, 456);
+}"); */
 }

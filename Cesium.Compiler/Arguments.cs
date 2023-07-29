@@ -49,4 +49,13 @@ public class Arguments
     [Option("runtime", HelpText = "Sets path to Cesium C Runtime assembly")]
     public string? CesiumCRuntime { get; init; }
 
+    [Option('O', HelpText = "Set the optimization level")]
+    public int OptimizationLevel { get; init; } = 0;
+
+    [Option('W', HelpText = "Enable warnings set")]
+    public string WarningsSet { get; init; } = "";
+
+    [Option('D', HelpText = "Define constants for preprocessor")]
+    public IEnumerable<string> DefineConstant { get; init; } = Array.Empty<string>();
+
 }

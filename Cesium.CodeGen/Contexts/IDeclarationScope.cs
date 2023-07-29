@@ -1,5 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -10,9 +12,10 @@ internal interface IDeclarationScope
     TargetArchitectureSet ArchitectureSet { get; }
     CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
-    IReadOnlyDictionary<string, IType> GlobalFields { get; }
-    void AddVariable(string identifier, IType variable);
-    IType? GetVariable(string identifier);
+    void DeclareFunction(string identifier, FunctionInfo functionInfo);
+    VariableInfo? GetGlobalField(string identifier);
+    void AddVariable(StorageClass storageClass, string identifier, IType variable, IExpression? constant);
+    VariableInfo? GetVariable(string identifier);
 
     /// <summary>
     /// Recursively resolve the passed type and all its members, replacing `NamedType` in any points with their actual instantiations in the current context.
@@ -21,7 +24,9 @@ internal interface IDeclarationScope
     /// <returns>A <see cref="IType"/> which fully resolves.</returns>
     /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
     IType ResolveType(IType type);
+    IType? TryGetType(string identifier);
     void AddTypeDefinition(string identifier, IType type);
+    void AddTagDefinition(string identifier, IType type);
     ParameterInfo? GetParameterInfo(string name);
 
     /// <summary>
@@ -41,4 +46,6 @@ internal interface IDeclarationScope
     /// </summary>
     /// <returns>Name of the virtual label which can be used by continue statement</returns>
     string? GetContinueLabel();
+
+    List<SwitchCase>? SwitchCases { get; }
 }

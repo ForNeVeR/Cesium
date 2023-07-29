@@ -68,7 +68,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
             new[] { typeof(Console).Assembly.Location },
             @namespace,
-            globalTypeFqn);
+            globalTypeFqn,
+            Array.Empty<string>());
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);
@@ -120,6 +121,25 @@ public abstract class CodeGenTestBase : VerifyTestBase
     {
         var result = new StringBuilder();
         DumpMethods(type, result);
+
+        return Verify(result, GetSettings(parameters));
+    }
+
+    [MustUseReturnValue]
+    protected static Task VerifyMethods(IEnumerable<TypeDefinition> types, params object[] parameters)
+    {
+        var result = new StringBuilder();
+        int i = 0;
+        foreach (var type in types.Where(t => t is not null))
+        {
+            if (i != 0)
+            {
+                result.AppendLine();
+            }
+
+            DumpMethods(type, result);
+            i++;
+        }
 
         return Verify(result, GetSettings(parameters));
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -9,7 +10,7 @@ internal class IntegerConstant : IConstant
 {
     public IntegerConstant(string value)
     {
-        if (!int.TryParse(value, out var intValue))
+        if (!TryParse(value, out var intValue))
             throw new CompilationException($"Cannot parse an integer literal: {value}.");
 
         Value = intValue;
@@ -44,4 +45,42 @@ internal class IntegerConstant : IConstant
     public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.Int;
 
     public override string ToString() => $"integer: {Value}";
+
+    private static bool TryParse(string text, out int value)
+    {
+        if (text.StartsWith("0x"))
+        {
+            if (int.TryParse(text[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+
+            throw new CompilationException($"Invalid hex number {text}");
+        }
+
+        if (text.StartsWith("0"))
+        {
+            value = 0;
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (text[i] >= '0' && text[i] <= '7')
+                {
+                    value = 8 * value + (text[i] - '0');
+                }
+                else
+                {
+                    throw new CompilationException($"Invalid octal number {text}");
+                }
+            }
+
+            return true;
+        }
+
+        if (int.TryParse(text, CultureInfo.InvariantCulture, out value))
+        {
+            return true;
+        }
+
+        throw new CompilationException($"Cannot parse an integer literal: {text}.");
+    }
 }

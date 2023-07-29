@@ -6,16 +6,10 @@ namespace Cesium.CodeGen.Extensions;
 
 internal static class BlockItemEx
 {
-    /// <remarks>
-    /// This is a specialization for <see cref="FunctionDefinition"/> to be able to check for
-    /// <see cref="CompoundStatement.HasDefiniteReturn"/> without the necessity to cast.
-    /// </remarks>
-    public static CompoundStatement ToIntermediate(this Ast.CompoundStatement statement) => new(statement);
-
     public static IBlockItem ToIntermediate(this Ast.IBlockItem blockItem) => blockItem switch
     {
         Ast.Declaration d => ToIntermediate(d),
-        Ast.CompoundStatement s => s.ToIntermediate(),
+        Ast.CompoundStatement s => new CompoundStatement(s),
         Ast.LabelStatement s => new LabelStatement(s),
         Ast.ReturnStatement s => new ReturnStatement(s),
         Ast.ExpressionStatement s => new ExpressionStatement(s),

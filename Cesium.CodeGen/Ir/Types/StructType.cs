@@ -9,18 +9,20 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal class StructType : IGeneratedType
 {
-    public StructType(IReadOnlyList<LocalDeclarationInfo> members)
+    public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
     {
         Members = members;
+        Identifier = identifier;
     }
 
     internal IReadOnlyList<LocalDeclarationInfo> Members { get; }
+    public string? Identifier { get; }
 
     public TypeDefinition Emit(string name, TranslationUnitContext context)
     {
         var structType = new TypeDefinition(
             "",
-            name,
+            Identifier is null ? "<typedef>" + name : Identifier,
             TypeAttributes.Sealed,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
         switch (context.AssemblyContext.ArchitectureSet)

@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -8,9 +9,12 @@ namespace Cesium.CodeGen.Contexts.Meta;
 internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
-    MethodReference MethodReference,
-    bool IsDefined = false)
+    StorageClass StorageClass,
+    bool IsDefined)
 {
+    public MethodReference? MethodReference { get; set; }
+    public string? CliImportMember { get; set; }
+
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {
         if (!returnType.Equals(ReturnType))

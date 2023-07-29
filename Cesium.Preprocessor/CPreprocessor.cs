@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -9,7 +8,7 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
+public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
     private bool IncludeTokens = true;
     public async Task<string> ProcessSource()
@@ -90,6 +89,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                             {
                                 int parameterIndex = -1;
                                 int openParensCount = 0;
+                                bool hitOpenToken = false;
                                 List<IToken<CPreprocessorTokenType>> currentParameter = new();
                                 IToken<CPreprocessorTokenType> parametersParsingToken;
                                 do
@@ -103,6 +103,7 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                                                 currentParameter.Add(parametersParsingToken);
                                             }
 
+                                            hitOpenToken = true;
                                             openParensCount++;
                                             if (parameterIndex == -1)
                                             {
@@ -134,11 +135,16 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                                             }
                                             break;
                                         default:
+                                            if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
+                                            {
+                                                continue;
+                                            }
+
                                             currentParameter.Add(parametersParsingToken);
                                             break;
                                     }
                                 }
-                                while (openParensCount > 0);
+                                while (openParensCount > 0 || !hitOpenToken);
                                 replacement.Add(parameters[parameterIndex], currentParameter);
                             }
 
@@ -212,6 +218,24 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 case NewLine:
                 case End:
                     yield break;
+                case NextLine:
+                    token = stream.Consume();
+                    bool nextLineReached = false;
+                    while (token.Kind == CPreprocessorTokenType.NewLine || token.Kind == CPreprocessorTokenType.WhiteSpace)
+                    {
+                        if (token.Kind == CPreprocessorTokenType.NewLine)
+                        {
+                            nextLineReached = true;
+                        }
+
+                        token = stream.Consume();
+                    }
+
+                    if (!nextLineReached)
+                        throw new PreprocessorException($"Illegal token {token.Kind} {token.Text} after \\.");
+
+                    yield return token;
+                    break;
                 default:
                     yield return token;
                     break;
@@ -260,6 +284,14 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             }
         }
 
+        IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
         var hash = ConsumeNext(Hash);
         line = hash.Range.Start.Line;
 
@@ -268,12 +300,22 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
         {
             case "include":
             {
+                // If in disabled block, do not attempt to include files.
                 var filePath = ConsumeNext(HeaderName).Text;
-                using var reader = await LookUpIncludeFile(filePath);
                 var tokensList = new List<IToken<CPreprocessorTokenType>>();
-                await foreach (var token in ProcessInclude(reader))
+                if (IncludeTokens)
                 {
-                    tokensList.Add(token);
+                    var includeFilePath = LookUpIncludeFile(filePath);
+                    if (!IncludeContext.ShouldIncludeFile(includeFilePath))
+                    {
+                        return Array.Empty<IToken<CPreprocessorTokenType>>();
+                    }
+
+                    using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                    await foreach (var token in ProcessInclude(includeFilePath, reader))
+                    {
+                        tokensList.Add(token);
+                    }
                 }
 
                 bool hasRemaining;
@@ -299,9 +341,16 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             }
             case "define":
             {
-                var expressionTokens = ConsumeLine();
+                var expressionTokens = ConsumeLineAll();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
                 MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "undef":
+            {
+                var expressionTokens = ConsumeLineAll();
+                var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
+                MacroContext.UndefineMacro(macroDefinition.Name);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifdef":
@@ -335,6 +384,16 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
                 IncludeTokens = !IncludeTokens;
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
+            case "pragma":
+            {
+                var identifier = ConsumeNext(PreprocessingToken).Text;
+                if (identifier == "once")
+                {
+                    IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
+                }
+
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
             default:
                 throw new WipException(
                     77,
@@ -347,8 +406,13 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
         var p = new CPreprocessorExpressionParser(stream);
         var expression = p.ParseExpression();
+        if (expression.IsError)
+        {
+            throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}, got {expression.Error.Got}");
+        }
+
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
-        bool includeTokens = macroExpression != null;
+        bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
     private (CPreprocessorMacroDefinitionParser.MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
@@ -367,20 +431,25 @@ public record CPreprocessor(ILexer<IToken<CPreprocessorTokenType>> Lexer, IInclu
             }
         }
 
+        if (macroDefinition.IsError)
+        {
+            throw new PreprocessorException($"Cannot parse macro definition. Expected: {string.Join(",", macroDefinition.Error.Elements.Values.Select(_ => $"{_.Context},{string.Join(",", _.Expected)}"))} got: {macroDefinition.Error.Got}");
+        }
+
         return (macroDefinition.Ok.Value, macroReplacement);
     }
 
-    private ValueTask<TextReader> LookUpIncludeFile(string filePath) => filePath[0] switch
+    private string LookUpIncludeFile(string filePath) => filePath[0] switch
     {
         '<' => IncludeContext.LookUpAngleBracedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
         '"' => IncludeContext.LookUpQuotedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
         _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
     };
 
-    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(TextReader fileReader)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(string compilationUnitPath, TextReader fileReader)
     {
         var lexer = new CPreprocessorLexer(fileReader);
-        var subProcessor = new CPreprocessor(lexer, IncludeContext, MacroContext);
+        var subProcessor = new CPreprocessor(compilationUnitPath, lexer, IncludeContext, MacroContext);
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;

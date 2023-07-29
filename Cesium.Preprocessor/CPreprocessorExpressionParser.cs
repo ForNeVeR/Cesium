@@ -13,16 +13,20 @@ internal partial class CPreprocessorExpressionParser
     private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken token) => new IdentifierExpression(token.Text);
 
     [Rule("identifier_defined: 'defined' PreprocessingToken")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token) => new IdentifierExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token)
+        => new DefinedExpression(token.Text);
 
     [Rule("identifier_defined: 'defined' '(' PreprocessingToken ')' ")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken openToken, ICPreprocessorToken token, ICPreprocessorToken closedToken) => new IdentifierExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken openToken, ICPreprocessorToken token, ICPreprocessorToken closedToken)
+        => new DefinedExpression(token.Text);
 
     [Rule("simple_expression: identifier")]
     private static IPreprocessorExpression MakeSimpleExpression(IPreprocessorExpression expression) => expression;
 
     [Rule("binary_expression: simple_expression '==' simple_expression")]
     [Rule("binary_expression: simple_expression '!=' simple_expression")]
+    [Rule("binary_expression: expression '||' expression")]
+    [Rule("binary_expression: expression '&&' expression")]
     private static BinaryExpression MakeBinaryExpression(IPreprocessorExpression left, ICPreprocessorToken token, IPreprocessorExpression right)
         => new BinaryExpression(left, GetOperator(token), right);
 
@@ -36,11 +40,16 @@ internal partial class CPreprocessorExpressionParser
     [Rule("expression: identifier_defined")]
     private static IPreprocessorExpression MakeExpression(IPreprocessorExpression expression) => expression;
 
+    [Rule("expression: '(' expression ')' ")]
+    private static IPreprocessorExpression MakeExpression(ICPreprocessorToken lparen, IPreprocessorExpression expression, ICPreprocessorToken rparen) => expression;
+
     private static CPreprocessorOperator GetOperator(ICPreprocessorToken token) => token.Text switch
     {
         "==" => CPreprocessorOperator.Equals,
         "!=" => CPreprocessorOperator.NotEquals,
         "!" => CPreprocessorOperator.Negation,
+        "||" => CPreprocessorOperator.LogicalOr,
+        "&&" => CPreprocessorOperator.LogicalAnd,
         _ => throw new CompilationException($"Operator {token.Text} cannot be used in the preprocessor directives"),
     };
 }

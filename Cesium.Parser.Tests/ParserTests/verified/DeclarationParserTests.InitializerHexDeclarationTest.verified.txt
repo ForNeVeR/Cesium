@@ -1,0 +1,33 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+      "TypeName": "int"
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+          "Identifier": "x",
+          "Base": null
+        }
+      },
+      "Initializer": {
+        "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+        "Expression": {
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "0x22"
+          }
+        }
+      }
+    }
+  ]
+}

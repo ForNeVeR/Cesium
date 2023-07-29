@@ -20,7 +20,6 @@ internal class GetAddressValueExpression : IExpression
     public void EmitTo(IEmitScope scope)
     {
         _value.EmitGetAddress(scope);
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_U));
     }
 
     public IType GetExpressionType(IDeclarationScope scope)

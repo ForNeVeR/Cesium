@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
@@ -19,7 +20,19 @@ internal record LocalDeclarationInfo(
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
+        {
+            if (type is StructType structType)
+            {
+                return new LocalDeclarationInfo(type, structType.Identifier, null);
+            }
+
+            if (type is EnumType enumType)
+            {
+                return new LocalDeclarationInfo(type, enumType.Identifier, null);
+            }
+
             return new LocalDeclarationInfo(type, null, null);
+        }
 
         var (pointer, directDeclarator) = declarator;
         type = ProcessPointer(pointer, type);
@@ -95,6 +108,9 @@ internal record LocalDeclarationInfo(
                 case StorageClassSpecifier { Name: "typedef" }:
                     throw new CompilationException($"typedef not expected: {string.Join(", ", specifiers)}.");
 
+                case StorageClassSpecifier { Name: "static" }:
+                    throw new CompilationException($"static not expected: {string.Join(", ", specifiers)}.");
+
                 case StructOrUnionSpecifier typeSpecifier:
                 {
                     if (type != null)
@@ -105,10 +121,22 @@ internal record LocalDeclarationInfo(
                     if (complexTypeKind != ComplexTypeKind.Struct)
                         throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
 
-                    if (identifier != null)
-                        throw new WipException(218, $"Named structures aren't supported, yet: {identifier}.");
+                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
+                    break;
+                }
 
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList());
+                case EnumSpecifier enumTypeSpecifier:
+                {
+                    if (type != null)
+                        throw new CompilationException(
+                            $"Cannot update type {type} with a enum specifier {enumTypeSpecifier}.");
+
+                    var ( identifier, enumDeclarations) = enumTypeSpecifier;
+                    if (identifier is null && enumDeclarations is null)
+                        throw new CompilationException(
+                            $"Incomplete enum specifier {enumTypeSpecifier}.");
+
+                    type = new EnumType(GetEnumMemberDeclarations(enumDeclarations).ToList(), identifier);
                     break;
                 }
 
@@ -298,6 +326,23 @@ internal record LocalDeclarationInfo(
         });
     }
 
+    private static IEnumerable<InitializableDeclarationInfo> GetEnumMemberDeclarations(
+        IEnumerable<EnumDeclaration>? structDeclarations)
+    {
+        if (structDeclarations is null)
+        {
+            return Array.Empty<InitializableDeclarationInfo>();
+        }
+
+        return structDeclarations.Select(memberDeclarator =>
+        {
+            var (identifier, declarators) = memberDeclarator;
+            return new InitializableDeclarationInfo(
+                new LocalDeclarationInfo(null!, identifier, null),
+                declarators?.ToIntermediate());
+        });
+    }
+
     private static IType ProcessSimpleTypeSpecifiers(
         SimpleTypeSpecifier first,
         IReadOnlyList<IDeclarationSpecifier> specifiers,
@@ -350,6 +395,7 @@ internal record LocalDeclarationInfo(
                 ["float"] => PrimitiveTypeKind.Float,
                 ["double"] => PrimitiveTypeKind.Double,
                 ["__nint"] => PrimitiveTypeKind.NativeInt,
+                ["__nuint"] => PrimitiveTypeKind.NativeUInt,
                 _ => throw new WipException(
                     224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),

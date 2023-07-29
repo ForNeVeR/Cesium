@@ -80,6 +80,12 @@ int main()
 }");
 
     [Fact]
+    public Task TypeConversionTest() => DoTest(@"int main()
+{
+    return (int)42;
+}");
+
+    [Fact]
     public Task ConstIntLargeLiteralTest() => DoTest(@"int main()
 {
     return 1337;
@@ -89,6 +95,18 @@ int main()
     public Task ConstIntMinLiteralTest() => DoTest(@"int main()
 {
     return -2147483648;
+}");
+
+    [Fact]
+    public Task ConstIntHexLiteralTest() => DoTest(@"int main()
+{
+    return 0x42;
+}");
+
+    [Fact]
+    public Task ConstIntOctalLiteralTest() => DoTest(@"int main()
+{
+    return 042;
 }");
 
     [Fact]
@@ -161,6 +179,17 @@ int main(void) { foo x; return x.x; }");
 int main(void) { foo x; x.x = 42; return 0; }");
 
     [Fact]
+    public Task StructAndTypeDefHasSeparateNamespaces() => DoTest(@"struct tagFoo { int A; };
+typedef struct { int B; } Foo;
+int main(void) {
+  struct tagFoo a;
+  Foo b;
+  a.A = 0;
+  b.B = 0;
+}
+");
+
+    [Fact]
     public Task ArrayDeclaration() => DoTest(@"int main()
 {
     int i;
@@ -180,6 +209,11 @@ int main(void) { foo x = 0; return 0; }");
     public Task StructWithArray() => DoTest(@"typedef struct {
     int x[4];
 } foo;");
+
+    [Fact]
+    public Task NamedStruct() => DoTest(@"struct foo {
+    int x[4];
+};");
 
     [Fact]
     public Task FunctionPointer() => DoTest(@"void foo(int) {}

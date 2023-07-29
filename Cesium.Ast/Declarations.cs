@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 
 namespace Cesium.Ast;
+using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
 
 // 6.7 Declarations
 public record Declaration(
@@ -22,6 +23,9 @@ public record StructOrUnionSpecifier(
     ComplexTypeKind TypeKind,
     string? Identifier,
     ImmutableArray<StructDeclaration> StructDeclarations) : ITypeSpecifier;
+public record EnumSpecifier(
+    string? Identifier,
+    ImmutableArray<EnumDeclaration>? StructDeclarations) : ITypeSpecifier;
 
 public record NamedTypeSpecifier(string TypeDefName) : ITypeSpecifier;
 
@@ -39,10 +43,13 @@ public interface ISpecifierQualifierListItem : IDeclarationSpecifier {}
 
 public record StructDeclarator(Declarator Declarator);
 
+public record EnumDeclaration(string Identifier, Expression? Constant);
+
 // 6.7.3 Type qualifiers
 public record TypeQualifier(string Name) : ISpecifierQualifierListItem;
 
 // 6.7.7 Type names
+public record TypeName(SpecifierQualifierList SpecifierQualifierList, AbstractDeclarator? AbstractDeclarator = null);
 public record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);
 public interface IDirectAbstractDeclarator
 {
@@ -93,6 +100,7 @@ public record ParameterDeclaration(
 // 6.7.9 Initialization
 public abstract record Initializer;
 public record AssignmentInitializer(Expression Expression) : Initializer;
+public record ArrayInitializer(ImmutableArray<Initializer> Initializers) : Initializer;
 
 // CLI extensions
 public record CliImportSpecifier(string MemberName) : IDeclarationSpecifier;

@@ -11,32 +11,28 @@
   IL_000c: ldc.i4 4
   IL_0011: mul
   IL_0012: add
-  IL_0013: conv.u
-  IL_0014: ldc.i4.4
-  IL_0015: ldc.i4.2
-  IL_0016: ldc.i4.s 10
+  IL_0013: ldc.i4.4
+  IL_0014: ldc.i4.2
+  IL_0015: ldc.i4.s 10
+  IL_0017: mul
   IL_0018: mul
-  IL_0019: mul
-  IL_001a: conv.i
-  IL_001b: add
-  IL_001c: ldc.i4.2
-  IL_001d: stind.i4
-  IL_001e: ldloc.0
-  IL_001f: ldc.i4.1
-  IL_0020: conv.i
-  IL_0021: ldc.i4 4
-  IL_0026: mul
-  IL_0027: add
-  IL_0028: conv.u
-  IL_0029: ldc.i4.4
-  IL_002a: ldc.i4.2
-  IL_002b: ldc.i4.s 10
-  IL_002d: mul
-  IL_002e: mul
-  IL_002f: conv.i
-  IL_0030: add
-  IL_0031: ldind.i4
-  IL_0032: ret
+  IL_0019: add
+  IL_001a: ldc.i4.2
+  IL_001b: stind.i4
+  IL_001c: ldloc.0
+  IL_001d: ldc.i4.1
+  IL_001e: conv.i
+  IL_001f: ldc.i4 4
+  IL_0024: mul
+  IL_0025: add
+  IL_0026: ldc.i4.4
+  IL_0027: ldc.i4.2
+  IL_0028: ldc.i4.s 10
+  IL_002a: mul
+  IL_002b: mul
+  IL_002c: add
+  IL_002d: ldind.i4
+  IL_002e: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

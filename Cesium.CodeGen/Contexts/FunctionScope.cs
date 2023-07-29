@@ -1,5 +1,7 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -13,17 +15,35 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public ModuleDefinition Module => Context.Module;
     public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
-    public IReadOnlyDictionary<string, FunctionInfo> Functions => Context.Functions;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
-        Functions.GetValueOrDefault(identifier);
+        Context.GetFunctionInfo(identifier);
 
-    private readonly Dictionary<string, IType> _variables = new();
+    public void DeclareFunction(string identifier, FunctionInfo functionInfo)
+        => Context.DeclareFunction(identifier, functionInfo);
+
+    private readonly Dictionary<string, VariableInfo> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
     private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
-    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
-    public void AddVariable(string identifier, IType variable) => _variables.Add(identifier, variable);
+    public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
+    public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
+    {
+        _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+        if (storageClass == StorageClass.Static)
+        {
+            Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);
+        }
+    }
 
-    public IType? GetVariable(string identifier) => _variables.GetValueOrDefault(identifier);
+    public VariableInfo? GetVariable(string identifier)
+    {
+        VariableInfo? variableInfo = _variables.GetValueOrDefault(identifier);
+        if (variableInfo is not null)
+        {
+            return variableInfo;
+        }
+
+        return Context.GetInitializerScope().GetVariable(identifier);
+    }
 
     public VariableDefinition ResolveVariable(string identifier)
     {
@@ -34,7 +54,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
         if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
         {
-            var typeReference = variableType.Resolve(Context);
+            var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);
             _variableDefinition.Add(identifier, variableDefinition);
@@ -56,7 +76,9 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     }
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);
+    public IType? TryGetType(string identifier) => Context.TryGetType(identifier);
     public void AddTypeDefinition(string identifier, IType type) => throw new AssertException("Not supported");
+    public void AddTagDefinition(string identifier, IType type) => throw new AssertException("Not supported");
 
     /// <inheritdoc />
     public void AddLabel(string identifier)
@@ -80,4 +102,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     /// <inheritdoc />
     public string? GetContinueLabel() => null;
+
+    public List<SwitchCase>? SwitchCases => null;
 }

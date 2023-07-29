@@ -10,7 +10,7 @@ internal class CommaExpression : IExpression
     private readonly IExpression _left;
     private readonly IExpression _right;
 
-    private CommaExpression(IExpression left, IExpression right)
+    internal CommaExpression(IExpression left, IExpression right)
     {
         _left = left;
         _right = right;
@@ -30,7 +30,10 @@ internal class CommaExpression : IExpression
 
         _left.EmitTo(scope);
 
-        bodyProcessor.Emit(OpCodes.Pop);
+        if (_left.GetExpressionType((IDeclarationScope)scope) is not PrimitiveType { Kind: PrimitiveTypeKind.Void })
+        {
+            bodyProcessor.Emit(OpCodes.Pop);
+        }
 
         _right.EmitTo(scope);
     }

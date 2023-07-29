@@ -1,3 +1,4 @@
+#pragma once
 __cli_import("Cesium.Runtime.ConioFunctions::KbHit")
 int kbhit(void);
 

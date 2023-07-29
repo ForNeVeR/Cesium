@@ -1,3 +1,9 @@
+using System.IO;
+using System.Runtime.InteropServices;
+#if NETSTANDARD
+using System.Text;
+#endif
+
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -5,17 +11,78 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
-    public static void PutS(CPtr<byte> str)
+    record class StreamHandle
+    {
+        public required string FileMode { get; set; }
+        public Func<TextReader>? Reader { get; set; }
+        public Func<TextWriter>? Writer { get; set; }
+    }
+
+    private static List<StreamHandle> handles = new();
+
+    static StdIoFunctions()
+    {
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "r",
+            Reader = () => Console.In,
+        });
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Out,
+        });
+        handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Error,
+        });
+    }
+
+    public static int PutS(CPtr<byte> str)
     {
         try
         {
-            Console.Write(RuntimeHelpers.Unmarshal(str.AsPtr()));
-            // return 0; // TODO[#156]: Uncomment
+            Console.WriteLine(RuntimeHelpers.Unmarshal(str.AsPtr()));
+            return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
-            // const int EOF = -1; // TODO[#155]: Extract to some common place.
-            // return EOF; // TODO[#156]: Uncomment
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
+    public static int PutChar(byte character)
+    {
+        try
+        {
+            Console.Write((char)character);
+            return character;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
+
+    public static int PutC(byte character, void* stream)
+    {
+        try
+        {
+            var streamDescriptor = GetStreamHandle(stream);
+            if (streamDescriptor == null)
+            {
+                return -1;
+            }
+
+            streamDescriptor.Writer!().Write((char)character);
+            return character;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
         }
     }
 
@@ -99,5 +166,12 @@ public unsafe static class StdIoFunctions
         string remainderString = formatString.Substring(currentPosition);
         Console.Write(remainderString);
         return consumedBytes + remainderString.Length;
+    }
+
+    private static StreamHandle? GetStreamHandle(void* stream)
+    {
+        var handleIndex = (int)(IntPtr)stream;
+        var result = handles.ElementAtOrDefault(handleIndex);
+        return result;
     }
 }

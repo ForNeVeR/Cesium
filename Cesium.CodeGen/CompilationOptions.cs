@@ -10,4 +10,5 @@ public record CompilationOptions(
     string CesiumRuntime,
     IList<string> ImportAssemblies,
     string Namespace,
-    string GlobalClassFqn);
+    string GlobalClassFqn,
+    IList<string> DefineConstants);

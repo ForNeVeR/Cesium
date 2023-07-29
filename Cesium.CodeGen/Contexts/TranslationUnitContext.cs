@@ -1,8 +1,12 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using System.Diagnostics;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -29,8 +33,62 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal GlobalConstructorScope GetInitializerScope() =>
         _initializerScope ??= new GlobalConstructorScope(this);
 
+    internal FunctionInfo? GetFunctionInfo(string identifier) =>
+        Functions.GetValueOrDefault(identifier);
+
+    internal void DeclareFunction(string identifier, FunctionInfo functionInfo)
+    {
+        var existingDeclaration = Functions.GetValueOrDefault(identifier);
+        if (existingDeclaration is null)
+        {
+            Functions.Add(identifier, functionInfo);
+            if (functionInfo.CliImportMember is not null)
+            {
+                var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
+                functionInfo.MethodReference = method;
+            }
+        }
+        else
+        {
+            existingDeclaration.VerifySignatureEquality(identifier, functionInfo.Parameters, functionInfo.ReturnType);
+            if (functionInfo.CliImportMember is not null && existingDeclaration.CliImportMember is not null)
+            {
+                var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
+                if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
+                {
+                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
+                }
+            }
+
+            var mergedStorageClass = existingDeclaration.StorageClass != StorageClass.Auto
+                ? existingDeclaration.StorageClass
+                : functionInfo.StorageClass;
+            var mergedIsDefined = existingDeclaration.IsDefined || functionInfo.IsDefined;
+            Functions[identifier] = existingDeclaration with { StorageClass = mergedStorageClass, IsDefined = mergedIsDefined };
+        }
+    }
+
+    internal MethodDefinition DefineMethod(
+        string name,
+        StorageClass storageClass,
+        IType returnType,
+        ParametersInfo? parameters)
+    {
+        var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
+        var method = owningType.DefineMethod(
+            this,
+            name,
+            returnType.Resolve(this),
+            parameters);
+        var existingDeclaration = Functions.GetValueOrDefault(name);
+        Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
+        Functions[name] = existingDeclaration with { MethodReference = method };
+        return method;
+    }
+
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
     private readonly Dictionary<string, IType> _types = new();
+    private readonly Dictionary<string, IType> _tags = new();
 
     internal void GenerateType(string name, IGeneratedType type)
     {
@@ -38,7 +96,15 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         _generatedTypes.Add(type, typeReference);
     }
 
-    internal void AddTypeDefinition(string name, IType type) => _types.Add(name, type);
+    internal void AddTypeDefinition(string name, IType type)
+    {
+        if (_types.ContainsKey(name))
+            throw new CompilationException($"Type definition {name} was already defined.");
+
+        _types.Add(name, type);
+    }
+
+    internal void AddTagDefinition(string name, IType type) => _tags.Add(name, type);
 
     internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
 
@@ -67,10 +133,31 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
 
         if (type is StructType structType)
         {
+            if (structType.Members.Count == 0 && structType.Identifier is not null)
+            {
+                if (_tags.TryGetValue(structType.Identifier, out var existingType))
+                {
+                    return existingType;
+                }
+            }
+
             var members = structType.Members
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();
-            return new StructType(members);
+            return new StructType(members, structType.Identifier);
+        }
+
+        if (type is FunctionType functionType)
+        {
+            ParametersInfo? parametersInfo = null;
+            if (functionType.Parameters is not null)
+            {
+                var functionParameters = functionType.Parameters;
+                var parameters = functionParameters.Parameters.Select(parameterInfo => parameterInfo with { Type = ResolveType(parameterInfo.Type) }).ToArray();
+                parametersInfo = new ParametersInfo(parameters, functionParameters.IsVoid, functionParameters.IsVarArg);
+            }
+
+            return new FunctionType(parametersInfo, ResolveType(functionType.ReturnType));
         }
 
         return type;
@@ -79,9 +166,20 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
-    internal void AddTranslationUnitLevelField(string identifier, IType type)
+    internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
     {
-        _translationUnitLevelFieldTypes.Add(identifier, type);
+        switch (storageClass)
+        {
+            case StorageClass.Static: // file-level
+                _translationUnitLevelFieldTypes.Add(identifier, type);
+                break;
+            case StorageClass.Auto: // assembly-level
+            case StorageClass.Extern: // assembly-level
+                AssemblyContext.AddAssemblyLevelField(identifier, storageClass, type);
+                break;
+            default:
+                throw new CompilationException($"Global variable of storage class {storageClass} is not supported.");
+        }
     }
 
     internal FieldReference? ResolveTranslationUnitField(string name)
@@ -89,13 +187,23 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         var type = _translationUnitLevelFieldTypes.GetValueOrDefault(name);
         if (type == null) return null;
 
-        var containingType = _translationUnitLevelType ??= CreateTranslationUnitLevelType();
+        var containingType = GetOrCreateTranslationUnitType();
         return containingType.GetOrAddField(this, type, name);
+    }
+
+    private TypeDefinition GetOrCreateTranslationUnitType()
+    {
+        _translationUnitLevelType ??= CreateTranslationUnitLevelType();
+        return _translationUnitLevelType;
     }
 
     private TypeDefinition CreateTranslationUnitLevelType()
     {
-        var type = new TypeDefinition("", $"{Name}<Statics>", TypeAttributes.Abstract | TypeAttributes.Sealed);
+        var type = new TypeDefinition(
+            "",
+            $"{Name}<Statics>",
+            TypeAttributes.Abstract | TypeAttributes.Sealed,
+            Module.TypeSystem.Object);
         Module.Types.Add(type);
         return type;
     }

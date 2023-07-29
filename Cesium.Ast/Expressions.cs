@@ -9,10 +9,12 @@ public abstract record Expression;
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
 public record ConstantLiteralExpression(IToken<CTokenType> Constant) : Expression;
+public record ParenExpression(Expression Contents) : Expression;
 
 // 6.5.2 Postfix operators
 public record SubscriptingExpression(Expression Base, Expression Index) : Expression;
 public record FunctionCallExpression(Expression Function, ImmutableArray<Expression>? Arguments) : Expression;
+public record TypeCastOrNamedFunctionCallExpression(string TypeOrFunctionName, ImmutableArray<Expression> Arguments) : Expression;
 public record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public record PostfixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
@@ -21,6 +23,9 @@ public record PostfixIncrementDecrementExpression(IToken<CTokenType> PrefixOpera
 public record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
+
+// 6.5.4 Cast expression
+public record CastExpression(TypeName TypeName, Expression Target) : Expression;
 
 // 6.5.5–6.5.14: Various binary operators
 public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
@@ -43,6 +48,3 @@ public record AssignmentExpression(Expression Left, string Operator, Expression 
 
 // 6.5.17 Comma operator
 public record CommaExpression(Expression Left, Expression Right) : Expression;
-
-// 6.6 Constant expressions
-public record ConstantExpression(Expression Expression) : Expression;

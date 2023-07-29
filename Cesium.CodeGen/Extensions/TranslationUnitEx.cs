@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -36,11 +37,7 @@ internal static class TranslationUnitEx
                             throw new CompilationException(
                                 $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
-                        if (storageClass != StorageClass.Auto)
-                            throw new WipException(344,
-                                $"Storage class {storageClass} isn't supported for a top-level function, yet.");
-
-                        var functionDeclaration = new FunctionDeclaration(identifier, functionType, cliImportMemberName);
+                        var functionDeclaration = new FunctionDeclaration(identifier, storageClass, functionType, cliImportMemberName);
                         yield return functionDeclaration;
                         continue;
                     }
@@ -50,10 +47,50 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType or PointerType or InPlaceArrayType) // TODO[#75]: Consider other type categories.
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType)
                     {
                         var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
+                        continue;
+                    }
+
+                    if (type is EnumType enumType)
+                    {
+                        int currentValue = -1;
+                        foreach (var enumeratorDeclaration in enumType.Members)
+                        {
+                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier;
+                            if (enumeratorName is null)
+                            {
+                                throw new CompilationException(
+                                    $"Enum type {enumType.Identifier} has enumerator without name");
+                            }
+
+                            if (enumeratorDeclaration.Initializer is null)
+                            {
+                                currentValue++;
+                            }
+                            else
+                            {
+                                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                                if (constantValue is not IntegerConstant intConstant)
+                                {
+                                    throw new CompilationException(
+                                        $"Enumerator {enumeratorName} has non-integer initializer");
+                                }
+
+                                currentValue = intConstant.Value;
+                            }
+
+                            var variable = new EnumConstantDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+                            yield return variable;
+                        }
+                        continue;
+                    }
+
+                    if (type is StructType structType)
+                    {
+                        yield return new TagBlockItem(new[] { declaration });
                         continue;
                     }
 
