@@ -32,9 +32,9 @@ public unsafe static class StdLibFunctions
         shared = new Random((int)seed);
     }
 
-    public static int System(CPtr<byte> command)
+    public static int System(byte* command)
     {
-        string? shellCommand = RuntimeHelpers.Unmarshal(command.AsPtr());
+        string? shellCommand = RuntimeHelpers.Unmarshal(command);
         if (shellCommand is null)
         {
             return 8 /*ENOEXEC*/;

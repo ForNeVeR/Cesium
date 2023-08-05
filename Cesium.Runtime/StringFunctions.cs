@@ -11,17 +11,17 @@ namespace Cesium.Runtime;
 /// </summary>
 public static unsafe class StringFunctions
 {
-    public static nuint StrLen(CPtr<byte> str)
+    public static nuint StrLen(byte* str)
     {
 #if NETSTANDARD
-        if (str.AsPtr() == null)
+        if (str == null)
         {
             return 0;
         }
 
         Encoding encoding = Encoding.UTF8;
         int byteLength = 0;
-        byte* search = str.AsPtr();
+        byte* search = str;
         while (*search != '\0')
         {
             byteLength++;
@@ -31,7 +31,7 @@ public static unsafe class StringFunctions
         int stringLength = encoding.GetCharCount(str.AsPtr(), byteLength);
         return (uint)stringLength;
 #else
-        return (uint)(Marshal.PtrToStringUTF8(str.AsIntPtr())?.Length ?? 0);
+        return (uint)(Marshal.PtrToStringUTF8((IntPtr)str)?.Length ?? 0);
 #endif
     }
     public static byte* StrCpy(byte* dest, byte* src)

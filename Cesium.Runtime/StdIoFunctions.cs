@@ -1,5 +1,3 @@
-using System.IO;
-using System.Runtime.InteropServices;
 #if NETSTANDARD
 using System.Text;
 #endif
@@ -39,11 +37,11 @@ public unsafe static class StdIoFunctions
         });
     }
 
-    public static int PutS(CPtr<byte> str)
+    public static int PutS(byte* str)
     {
         try
         {
-            Console.WriteLine(RuntimeHelpers.Unmarshal(str.AsPtr()));
+            Console.WriteLine(RuntimeHelpers.Unmarshal(str));
             return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
@@ -86,9 +84,9 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static int PrintF(CPtr<byte> str, VoidPtr varargs)
+    public static int PrintF(byte* str, VoidPtr varargs)
     {
-        var formatString = RuntimeHelpers.Unmarshal(str.AsPtr());
+        var formatString = RuntimeHelpers.Unmarshal(str);
         if (formatString == null)
         {
             return -1;
