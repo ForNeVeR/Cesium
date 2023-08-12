@@ -28,10 +28,10 @@ public static unsafe class StringFunctions
             search++;
         }
 
-        int stringLength = encoding.GetCharCount(str.AsPtr(), byteLength);
+        int stringLength = encoding.GetCharCount(str, byteLength);
         return (uint)stringLength;
 #else
-        return (uint)(Marshal.PtrToStringUTF8((IntPtr)str)?.Length ?? 0);
+        return (uint)(Marshal.PtrToStringUTF8((nint)str)?.Length ?? 0);
 #endif
     }
     public static byte* StrCpy(byte* dest, byte* src)

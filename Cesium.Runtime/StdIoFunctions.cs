@@ -1,5 +1,4 @@
 #if NETSTANDARD
-using System.Text;
 #endif
 
 namespace Cesium.Runtime;
@@ -84,7 +83,7 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    public static int PrintF(byte* str, VoidPtr varargs)
+    public static int PrintF(byte* str, void* varargs)
     {
         var formatString = RuntimeHelpers.Unmarshal(str);
         if (formatString == null)
@@ -112,20 +111,20 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case "s":
-                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)varargs.AsPtr<long>()[consumedArgs]);
+                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)((long*)varargs)[consumedArgs]);
                     Console.Write(stringValue);
                     consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
                 case "c":
-                    Console.Write((char)(byte)varargs.AsPtr<long>()[consumedArgs]);
+                    Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
                     consumedBytes++;
                     consumedArgs++;
                     break;
                 case "d":
                 case "li":
                 case "i":
-                    int intValue = (int)varargs.AsPtr<long>()[consumedArgs];
+                    int intValue = (int)((long*)varargs)[consumedArgs];
                     var intValueString = intValue.ToString();
                     Console.Write(intValueString);
                     consumedBytes += intValueString.Length;
@@ -133,21 +132,21 @@ public unsafe static class StdIoFunctions
                     break;
                 case "u":
                 case "lu":
-                    uint uintValue = (uint)varargs.AsPtr<long>()[consumedArgs];
+                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
                     var uintValueString = uintValue.ToString();
                     Console.Write(uintValueString);
                     consumedBytes += uintValueString.Length;
                     consumedArgs++;
                     break;
                 case "f":
-                    var floatNumber = varargs.AsPtr<double>()[consumedArgs];
+                    var floatNumber = ((double*)varargs)[consumedArgs];
                     string floatNumberString = floatNumber.ToString("F6");
                     Console.Write(floatNumberString);
                     consumedBytes += floatNumberString.Length;
                     consumedArgs++;
                     break;
                 case "p":
-                    nint pointerValue = varargs.AsPtr<nint>()[consumedArgs];
+                    nint pointerValue = ((nint*)varargs)[consumedArgs];
                     string pointerValueString = pointerValue.ToString("X");
                     Console.Write(pointerValueString);
                     consumedBytes += pointerValueString.Length;
