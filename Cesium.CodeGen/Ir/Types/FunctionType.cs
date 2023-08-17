@@ -11,9 +11,6 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
 
     public TypeReference ResolvePointer(TranslationUnitContext context)
     {
-        if (context.AssemblyContext.ArchitectureSet == TargetArchitectureSet.Wide)
-            throw new WipException(WipException.ToDo, $"Cannot resolve function pointer {this} in wide architecture.");
-
         var pointer = new FunctionPointerType
         {
             ReturnType = ReturnType.Resolve(context)
