@@ -1,8 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenNetInteropTests
 {
-    private static void DoTest(TargetArchitectureSet architecture, string cSharpCode, string cCode)
+    private static void DoTest(
+        TargetArchitectureSet architecture,
+        [StringSyntax("csharp")] string cSharpCode,
+        [StringSyntax("cpp")] string cCode)
     {
         Assert.False(true,
             "TODO: Compile .NET Assembly, compile C assembly with reference to .NET, dump the byte code");
