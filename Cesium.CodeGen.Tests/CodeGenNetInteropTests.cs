@@ -2,21 +2,28 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Cesium.CodeGen.Tests;
 
-public class CodeGenNetInteropTests
+public class CodeGenNetInteropTests : CodeGenTestBase
 {
-    private static void DoTest(
+    private static Task DoTest(
         TargetArchitectureSet architecture,
         [StringSyntax("csharp")] string cSharpCode,
         [StringSyntax("cpp")] string cCode)
     {
-        Assert.False(true,
-            "TODO: Compile .NET Assembly, compile C assembly with reference to .NET, dump the byte code");
+        var cSharpAssemblyPath = CompileCSharpAssembly(cSharpCode);
+        var cesiumAssembly = GenerateAssembly(runtime: null, arch: architecture, sources: new[]{cCode}, referencePaths: new[] { cSharpAssemblyPath });
+        return VerifyTypes(cesiumAssembly, architecture);
+    }
+
+    private static string CompileCSharpAssembly(string cSharpCode)
+    {
+        Assert.True(false, "TODO: Compile .NET Assembly");
+        return null!;
     }
 
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public void PointerInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task PointerInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"public static class Test
 {
@@ -36,7 +43,7 @@ int main(void)
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public void CPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task CPtrInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
@@ -57,7 +64,7 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public void VPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task VPtrInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
@@ -78,7 +85,7 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public void FPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task FPtrInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"using Cesium.Runtime;
 public static class Test

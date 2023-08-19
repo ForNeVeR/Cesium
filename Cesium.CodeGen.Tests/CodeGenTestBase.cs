@@ -14,19 +14,24 @@ namespace Cesium.CodeGen.Tests;
 [UseInvariantCulture]
 public abstract class CodeGenTestBase : VerifyTestBase
 {
-    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
-    {
-        var context = CreateAssembly(runtime);
-        GenerateCode(context, sources);
-        return EmitAssembly(context);
-    }
+    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources) =>
+        GenerateAssembly(sources, runtime, TargetArchitectureSet.Dynamic, "", "", Array.Empty<string>());
     protected static AssemblyDefinition GenerateAssembly(
         TargetRuntimeDescriptor? runtime,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
         string @namespace = "",
-        string globalTypeFqn = "", params string[] sources)
+        string globalTypeFqn = "", params string[] sources) =>
+        GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+
+    protected static AssemblyDefinition GenerateAssembly(
+        string[] sources,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
     {
-        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn);
+        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn, referencePaths);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -58,15 +63,19 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetRuntimeDescriptor? targetRuntime,
         TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
         string @namespace = "",
-        string globalTypeFqn = "")
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
     {
+        var allReferences = (referencePaths ?? Array.Empty<string>()).ToList();
+        allReferences.Insert(0, typeof(Console).Assembly.Location);
+
         CompilationOptions compilationOptions = new CompilationOptions(
             targetRuntime ?? TargetRuntimeDescriptor.Net60,
             targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
-            new[] { typeof(Console).Assembly.Location },
+            allReferences,
             @namespace,
             globalTypeFqn,
             Array.Empty<string>());
