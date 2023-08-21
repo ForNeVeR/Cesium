@@ -1,23 +1,28 @@
 using System.Diagnostics.CodeAnalysis;
+using Cesium.Test.Framework;
+using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenNetInteropTests : CodeGenTestBase
 {
-    private static Task DoTest(
+    private readonly ITestOutputHelper _output;
+    public CodeGenNetInteropTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
+    private async Task DoTest(
         TargetArchitectureSet architecture,
         [StringSyntax("csharp")] string cSharpCode,
         [StringSyntax("cpp")] string cCode)
     {
-        var cSharpAssemblyPath = CompileCSharpAssembly(cSharpCode);
+        var cSharpAssemblyPath = await CSharpCompilationUtil.CompileCSharpAssembly(
+            _output,
+            CSharpCompilationUtil.DefaultRuntime,
+            cSharpCode);
         var cesiumAssembly = GenerateAssembly(runtime: null, arch: architecture, sources: new[]{cCode}, referencePaths: new[] { cSharpAssemblyPath });
-        return VerifyTypes(cesiumAssembly, architecture);
-    }
-
-    private static string CompileCSharpAssembly(string cSharpCode)
-    {
-        Assert.True(false, "TODO: Compile .NET Assembly");
-        return null!;
+        await VerifyTypes(cesiumAssembly, architecture);
     }
 
     [Theory]

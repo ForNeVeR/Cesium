@@ -70,7 +70,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         allReferences.Insert(0, typeof(Console).Assembly.Location);
 
         CompilationOptions compilationOptions = new CompilationOptions(
-            targetRuntime ?? TargetRuntimeDescriptor.Net60,
+            targetRuntime ?? CSharpCompilationUtil.DefaultRuntime,
             targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,

@@ -1,10 +1,9 @@
 using Medallion.Shell;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Cesium.IntegrationTests;
+namespace Cesium.Test.Framework;
 
-internal static class ExecUtil
+public static class ExecUtil
 {
     public static async Task RunToSuccess(
         ITestOutputHelper? output,
