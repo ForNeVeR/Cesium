@@ -69,6 +69,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             new[] { typeof(Console).Assembly.Location },
             @namespace,
             globalTypeFqn,
+            Array.Empty<string>(),
             Array.Empty<string>());
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
