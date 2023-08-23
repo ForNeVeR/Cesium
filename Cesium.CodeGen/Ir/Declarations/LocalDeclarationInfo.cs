@@ -158,7 +158,8 @@ internal record LocalDeclarationInfo(
 
         var (typeQualifiers, childPointer) = pointer;
         if (typeQualifiers != null)
-            throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
+            if (typeQualifiers.Value.Length == 1 && typeQualifiers.Value[0].Name != "const")
+                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
 
         type = new PointerType(type);
         if (childPointer != null)
