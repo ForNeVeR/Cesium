@@ -35,10 +35,16 @@ internal class LValueIndirection : ILValue
 
     public IType GetValueType() => _pointerType.Base;
 
-    private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => pointerType.Base switch
+    private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => SimplifyBaseType(pointerType.Base) switch
     {
         PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
         PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
         _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
+    };
+
+    private static IType SimplifyBaseType(IType type) => type switch
+    {
+        ConstType constType => constType.Base,
+        _ => type
     };
 }

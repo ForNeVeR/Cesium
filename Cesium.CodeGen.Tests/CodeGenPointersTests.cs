@@ -29,6 +29,15 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
 
     [Fact]
+    public Task PointerToPointer() => DoTest("void foo (int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task ConstPointerToPointer() => DoTest("void foo (const int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task PointerToConstPointer() => DoTest("void foo (int *const *x) { int y = *x[1]; }");
+
+    [Fact]
     public void CannotMultiplyPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = 1*x; }",
         "Operator Multiply is not supported for value/pointer operands");
