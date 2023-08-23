@@ -49,7 +49,8 @@ return await parserResult.MapResult(async args =>
             defaultImportsAssembly,
             args.Namespace,
             args.GlobalClass,
-            args.DefineConstant.ToList());
+            args.DefineConstant.ToList(),
+            args.IncludeDirectories.ToList());
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
@@ -46,7 +47,10 @@ internal static class Compilation
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
 
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
-        var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
+        var includeDirectories = new[] { compilationFileDirectory }
+            .Concat(compilationOptions.AdditionalIncludeDirectories)
+            .ToArray();
+        var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
         var outOfFileRange = new Yoakke.SynKit.Text.Range();
