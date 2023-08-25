@@ -20,7 +20,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     public static IEnumerable<object[]> TestCaseProvider()
     {
-        var testCaseDirectory = Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.IntegrationTests");
+        var testCaseDirectory = Path.Combine(TestStructureUtil.SolutionRootPath, "Cesium.IntegrationTests");
         var cFiles = Directory.EnumerateFileSystemEntries(testCaseDirectory, "*.c", SearchOption.AllDirectories);
         return cFiles
             .Where(file => !file.EndsWith(".ignore.c"))
@@ -61,7 +61,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             Directory.CreateDirectory(objDirPath);
 
             var sourceFilePath = Path.Combine(
-                IntegrationTestContext.SolutionRootPath,
+                TestStructureUtil.SolutionRootPath,
                 "Cesium.IntegrationTests",
                 relativeSourcePath);
 
@@ -179,7 +179,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             "run",
             "--no-build",
             "--configuration", IntegrationTestContext.BuildConfiguration,
-            "--project", Path.Combine(IntegrationTestContext.SolutionRootPath, "Cesium.Compiler"),
+            "--project", Path.Combine(TestStructureUtil.SolutionRootPath, "Cesium.Compiler"),
             "--",
             "--nologo",
             sourceFilePath,
@@ -192,7 +192,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         {
             var coreLibPath = WindowsEnvUtil.MsCorLibPath;
             var runtimeLibPath = Path.Combine(
-                IntegrationTestContext.SolutionRootPath,
+                TestStructureUtil.SolutionRootPath,
                 "Cesium.Runtime/bin",
                 IntegrationTestContext.BuildConfiguration,
                 "netstandard2.0/Cesium.Runtime.dll"

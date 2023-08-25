@@ -30,7 +30,7 @@ public class CodeGenNetInteropTests : CodeGenTestBase
     [InlineData(TargetArchitectureSet.Wide)]
     public Task PointerInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
-        @"public static class Test
+        @"public static unsafe class Test
 {
     public static int Func(int* ptr) => 1;
 }
