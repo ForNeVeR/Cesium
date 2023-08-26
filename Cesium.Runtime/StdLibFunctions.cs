@@ -32,6 +32,11 @@ public unsafe static class StdLibFunctions
         shared = new Random((int)seed);
     }
 
+    public static void Abort()
+    {
+        Environment.FailFast("Aborted");
+    }
+
     public static int System(byte* command)
     {
         string? shellCommand = StdIoFunctions.Unmarshal(command);

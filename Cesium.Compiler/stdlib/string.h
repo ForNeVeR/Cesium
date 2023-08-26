@@ -15,3 +15,9 @@ char* strcat(char* dest, char* src);
 
 __cli_import("Cesium.Runtime.StringFunctions::StrNCat")
 char* strncat(char* dest, char* src, size_t count);
+
+__cli_import("Cesium.Runtime.StringFunctions::StrNCmp")
+int strncmp(const char* lhs, const char* rhs, size_t count);
+
+__cli_import("Cesium.Runtime.StringFunctions::Memset")
+void* memset(void* dest, int ch, size_t count);

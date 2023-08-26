@@ -28,5 +28,10 @@ int main(int argc, char** argv)
     strncat(cat_t, " world!", 3);
     if (strlen(cat_t) != 8) return -6;
 
+    const char* string = "Hello World!";
+    if (strncmp(string, "Hello!", 5) != 0) return -7;
+    if (strncmp(string, "Hello", 10) <= 0) return -8;
+    if (strncmp(string, "Hello there", 12) >= 0) return -9;
+    if (strncmp("Hello, everybody!" + 12, "Hello, somebody!" + 11, 5) != 0) return -10;
     return 42;
 }

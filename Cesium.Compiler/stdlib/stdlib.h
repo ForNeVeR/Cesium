@@ -34,5 +34,8 @@ void* calloc(size_t num, size_t size);
 __cli_import("Cesium.Runtime.StdLibFunctions::AlignedAlloc")
 void* aligned_alloc(size_t alignment, size_t size);
 
+__cli_import("Cesium.Runtime.StdLibFunctions::Abort")
+void abort(void);
+
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
