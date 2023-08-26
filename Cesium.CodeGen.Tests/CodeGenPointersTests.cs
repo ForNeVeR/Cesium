@@ -26,6 +26,12 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task AddToPointerFromLeft() => DoTest("void foo (int *x) { x = 1+x; }");
 
     [Fact]
+    public Task IncrementPrimitivePointer() => DoTest("void foo (int *x) { x++; }");
+
+    [Fact]
+    public Task IncrementStructPointer() => DoTest("struct test { char* x; int y; } ; void foo () { const struct test *x; x++; }");
+
+    [Fact]
     public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
 
     [Fact]

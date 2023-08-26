@@ -77,7 +77,7 @@ internal class StructType : IGeneratedType
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch
     {
-        0 => throw new AssertException("Invalid struct with no members: {this}."),
+        0 => throw new AssertException($"Invalid struct with no members: {this}."),
         1 => Members.Single().Type.GetSizeInBytes(arch),
         _ => arch switch
             {

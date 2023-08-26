@@ -16,7 +16,15 @@ internal class LValueField : ILValue
     public LValueField(IExpression expression, Types.PointerType structPointerType, string name)
     {
         _expression = expression;
-        _structType = (StructType)structPointerType.Base;
+        if (structPointerType.Base is ConstType constType)
+        {
+            _structType = (StructType)constType.Base;
+        }
+        else
+        {
+            _structType = (StructType)structPointerType.Base;
+        }
+
         _name = name;
     }
 
