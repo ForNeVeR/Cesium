@@ -11,6 +11,7 @@ public static class CSharpCompilationUtil
     public static readonly TargetRuntimeDescriptor DefaultRuntime = TargetRuntimeDescriptor.Net60;
     private const string _configuration = "Debug";
     private const string _targetRuntime = "net6.0";
+    private const string _projectName = "TestProject";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
     // TODO: Should not be static, make a fixture.
@@ -30,10 +31,10 @@ public static class CSharpCompilationUtil
             File.Delete(directory);
             Directory.CreateDirectory(directory);
 
-            var projectName = await CreateCSharpProject(output, directory);
-            await File.WriteAllTextAsync(Path.Combine(directory, projectName, "Program.cs"), cSharpSource);
-            await CompileCSharpProject(output, directory, projectName);
-            return Path.Combine(directory, "bin", _configuration, _targetRuntime, projectName + ".dll");
+            var projectDirectory = await CreateCSharpProject(output, directory);
+            await File.WriteAllTextAsync(Path.Combine(projectDirectory, "Program.cs"), cSharpSource);
+            await CompileCSharpProject(output, directory, _projectName);
+            return Path.Combine(projectDirectory, "bin", _configuration, _targetRuntime, _projectName + ".dll");
         }
         finally
         {
@@ -43,9 +44,13 @@ public static class CSharpCompilationUtil
 
     private static async Task<string> CreateCSharpProject(ITestOutputHelper output, string directory)
     {
-        const string projectName = "TestProject";
-        await ExecUtil.RunToSuccess(output, "dotnet", directory, new[] { "new", "classlib", "-o", "TestProject" });
-        var projectFilePath = Path.Combine(directory, projectName, $"{projectName}.csproj");
+        await ExecUtil.RunToSuccess(
+            output,
+            "dotnet",
+            directory,
+            new[] { "new", "classlib", "--framework", _targetRuntime, "--output", _projectName });
+        var projectDirectory = Path.Combine(directory, _projectName);
+        var projectFilePath = Path.Combine(projectDirectory, $"{_projectName}.csproj");
         XDocument csProj;
         await using (var projectFileStream = new FileStream(projectFilePath, FileMode.Open, FileAccess.Read))
         {
@@ -63,7 +68,7 @@ public static class CSharpCompilationUtil
         await using var outputStream = new FileStream(projectFilePath, FileMode.Truncate, FileAccess.Write);
         await csProj.SaveAsync(outputStream, SaveOptions.None, CancellationToken.None);
 
-        return projectName;
+        return projectDirectory;
     }
 
     private static string GetCesiumRuntimeLibraryPath() => Path.Combine(
