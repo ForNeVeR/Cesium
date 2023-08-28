@@ -1,4 +1,5 @@
 using System.Reflection;
+using Cesium.Test.Framework;
 using JetBrains.Annotations;
 using NeoSmart.AsyncLock;
 using Xunit.Abstractions;
@@ -72,11 +73,7 @@ public class IntegrationTestContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await ExecUtil.RunToSuccess(null, "dotnet", SolutionRootPath, new[]
-        {
-            "build-server",
-            "shutdown"
-        });
+        await DotNetCliHelper.ShutdownBuildServer();
     }
 
     private static string GetSolutionRoot()
@@ -97,20 +94,12 @@ public class IntegrationTestContext : IAsyncDisposable
     private async Task BuildRuntime(ITestOutputHelper output)
     {
         var runtimeProjectFile = Path.Combine(SolutionRootPath, "Cesium.Runtime/Cesium.Runtime.csproj");
-        await BuildDotNetProject(output, runtimeProjectFile);
+        await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, runtimeProjectFile);
     }
 
     private async Task BuildCompiler(ITestOutputHelper output)
     {
         var compilerProjectFile = Path.Combine(SolutionRootPath, "Cesium.Compiler/Cesium.Compiler.csproj");
-        await BuildDotNetProject(output, compilerProjectFile);
+        await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, compilerProjectFile);
     }
-
-    private Task BuildDotNetProject(ITestOutputHelper output, string projectFilePath) =>
-        ExecUtil.RunToSuccess(output, "dotnet", Path.GetDirectoryName(projectFilePath)!, new[]
-        {
-            "build",
-            "--configuration", BuildConfiguration,
-            projectFilePath
-        });
 }

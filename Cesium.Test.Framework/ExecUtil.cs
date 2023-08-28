@@ -1,18 +1,18 @@
 using Medallion.Shell;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Cesium.IntegrationTests;
+namespace Cesium.Test.Framework;
 
-internal static class ExecUtil
+public static class ExecUtil
 {
     public static async Task RunToSuccess(
         ITestOutputHelper? output,
         string executable,
         string workingDirectory,
-        string[] args)
+        string[] args,
+        IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
-        var result = await Run(output, executable, workingDirectory, args);
+        var result = await Run(output, executable, workingDirectory, args, additionalEnvironment);
         Assert.True(result.Success);
     }
 
@@ -20,10 +20,21 @@ internal static class ExecUtil
         ITestOutputHelper? output,
         string executable,
         string workingDirectory,
-        string[] args)
+        string[] args,
+        IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
         output?.WriteLine($"$ {executable} {string.Join(" ", args)}");
-        var result = await Command.Run(executable, args, o => o.WorkingDirectory(workingDirectory)).Task;
+        var result = await Command.Run(executable, args, o =>
+        {
+            o.WorkingDirectory(workingDirectory);
+            if (additionalEnvironment != null)
+            {
+                foreach (var (key, value) in additionalEnvironment)
+                {
+                    o.EnvironmentVariable(key, value);
+                }
+            }
+        }).Task;
         foreach (var s in result.StandardOutput.Split("\n"))
             output?.WriteLine(s.TrimEnd());
         if (result.StandardError.Trim() != "")

@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using Cesium.Test.Framework;
 using Microsoft.Win32;
 using Xunit.Abstractions;
 
