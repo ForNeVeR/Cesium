@@ -20,15 +20,27 @@ public class ArchitectureDependentTypeTests : CodeGenTestBase
     [InlineData(TargetArchitectureSet.Bit64)]
     [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task StructWithPointer(TargetArchitectureSet arch) => DoTest(arch, """
+    public Task StructWithPointerArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct
 {
     char *x[1];
 } foo;
 """);
 
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task StructWithPointer(TargetArchitectureSet arch) => DoTest(arch, """
+        typedef struct
+        {
+            char *x;
+        } foo;
+        """);
+
     [Fact(DisplayName = "Struct with a fixed array of a pointer type isn't supported for dynamic architecture")]
-    public void StructWithPointerDynamic() => DoesNotCompile("""
+    public void StructWithPointerArrayDynamic() => DoesNotCompile("""
 typedef struct
 {
     char *x[1];

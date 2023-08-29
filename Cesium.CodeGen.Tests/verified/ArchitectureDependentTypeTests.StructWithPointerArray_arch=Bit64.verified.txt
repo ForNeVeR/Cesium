@@ -1,0 +1,19 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Nested types:
+    Type: <typedef>foo/<SyntheticBuffer>x
+    Pack: 0
+    Size: 8
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Byte* <typedef>foo/<SyntheticBuffer>x::FixedElementField
+  Fields:
+    <typedef>foo/<SyntheticBuffer>x <typedef>foo::x
+    Custom attributes:
+    - FixedBufferAttribute(System.Byte*, 8)
+
