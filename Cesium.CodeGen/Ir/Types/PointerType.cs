@@ -8,6 +8,15 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed record PointerType(IType Base) : IType
 {
+    public static int? SizeInBytes(TargetArchitectureSet arch) => arch switch
+    {
+        TargetArchitectureSet.Dynamic => null,
+        TargetArchitectureSet.Bit32 => 4,
+        TargetArchitectureSet.Bit64 => 8,
+        TargetArchitectureSet.Wide => 8,
+        _ => throw new AssertException($"Unknown architecture set: {arch}.")
+    };
+
     public TypeReference Resolve(TranslationUnitContext context)
     {
         if (Base is FunctionType ft)
@@ -16,15 +25,19 @@ internal sealed record PointerType(IType Base) : IType
         return Base.Resolve(context).MakePointerType();
     }
 
-    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
-        arch switch
+    public TypeReference ResolveForTypeMember(TranslationUnitContext context) =>
+        context.AssemblyContext.ArchitectureSet switch
         {
-            TargetArchitectureSet.Dynamic => null,
-            TargetArchitectureSet.Bit32 => 4,
-            TargetArchitectureSet.Bit64 => 8,
-            TargetArchitectureSet.Wide => 8,
-            _ => throw new AssertException($"Unknown architecture set: {arch}.")
+            TargetArchitectureSet.Wide => Base switch
+            {
+                FunctionType => context.TypeSystem.RuntimeFPtr(Base.ResolveForTypeMember(context)),
+                PrimitiveType { Kind: PrimitiveTypeKind.Void } => context.TypeSystem.RuntimeVoidPtr,
+                _ => context.TypeSystem.RuntimeCPtr(Base.ResolveForTypeMember(context)),
+            },
+            _ => Resolve(context)
         };
+
+    public int? GetSizeInBytes(TargetArchitectureSet arch) => SizeInBytes(arch);
 
     public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
     {
