@@ -3,4 +3,4 @@
 
   Type: <typedef>foo
   Fields:
-    Cesium.Runtime.CPtr<System.Byte> <typedef>foo::x
+    Cesium.Runtime.CPtr`1<System.Byte> <typedef>foo::x

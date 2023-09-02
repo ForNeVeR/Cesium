@@ -1,6 +1,5 @@
 using Cesium.CodeGen.Extensions;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -21,17 +20,6 @@ internal class CTypeSystem
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
     public IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
     public IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
-
-    public IType RuntimeVoidPtr { get; }
-
-    public CTypeSystem(AssemblyDefinition cesiumRuntimeAssembly)
-    {
-        TypeReference GetRuntimeType(string name) =>
-            cesiumRuntimeAssembly.GetType(name) ??
-            throw new AssertException($"Could not find type {name} in the runtime assembly.");
-
-        RuntimeVoidPtr = new ResolvedPointerType(GetRuntimeType("Cesium.Runtime.VoidPtr"));
-    }
 
     public bool IsConversionAvailable(IType type, IType targetType)
     {

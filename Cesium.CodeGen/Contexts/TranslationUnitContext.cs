@@ -1,4 +1,4 @@
-using Cesium.Ast;
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -6,13 +6,20 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
-using System.Diagnostics;
+using Mono.Cecil.Rocks;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record TranslationUnitContext(AssemblyContext AssemblyContext, string Name)
+public class TranslationUnitContext
 {
+    private const string _cPtrFullTypeName = "Cesium.Runtime.CPtr`1";
+    private const string _voidPtrFullTypeName = "Cesium.Runtime.VoidPtr";
+    private const string _funcPtrFullTypeName = "Cesium.Runtime.FuncPtr`1";
+
+    public AssemblyContext AssemblyContext { get; }
+    public string Name { get; }
+
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
@@ -25,6 +32,36 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
     private GlobalConstructorScope? _initializerScope;
+
+    private readonly TypeReference _runtimeCPtr;
+    public TypeReference RuntimeVoidPtr { get; }
+    private readonly TypeReference _runtimeFuncPtr;
+
+    public TranslationUnitContext(AssemblyContext assemblyContext, string name)
+    {
+        AssemblyContext = assemblyContext;
+        Name = name;
+
+        TypeReference GetRuntimeType(string typeName) =>
+            assemblyContext.CesiumRuntimeAssembly.GetType(typeName) ??
+            throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
+
+        _runtimeCPtr = Module.ImportReference(GetRuntimeType(_cPtrFullTypeName));
+        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(_voidPtrFullTypeName));
+        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(_funcPtrFullTypeName));
+    }
+
+    public TypeReference RuntimeCPtr(TypeReference typeReference)
+    {
+        return _runtimeCPtr.MakeGenericInstanceType(typeReference);
+    }
+
+    public TypeReference RuntimeFuncPtr(TypeReference typeReference)
+    {
+        // TODO: Resolve a corresponding delegate type
+        // return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
+        throw new WipException(WipException.ToDo, "Resolve a delegate for FPtr");
+    }
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have
