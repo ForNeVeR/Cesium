@@ -19,7 +19,19 @@ internal static class Compilation
         string outputFilePath,
         CompilationOptions compilationOptions)
     {
+        if (compilationOptions.ProducePreprocessedFile)
+        {
+            foreach (var inputFilePath in inputFilePaths)
+            {
+                var content = await Preprocess(inputFilePath, compilationOptions);
+                Console.WriteLine(content);
+            }
+
+            return 0;
+        }
+
         Console.WriteLine($"Generating assembly {outputFilePath}.");
+
         var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
 
         foreach (var inputFilePath in inputFilePaths)
@@ -69,14 +81,20 @@ internal static class Compilation
         return preprocessor.ProcessSource();
     }
 
-    private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
+    private static async Task<string> Preprocess(string inputFilePath, CompilationOptions compilationOptions)
     {
         var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
         var compilationSourcePath = Path.GetFullPath(inputFilePath);
 
         using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
 
-        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, context.CompilationOptions);
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, compilationOptions);
+        return content;
+    }
+
+    private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
+    {
+        var content = await Preprocess(inputFilePath, context.CompilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
