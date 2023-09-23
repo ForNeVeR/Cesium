@@ -19,7 +19,7 @@ public class Arguments
     [Value(0)]
     public IList<string> InputFilePaths { get; init; } = null!;
 
-    [Option('o', "out", Required = true)]
+    [Option('o', "out")]
     public string OutputFilePath { get; init; } = null!;
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
@@ -54,6 +54,9 @@ public class Arguments
 
     [Option('W', HelpText = "Enable warnings set")]
     public string WarningsSet { get; init; } = "";
+
+    [Option('E', HelpText = "Produce preprocessed file")]
+    public bool ProducePreprocessedFile { get; init; } = false;
 
     [Option('I', HelpText = "Adds include directory of header files")]
     public IEnumerable<string> IncludeDirectories { get; init; } = Array.Empty<string>();

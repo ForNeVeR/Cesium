@@ -12,4 +12,5 @@ public record CompilationOptions(
     string Namespace,
     string GlobalClassFqn,
     IList<string> DefineConstants,
-    IList<string> AdditionalIncludeDirectories);
+    IList<string> AdditionalIncludeDirectories,
+    bool ProducePreprocessedFile);

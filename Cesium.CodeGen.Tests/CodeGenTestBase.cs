@@ -70,7 +70,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
             @namespace,
             globalTypeFqn,
             Array.Empty<string>(),
-            Array.Empty<string>());
+            Array.Empty<string>(),
+            ProducePreprocessedFile: false);
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);

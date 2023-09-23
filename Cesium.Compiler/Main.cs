@@ -10,7 +10,7 @@ var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments
 
 return await parserResult.MapResult(async args =>
     {
-        if (!args.NoLogo)
+        if (!args.NoLogo && !args.ProducePreprocessedFile)
         {
             Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
         }
@@ -19,6 +19,12 @@ return await parserResult.MapResult(async args =>
         {
             Console.Error.WriteLine("Input file paths should be defined.");
             return 2;
+        }
+
+        if (!args.ProducePreprocessedFile && string.IsNullOrWhiteSpace(args.OutputFilePath))
+        {
+            Console.Error.WriteLine("Required option 'o, out' is missing.");
+            return 3;
         }
 
         var targetArchitectureSet = args.TargetArchitectureSet;
@@ -34,7 +40,7 @@ return await parserResult.MapResult(async args =>
 #pragma warning disable IL3000 // Automatic discovery of corelib is fallback option, if tooling do not pass that parameter
         var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
 #pragma warning restore IL3000
-        var moduleKind = args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
+        var moduleKind = args.ProducePreprocessedFile ? ModuleKind.Console : args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
         {
             ".exe" => ModuleKind.Console,
             ".dll" => ModuleKind.Dll,
@@ -50,7 +56,8 @@ return await parserResult.MapResult(async args =>
             args.Namespace,
             args.GlobalClass,
             args.DefineConstant.ToList(),
-            args.IncludeDirectories.ToList());
+            args.IncludeDirectories.ToList(),
+            args.ProducePreprocessedFile);
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
     },
     _ =>
