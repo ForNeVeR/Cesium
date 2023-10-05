@@ -90,14 +90,14 @@ namespace Cesium.Compiler.Tests
         [Fact]
         public async Task MultipleIncludeFiles()
         {
-            var args = new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c", "-o", "C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", "-I", "C:\\\\Cesium\\\\Cesium.Samples\\\\", "-I", "\"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\\"" };
+            var args = new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c", "-o", "C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", "-I", "C:\\\\Cesium\\\\Cesium.Samples\\\\", "-I", "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\" };
             var reporter = new MockCompilerReporter();
 
             var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
             {
                 Assert.Equal(new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c" }, args.InputFilePaths);
                 Assert.Equal("C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", args.OutputFilePath);
-                Assert.Equal(new[] { "C:\\\\Cesium\\\\Cesium.Samples\\\\", "\"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\\"" }, args.IncludeDirectories);
+                Assert.Equal(new[] { "C:\\\\Cesium\\\\Cesium.Samples\\\\", "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\" }, args.IncludeDirectories);
                 return Task.FromResult(0);
             });
             NoInformationalMessages(reporter);

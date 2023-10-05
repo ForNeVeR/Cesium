@@ -9,7 +9,11 @@ public class CommandLineParser
 {
     public static async Task<int> ParseCommandLineArgs(string[] args, ICompilerReporter reporter, Func<Arguments, Task<int>> worker)
     {
-        var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
+        var parserResult = new Parser(x =>
+        {
+            x.HelpWriter = null;
+            x.AllowMultiInstance = true;
+        }).ParseArguments<Arguments>(args);
 
         return await parserResult.MapResult(async args =>
         {
