@@ -1,32 +1,10 @@
-using System.Reflection;
 using Cesium.CodeGen;
 using Cesium.Compiler;
 using Cesium.Core;
-using CommandLine;
-using CommandLine.Text;
 using Mono.Cecil;
 
-var parserResult = new Parser(x => x.HelpWriter = null).ParseArguments<Arguments>(args);
-
-return await parserResult.MapResult(async args =>
+await CommandLineParser.ParseCommandLineArgs(args, new CompilerReporter(), async args =>
     {
-        if (!args.NoLogo && !args.ProducePreprocessedFile)
-        {
-            Console.WriteLine($"Cesium v{Assembly.GetExecutingAssembly().GetName().Version}");
-        }
-
-        if (args.InputFilePaths.Count == 0)
-        {
-            Console.Error.WriteLine("Input file paths should be defined.");
-            return 2;
-        }
-
-        if (!args.ProducePreprocessedFile && string.IsNullOrWhiteSpace(args.OutputFilePath))
-        {
-            Console.Error.WriteLine("Required option 'o, out' is missing.");
-            return 3;
-        }
-
         var targetArchitectureSet = args.TargetArchitectureSet;
         var targetRuntime = args.Framework switch
         {
@@ -59,24 +37,17 @@ return await parserResult.MapResult(async args =>
             args.IncludeDirectories.ToList(),
             args.ProducePreprocessedFile);
         return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
-    },
-    _ =>
-    {
-        string helpText = PrepareHelpText(parserResult);
-        Console.WriteLine(helpText);
-        return Task.FromResult(-1);
     });
 
-static string PrepareHelpText<T>(ParserResult<T> result)
+class CompilerReporter : ICompilerReporter
 {
-    if (result is NotParsed<T> notParsed && notParsed.Errors.IsVersion())
-        return HelpText.AutoBuild(result);
-
-    var helpText = HelpText.AutoBuild(result, h =>
+    public void ReportError(string message)
     {
-        h.AddEnumValuesToHelpText = true;
-        return HelpText.DefaultParsingErrorsHandler(result, h);
-    }, e => e);
+        Console.Error.WriteLine(message);
+    }
 
-    return helpText;
+    public void ReportInformation(string message)
+    {
+        Console.Out.WriteLine(message);
+    }
 }
