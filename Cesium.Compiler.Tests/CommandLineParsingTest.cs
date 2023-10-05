@@ -87,7 +87,7 @@ namespace Cesium.Compiler.Tests
             Assert.Equal(0, errorCode);
         }
 
-        [Fact(Skip = "CommandLineParser cannot handle this case. We need to parse differently")]
+        [Fact]
         public async Task MultipleIncludeFiles()
         {
             var args = new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c", "-o", "C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", "-I", "C:\\\\Cesium\\\\Cesium.Samples\\\\", "-I", "\"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\\"" };
@@ -97,7 +97,25 @@ namespace Cesium.Compiler.Tests
             {
                 Assert.Equal(new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c" }, args.InputFilePaths);
                 Assert.Equal("C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", args.OutputFilePath);
-                Assert.Equal(new[] { "C:\\\\Cesium\\\\Cesium.Samples\\\\", "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\" }, args.IncludeDirectories);
+                Assert.Equal(new[] { "C:\\\\Cesium\\\\Cesium.Samples\\\\", "\"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\\\"" }, args.IncludeDirectories);
+                return Task.FromResult(0);
+            });
+            NoInformationalMessages(reporter);
+            Assert.Empty(reporter.Errors);
+            Assert.Equal(0, errorCode);
+        }
+
+        [Fact]
+        public async Task MultipleDefinesFiles()
+        {
+            var args = new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c", "-o", "C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", "-D", "TEST_1", "-D", "TEST_2" };
+            var reporter = new MockCompilerReporter();
+
+            var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
+            {
+                Assert.Equal(new[] { "C:\\Cesium\\Cesium.Samples\\getopt.c" }, args.InputFilePaths);
+                Assert.Equal("C:\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe", args.OutputFilePath);
+                Assert.Equal(new[] { "TEST_1", "TEST_2" }, args.DefineConstant);
                 return Task.FromResult(0);
             });
             NoInformationalMessages(reporter);
