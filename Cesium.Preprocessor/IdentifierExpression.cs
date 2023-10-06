@@ -14,16 +14,23 @@ internal class IdentifierExpression : IPreprocessorExpression
 
     public string? EvaluateExpression(IMacroContext context)
     {
-        if (context.TryResolveMacro(this.Identifer, out var parameters, out var macroReplacement))
+        string? lastValue = null;
+        var searchValue = this.Identifer;
+        do
         {
-            return macroReplacement.Count == 0 ? string.Empty : macroReplacement[0].Text;
-        }
+            if (Regex.IsMatch(searchValue, $"^{Regexes.IntLiteral}$"))
+            {
+                return searchValue;
+            }
 
-        if (Regex.IsMatch(this.Identifer, Regexes.IntLiteral))
-        {
-            return this.Identifer;
-        }
+            if (context.TryResolveMacro(searchValue, out var parameters, out var macroReplacement))
+            {
+                searchValue = macroReplacement.SkipWhile(_ => _.Kind == CPreprocessorTokenType.WhiteSpace).FirstOrDefault()?.Text ?? "";
+                continue;
+            }
 
-        return null;
+            return lastValue;
+        }
+        while (true);
     }
 }

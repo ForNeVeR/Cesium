@@ -26,6 +26,14 @@ internal class BinaryExpression : IPreprocessorExpression
                 return firstValue == secondValue ? "1" : "0";
             case CPreprocessorOperator.NotEquals:
                 return firstValue != secondValue ? "1" : "0";
+            case CPreprocessorOperator.LessOrEqual:
+                return (firstValue ?? "").CompareTo(secondValue ?? "") <= 0 ? "1" : "0";
+            case CPreprocessorOperator.GreaterOrEqual:
+                return (firstValue ?? "").CompareTo(secondValue ?? "") >= 0 ? "1" : "0";
+            case CPreprocessorOperator.LessThen:
+                return (firstValue ?? "").CompareTo(secondValue ?? "") < 0 ? "1" : "0";
+            case CPreprocessorOperator.GreaterThen:
+                return (firstValue ?? "").CompareTo(secondValue ?? "") > 0 ? "1" : "0";
             case CPreprocessorOperator.LogicalAnd:
                 return (firstValue.AsBoolean() && secondValue.AsBoolean()) ? "1" : "0";
             case CPreprocessorOperator.LogicalOr:
