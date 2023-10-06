@@ -10,6 +10,9 @@ internal static class MacroExtensions
         if (macroValue == "0")
             return false;
 
+        if (macroValue is null)
+            throw new PreprocessorException("Invalid integer constant expression");
+
         if (int.TryParse(macroValue, CultureInfo.InvariantCulture, out _))
             return true;
 

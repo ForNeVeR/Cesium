@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -10,7 +11,8 @@ namespace Cesium.Preprocessor;
 
 public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
-    private bool IncludeTokens = true;
+    private bool IncludeTokens => IncludeTokensStack.All(includeToken => includeToken);
+    private Stack<bool> IncludeTokensStack = new();
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -20,6 +22,22 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
 
         return buffer.ToString();
+    }
+
+    private void PushIncludeTokensDepth(bool includeTokes)
+    {
+        IncludeTokensStack.Push(includeTokes);
+    }
+
+    private void PopIncludeTokensDepth()
+    {
+        IncludeTokensStack.Pop();
+    }
+
+    private void SwitchIncludeTokensDepth()
+    {
+        var lastItem = IncludeTokensStack.Pop();
+        this.PushIncludeTokensDepth(!lastItem);
     }
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
@@ -311,6 +329,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                         return Array.Empty<IToken<CPreprocessorTokenType>>();
                     }
 
+                    if (!File.Exists(includeFilePath))
+                    {
+                        Console.Error.WriteLine($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
+                    }
+
                     using var reader = IncludeContext.OpenFileStream(includeFilePath);
                     await foreach (var token in ProcessInclude(includeFilePath, reader))
                     {
@@ -337,7 +360,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 {
                     errorText.Append(enumerator.Current.Text);
                 }
-                throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
+
+                if (IncludeTokens)
+                    throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
+
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "define":
             {
@@ -357,31 +384,31 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 bool includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = includeTokens;
+                PushIncludeTokensDepth(includeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "if":
             {
                 var expressionTokens = ConsumeLine();
                 bool includeTokens = EvaluateExpression(expressionTokens.ToList());
-                IncludeTokens = includeTokens;
+                PushIncludeTokensDepth(includeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 bool donotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = !donotIncludeTokens;
+                PushIncludeTokensDepth(!donotIncludeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "endif":
             {
-                IncludeTokens = true;
+                PopIncludeTokensDepth();
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "else":
             {
-                IncludeTokens = !IncludeTokens;
+                SwitchIncludeTokensDepth();
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "pragma":
@@ -400,7 +427,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                     $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
         }
     }
-    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private bool EvaluateExpression(IList<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
@@ -412,6 +439,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
 
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
+        Debug.Assert(stream.IsEnd || stream.Peek().Kind == CPreprocessorTokenType.End);
         bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }

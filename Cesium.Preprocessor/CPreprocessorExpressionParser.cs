@@ -25,6 +25,10 @@ internal partial class CPreprocessorExpressionParser
 
     [Rule("binary_expression: simple_expression '==' simple_expression")]
     [Rule("binary_expression: simple_expression '!=' simple_expression")]
+    [Rule("binary_expression: simple_expression '<=' simple_expression")]
+    [Rule("binary_expression: simple_expression '>=' simple_expression")]
+    [Rule("binary_expression: simple_expression '<' simple_expression")]
+    [Rule("binary_expression: simple_expression '>' simple_expression")]
     [Rule("binary_expression: expression '||' expression")]
     [Rule("binary_expression: expression '&&' expression")]
     private static BinaryExpression MakeBinaryExpression(IPreprocessorExpression left, ICPreprocessorToken token, IPreprocessorExpression right)
@@ -47,6 +51,10 @@ internal partial class CPreprocessorExpressionParser
     {
         "==" => CPreprocessorOperator.Equals,
         "!=" => CPreprocessorOperator.NotEquals,
+        "<=" => CPreprocessorOperator.LessOrEqual,
+        ">=" => CPreprocessorOperator.GreaterOrEqual,
+        "<" => CPreprocessorOperator.LessThen,
+        ">" => CPreprocessorOperator.GreaterThen,
         "!" => CPreprocessorOperator.Negation,
         "||" => CPreprocessorOperator.LogicalOr,
         "&&" => CPreprocessorOperator.LogicalAnd,
