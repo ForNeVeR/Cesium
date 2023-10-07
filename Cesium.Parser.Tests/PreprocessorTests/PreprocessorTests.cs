@@ -266,7 +266,7 @@ int foo() { return 0; }
 ");
 
     [Fact]
-    public Task IfExpressionGreaterThen() => DoTest(
+    public Task IfExpressionGreaterThan() => DoTest(
 @"#define mycondition 0
 #if mycondition > 0
 int foo() { return 0; }
