@@ -30,9 +30,9 @@ internal class BinaryExpression : IPreprocessorExpression
                 return (firstValue ?? "").CompareTo(secondValue ?? "") <= 0 ? "1" : "0";
             case CPreprocessorOperator.GreaterOrEqual:
                 return (firstValue ?? "").CompareTo(secondValue ?? "") >= 0 ? "1" : "0";
-            case CPreprocessorOperator.LessThen:
+            case CPreprocessorOperator.LessThan:
                 return (firstValue ?? "").CompareTo(secondValue ?? "") < 0 ? "1" : "0";
-            case CPreprocessorOperator.GreaterThen:
+            case CPreprocessorOperator.GreaterThan:
                 return (firstValue ?? "").CompareTo(secondValue ?? "") > 0 ? "1" : "0";
             case CPreprocessorOperator.LogicalAnd:
                 return (firstValue.AsBoolean() && secondValue.AsBoolean()) ? "1" : "0";
