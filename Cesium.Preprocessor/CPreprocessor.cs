@@ -100,70 +100,130 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                     newLine = false;
                     if (IncludeTokens)
                     {
-                        if (MacroContext.TryResolveMacro(token.Text, out var parameters, out var tokenReplacement))
+                        if (MacroContext.TryResolveMacro(token.Text, out var macroDefinition, out var tokenReplacement))
                         {
                             Dictionary<string, List<IToken<CPreprocessorTokenType>>> replacement = new();
-                            if (parameters is not null)
+                            if (macroDefinition is FunctionMacroDefinition functionMacro)
                             {
-                                int parameterIndex = -1;
-                                int openParensCount = 0;
-                                bool hitOpenToken = false;
-                                List<IToken<CPreprocessorTokenType>> currentParameter = new();
-                                IToken<CPreprocessorTokenType> parametersParsingToken;
-                                do
+                                if (functionMacro.Parameters is { } parameters
+                                    && (parameters.Length > 0 || functionMacro.hasEllipsis))
                                 {
-                                    parametersParsingToken = stream.Consume();
-                                    switch (parametersParsingToken)
+                                    int parameterIndex = -1;
+                                    int openParensCount = 0;
+                                    bool hitOpenToken = false;
+                                    List<IToken<CPreprocessorTokenType>> currentParameter = new();
+                                    IToken<CPreprocessorTokenType> parametersParsingToken;
+
+                                    if (functionMacro.hasEllipsis)
                                     {
-                                        case { Kind: LeftParen }:
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
+                                        replacement.Add("__VA_ARGS__", new());
+                                    }
 
-                                            hitOpenToken = true;
-                                            openParensCount++;
-                                            if (parameterIndex == -1)
-                                            {
-                                                parameterIndex = 0;
-                                            }
-                                            break;
-                                        case { Kind: RightParen }:
-                                            openParensCount--;
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        case { Kind: Separator, Text: "," }:
-                                            if (parameterIndex == -1)
-                                            {
-                                                throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
-                                            }
+                                    do
+                                    {
+                                        parametersParsingToken = stream.Consume();
+                                        switch (parametersParsingToken)
+                                        {
+                                            case { Kind: LeftParen }:
+                                                if (openParensCount != 0)
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
 
-                                            if (openParensCount == 1)
-                                            {
-                                                replacement.Add(parameters[parameterIndex], currentParameter);
-                                                currentParameter = new();
-                                                parameterIndex++;
-                                            }
-                                            else
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        default:
-                                            if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
-                                            {
-                                                continue;
-                                            }
+                                                hitOpenToken = true;
+                                                openParensCount++;
+                                                if (parameterIndex == -1)
+                                                {
+                                                    parameterIndex = 0;
+                                                }
+                                                break;
+                                            case { Kind: RightParen }:
+                                                openParensCount--;
+                                                if (openParensCount != 0)
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
+                                                break;
+                                            case { Kind: Separator, Text: "," }:
+                                                if (parameterIndex == -1)
+                                                {
+                                                    throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
+                                                }
 
-                                            currentParameter.Add(parametersParsingToken);
-                                            break;
+                                                if (openParensCount == 1)
+                                                {
+                                                    if (parameters.Length > parameterIndex)
+                                                    {
+                                                        replacement.Add(parameters[parameterIndex], currentParameter);
+                                                        parameterIndex++;
+                                                        currentParameter = new();
+                                                    }
+                                                    else if (functionMacro.hasEllipsis)
+                                                    {
+                                                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args))
+                                                        {
+                                                            va_args.AddRange(currentParameter);
+                                                            va_args.Add(new Token<CPreprocessorTokenType>(token.Range, ",", CPreprocessorTokenType.Separator));
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
+                                                    }
+
+                                                    currentParameter = new();
+                                                }
+                                                else
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
+                                                break;
+                                            default:
+                                                if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
+                                                {
+                                                    continue;
+                                                }
+
+                                                currentParameter.Add(parametersParsingToken);
+                                                break;
+                                        }
+                                    }
+                                    while (openParensCount > 0 || !hitOpenToken);
+
+
+                                    if (parameters.Length > parameterIndex)
+                                    {
+                                        replacement.Add(parameters[parameterIndex], currentParameter);
+                                    }
+                                    else
+                                    {
+                                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args_))
+                                        {
+                                            va_args_.AddRange(currentParameter);
+                                        }
                                     }
                                 }
-                                while (openParensCount > 0 || !hitOpenToken);
-                                replacement.Add(parameters[parameterIndex], currentParameter);
+                                else
+                                {
+                                    IToken<CPreprocessorTokenType> parametersParsingToken;
+                                    int openParensCount = 0;
+
+                                    do
+                                    {
+                                        parametersParsingToken = stream.Consume();
+                                        switch (parametersParsingToken)
+                                        {
+                                            case { Kind: LeftParen }:
+                                                openParensCount++;
+                                                break;
+                                            case { Kind: RightParen }:
+                                                openParensCount--;
+                                                break;
+                                            default: break;
+                                        }
+                                    } while (openParensCount > 0);
+                                }
+
                             }
 
                             bool performStringReplace = false;
@@ -175,24 +235,31 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                     continue;
                                 }
 
-                                if (subToken is { Kind: PreprocessingToken } && replacement.TryGetValue(subToken.Text, out var parameterTokens))
+                                if (subToken is { Kind: PreprocessingToken })
                                 {
-                                    if (performStringReplace)
+                                    if (replacement.TryGetValue(subToken.Text, out var parameterTokens))
                                     {
-                                        var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
-                                        var escapedStringValue = stringValue.Replace("\\", "\\\\")
-                                            .Replace("\"", "\\\"")
-                                            ;
-                                        escapedStringValue = $"\"{escapedStringValue}\"";
-                                        yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
-                                        performStringReplace = false;
+                                        if (performStringReplace)
+                                        {
+                                            var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
+                                            var escapedStringValue = stringValue.Replace("\\", "\\\\")
+                                                .Replace("\"", "\\\"")
+                                                ;
+                                            escapedStringValue = $"\"{escapedStringValue}\"";
+                                            yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
+                                            performStringReplace = false;
+                                        }
+                                        else
+                                        {
+                                            foreach (var parameterToken in parameterTokens)
+                                            {
+                                                yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        foreach (var parameterToken in parameterTokens)
-                                        {
-                                            yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
-                                        }
+                                        yield return new Token<CPreprocessorTokenType>(token.Range, subToken.Text, subToken.Kind);
                                     }
                                 }
                                 else
@@ -370,7 +437,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 var expressionTokens = ConsumeLineAll();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-                MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
+                MacroContext.DefineMacro(macroDefinition.Name, macroDefinition, replacement);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "undef":
@@ -443,7 +510,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
-    private (CPreprocessorMacroDefinitionParser.MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();

@@ -363,4 +363,31 @@ int foo() { return 0; }
 #error ""This should never happens""
 #endif
 ");
+
+    [Fact]
+    public Task FunctionWithoutParameters() => DoTest(
+@"#define x() 1
+int foo() { return x(); }
+");
+
+
+    [Fact]
+    public Task FunctionReplaceEllipsis() => DoTest(
+    @"#define foo(...) __VA_ARGS__
+int main() { return foo(11); }
+");
+
+    [Fact]
+    public Task FunctionReplaceEllipsisMultipleParameters() => DoTest(
+@"#define foo(x,...) (__VA_ARGS__,x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task FunctionReplaceEllipsisMultipleParameters2() => DoTest(
+@"#define foo(x,y,...) x,y,__VA_ARGS__
+int x,test;
+int main() { return foo(x,test,11); }
+");
 }
