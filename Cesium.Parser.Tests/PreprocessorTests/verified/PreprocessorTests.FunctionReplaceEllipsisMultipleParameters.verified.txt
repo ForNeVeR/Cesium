@@ -1,0 +1,2 @@
+﻿int x,test;
+int main() { return (x,test,11); }

@@ -6,34 +6,31 @@ namespace Cesium.Preprocessor;
 public class InMemoryDefinesContext : IMacroContext
 {
     private readonly Dictionary<string, IList<IToken<CPreprocessorTokenType>>> _defines;
-    private readonly Dictionary<string, IList<string>> _defineParameters;
+    private readonly Dictionary<string, MacroDefinition> _defineMacros;
 
     public InMemoryDefinesContext(IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
     {
         _defines = initialDefines == null
             ? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>()
             : new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>(initialDefines);
-        _defineParameters = new Dictionary<string, IList<string>>();
+        _defineMacros = new();
     }
 
-    public void DefineMacro(string macro, string[]? parameters, IList<IToken<CPreprocessorTokenType>> replacement)
+    public void DefineMacro(string macro, MacroDefinition macroDefinition, IList<IToken<CPreprocessorTokenType>> replacement)
     {
         _defines[macro] = replacement;
-        if (parameters is { })
-        {
-            _defineParameters[macro] = parameters;
-        }
+        _defineMacros[macro] = macroDefinition;
     }
 
     public void UndefineMacro(string macro)
     {
         _defines.Remove(macro);
-        _defineParameters.Remove(macro);
+        _defineMacros.Remove(macro);
     }
 
-    public bool TryResolveMacro(string macro, out IList<string>? macroParameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
+    public bool TryResolveMacro(string macro, out MacroDefinition? macroDefinition, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
     {
-        _defineParameters.TryGetValue(macro, out macroParameters);
+        _defineMacros.TryGetValue(macro, out macroDefinition);
         return _defines.TryGetValue(macro, out macroReplacement);
     }
 }
