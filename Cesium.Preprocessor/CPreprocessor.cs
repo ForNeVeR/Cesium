@@ -168,7 +168,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                                     }
                                                     else
                                                     {
-                                                        throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
+                                                        throw new PreprocessorException($"The function {functionMacro.Name} defined at {parametersParsingToken.Range} has more parameters than the macro allows.");
                                                     }
 
                                                     currentParameter = new();
