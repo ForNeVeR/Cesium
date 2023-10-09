@@ -39,3 +39,6 @@ void abort(void);
 
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+
+__cli_import("Cesium.Runtime.StdLibFunctions::Atoi")
+int atoi(const char* str);

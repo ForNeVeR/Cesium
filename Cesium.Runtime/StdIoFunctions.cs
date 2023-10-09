@@ -20,6 +20,12 @@ public unsafe static class StdIoFunctions
 
     private static List<StreamHandle> handles = new();
 
+    private const int StdIn = 0;
+
+    private const int StdOut = 1;
+
+    private const int StdErr = 2;
+
     static StdIoFunctions()
     {
         handles.Add(new StreamHandle()
@@ -88,11 +94,30 @@ public unsafe static class StdIoFunctions
 
     public static int PrintF(byte* str, void* varargs)
     {
+        return FPrintF((void*)(IntPtr)StdOut, str, varargs);
+    }
+
+    public static int FPrintF(void* stream, byte* str, void* varargs)
+    {
         var formatString = Unmarshal(str);
         if (formatString == null)
         {
             return -1;
         }
+
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return -1;
+        }
+
+        var streamWriterAccessor = streamHandle.Writer;
+        if (streamWriterAccessor == null)
+        {
+            return -1;
+        }
+
+        var streamWriter = streamWriterAccessor();
 
         int currentPosition = 0;
         var formatStartPosition = formatString.IndexOf('%', currentPosition);
@@ -101,7 +126,7 @@ public unsafe static class StdIoFunctions
         while (formatStartPosition >= 0)
         {
             var lengthTillPercent = formatStartPosition - currentPosition;
-            Console.Write(formatString.Substring(currentPosition, lengthTillPercent));
+            streamWriter.Write(formatString.Substring(currentPosition, lengthTillPercent));
             consumedBytes += lengthTillPercent;
             int addition = 1;
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
@@ -115,12 +140,12 @@ public unsafe static class StdIoFunctions
             {
                 case "s":
                     string? stringValue = Unmarshal((byte*)((long*)varargs)[consumedArgs]);
-                    Console.Write(stringValue);
+                    streamWriter.Write(stringValue);
                     consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
                 case "c":
-                    Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    streamWriter.Write((char)(byte)((long*)varargs)[consumedArgs]);
                     consumedBytes++;
                     consumedArgs++;
                     break;
@@ -129,7 +154,7 @@ public unsafe static class StdIoFunctions
                 case "i":
                     int intValue = (int)((long*)varargs)[consumedArgs];
                     var intValueString = intValue.ToString();
-                    Console.Write(intValueString);
+                    streamWriter.Write(intValueString);
                     consumedBytes += intValueString.Length;
                     consumedArgs++;
                     break;
@@ -137,23 +162,27 @@ public unsafe static class StdIoFunctions
                 case "lu":
                     uint uintValue = (uint)((long*)varargs)[consumedArgs];
                     var uintValueString = uintValue.ToString();
-                    Console.Write(uintValueString);
+                    streamWriter.Write(uintValueString);
                     consumedBytes += uintValueString.Length;
                     consumedArgs++;
                     break;
                 case "f":
                     var floatNumber = ((double*)varargs)[consumedArgs];
                     string floatNumberString = floatNumber.ToString("F6");
-                    Console.Write(floatNumberString);
+                    streamWriter.Write(floatNumberString);
                     consumedBytes += floatNumberString.Length;
                     consumedArgs++;
                     break;
                 case "p":
                     nint pointerValue = ((nint*)varargs)[consumedArgs];
                     string pointerValueString = pointerValue.ToString("X");
-                    Console.Write(pointerValueString);
+                    streamWriter.Write(pointerValueString);
                     consumedBytes += pointerValueString.Length;
                     consumedArgs++;
+                    break;
+                case "%":
+                    streamWriter.Write('%');
+                    consumedBytes += 1;
                     break;
                 default:
                     throw new FormatException($"Format specifier {formatSpecifier} is not supported");
@@ -164,7 +193,7 @@ public unsafe static class StdIoFunctions
         }
 
         string remainderString = formatString.Substring(currentPosition);
-        Console.Write(remainderString);
+        streamWriter.Write(remainderString);
         return consumedBytes + remainderString.Length;
     }
 
