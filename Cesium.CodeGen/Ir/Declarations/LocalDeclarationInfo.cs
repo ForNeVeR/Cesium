@@ -16,7 +16,7 @@ internal record LocalDeclarationInfo(
     string? Identifier,
     string? CliImportMemberName)
 {
-    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator)
+    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator, Initializer? initializer = null)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
@@ -36,7 +36,7 @@ internal record LocalDeclarationInfo(
 
         var (pointer, directDeclarator) = declarator;
         type = ProcessPointer(pointer, type);
-        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type);
+        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type, initializer);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
@@ -168,7 +168,7 @@ internal record LocalDeclarationInfo(
         return type;
     }
 
-    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type)
+    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type, Initializer? initializer = null)
     {
         string? identifier = null;
 
@@ -214,7 +214,18 @@ internal record LocalDeclarationInfo(
 
                     // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
                     if (sizeExpr == null)
-                        type = new PointerType(type);
+                    {
+                        if (initializer != null && initializer is ArrayInitializer arrayInitializer &&
+                            arrayInitializer.Initializers.Length > 0)
+                        {
+                            var size = arrayInitializer.Initializers.Length;
+                            type = CreateArrayType(type, size);
+                        }
+                        else
+                        {
+                            type = new PointerType(type);
+                        }
+                    }
                     else
                     {
                         if (sizeExpr is not ConstantLiteralExpression constantExpression ||

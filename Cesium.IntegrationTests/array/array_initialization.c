@@ -52,6 +52,16 @@ int testGlobalIntArray() {
     return 1;
 }
 
+//int testNoSizeSpecified() {
+//    char a[] = { 99, 0, 22, 17, 2, 0, };
+//
+//    if (sizeof(a) != 6) {
+//        return 0;
+//    }
+//
+//    return 1;
+//}
+
 int main(int argc, char *argv[])
 {
     if (!testIntArray()) {
@@ -69,6 +79,10 @@ int main(int argc, char *argv[])
     if (!testGlobalIntArray()) {
         return -4;
     }
+
+    //if (!testNoSizeSpecified()) {
+    //    return -5;
+    //}
 
     return 42;
 }
