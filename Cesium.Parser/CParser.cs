@@ -20,6 +20,7 @@ using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
 using StructDeclarationList = ImmutableArray<StructDeclaration>;
 using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
+using LiteralExpressionList = ImmutableArray<IToken<CTokenType>>;
 
 /// <remarks>See the section 6 of the C17 standard.</remarks>
 [Parser(typeof(CTokenType))]
@@ -32,6 +33,20 @@ public partial class CParser
     [Rule("constant: enumeration_constant")]
     [Rule("constant: CharLiteral")]
     private static ICToken MakeConstant(ICToken constant) => constant;
+
+    // 6.4.5 String literals
+
+    // TODO:
+    // string_literal:
+    //      encoding-prefix? " s-char-sequence? "
+    [Rule("string_literal: StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(ICToken stringLiteral) => ImmutableArray.Create(stringLiteral);
+
+
+    [Rule("string_literal: string_literal StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(
+        LiteralExpressionList prev,
+        ICToken stringLiteral) => prev.Add(stringLiteral);
 
     // 6.4.4.3 Enumeration constants
     [Rule("enumeration_constant: Identifier")]
@@ -71,6 +86,10 @@ public partial class CParser
     [Rule("primary_expression: StringLiteral")]
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantLiteralExpression(stringLiteral);
+
+    [Rule("primary_expression: string_literal")]
+    private static Expression MakeStringLiteralListExpression(LiteralExpressionList literalExpressionList) =>
+        new StringLiteralListExpression(literalExpressionList);
 
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);

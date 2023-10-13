@@ -6,6 +6,9 @@ namespace Cesium.Ast;
 
 public abstract record Expression;
 
+// 6.4.5 String literals
+public record StringLiteralListExpression(ImmutableArray<IToken<CTokenType>> ConstantList) : Expression;
+
 // 6.5.1 Primary expressions
 public record IdentifierExpression(string Identifier) : Expression;
 public record ConstantLiteralExpression(IToken<CTokenType> Constant) : Expression;
