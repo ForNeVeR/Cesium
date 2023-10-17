@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 #if NETSTANDARD
@@ -200,7 +201,7 @@ public unsafe static class StdIoFunctions
                     if (hexadecimalValue != 0)
                     {
                         var targetFormat = "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}";
-                        var hexadecimalValueString = string.Format("{0:" + formatSpecifier + (width == 0 ? "" : width) + "}", hexadecimalValue);
+                        var hexadecimalValueString = string.Format(CultureInfo.InvariantCulture, "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}", hexadecimalValue);
                         streamWriter.Write(hexadecimalValueString);
                         consumedBytes += hexadecimalValueString.Length;
                         consumedArgs++;
