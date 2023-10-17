@@ -129,6 +129,20 @@ public unsafe static class StdIoFunctions
             streamWriter.Write(formatString.Substring(currentPosition, lengthTillPercent));
             consumedBytes += lengthTillPercent;
             int addition = 1;
+            bool fillLeadingZeroes = false;
+            int width = 0;
+            if (formatString[formatStartPosition + addition] == '0')
+            {
+                fillLeadingZeroes = true;
+                addition++;
+            }
+
+            while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+            {
+                width = width * 10 + (formatString[formatStartPosition + addition] - '0');
+                addition++;
+            }
+
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
             if (formatString[formatStartPosition + addition] == 'l')
             {
@@ -179,6 +193,18 @@ public unsafe static class StdIoFunctions
                     streamWriter.Write(pointerValueString);
                     consumedBytes += pointerValueString.Length;
                     consumedArgs++;
+                    break;
+                case "x":
+                case "X":
+                    nuint hexadecimalValue = ((nuint*)varargs)[consumedArgs];
+                    if (hexadecimalValue != 0)
+                    {
+                        var targetFormat = "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}";
+                        var hexadecimalValueString = string.Format("{0:" + formatSpecifier + (width == 0 ? "" : width) + "}", hexadecimalValue);
+                        streamWriter.Write(hexadecimalValueString);
+                        consumedBytes += hexadecimalValueString.Length;
+                        consumedArgs++;
+                    }
                     break;
                 case "%":
                     streamWriter.Write('%');
