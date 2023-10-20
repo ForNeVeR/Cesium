@@ -19,7 +19,12 @@ internal class SizeOfExpression : IExpression
         _type = Declarations.LocalDeclarationInfo.Of(sizeOfOperator.TypeName.SpecifierQualifierList, (Declarator?)null).Type;
     }
 
-    public IExpression Lower(IDeclarationScope scope) => this;
+    public IExpression Lower(IDeclarationScope scope) => _type switch
+    {
+        PrimitiveType e => this,
+        NamedType e => new SizeOfExpression(new IdentifierExpression(e.TypeName).Resolve(scope).GetValueType()),
+        _ => throw new NotSupportedException()
+    };
 
     public void EmitTo(IEmitScope scope)
     {
