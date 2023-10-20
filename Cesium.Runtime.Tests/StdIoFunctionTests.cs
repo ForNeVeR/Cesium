@@ -7,7 +7,7 @@ public class StdIoFunctionTests
     [Theory]
     [InlineData(9, "0x09")]
     [InlineData(32, "0x20")]
-    public unsafe void FPrintFHex(int input, string expectedResult)
+    public unsafe void FPrintFHex(long input, string expectedResult)
     {
         var format = Encoding.UTF8.GetBytes("0x%02x");
 
