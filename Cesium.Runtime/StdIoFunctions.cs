@@ -128,11 +128,9 @@ public unsafe static class StdIoFunctions
             streamWriter.Write(formatString.Substring(currentPosition, lengthTillPercent));
             consumedBytes += lengthTillPercent;
             int addition = 1;
-            bool fillLeadingZeroes = false;
             int width = 0;
             if (formatString[formatStartPosition + addition] == '0')
             {
-                fillLeadingZeroes = true;
                 addition++;
             }
 
