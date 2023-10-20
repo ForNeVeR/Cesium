@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 #if NETSTANDARD
 using System.Text;
@@ -12,14 +10,14 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
-    record class StreamHandle
+    internal record StreamHandle
     {
         public required string FileMode { get; set; }
         public Func<TextReader>? Reader { get; set; }
         public Func<TextWriter>? Writer { get; set; }
     }
 
-    private static List<StreamHandle> handles = new();
+    internal static List<StreamHandle> Handles = new();
 
     private const int StdIn = 0;
 
@@ -29,17 +27,17 @@ public unsafe static class StdIoFunctions
 
     static StdIoFunctions()
     {
-        handles.Add(new StreamHandle()
+        Handles.Add(new StreamHandle()
         {
             FileMode = "r",
             Reader = () => Console.In,
         });
-        handles.Add(new StreamHandle()
+        Handles.Add(new StreamHandle()
         {
             FileMode = "w",
             Writer = () => Console.Out,
         });
-        handles.Add(new StreamHandle()
+        Handles.Add(new StreamHandle()
         {
             FileMode = "w",
             Writer = () => Console.Error,
@@ -201,7 +199,8 @@ public unsafe static class StdIoFunctions
                     if (hexadecimalValue != 0)
                     {
                         var targetFormat = "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}";
-                        var hexadecimalValueString = string.Format(CultureInfo.InvariantCulture, "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}", hexadecimalValue);
+                        // NOTE: without converting nuint to long, this was broken on .NET Framework
+                        var hexadecimalValueString = string.Format(targetFormat, (long)hexadecimalValue);
                         streamWriter.Write(hexadecimalValueString);
                         consumedBytes += hexadecimalValueString.Length;
                         consumedArgs++;
@@ -252,7 +251,7 @@ public unsafe static class StdIoFunctions
     private static StreamHandle? GetStreamHandle(void* stream)
     {
         var handleIndex = (int)(IntPtr)stream;
-        var result = handles.ElementAtOrDefault(handleIndex);
+        var result = Handles.ElementAtOrDefault(handleIndex);
         return result;
     }
 }

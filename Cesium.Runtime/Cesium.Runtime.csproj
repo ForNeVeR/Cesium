@@ -8,4 +8,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cesium.Runtime.Tests" />
+    </ItemGroup>
+
 </Project>
