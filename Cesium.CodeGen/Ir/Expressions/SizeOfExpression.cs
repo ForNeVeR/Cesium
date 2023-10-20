@@ -1,16 +1,29 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal record SizeOfExpression(IType Type) : IExpression
+internal class SizeOfExpression : IExpression
 {
+    private readonly IType _type;
+
+    public SizeOfExpression(IType Type)
+    {
+        _type = Type;
+    }
+
+    public SizeOfExpression(SizeOfOperator sizeOfOperator)
+    {
+        _type = Declarations.LocalDeclarationInfo.Of(sizeOfOperator.TypeName.SpecifierQualifierList, (Declarator?)null).Type;
+    }
+
     public IExpression Lower(IDeclarationScope scope) => this;
 
     public void EmitTo(IEmitScope scope)
     {
-        var type = Type.Resolve(scope.Context);
+        var type = _type.Resolve(scope.Context);
         scope.SizeOf(type);
     }
 

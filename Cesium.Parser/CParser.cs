@@ -169,6 +169,14 @@ public partial class CParser
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
+    [Rule("unary_expression: KeywordSizeof '(' type_name ')'")]
+    private static Expression MakeTypeNameSizeOfOperator(ICToken _, ICToken __, TypeName target, ICToken ___) =>
+        new SizeOfOperator(target);
+
+    //[Rule("unary_expression: KeywordSizeof '(' type_specifier ')'")]
+    //private static Expression MakeTypeSpecifierSizeOfOperator(ICToken _, ICToken __, ITypeSpecifier target, ICToken ___) =>
+    //    new TypeSpecifierSizeOfOperator(target);
+
     // 6.5.4 Cast operators
     [Rule("cast_expression: '(' type_name ')' cast_expression")]
     private static Expression MakeCastExpression(ICToken _, TypeName typeName, ICToken __, Expression target) =>

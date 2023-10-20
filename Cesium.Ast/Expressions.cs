@@ -24,6 +24,13 @@ public record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperat
 public record UnaryOperatorExpression(string Operator, Expression Target) : Expression;
 public record IndirectionExpression(Expression Target) : Expression;
 
+// 6.5.3.4 The sizeof and _Alignof operators
+//public abstract record SizeOfOperator() : Expression;
+
+//public record TypeSpecifierSizeOfOperator(ITypeSpecifier TypeSpecifier) : Expression;
+
+public record SizeOfOperator(TypeName TypeName) : Expression;
+
 // 6.5.4 Cast expression
 public record CastExpression(TypeName TypeName, Expression Target) : Expression;
 
