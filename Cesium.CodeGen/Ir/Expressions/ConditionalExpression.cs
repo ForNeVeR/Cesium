@@ -29,7 +29,7 @@ internal class ConditionalExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var condition = _condition.Lower(scope);
-        var conditionType = _condition.GetExpressionType(scope);
+        var conditionType = condition.GetExpressionType(scope);
 
         if (!(scope.CTypeSystem.IsNumeric(conditionType) || conditionType is PointerType))
         {
@@ -62,6 +62,10 @@ internal class ConditionalExpression : IExpression
                  falseExpressionType.IsEqualTo(scope.CTypeSystem.Void))
         {
             // Both operands have void type. No conversion is needed.
+        }
+        else if (trueExpressionType is PointerType && falseExpressionType is PointerType)
+        {
+            // Both operands are pointers. No conversion is needed.
         }
         else
         {
@@ -110,6 +114,14 @@ internal class ConditionalExpression : IExpression
             falseExpressionType.IsEqualTo(scope.CTypeSystem.Void))
         {
             return scope.CTypeSystem.Void;
+        }
+
+        // Void types.
+        if (trueExpressionType is PointerType trueExpressionPointerType &&
+            falseExpressionType is PointerType falseExpresionPointerType)
+        {
+            if (trueExpressionPointerType.Base.IsEqualTo(falseExpresionPointerType.Base))
+                return trueExpressionType;
         }
 
         // TODO[#208]: Support operands of same struct or union type; pointers to compatible types;
