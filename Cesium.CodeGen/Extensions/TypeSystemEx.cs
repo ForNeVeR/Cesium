@@ -159,6 +159,7 @@ internal static class TypeSystemEx
     {
         return t.IsEqualTo(ts.Bool)
             || t.IsEqualTo(ts.Char)
+            || t.IsEqualTo(ts.UnsignedChar)
             || t.IsEqualTo(ts.UnsignedShort)
             || t.IsEqualTo(ts.UnsignedInt)
             || t.IsEqualTo(ts.UnsignedLong)
@@ -188,7 +189,7 @@ internal static class TypeSystemEx
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt};
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt};
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedChar, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt};
         // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
