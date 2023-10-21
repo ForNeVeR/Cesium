@@ -34,5 +34,12 @@ struct foo {
 };
 int main() {
     return sizeof(struct foo);
- }");
+}");
+
+    [Fact]
+    public Task ArraySizeof() => DoTest(@"
+int main() {
+    int x[] = { 1,2,3,4,5 };
+    return sizeof(x);
+}");
 }
