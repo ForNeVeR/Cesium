@@ -57,8 +57,7 @@ public static class TokenExtensions
                             int octalNumber = 0;
                             if (result.Length <= i + counter)
                             {
-                                builder.Append('\\');
-                                builder.Append('0');
+                                builder.Append('\0');
                                 break;
                             }
 

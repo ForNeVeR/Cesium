@@ -13,7 +13,7 @@ public class TokenExtensionsTests
     [InlineData("\"\\x20\"", " ")]
     [InlineData("\"\\\\00\"", "\\00")]
     [InlineData("\"\\00\"", "\0")]
-    [InlineData("\"\\0\"", "\\0")]
+    [InlineData("\"\\0\"", "\0")]
     [InlineData("\"\\x\"", "\\x")]
     public void Test(string tokenText, string expected)
     {
