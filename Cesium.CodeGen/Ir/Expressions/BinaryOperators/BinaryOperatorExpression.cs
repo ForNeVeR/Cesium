@@ -84,10 +84,22 @@ internal class BinaryOperatorExpression : IExpression
                     throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
                 }
 
-                if (!leftPointerType.Base.IsEqualTo(rightPointerType.Base))
+                var leftBasePart = leftPointerType.Base;
+                if (leftBasePart is ConstType leftBaseConstType)
+                {
+                    leftBasePart = leftBaseConstType.Base;
+                }
+
+                var rightBasePart = rightPointerType.Base;
+                if (rightBasePart is ConstType rightBaseConstType)
+                {
+                    rightBasePart = rightBaseConstType.Base;
+                }
+
+                if (!leftBasePart.IsEqualTo(rightBasePart))
                     throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
 
-                var baseSize = leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet);
+                var baseSize = leftBasePart.GetSizeInBytesExpression(scope.ArchitectureSet);
 
                 return new BinaryOperatorExpression(
                     new BinaryOperatorExpression(left, Operator, right),

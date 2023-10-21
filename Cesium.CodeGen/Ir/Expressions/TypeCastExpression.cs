@@ -42,6 +42,8 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_I8);
         else if (TargetType.Equals(ts.Char))
             Add(OpCodes.Conv_U1);
+        else if (TargetType.Equals(ts.UnsignedChar))
+            Add(OpCodes.Conv_U1);
         else if (TargetType.Equals(ts.UnsignedShort))
             Add(OpCodes.Conv_U2);
         else if (TargetType.Equals(ts.UnsignedInt))
