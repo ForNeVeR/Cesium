@@ -72,7 +72,7 @@ internal class StructType : IGeneratedType
         if (constSize != null)
             return ConstantLiteralExpression.OfInt32(constSize.Value);
 
-        return new SizeOfExpression(this);
+        return new SizeOfOperatorExpression(this);
     }
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch
