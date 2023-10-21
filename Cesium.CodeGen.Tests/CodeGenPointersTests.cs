@@ -54,6 +54,12 @@ public class CodeGenPointersTests : CodeGenTestBase
         "Operator Add is not supported for pointer/pointer operands");
 
     [Fact]
+    public void CanSubstractPointerTypes() => DoTest("void foo (int *x, int *y) { int d = x - y; }");
+
+    [Fact]
+    public void CanSubstractPointerWithConstTypes() => DoTest("void foo (int *x, const int *y) { int d = x - y; }");
+
+    [Fact]
     public Task CanUseBuiltinOffsetOfOnDeclaredStruct() => DoTest(
         "typedef struct { int x; } a; int m() { return &__builtin_offsetof_instance((a*) 0).x; }"
     );
