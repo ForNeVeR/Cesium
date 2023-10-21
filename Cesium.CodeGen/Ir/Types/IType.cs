@@ -52,5 +52,6 @@ internal interface IType
 /// <summary>A generated type, i.e. a type that has some bytecode to be generated once.</summary>
 internal interface IGeneratedType : IType
 {
+    public string? Identifier { get; }
     TypeDefinition Emit(string name, TranslationUnitContext context);
 }

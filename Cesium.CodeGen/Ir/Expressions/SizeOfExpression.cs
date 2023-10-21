@@ -21,9 +21,8 @@ internal class SizeOfExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope) => _type switch
     {
-        PrimitiveType e => this,
         NamedType e => new SizeOfExpression(new IdentifierExpression(e.TypeName).Resolve(scope).GetValueType()),
-        _ => throw new NotSupportedException()
+        _ => this
     };
 
     public void EmitTo(IEmitScope scope)

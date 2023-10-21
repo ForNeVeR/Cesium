@@ -168,7 +168,8 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         return type;
     }
 
-    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
+    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type) ??
+                                                                     _generatedTypes.FirstOrDefault(t => t.Key.Identifier == type.Identifier).Value;
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
     internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
