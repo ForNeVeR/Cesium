@@ -145,13 +145,6 @@ public static class TokenExtensions
         }
         result = builder.ToString();
 
-        //universal character names
-        //result = Regex.Replace(result, @"\\u([0-9a-fA-F]{4})", m =>
-        //    char.ConvertFromUtf32(Convert.ToInt32("0x" + m.Groups[1].Value, 16)));
-
-        //result = Regex.Replace(result, @"\\U([0-9a-fA-F]{8})", m =>
-        //    char.ConvertFromUtf32(Convert.ToInt32("0x" + m.Groups[1].Value, 16)));
-
         return result;
     }
 }
