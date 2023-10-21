@@ -113,4 +113,10 @@ public unsafe static class StdLibFunctions
         return NativeMemory.AlignedAlloc(size, alignment);
 #endif
     }
+
+    public static int Atoi(byte* ptr)
+    {
+        var str = StdIoFunctions.Unmarshal(ptr);
+        return Convert.ToInt32(str);
+    }
 }

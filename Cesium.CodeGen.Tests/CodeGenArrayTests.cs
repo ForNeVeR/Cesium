@@ -99,4 +99,24 @@ int main() {
     a[1] = 2;
     return a[1];
  }");
+
+    [Fact]
+    public Task GlobalArrayInitializationWithoutSize() => DoTest(@"
+    int ints1[3] = { 1, 2, 3 };
+    int ints2[] = { 1, 2, 1 };
+
+    int main() {
+    return ints1[0] + ints2[2];
+}");
+
+    [Fact]
+    public Task ArrayInitializationWithoutSize() => DoTest(@"int main() {
+    int ints1[3] = { 1, 2, 3 };
+    int ints2[] = { 1, 2, 1 };
+    return ints1[0] + ints2[2];
+}");
+
+    [Fact]
+    public Task ArrayParameterPassing() => DoTest(@"
+int foo(int ints[]) { return ints[0]; }");
 }
