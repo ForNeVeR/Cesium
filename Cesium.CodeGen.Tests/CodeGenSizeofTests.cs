@@ -28,12 +28,12 @@ int main() {
 
     [Fact]
     public Task GlobalStructSizeof() => DoTest(@"
-struct foo {
+typedef struct {
     int x;
     int y;
-};
+} foo;
 int main() {
-    return sizeof(struct foo);
+    return sizeof(foo);
 }");
 
     [Fact]

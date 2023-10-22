@@ -1,4 +1,4 @@
-using Cesium.Ast;
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -6,7 +6,6 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
-using System.Diagnostics;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -168,8 +167,7 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         return type;
     }
 
-    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type) ??
-                                                                     _generatedTypes.FirstOrDefault(t => t.Key.Identifier == type.Identifier).Value;
+    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
     internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
