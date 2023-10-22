@@ -43,6 +43,16 @@ internal class BinaryOperatorExpression : IExpression
 
         if (Operator.IsComparison())
         {
+            if (leftType is ConstType leftTypeConst)
+            {
+                leftType = leftTypeConst.Base;
+            }
+
+            if (rightType is ConstType rightTypeConst)
+            {
+                rightType = rightTypeConst.Base;
+            }
+
             if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not PointerType)
                 || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");

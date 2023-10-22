@@ -59,9 +59,9 @@ internal static class ConstantEvaluator
                     case BinaryOperator.Remainder:
                         return new IntegerConstant(leftInt.Value % rightInt.Value);
                     case BinaryOperator.BitwiseLeftShift:
-                        return new IntegerConstant(leftInt.Value << rightInt.Value);
+                        return new IntegerConstant(leftInt.Value << (int)rightInt.Value);
                     case BinaryOperator.BitwiseRightShift:
-                        return new IntegerConstant(leftInt.Value >> rightInt.Value);
+                        return new IntegerConstant(leftInt.Value >> (int)rightInt.Value);
                     case BinaryOperator.BitwiseOr:
                         return new IntegerConstant(leftInt.Value | rightInt.Value);
                     case BinaryOperator.BitwiseAnd:

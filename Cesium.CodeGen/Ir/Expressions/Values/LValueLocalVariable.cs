@@ -34,7 +34,7 @@ internal class LValueLocalVariable : ILValue
     public void EmitGetAddress(IEmitScope scope)
     {
         var variable = GetVariableDefinition(scope);
-        if (variable.VariableType.IsPointer)
+        if (_variableType is InPlaceArrayType)
         {
             EmitGetValue(scope);
         }
