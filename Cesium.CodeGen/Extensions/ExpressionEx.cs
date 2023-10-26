@@ -23,7 +23,8 @@ internal static class ExpressionEx
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
         Ast.CastExpression e => new TypeCastExpression(e),
-        Ast.SizeOfOperatorExpression e => new SizeOfOperatorExpression(e),
+        Ast.IdentifierSizeOfOperatorExpression e => new IdentifierSizeOfOperatorExpression(e),
+        Ast.TypeNameSizeOfOperatorExpression e => new TypeNameSizeOfOperatorExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),

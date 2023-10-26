@@ -17,21 +17,6 @@ int testNamedTypeSizeof() {
     return 1;
 }
 
-struct foo {
-    int x;
-    int y;
-};
-
-int testGlobalStructSizeof() {
-    int structSize = sizeof(struct foo);
-
-    if (structSize != 8) {
-        return 0;
-    }
-
-    return 1;
-}
-
 int testCharSizeof() {
     if (sizeof(char) != 1) {
         return 0;
@@ -67,6 +52,27 @@ int testArrayLength() {
     return 1;
 }
 
+int testLocalEnumSizeOf() {
+    enum fooLocal {
+        bar
+    };
+
+    if (sizeof(enum fooLocal) != 4) {
+        return 0;
+    }
+    return 1;
+}
+
+enum foo {
+    bar
+};
+int testGlobalEnumSizeOf() {
+    if (sizeof(enum foo) != 4) {
+        return 0;
+    }
+    return 1;
+}
+
 // TODO [453]: Failing 
 //int testStructSizeof() {
 //    struct bar {
@@ -83,9 +89,24 @@ int testArrayLength() {
 //    return 1;
 //}
 
-// TODO [332]: Failing 
+// TODO[#332]: Failing 
 //int testStructSizeof() {
 //    return sizeof(int[5]);
+//}
+
+/// TODO[#453]: Struct can't be resolved
+//struct foo {
+//    int x;
+//    int y;
+//};
+//int testGlobalStructSizeof() {
+//    int structSize = sizeof(struct foo);
+//
+//    if (structSize != 8) {
+//        return 0;
+//    }
+//
+//    return 1;
 //}
 
 int main(int argc, char* argv[])
@@ -98,9 +119,9 @@ int main(int argc, char* argv[])
         return -2;
     }
 
-    if (!testGlobalStructSizeof()) {
-        return -3;
-    }
+    //if (!testGlobalStructSizeof()) {
+    //    return -3;
+    //}
 
     if (!testCharSizeof()) {
         return -4;
@@ -116,6 +137,14 @@ int main(int argc, char* argv[])
 
     if (!testArrayLength()) {
         return -7;
+    }
+
+    if (!testLocalEnumSizeOf()) {
+        return -8;
+    }
+
+    if (!testGlobalEnumSizeOf()) {
+        return -9;
     }
 
     return 42;

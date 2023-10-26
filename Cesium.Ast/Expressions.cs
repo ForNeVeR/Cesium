@@ -28,7 +28,9 @@ public record UnaryOperatorExpression(string Operator, Expression Target) : Expr
 public record IndirectionExpression(Expression Target) : Expression;
 
 // 6.5.3.4 The sizeof and _Alignof operators
-public record SizeOfOperatorExpression(TypeName TypeName) : Expression;
+public record IdentifierSizeOfOperatorExpression(IdentifierExpression Identifier) : Expression;
+
+public record TypeNameSizeOfOperatorExpression(TypeName TypeName) : Expression;
 
 // 6.5.4 Cast expression
 public record CastExpression(TypeName TypeName, Expression Target) : Expression;

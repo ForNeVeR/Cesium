@@ -1,8 +1,7 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -15,34 +14,12 @@ internal class SizeOfOperatorExpression : IExpression
         _type = Type;
     }
 
-    public SizeOfOperatorExpression(Ast.SizeOfOperatorExpression sizeOfOperator)
+    public IExpression Lower(IDeclarationScope scope) => _type switch
     {
-        var (specifiers, abstractDeclarator) = sizeOfOperator.TypeName;
-        _type = (specifiers, abstractDeclarator) switch
-        {
-            ({ }, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator).Type,
-            ({ }, null) => LocalDeclarationInfo.Of(specifiers, (Declarator?)null).Type
-        };
-    }
-
-    public IExpression Lower(IDeclarationScope scope)
-    {
-        if (_type is NamedType namedType)
-        {
-            var typeResolved = new IdentifierExpression(namedType.TypeName).Resolve(scope).GetValueType();
-            if (typeResolved is InPlaceArrayType typeArray)
-            {
-                return typeArray.GetSizeInBytesExpression(scope.ArchitectureSet);
-            }
-            return new SizeOfOperatorExpression(typeResolved);
-        }
-        else if (_type is InPlaceArrayType typeArray)
-        {
-            return typeArray.GetSizeInBytesExpression(scope.ArchitectureSet);
-        }
-        // TODO [#453]: If a struct is declared locally, it won't be resolved later, resulting in a failure.
-        return this;
-    } 
+        InPlaceArrayType arrayType => arrayType.GetSizeInBytesExpression(scope.ArchitectureSet),
+        StructType structType => throw new WipException(453, $"sizeof(StructType) not supported, yet: {structType.Identifier}."),
+        _ => this
+    };
 
     public void EmitTo(IEmitScope scope)
     {
