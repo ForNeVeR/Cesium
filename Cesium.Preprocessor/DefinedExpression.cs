@@ -1,6 +1,6 @@
 namespace Cesium.Preprocessor;
 
-internal class DefinedExpression : IPreprocessorExpression
+internal sealed class DefinedExpression : IPreprocessorExpression
 {
     public DefinedExpression(string identifer)
     {

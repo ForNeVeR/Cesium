@@ -4,7 +4,7 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class GetValueExpression : IExpression, IValueExpression
+internal sealed class GetValueExpression : IExpression, IValueExpression
 {
     private readonly IValue _value;
 

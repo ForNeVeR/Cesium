@@ -6,7 +6,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class TypeNameSizeOfOperatorExpression : IExpression
+internal sealed class TypeNameSizeOfOperatorExpression : IExpression
 {
     private readonly IType _type;
 

@@ -6,7 +6,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class PointerMemberAccessExpression : IExpression, IValueExpression
+internal sealed class PointerMemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
     private readonly IdentifierExpression _memberIdentifier;

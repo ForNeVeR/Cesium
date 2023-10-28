@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class StructType : IGeneratedType
+internal sealed class StructType : IGeneratedType
 {
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
     {

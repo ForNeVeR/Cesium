@@ -5,7 +5,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class TypeCastOrNamedFunctionCallExpression : IExpression
+internal sealed class TypeCastOrNamedFunctionCallExpression : IExpression
 {
     private readonly string _typeOrFunctionName;
     private readonly IReadOnlyList<IExpression> _arguments;

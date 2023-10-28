@@ -8,7 +8,7 @@ using QuikGraph;
 
 namespace Cesium.CodeGen.Ir.ControlFlow;
 
-internal class ControlFlowChecker
+internal sealed class ControlFlowChecker
 {
     // we don't want structural equality here
     class CodeBlockVertex
@@ -74,7 +74,7 @@ internal class ControlFlowChecker
                 var compoundVtx = new CodeBlockVertex(compound);
                 graph.AddVertex(compoundVtx);
 
-                List<CodeBlockVertex> unboundVertices = new List<CodeBlockVertex>
+                List<CodeBlockVertex> unboundVertices = new()
                 {
                     compoundVtx
                 };
@@ -131,7 +131,7 @@ internal class ControlFlowChecker
         graph.AddVertex(start);
         graph.AddVertex(terminator);
 
-        List<CodeBlockVertex> unboundVertices = new List<CodeBlockVertex>
+        List<CodeBlockVertex> unboundVertices = new()
         {
             start
         };
@@ -159,13 +159,11 @@ internal class ControlFlowChecker
             {
                 var label = graph.Vertices.First(x =>
                 {
-                    switch (x.BlockItem)
+                    return x.BlockItem switch
                     {
-                        case LabelStatement { Identifier: { } id } when id == goTo.Identifier:
-                            return true;
-                        default:
-                            return false;
-                    }
+                        LabelStatement { Identifier: { } id } when id == goTo.Identifier => true,
+                        _ => false,
+                    };
                 });
 
                 graph.AddEdge(new CodeBlockEdge(vtx, label));

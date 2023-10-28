@@ -5,7 +5,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IdentifierSizeOfOperatorExpression : IExpression
+internal sealed class IdentifierSizeOfOperatorExpression : IExpression
 {
     private readonly IdentifierExpression _identifier;
 

@@ -4,7 +4,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class EnumType : IType
+internal sealed class EnumType : IType
 {
     public EnumType(IReadOnlyList<InitializableDeclarationInfo> members, string? identifier)
     {

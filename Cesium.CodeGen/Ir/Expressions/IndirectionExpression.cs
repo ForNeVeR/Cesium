@@ -6,7 +6,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IndirectionExpression : IExpression, IValueExpression
+internal sealed class IndirectionExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
 

@@ -14,7 +14,7 @@ using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class FunctionDefinition : IBlockItem
+internal sealed class FunctionDefinition : IBlockItem
 {
     private const string MainFunctionName = "main";
 
@@ -139,7 +139,7 @@ internal class FunctionDefinition : IBlockItem
         return GenerateSyntheticEntryPointStrArray(context, userEntrypoint);
     }
 
-    private MethodDefinition GenerateSyntheticEntryPointStrArray(
+    private static MethodDefinition GenerateSyntheticEntryPointStrArray(
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {
@@ -232,7 +232,7 @@ internal class FunctionDefinition : IBlockItem
         return syntheticEntrypoint;
     }
 
-    private MethodDefinition GenerateSyntheticEntryPointSimple(
+    private static MethodDefinition GenerateSyntheticEntryPointSimple(
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {

@@ -8,7 +8,7 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class UnaryOperatorExpression : IExpression
+internal sealed class UnaryOperatorExpression : IExpression
 {
     public UnaryOperator Operator { get; }
     public IExpression Target { get; }

@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class IntegerConstant : IConstant
+internal sealed class IntegerConstant : IConstant
 {
     public IntegerConstant(string value)
     {

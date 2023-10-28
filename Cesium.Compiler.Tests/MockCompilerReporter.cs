@@ -2,7 +2,7 @@ using Cesium.CodeGen;
 
 namespace Cesium.Compiler.Tests;
 
-internal class MockCompilerReporter : ICompilerReporter
+internal sealed class MockCompilerReporter : ICompilerReporter
 {
     public List<string> Errors { get; set; } = new();
     public List<string> InformationMessages { get; set; } = new();

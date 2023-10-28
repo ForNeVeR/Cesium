@@ -3,7 +3,7 @@ using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
-internal class IdentifierExpression : IPreprocessorExpression
+internal sealed class IdentifierExpression : IPreprocessorExpression
 {
     public IdentifierExpression(string identifer)
     {

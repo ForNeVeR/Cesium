@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
-internal class BinaryOperatorExpression : IExpression
+internal sealed class BinaryOperatorExpression : IExpression
 {
     public IExpression Left { get; }
     public BinaryOperator Operator { get; }
