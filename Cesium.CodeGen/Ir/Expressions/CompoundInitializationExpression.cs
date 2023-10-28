@@ -1,14 +1,11 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
-using System.Formats.Asn1;
-using System.IO;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class CompoundInitializationExpression : IExpression
+internal sealed class CompoundInitializationExpression : IExpression
 {
     private readonly IType _type;
     private readonly ArrayInitializerExpression _arrayInitializer;

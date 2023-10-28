@@ -5,11 +5,10 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class FunctionCallExpression : FunctionCallExpressionBase
+internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IdentifierExpression _function;
     private readonly IReadOnlyList<IExpression> _arguments;

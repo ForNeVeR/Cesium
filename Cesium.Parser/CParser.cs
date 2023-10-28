@@ -506,11 +506,11 @@ public partial class CParser
 
     [Rule("enum_specifier: 'enum' Identifier")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
-        new EnumSpecifier(identifier.Text, null);
+        new(identifier.Text, null);
 
     [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
-        new EnumSpecifier(identifier.Text, enumeratorList);
+        new(identifier.Text, enumeratorList);
 
     [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
     private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
@@ -518,11 +518,11 @@ public partial class CParser
 
     [Rule("enumerator: Identifier")]
     private static EnumDeclaration MakeEnumerator(IToken identifier) =>
-        new EnumDeclaration(identifier.Text, null);
+        new(identifier.Text, null);
 
     [Rule("enumerator: Identifier '=' constant_expression")]
     private static EnumDeclaration MakeEnumerator(IToken identifier, IToken _, Expression expression) =>
-        new EnumDeclaration(identifier.Text, expression);
+        new(identifier.Text, expression);
 
     // TODO[#211]: struct-declaration: static_assert-declaration
 
@@ -554,7 +554,7 @@ public partial class CParser
         StructDeclarator next) => prev.Add(next);
 
     [Rule("struct_declarator: declarator")]
-    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new StructDeclarator(declarator);
+    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new(declarator);
 
     // TODO[#211]: struct-declarator: declarator? : constant-expression
 

@@ -1,4 +1,3 @@
-using System.Runtime.Versioning;
 using Cesium.Core;
 using Mono.Cecil;
 

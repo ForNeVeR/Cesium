@@ -1,4 +1,3 @@
-using Cesium.Core;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;

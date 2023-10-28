@@ -7,11 +7,10 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
+internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
 {
     private MethodDefinition? _method;
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
