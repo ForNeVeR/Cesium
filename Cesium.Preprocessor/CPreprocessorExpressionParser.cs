@@ -32,11 +32,11 @@ internal partial class CPreprocessorExpressionParser
     [Rule("binary_expression: expression '||' expression")]
     [Rule("binary_expression: expression '&&' expression")]
     private static BinaryExpression MakeBinaryExpression(IPreprocessorExpression left, ICPreprocessorToken token, IPreprocessorExpression right)
-        => new BinaryExpression(left, GetOperator(token), right);
+        => new(left, GetOperator(token), right);
 
     [Rule("prefix_expression: '!' expression")]
     private static UnaryExpression MakePrefixExpression(ICPreprocessorToken token, IPreprocessorExpression expression)
-        => new UnaryExpression(GetOperator(token), expression);
+        => new(GetOperator(token), expression);
 
     [Rule("expression: identifier")]
     [Rule("expression: binary_expression")]
