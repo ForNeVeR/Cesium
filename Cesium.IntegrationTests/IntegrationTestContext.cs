@@ -91,13 +91,13 @@ public class IntegrationTestContext : IAsyncDisposable
         throw new Exception($"Could not find the solution directory going up from directory \"{assemblyDirectory}\".");
     }
 
-    private async Task BuildRuntime(ITestOutputHelper output)
+    private static async Task BuildRuntime(ITestOutputHelper output)
     {
         var runtimeProjectFile = Path.Combine(SolutionRootPath, "Cesium.Runtime/Cesium.Runtime.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, runtimeProjectFile);
     }
 
-    private async Task BuildCompiler(ITestOutputHelper output)
+    private static async Task BuildCompiler(ITestOutputHelper output)
     {
         var compilerProjectFile = Path.Combine(SolutionRootPath, "Cesium.Compiler/Cesium.Compiler.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, compilerProjectFile);
