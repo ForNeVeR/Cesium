@@ -60,7 +60,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         string @namespace = "",
         string globalTypeFqn = "")
     {
-        CompilationOptions compilationOptions = new CompilationOptions(
+        CompilationOptions compilationOptions = new(
             targetRuntime ?? TargetRuntimeDescriptor.Net60,
             targetArchitectureSet,
             ModuleKind.Console,
