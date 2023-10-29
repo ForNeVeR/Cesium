@@ -51,7 +51,7 @@ public sealed record ConditionalExpression(Expression Condition, Expression True
     : Expression;
 
 // 6.5.16 Assignment operators
-public record AssignmentExpression(Expression Left, string Operator, Expression Right)
+public sealed record AssignmentExpression(Expression Left, string Operator, Expression Right)
     : BinaryOperatorExpression(Left, Operator, Right);
 
 // 6.5.17 Comma operator
