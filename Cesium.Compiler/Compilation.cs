@@ -1,10 +1,10 @@
-using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
+using System.Text;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
@@ -99,15 +99,12 @@ internal static class Compilation
         var translationUnitParseError = parser.ParseTranslationUnit();
         if (translationUnitParseError.IsError)
         {
-            switch (translationUnitParseError.Error.Got)
+            throw translationUnitParseError.Error.Got switch
             {
-                case CToken token:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
-                case char ch:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
-                default:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
-            }
+                CToken token => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
+                char ch => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
+                _ => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}."),
+            };
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;

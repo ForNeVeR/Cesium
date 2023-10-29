@@ -11,7 +11,7 @@ namespace Cesium.CodeGen.Ir.Declarations;
 /// initializer, and is always a part of a more complex syntax construct: say, a parameter declaration or a function
 /// definition.
 /// </summary>
-internal record LocalDeclarationInfo(
+internal sealed record LocalDeclarationInfo(
     IType Type,
     string? Identifier,
     string? CliImportMemberName)
@@ -291,14 +291,12 @@ internal record LocalDeclarationInfo(
         var current = directAbstractDeclarator;
         while (current != null)
         {
-            switch (current)
+            throw current switch
             {
-                default:
-                    throw new WipException(
-                        332,
-                        $"Direct abstract declarator is not supported, yet: {current}.");
-            }
-
+                _ => new WipException(
+                                        332,
+                                        $"Direct abstract declarator is not supported, yet: {current}."),
+            };
             current = current.Base;
         }
 
