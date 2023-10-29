@@ -97,7 +97,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     }
 
     private static readonly object _tempDirCreator = new();
-    private string CreateTempDir()
+    private static string CreateTempDir()
     {
         lock (_tempDirCreator)
         {
