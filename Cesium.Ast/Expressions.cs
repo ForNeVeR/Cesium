@@ -36,7 +36,7 @@ public sealed record TypeNameSizeOfOperatorExpression(TypeName TypeName) : Expre
 public sealed record CastExpression(TypeName TypeName, Expression Target) : Expression;
 
 // 6.5.5–6.5.14: Various binary operators
-public record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
+public abstract record BinaryOperatorExpression(Expression Left, string Operator, Expression Right) : Expression;
 public sealed record LogicalBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
     : BinaryOperatorExpression(Left, Operator, Right);
 public sealed record ArithmeticBinaryOperatorExpression(Expression Left, string Operator, Expression Right)
