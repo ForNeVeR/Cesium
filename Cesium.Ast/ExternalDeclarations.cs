@@ -6,9 +6,9 @@ namespace Cesium.Ast;
 public record TranslationUnit(ImmutableArray<ExternalDeclaration> Declarations);
 
 public abstract record ExternalDeclaration;
-public sealed record FunctionDefinition(
+public record FunctionDefinition(
     ImmutableArray<IDeclarationSpecifier> Specifiers,
     Declarator Declarator,
     ImmutableArray<Declaration>? Declarations,
     CompoundStatement Statement) : ExternalDeclaration;
-public sealed record SymbolDeclaration(Declaration Declaration) : ExternalDeclaration;
+public record SymbolDeclaration(Declaration Declaration) : ExternalDeclaration;
