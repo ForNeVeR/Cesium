@@ -11,12 +11,12 @@ namespace Cesium.CodeGen.Ir.Declarations;
 /// initializer, and is always a part of a more complex syntax construct: say, a parameter declaration or a function
 /// definition.
 /// </summary>
-internal record LocalDeclarationInfo(
+internal sealed record LocalDeclarationInfo(
     IType Type,
     string? Identifier,
     string? CliImportMemberName)
 {
-    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator)
+    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator, Initializer? initializer = null)
     {
         var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
         if (declarator == null)
@@ -36,7 +36,7 @@ internal record LocalDeclarationInfo(
 
         var (pointer, directDeclarator) = declarator;
         type = ProcessPointer(pointer, type);
-        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type);
+        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type, initializer);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
@@ -158,7 +158,8 @@ internal record LocalDeclarationInfo(
 
         var (typeQualifiers, childPointer) = pointer;
         if (typeQualifiers != null)
-            throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
+            if (typeQualifiers.Value.Length == 1 && typeQualifiers.Value[0].Name != "const")
+                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
 
         type = new PointerType(type);
         if (childPointer != null)
@@ -167,7 +168,7 @@ internal record LocalDeclarationInfo(
         return type;
     }
 
-    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type)
+    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type, Initializer? initializer = null)
     {
         string? identifier = null;
 
@@ -213,7 +214,18 @@ internal record LocalDeclarationInfo(
 
                     // TODO[#126]: should check that size required in scoped declaration and not needed in parameter declaration
                     if (sizeExpr == null)
-                        type = new PointerType(type);
+                    {
+                        if (initializer != null && initializer is ArrayInitializer arrayInitializer &&
+                            arrayInitializer.Initializers.Length > 0)
+                        {
+                            var size = arrayInitializer.Initializers.Length;
+                            type = CreateArrayType(type, size);
+                        }
+                        else
+                        {
+                            type = new PointerType(type);
+                        }
+                    }
                     else
                     {
                         if (sizeExpr is not ConstantLiteralExpression constantExpression ||
@@ -279,14 +291,12 @@ internal record LocalDeclarationInfo(
         var current = directAbstractDeclarator;
         while (current != null)
         {
-            switch (current)
+            throw current switch
             {
-                default:
-                    throw new WipException(
-                        332,
-                        $"Direct abstract declarator is not supported, yet: {current}.");
-            }
-
+                _ => new WipException(
+                                        332,
+                                        $"Direct abstract declarator is not supported, yet: {current}."),
+            };
             current = current.Base;
         }
 

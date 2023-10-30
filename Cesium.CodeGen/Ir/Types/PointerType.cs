@@ -48,6 +48,6 @@ internal sealed record PointerType(IType Base) : IType
         if (arch != TargetArchitectureSet.Dynamic)
             throw new AssertException($"Architecture {arch} shouldn't enter dynamic pointer size calculation.");
 
-        return new SizeOfExpression(this);
+        return new SizeOfOperatorExpression(this);
     }
 }

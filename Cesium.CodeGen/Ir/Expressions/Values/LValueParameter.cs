@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueParameter : ILValue
+internal sealed class LValueParameter : ILValue
 {
     private readonly ParameterInfo _parameterInfo;
     private ParameterDefinition? _definition;

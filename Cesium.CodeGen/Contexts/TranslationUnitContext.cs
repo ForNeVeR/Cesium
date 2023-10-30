@@ -163,6 +163,11 @@ public class TranslationUnitContext
             return new PointerType(ResolveType(pointerType.Base));
         }
 
+        if (type is ConstType constType)
+        {
+            return new ConstType(ResolveType(constType.Base));
+        }
+
         if (type is InPlaceArrayType arrayType)
         {
             return new InPlaceArrayType(ResolveType(arrayType.Base), arrayType.Size);

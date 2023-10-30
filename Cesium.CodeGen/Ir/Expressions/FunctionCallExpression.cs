@@ -5,11 +5,10 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class FunctionCallExpression : FunctionCallExpressionBase
+internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IdentifierExpression _function;
     private readonly IReadOnlyList<IExpression> _arguments;
@@ -117,15 +116,16 @@ internal class FunctionCallExpression : FunctionCallExpressionBase
             {
                 if (index >= firstVarArgArgument)
                 {
-                    var expressionType = a.GetExpressionType(scope);
+                    var loweredArg = a.Lower(scope);
+                    var expressionType = loweredArg.GetExpressionType(scope);
                     if (expressionType.Equals(scope.CTypeSystem.Float))
                     {
                         // Seems to be float always use float-point registers and as such we need to covert to double.
-                        return new TypeCastExpression(scope.CTypeSystem.Double, a.Lower(scope));
+                        return new TypeCastExpression(scope.CTypeSystem.Double, loweredArg);
                     }
                     else
                     {
-                        return a.Lower(scope);
+                        return loweredArg;
                     }
                 }
 

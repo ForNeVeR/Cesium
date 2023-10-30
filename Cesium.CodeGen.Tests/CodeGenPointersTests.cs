@@ -26,7 +26,22 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task AddToPointerFromLeft() => DoTest("void foo (int *x) { x = 1+x; }");
 
     [Fact]
+    public Task IncrementPrimitivePointer() => DoTest("void foo (int *x) { x++; }");
+
+    [Fact]
+    public Task IncrementStructPointer() => DoTest("struct test { char* x; int y; } ; void foo () { const struct test *x; x++; }");
+
+    [Fact]
     public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
+
+    [Fact]
+    public Task PointerToPointer() => DoTest("void foo (int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task ConstPointerToPointer() => DoTest("void foo (const int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task PointerToConstPointer() => DoTest("void foo (int *const *x) { int y = *x[1]; }");
 
     [Fact]
     public void CannotMultiplyPointerTypes() => DoesNotCompile(
@@ -37,6 +52,12 @@ public class CodeGenPointersTests : CodeGenTestBase
     public void CannotAddPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = x +x; }",
         "Operator Add is not supported for pointer/pointer operands");
+
+    [Fact]
+    public void CanSubstractPointerTypes() => DoTest("void foo (int *x, int *y) { int d = x - y; }");
+
+    [Fact]
+    public void CanSubstractPointerWithConstTypes() => DoTest("void foo (int *x, const int *y) { int d = x - y; }");
 
     [Fact]
     public Task CanUseBuiltinOffsetOfOnDeclaredStruct() => DoTest(

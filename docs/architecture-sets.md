@@ -10,7 +10,7 @@ To manage that, Cesium introduces a concept of the _architecture sets_. An _arch
 Architecture set influences the following features of compiled programs:
 - pointer size,
 - size of pointer-dependent memory areas (such as stack arrays and arrays embedded into structures),
-- target architecture of the produced .NET assembly (not implemented yet, see issue #353),
+- target architecture of the produced .NET assembly (not implemented yet, see issue [#353: Assembly target architecture support](https://github.com/ForNeVeR/Cesium/issues/353)),
 - ability to compile certain C constructs.
 
 Cesium aims to support the following architecture sets:

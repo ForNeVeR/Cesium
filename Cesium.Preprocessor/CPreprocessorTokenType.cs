@@ -25,7 +25,7 @@ public enum CPreprocessorTokenType
     [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",.|&]+")]
     PreprocessingToken,
 
-    [Regex("[;+\\-*/=!,.|&]+")]
+    [Regex("([;+\\-*/=!,.|&]+|<=|>=|>|<)")]
     Separator,
 
     [Token("(")]

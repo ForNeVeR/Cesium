@@ -1,6 +1,6 @@
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class GoToStatement : IBlockItem
+internal sealed class GoToStatement : IBlockItem
 {
     public string Identifier { get; }
 

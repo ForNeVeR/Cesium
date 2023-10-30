@@ -1,6 +1,7 @@
 #if NETSTANDARD
 using System.Text;
 #else
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
 
@@ -146,5 +147,41 @@ public static unsafe class StringFunctions
 
         *dest = 0;
         return result;
+    }
+    public static int StrNCmp(byte* lhs, byte* rhs, nuint count)
+    {
+        if (lhs == null || rhs == null)
+        {
+            return -1;
+        }
+
+        var result = lhs;
+        if (count == 0)
+        {
+            return 0;
+        }
+
+        for (nuint i = 0; i < count; i++, lhs++, rhs++)
+        {
+            int diff = *lhs - *rhs;
+            if (diff != 0)
+            {
+                return diff;
+            }
+        }
+
+        return 0;
+    }
+
+    public static void* Memset(void* dest, int ch, nuint count)
+    {
+        byte* val = (byte*)dest;
+        while (count > 0)
+        {
+            *val = (byte)ch;
+            count--;
+        }
+
+        return dest;
     }
 }

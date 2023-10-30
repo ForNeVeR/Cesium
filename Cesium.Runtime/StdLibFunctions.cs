@@ -32,6 +32,11 @@ public unsafe static class StdLibFunctions
         shared = new Random((int)seed);
     }
 
+    public static void Abort()
+    {
+        Environment.FailFast("Aborted");
+    }
+
     public static int System(byte* command)
     {
         string? shellCommand = RuntimeHelpers.Unmarshal(command);
@@ -107,5 +112,11 @@ public unsafe static class StdLibFunctions
 #else
         return NativeMemory.AlignedAlloc(size, alignment);
 #endif
+    }
+
+    public static int Atoi(byte* ptr)
+    {
+        var str = StdIoFunctions.Unmarshal(ptr);
+        return Convert.ToInt32(str);
     }
 }

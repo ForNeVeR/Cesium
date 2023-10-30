@@ -8,7 +8,7 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class ConstantLiteralExpression : IExpression
+internal sealed class ConstantLiteralExpression : IExpression
 {
     public static ConstantLiteralExpression OfInt32(int value) => new(new IntegerConstant(value));
 

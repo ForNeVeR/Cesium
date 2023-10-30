@@ -20,6 +20,7 @@ using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
 using StructDeclarationList = ImmutableArray<StructDeclaration>;
 using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
+using LiteralExpressionList = ImmutableArray<IToken<CTokenType>>;
 
 /// <remarks>See the section 6 of the C17 standard.</remarks>
 [Parser(typeof(CTokenType))]
@@ -32,6 +33,20 @@ public partial class CParser
     [Rule("constant: enumeration_constant")]
     [Rule("constant: CharLiteral")]
     private static ICToken MakeConstant(ICToken constant) => constant;
+
+    // 6.4.5 String literals
+
+    // TODO:
+    // string_literal:
+    //      encoding-prefix? " s-char-sequence? "
+    [Rule("string_literal: StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(ICToken stringLiteral) => ImmutableArray.Create(stringLiteral);
+
+
+    [Rule("string_literal: string_literal StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(
+        LiteralExpressionList prev,
+        ICToken stringLiteral) => prev.Add(stringLiteral);
 
     // 6.4.4.3 Enumeration constants
     [Rule("enumeration_constant: Identifier")]
@@ -71,6 +86,10 @@ public partial class CParser
     [Rule("primary_expression: StringLiteral")]
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantLiteralExpression(stringLiteral);
+
+    [Rule("primary_expression: string_literal")]
+    private static Expression MakeStringLiteralListExpression(LiteralExpressionList literalExpressionList) =>
+        new StringLiteralListExpression(literalExpressionList);
 
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
@@ -168,6 +187,14 @@ public partial class CParser
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
+
+    [Rule("unary_expression: KeywordSizeof '(' Identifier ')'")]
+    private static Expression MakeTypeNameSizeOfOperator(ICToken _, ICToken __, IToken identifier, ICToken ___) =>
+        new IdentifierSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
+
+    [Rule("unary_expression: KeywordSizeof '(' type_name ')'")]
+    private static Expression MakeTypeSpecifierSizeOfOperator(ICToken _, ICToken __, TypeName typeName, ICToken ___) =>
+        new TypeNameSizeOfOperatorExpression(typeName);
 
     // 6.5.4 Cast operators
     [Rule("cast_expression: '(' type_name ')' cast_expression")]
@@ -479,11 +506,11 @@ public partial class CParser
 
     [Rule("enum_specifier: 'enum' Identifier")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
-        new EnumSpecifier(identifier.Text, null);
+        new(identifier.Text, null);
 
     [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
-        new EnumSpecifier(identifier.Text, enumeratorList);
+        new(identifier.Text, enumeratorList);
 
     [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
     private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
@@ -491,11 +518,11 @@ public partial class CParser
 
     [Rule("enumerator: Identifier")]
     private static EnumDeclaration MakeEnumerator(IToken identifier) =>
-        new EnumDeclaration(identifier.Text, null);
+        new(identifier.Text, null);
 
     [Rule("enumerator: Identifier '=' constant_expression")]
     private static EnumDeclaration MakeEnumerator(IToken identifier, IToken _, Expression expression) =>
-        new EnumDeclaration(identifier.Text, expression);
+        new(identifier.Text, expression);
 
     // TODO[#211]: struct-declaration: static_assert-declaration
 
@@ -527,7 +554,7 @@ public partial class CParser
         StructDeclarator next) => prev.Add(next);
 
     [Rule("struct_declarator: declarator")]
-    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new StructDeclarator(declarator);
+    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new(declarator);
 
     // TODO[#211]: struct-declarator: declarator? : constant-expression
 

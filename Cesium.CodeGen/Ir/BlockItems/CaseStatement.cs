@@ -3,7 +3,7 @@ using Cesium.CodeGen.Ir.Expressions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class CaseStatement : IBlockItem
+internal sealed class CaseStatement : IBlockItem
 {
     public CaseStatement(Ast.CaseStatement statement)
     {

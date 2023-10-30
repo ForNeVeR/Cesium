@@ -4,7 +4,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ForStatement : IBlockItem
+internal sealed class ForStatement : IBlockItem
 {
     public IBlockItem? InitDeclaration { get; }
     public IExpression? InitExpression { get; }

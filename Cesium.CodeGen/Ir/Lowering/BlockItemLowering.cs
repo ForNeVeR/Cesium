@@ -410,7 +410,7 @@ internal static class BlockItemLowering
             }
             case TagBlockItem t:
             {
-                List<LocalDeclarationInfo> list = new List<LocalDeclarationInfo>();
+                List<LocalDeclarationInfo> list = new();
                 foreach (var typeDef in t.Types)
                 {
                     var (type, identifier, cliImportMemberName) = typeDef;
@@ -429,7 +429,7 @@ internal static class BlockItemLowering
             }
             case TypeDefBlockItem t:
             {
-                List<LocalDeclarationInfo> list = new List<LocalDeclarationInfo>();
+                List<LocalDeclarationInfo> list = new();
                 foreach (var typeDef in t.Types)
                 {
                     var (type, identifier, cliImportMemberName) = typeDef;

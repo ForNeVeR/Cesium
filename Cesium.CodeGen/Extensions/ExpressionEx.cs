@@ -10,6 +10,7 @@ internal static class ExpressionEx
     public static IExpression ToIntermediate(this Ast.Expression ex) => ex switch
     {
         Ast.IdentifierExpression e => new IdentifierExpression(e),
+        Ast.StringLiteralListExpression e => new StringLiteralListExpression(e),
         Ast.ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
         Ast.ConstantLiteralExpression e => new ConstantLiteralExpression(e),
         Ast.ParenExpression e => ToIntermediate(e.Contents),
@@ -22,6 +23,8 @@ internal static class ExpressionEx
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
         Ast.CastExpression e => new TypeCastExpression(e),
+        Ast.IdentifierSizeOfOperatorExpression e => new IdentifierSizeOfOperatorExpression(e),
+        Ast.TypeNameSizeOfOperatorExpression e => new TypeNameSizeOfOperatorExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),

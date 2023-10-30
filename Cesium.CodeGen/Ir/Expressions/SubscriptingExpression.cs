@@ -8,7 +8,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class SubscriptingExpression : IValueExpression
+internal sealed class SubscriptingExpression : IValueExpression
 {
     private readonly IExpression _expression;
     private readonly IExpression _index;

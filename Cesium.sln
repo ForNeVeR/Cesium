@@ -54,12 +54,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
 	ProjectSection(SolutionItems) = preProject
+		docs\architecture-sets.md = docs\architecture-sets.md
+		docs\builtins.md = docs\builtins.md
 		docs\exceptions.md = docs\exceptions.md
 		docs\language-extensions.md = docs\language-extensions.md
 		docs\tests.md = docs\tests.md
 		docs\type-system.md = docs\type-system.md
-		docs\architecture-sets.md = docs\architecture-sets.md
-		docs\builtins.md = docs\builtins.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
@@ -76,6 +76,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Core", "Cesium.Core\Cesium.Core.csproj", "{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime.Tests", "Cesium.Runtime.Tests\Cesium.Runtime.Tests.csproj", "{526D8E61-6143-490F-BB9D-E7CD78512E55}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Compiler.Tests", "Cesium.Compiler.Tests\Cesium.Compiler.Tests.csproj", "{A5E33E79-E710-4F2F-838F-20CD0A3142F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +133,10 @@ Global
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5E33E79-E710-4F2F-838F-20CD0A3142F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5E33E79-E710-4F2F-838F-20CD0A3142F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5E33E79-E710-4F2F-838F-20CD0A3142F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5E33E79-E710-4F2F-838F-20CD0A3142F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

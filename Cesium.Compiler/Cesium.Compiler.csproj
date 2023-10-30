@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.8.0" />
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2023.5.30-5.54.38-nightly" />
     </ItemGroup>
 

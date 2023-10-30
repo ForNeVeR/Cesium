@@ -3,7 +3,7 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class FunctionDeclaration : IBlockItem
+internal sealed class FunctionDeclaration : IBlockItem
 {
     public string Identifier { get; }
     public StorageClass StorageClass { get; }

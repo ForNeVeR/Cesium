@@ -70,7 +70,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         var allReferences = (referencePaths ?? Array.Empty<string>()).ToList();
         allReferences.Insert(0, typeof(Console).Assembly.Location);
 
-        CompilationOptions compilationOptions = new CompilationOptions(
+        CompilationOptions compilationOptions = new(
             targetRuntime ?? CSharpCompilationUtil.DefaultRuntime,
             targetArchitectureSet,
             ModuleKind.Console,
@@ -79,7 +79,9 @@ public abstract class CodeGenTestBase : VerifyTestBase
             allReferences,
             @namespace,
             globalTypeFqn,
-            Array.Empty<string>());
+            Array.Empty<string>(),
+            Array.Empty<string>(),
+            ProducePreprocessedFile: false);
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);

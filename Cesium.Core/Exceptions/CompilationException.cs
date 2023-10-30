@@ -1,6 +1,6 @@
 namespace Cesium.Core;
 
-public class CompilationException : CesiumException
+public sealed class CompilationException : CesiumException
 {
     public CompilationException(string message) : base(message)
     {

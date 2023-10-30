@@ -76,7 +76,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 targetFramework);
             var managedResult = await (targetFramework switch
             {
-                TargetFramework.Net => ExecUtil.Run(_output, "dotnet", outRootPath, new[] { managedExecutable }),
+                TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRootPath, managedExecutable),
                 TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRootPath,
                     Array.Empty<string>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
@@ -97,7 +97,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     }
 
     private static readonly object _tempDirCreator = new();
-    private string CreateTempDir()
+    private static string CreateTempDir()
     {
         lock (_tempDirCreator)
         {
@@ -204,7 +204,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             });
         }
 
-        await ExecUtil.RunToSuccess(_output, "dotnet", objDirPath, args.ToArray());
+        await DotNetCliHelper.RunToSuccess(_output, "dotnet", objDirPath, args.ToArray());
 
         return executableFilePath;
     }

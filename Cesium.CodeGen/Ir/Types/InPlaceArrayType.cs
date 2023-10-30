@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
@@ -10,7 +9,7 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record InPlaceArrayType(IType Base, int Size) : IType
+internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context)
     {

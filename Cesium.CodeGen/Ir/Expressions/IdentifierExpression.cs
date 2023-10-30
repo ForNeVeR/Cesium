@@ -7,7 +7,7 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IdentifierExpression : IExpression, IValueExpression
+internal sealed class IdentifierExpression : IExpression, IValueExpression
 {
     public string Identifier { get; }
 

@@ -128,6 +128,18 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task NestedIfNotDefinedLiteral() => DoTest(
+@"#define foo main
+#ifndef foo1
+int foo_included1() { return 0; }
+#ifndef foo
+int foo() { return 0; }
+#endif
+int foo_included2() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task ReplaceSeparatedIdentifier() => DoTest(
 @"#define foo int
 foo main() { return 0; }
@@ -246,6 +258,37 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfExpressionGreaterOrEquals() => DoTest(
+@"#define mycondition 0
+#if mycondition >= 0
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionGreaterThan() => DoTest(
+@"#define mycondition 0
+#if mycondition > 0
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionLessOrEquals() => DoTest(
+@"#define mycondition 0
+#if mycondition <= 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfExpressionLessOrEqualsWhenNotDefined() => DoTest(
+@"#if mycondition <= 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task IfExpressionDefined() => DoTest(
 @"#define mycondition
 #if defined mycondition
@@ -296,11 +339,55 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfExpressionAndWithEquality() => DoTest(
+@"#define WINAPI_FAMILY_DESKTOP_APP          100
+#define WINAPI_FAMILY WINAPI_FAMILY_DESKTOP_APP
+#if WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task UndefMacro() => DoTest(
 @"#define mycondition 1
 #undef mycondition
 #if !(defined mycondition)
 int foo() { return 0; }
 #endif
+");
+
+    [Fact]
+    public Task ErrorInsideNotActiveBranchIsNotSupported() => DoTest(
+@"#define WINAPI_FAMILY_DESKTOP_APP          100
+#ifndef WINAPI_FAMILY_DESKTOP_APP
+#error ""This should never happens""
+#endif
+");
+
+    [Fact]
+    public Task FunctionWithoutParameters() => DoTest(
+@"#define x() 1
+int foo() { return x(); }
+");
+
+
+    [Fact]
+    public Task FunctionReplaceEllipsis() => DoTest(
+    @"#define foo(...) __VA_ARGS__
+int main() { return foo(11); }
+");
+
+    [Fact]
+    public Task FunctionReplaceEllipsisMultipleParameters() => DoTest(
+@"#define foo(x,...) (__VA_ARGS__,x)
+int x,test;
+int main() { return foo(11,x,test); }
+");
+
+    [Fact]
+    public Task FunctionReplaceEllipsisMultipleParameters2() => DoTest(
+@"#define foo(x,y,...) x,y,__VA_ARGS__
+int x,test;
+int main() { return foo(x,test,11); }
 ");
 }

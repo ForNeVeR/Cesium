@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -10,7 +11,8 @@ namespace Cesium.Preprocessor;
 
 public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
-    private bool IncludeTokens = true;
+    private bool IncludeTokens => _includeTokensStack.All(includeToken => includeToken);
+    private readonly Stack<bool> _includeTokensStack = new();
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -20,6 +22,22 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
 
         return buffer.ToString();
+    }
+
+    private void PushIncludeTokensDepth(bool includeTokes)
+    {
+        _includeTokensStack.Push(includeTokes);
+    }
+
+    private void PopIncludeTokensDepth()
+    {
+        _includeTokensStack.Pop();
+    }
+
+    private void SwitchIncludeTokensDepth()
+    {
+        var lastItem = _includeTokensStack.Pop();
+        this.PushIncludeTokensDepth(!lastItem);
     }
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
@@ -82,70 +100,130 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                     newLine = false;
                     if (IncludeTokens)
                     {
-                        if (MacroContext.TryResolveMacro(token.Text, out var parameters, out var tokenReplacement))
+                        if (MacroContext.TryResolveMacro(token.Text, out var macroDefinition, out var tokenReplacement))
                         {
                             Dictionary<string, List<IToken<CPreprocessorTokenType>>> replacement = new();
-                            if (parameters is not null)
+                            if (macroDefinition is FunctionMacroDefinition functionMacro)
                             {
-                                int parameterIndex = -1;
-                                int openParensCount = 0;
-                                bool hitOpenToken = false;
-                                List<IToken<CPreprocessorTokenType>> currentParameter = new();
-                                IToken<CPreprocessorTokenType> parametersParsingToken;
-                                do
+                                if (functionMacro.Parameters is { } parameters
+                                    && (parameters.Length > 0 || functionMacro.hasEllipsis))
                                 {
-                                    parametersParsingToken = stream.Consume();
-                                    switch (parametersParsingToken)
+                                    int parameterIndex = -1;
+                                    int openParensCount = 0;
+                                    bool hitOpenToken = false;
+                                    List<IToken<CPreprocessorTokenType>> currentParameter = new();
+                                    IToken<CPreprocessorTokenType> parametersParsingToken;
+
+                                    if (functionMacro.hasEllipsis)
                                     {
-                                        case { Kind: LeftParen }:
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
+                                        replacement.Add("__VA_ARGS__", new());
+                                    }
 
-                                            hitOpenToken = true;
-                                            openParensCount++;
-                                            if (parameterIndex == -1)
-                                            {
-                                                parameterIndex = 0;
-                                            }
-                                            break;
-                                        case { Kind: RightParen }:
-                                            openParensCount--;
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        case { Kind: Separator, Text: "," }:
-                                            if (parameterIndex == -1)
-                                            {
-                                                throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
-                                            }
+                                    do
+                                    {
+                                        parametersParsingToken = stream.Consume();
+                                        switch (parametersParsingToken)
+                                        {
+                                            case { Kind: LeftParen }:
+                                                if (openParensCount != 0)
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
 
-                                            if (openParensCount == 1)
-                                            {
-                                                replacement.Add(parameters[parameterIndex], currentParameter);
-                                                currentParameter = new();
-                                                parameterIndex++;
-                                            }
-                                            else
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        default:
-                                            if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
-                                            {
-                                                continue;
-                                            }
+                                                hitOpenToken = true;
+                                                openParensCount++;
+                                                if (parameterIndex == -1)
+                                                {
+                                                    parameterIndex = 0;
+                                                }
+                                                break;
+                                            case { Kind: RightParen }:
+                                                openParensCount--;
+                                                if (openParensCount != 0)
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
+                                                break;
+                                            case { Kind: Separator, Text: "," }:
+                                                if (parameterIndex == -1)
+                                                {
+                                                    throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
+                                                }
 
-                                            currentParameter.Add(parametersParsingToken);
-                                            break;
+                                                if (openParensCount == 1)
+                                                {
+                                                    if (parameters.Length > parameterIndex)
+                                                    {
+                                                        replacement.Add(parameters[parameterIndex], currentParameter);
+                                                        parameterIndex++;
+                                                        currentParameter = new();
+                                                    }
+                                                    else if (functionMacro.hasEllipsis)
+                                                    {
+                                                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args))
+                                                        {
+                                                            va_args.AddRange(currentParameter);
+                                                            va_args.Add(new Token<CPreprocessorTokenType>(token.Range, ",", CPreprocessorTokenType.Separator));
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new PreprocessorException($"The function {functionMacro.Name} defined at {parametersParsingToken.Range} has more parameters than the macro allows.");
+                                                    }
+
+                                                    currentParameter = new();
+                                                }
+                                                else
+                                                {
+                                                    currentParameter.Add(parametersParsingToken);
+                                                }
+                                                break;
+                                            default:
+                                                if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
+                                                {
+                                                    continue;
+                                                }
+
+                                                currentParameter.Add(parametersParsingToken);
+                                                break;
+                                        }
+                                    }
+                                    while (openParensCount > 0 || !hitOpenToken);
+
+
+                                    if (parameters.Length > parameterIndex)
+                                    {
+                                        replacement.Add(parameters[parameterIndex], currentParameter);
+                                    }
+                                    else
+                                    {
+                                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args_))
+                                        {
+                                            va_args_.AddRange(currentParameter);
+                                        }
                                     }
                                 }
-                                while (openParensCount > 0 || !hitOpenToken);
-                                replacement.Add(parameters[parameterIndex], currentParameter);
+                                else
+                                {
+                                    IToken<CPreprocessorTokenType> parametersParsingToken;
+                                    int openParensCount = 0;
+
+                                    do
+                                    {
+                                        parametersParsingToken = stream.Consume();
+                                        switch (parametersParsingToken)
+                                        {
+                                            case { Kind: LeftParen }:
+                                                openParensCount++;
+                                                break;
+                                            case { Kind: RightParen }:
+                                                openParensCount--;
+                                                break;
+                                            default: break;
+                                        }
+                                    } while (openParensCount > 0);
+                                }
+
                             }
 
                             bool performStringReplace = false;
@@ -157,24 +235,31 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                     continue;
                                 }
 
-                                if (subToken is { Kind: PreprocessingToken } && replacement.TryGetValue(subToken.Text, out var parameterTokens))
+                                if (subToken is { Kind: PreprocessingToken })
                                 {
-                                    if (performStringReplace)
+                                    if (replacement.TryGetValue(subToken.Text, out var parameterTokens))
                                     {
-                                        var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
-                                        var escapedStringValue = stringValue.Replace("\\", "\\\\")
-                                            .Replace("\"", "\\\"")
-                                            ;
-                                        escapedStringValue = $"\"{escapedStringValue}\"";
-                                        yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
-                                        performStringReplace = false;
+                                        if (performStringReplace)
+                                        {
+                                            var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
+                                            var escapedStringValue = stringValue.Replace("\\", "\\\\")
+                                                .Replace("\"", "\\\"")
+                                                ;
+                                            escapedStringValue = $"\"{escapedStringValue}\"";
+                                            yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
+                                            performStringReplace = false;
+                                        }
+                                        else
+                                        {
+                                            foreach (var parameterToken in parameterTokens)
+                                            {
+                                                yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        foreach (var parameterToken in parameterTokens)
-                                        {
-                                            yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
-                                        }
+                                        yield return new Token<CPreprocessorTokenType>(token.Range, subToken.Text, subToken.Kind);
                                     }
                                 }
                                 else
@@ -207,7 +292,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
+    private static IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
         IStream<IToken<CPreprocessorTokenType>> stream)
     {
         while (!stream.IsEnd)
@@ -311,6 +396,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                         return Array.Empty<IToken<CPreprocessorTokenType>>();
                     }
 
+                    if (!File.Exists(includeFilePath))
+                    {
+                        Console.Error.WriteLine($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
+                    }
+
                     using var reader = IncludeContext.OpenFileStream(includeFilePath);
                     await foreach (var token in ProcessInclude(includeFilePath, reader))
                     {
@@ -337,13 +427,17 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 {
                     errorText.Append(enumerator.Current.Text);
                 }
-                throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
+
+                if (IncludeTokens)
+                    throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
+
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "define":
             {
                 var expressionTokens = ConsumeLineAll();
                 var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-                MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
+                MacroContext.DefineMacro(macroDefinition.Name, macroDefinition, replacement);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "undef":
@@ -357,31 +451,31 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 bool includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = includeTokens;
+                PushIncludeTokensDepth(includeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "if":
             {
                 var expressionTokens = ConsumeLine();
                 bool includeTokens = EvaluateExpression(expressionTokens.ToList());
-                IncludeTokens = includeTokens;
+                PushIncludeTokensDepth(includeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 bool donotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = !donotIncludeTokens;
+                PushIncludeTokensDepth(!donotIncludeTokens);
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "endif":
             {
-                IncludeTokens = true;
+                PopIncludeTokensDepth();
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "else":
             {
-                IncludeTokens = !IncludeTokens;
+                SwitchIncludeTokensDepth();
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "pragma":
@@ -400,7 +494,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                     $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
         }
     }
-    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private bool EvaluateExpression(IList<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
@@ -412,10 +506,11 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
 
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
+        Debug.Assert(stream.IsEnd || stream.Peek().Kind == CPreprocessorTokenType.End);
         bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
-    private (CPreprocessorMacroDefinitionParser.MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private static (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();

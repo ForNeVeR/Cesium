@@ -1,10 +1,10 @@
-using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
+using System.Text;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
@@ -18,7 +18,19 @@ internal static class Compilation
         string outputFilePath,
         CompilationOptions compilationOptions)
     {
+        if (compilationOptions.ProducePreprocessedFile)
+        {
+            foreach (var inputFilePath in inputFilePaths)
+            {
+                var content = await Preprocess(inputFilePath, compilationOptions);
+                Console.WriteLine(content);
+            }
+
+            return 0;
+        }
+
         Console.WriteLine($"Generating assembly {outputFilePath}.");
+
         var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
 
         foreach (var inputFilePath in inputFilePaths)
@@ -46,7 +58,10 @@ internal static class Compilation
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
 
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
-        var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
+        var includeDirectories = new[] { compilationFileDirectory }
+            .Concat(compilationOptions.AdditionalIncludeDirectories)
+            .ToArray();
+        var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
         var outOfFileRange = new Yoakke.SynKit.Text.Range();
@@ -54,7 +69,7 @@ internal static class Compilation
         {
             definesContext.DefineMacro(
                 define,
-                parameters: null,
+                macroDefinition: new ObjectMacroDefinition(define),
                 replacement: new IToken<CPreprocessorTokenType>[]
                 {
                     new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken)
@@ -65,28 +80,31 @@ internal static class Compilation
         return preprocessor.ProcessSource();
     }
 
-    private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
+    private static async Task<string> Preprocess(string inputFilePath, CompilationOptions compilationOptions)
     {
         var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
         var compilationSourcePath = Path.GetFullPath(inputFilePath);
 
         using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
 
-        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, context.CompilationOptions);
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, compilationOptions);
+        return content;
+    }
+
+    private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
+    {
+        var content = await Preprocess(inputFilePath, context.CompilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
         if (translationUnitParseError.IsError)
         {
-            switch (translationUnitParseError.Error.Got)
+            throw translationUnitParseError.Error.Got switch
             {
-                case CToken token:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
-                case char ch:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
-                default:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
-            }
+                CToken token => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
+                char ch => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
+                _ => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}."),
+            };
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;

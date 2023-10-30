@@ -92,7 +92,7 @@ internal interface IScopedDeclarationInfo
         InitDeclarator initDeclarator)
     {
         var (declarator, initializer) = initDeclarator;
-        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator);
+        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator, initializer);
         var (type, _, _) = declarationInfo;
         var expression = ConvertInitializer(type, initializer);
         return new InitializableDeclarationInfo(declarationInfo, expression);
