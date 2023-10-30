@@ -55,7 +55,11 @@ public interface IDirectAbstractDeclarator
 {
     IDirectAbstractDeclarator? Base { get; }
 }
-public sealed record SimpleDirectAbstractDeclarator(AbstractDeclarator Declarator);
+public sealed record SimpleDirectAbstractDeclarator(AbstractDeclarator Declarator) : IDirectAbstractDeclarator
+{
+    public IDirectAbstractDeclarator? Base => null;
+};
+
 public sealed record ArrayDirectAbstractDeclarator(
     IDirectAbstractDeclarator? Base,
     ImmutableArray<TypeQualifier>? TypeQualifiers,
