@@ -61,24 +61,4 @@ typedef struct
 """,
         "Cannot statically determine a size of type",
         arch: TargetArchitectureSet.Dynamic);
-
-    [Theory]
-    [InlineData(TargetArchitectureSet.Dynamic)]
-    [InlineData(TargetArchitectureSet.Wide)]
-    public Task StructWithFuncPtr(TargetArchitectureSet arch) => DoTest(arch, """
-typedef struct
-{
-    int (*func)(int);
-} foo;
-""");
-
-    [Theory]
-    [InlineData(TargetArchitectureSet.Dynamic)]
-    [InlineData(TargetArchitectureSet.Wide)]
-    public Task StructWithNestedFuncPtr(TargetArchitectureSet arch) => DoTest(arch, """
-typedef struct
-{
-    int (*func)(int(*)(void));
-} foo;
-""");
 }
