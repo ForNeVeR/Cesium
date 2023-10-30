@@ -69,16 +69,16 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task VPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task VoidPtrInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
 {
-    public static int Func(CPtr<int> ptr) => 1;
+    public static int Func(VoidPtr<int> ptr) => 1;
 }
 ", """
    __cli_import("Test::Func")
-   int Func(int *ptr);
+   int Func(void *ptr);
 
    int main(void)
    {
@@ -90,7 +90,7 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task FPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task FuncPtrInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         @"using Cesium.Runtime;
 public static class Test

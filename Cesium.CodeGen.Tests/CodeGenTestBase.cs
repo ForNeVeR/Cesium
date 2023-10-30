@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
@@ -37,7 +38,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
 
     protected static void DoesNotCompile(
-        string source,
+        [StringSyntax("cpp")] string source,
         string expectedMessage,
         TargetRuntimeDescriptor? runtime = null,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
