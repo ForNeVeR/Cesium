@@ -4,6 +4,7 @@ using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
+using System.Collections.Immutable;
 using System.Text;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
@@ -60,7 +61,7 @@ internal static class Compilation
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
         var includeDirectories = new[] { compilationFileDirectory }
             .Concat(compilationOptions.AdditionalIncludeDirectories)
-            .ToArray();
+            .ToImmutableArray();
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
