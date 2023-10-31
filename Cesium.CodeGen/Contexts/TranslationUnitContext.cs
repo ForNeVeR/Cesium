@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
@@ -49,6 +50,9 @@ public class TranslationUnitContext
         _runtimeCPtr = Module.ImportReference(GetRuntimeType(_cPtrFullTypeName));
         RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(_voidPtrFullTypeName));
         _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(_funcPtrFullTypeName));
+
+        _importedActionDelegates = new("System", "Action", Module, TypeSystem);
+        _importedFuncDelegates = new("System", "Func", Module, TypeSystem);
     }
 
     public TypeReference RuntimeCPtr(TypeReference typeReference)
@@ -56,12 +60,36 @@ public class TranslationUnitContext
         return _runtimeCPtr.MakeGenericInstanceType(typeReference);
     }
 
-    public TypeReference RuntimeFuncPtr(TypeReference typeReference)
+    public TypeReference RuntimeFuncPtr(TypeReference delegateTypeReference)
     {
-        // TODO: Resolve a corresponding delegate type
-        // return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
-        throw new WipException(WipException.ToDo, "Resolve a delegate for FPtr");
+        return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
     }
+
+    /// <summary>
+    /// Resolves a standard delegate type (i.e. an <see cref="Action"/> or a <see cref="Func{TResult}"/>), depending on
+    /// the return type.
+    /// </summary>
+    public TypeReference StandardDelegateType(TypeReference returnType, IEnumerable<TypeReference> arguments)
+    {
+        var isAction = returnType == TypeSystem.Void;
+        var typeArguments = (isAction ? arguments : arguments.Append(returnType)).ToArray();
+        var typeArgumentCount = typeArguments.Length;
+        if (typeArgumentCount > 16)
+        {
+            throw new WipException(
+                WipException.ToDo,
+                $"Mapping of function for argument count {typeArgumentCount} is not supported.");
+        }
+
+        var delegateCache = isAction ? _importedActionDelegates : _importedFuncDelegates;
+        var delegateType = delegateCache.GetDelegateType(typeArguments.Length);
+        return typeArguments.Length == 0
+            ? delegateType
+            : delegateType.MakeGenericInstanceType(typeArguments);
+    }
+
+    private readonly GenericDelegateTypeCache _importedActionDelegates;
+    private readonly GenericDelegateTypeCache _importedFuncDelegates;
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have

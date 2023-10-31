@@ -3,4 +3,4 @@
 
   Type: Foo
   Fields:
-    method System.Void *(System.Int32) Foo::x
+    Cesium.Runtime.FuncPtr`1<System.Action`1<System.Int32>> Foo::x
