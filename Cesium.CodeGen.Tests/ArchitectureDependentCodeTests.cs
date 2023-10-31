@@ -116,9 +116,11 @@ struct Foo
     [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Wide)]
     public Task StructWithNestedFuncPtr(TargetArchitectureSet arch) => DoTest(arch, """
+typedef int (*func)(void);
+typedef int (*hostFunc)(func);
 typedef struct
 {
-    int (*func)(int(*)(void));
+    hostFunc foo;
 } foo;
-""");
+"""); // TODO: Check if the resulting field signature works on CLR at all
 }
