@@ -27,14 +27,10 @@ internal sealed class CompoundInitializationExpression : IExpression
             WriteInitializer(stream, i);
         }
 
-        var targetSize = ((InPlaceArrayType)_type).GetSizeInBytes(scope.AssemblyContext.ArchitectureSet);
-
-        if (targetSize is null)
-            throw new NotImplementedException("Cannot calculate size of target array");
-
+        int targetSize = ((InPlaceArrayType)_type).GetSizeInBytes(scope.AssemblyContext.ArchitectureSet) ?? throw new NotImplementedException("Cannot calculate size of target array");
         if (stream.Position < targetSize)
         {
-            stream.Write(new byte[targetSize.Value - (int)stream.Position]);
+            stream.Write(new byte[targetSize - (int)stream.Position]);
         }
 
         var constantData = stream.ToArray();
