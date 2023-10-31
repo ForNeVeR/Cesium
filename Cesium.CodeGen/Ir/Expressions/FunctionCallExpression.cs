@@ -97,12 +97,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
                 }).ToList());
         }
 
-        var callee = scope.GetFunctionInfo(functionName);
-        if (callee is null)
-        {
-            throw new CompilationException($"Function \"{functionName}\" was not found.");
-        }
-
+        var callee = scope.GetFunctionInfo(functionName) ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
         int firstVarArgArgument = 0;
         if (callee.Parameters?.IsVarArg == true)
         {

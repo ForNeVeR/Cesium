@@ -73,8 +73,8 @@ internal static class TypeSystemEx
     {
         var declParamCount = parameters switch
         {
-            {IsVoid: true} => 0,
-            {IsVarArg: true} => parameters.Parameters.Count + 1,
+            { IsVoid: true } => 0,
+            { IsVarArg: true } => parameters.Parameters.Count + 1,
             _ => parameters.Parameters.Count
         };
 
@@ -188,8 +188,8 @@ internal static class TypeSystemEx
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt};
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedChar, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt};
+        var signedTypes = new[] { ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt };
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedChar, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt };
         // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
@@ -227,7 +227,7 @@ internal static class TypeSystemEx
 
         int? RankOf(IType t, IType[] family)
         {
-            for(var i = 0; i < family.Length; i++)
+            for (var i = 0; i < family.Length; i++)
                 if (t.IsEqualTo(family[i]))
                     return i;
             return null;
@@ -243,12 +243,7 @@ internal static class TypeSystemEx
     public static MethodReference GetRuntimeHelperMethod(this TranslationUnitContext context, string helperMethod)
     {
         var runtimeHelpersType = context.GetRuntimeHelperType();
-        var method = runtimeHelpersType.FindMethod(helperMethod);
-        if (method == null)
-        {
-            throw new AssertException($"RuntimeHelper {helperMethod} cannot be found.");
-        }
-
+        var method = runtimeHelpersType.FindMethod(helperMethod) ?? throw new AssertException($"RuntimeHelper {helperMethod} cannot be found.");
         return context.Module.ImportReference(method);
     }
 
