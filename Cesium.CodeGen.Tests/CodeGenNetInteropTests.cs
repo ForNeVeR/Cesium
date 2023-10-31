@@ -98,17 +98,42 @@ public static class Test
     public static int Func(FPtr<Func<int>> ptr) => 1;
 }
 ", """
-   __cli_import("Test::Func")
-   int Func(int (*ptr)());
+__cli_import("Test::Func")
+int Func(int (*ptr)());
 
-   int myFunc()
-   {
-       return 0;
-   }
+int myFunc()
+{
+   return 0;
+}
 
-   int main(void)
-   {
-       return Func(&myFunc);
-   }
-   """);
+int main(void)
+{
+   return Func(&myFunc);
+}
+""");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task FunctionPointerInterop(TargetArchitectureSet architecture) => DoTest(
+        architecture,
+        """
+public static class Test
+{
+    public static int Func(delegate*<int> ptr) => 1;
+}
+""", """
+__cli_import("Test::Func")
+int Func(int (*ptr)());
+
+int myFunc()
+{
+   return 0;
+}
+
+int main(void)
+{
+   return Func(&myFunc);
+}
+""");
 }
