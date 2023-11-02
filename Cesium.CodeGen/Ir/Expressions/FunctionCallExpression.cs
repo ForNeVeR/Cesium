@@ -80,6 +80,9 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
             throw new CompilationException($"Function \"{functionName}\" was not found.");
         }
 
+        if (callee.MethodReference is not null)
+            throw new WipException(WipException.ToDo,
+                "TODO: Inspect the actual method reference argument list instead of the formal argument list");
         return new FunctionCallExpression(
             _function,
             callee,
@@ -96,23 +99,36 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
         return _arguments.Select((a, index) =>
         {
-            if (index >= firstVarArgArgument)
+            IType targetType;
+            var loweredArg = a.Lower(scope);
+            if (index < firstVarArgArgument)
             {
-                var loweredArg = a.Lower(scope);
-                var expressionType = loweredArg.GetExpressionType(scope);
-                if (expressionType.Equals(scope.CTypeSystem.Float))
+                // Argument is not in vararg argument list. Just use the declared type.
+                targetType = parameters!.Parameters[index].Type;
+            }
+            else
+            {
+                // Argument is in a vararg list. Use the actual argument type, except for cases when it is float
+                // (convert to double then).
+                targetType = loweredArg.GetExpressionType(scope);
+                if (targetType.Equals(scope.CTypeSystem.Float))
                 {
-                    // Seems to be float always use float-point registers and as such we need to covert to double.
-                    return new TypeCastExpression(scope.CTypeSystem.Double, loweredArg);
-                }
-                else
-                {
-                    return loweredArg;
+                    targetType = scope.CTypeSystem.Double;
                 }
             }
 
-            return a.Lower(scope);
+            return CastTypeIfRequired(scope, loweredArg, targetType);
         }).ToList();
+    }
+
+    private static IExpression CastTypeIfRequired(IDeclarationScope scope, IExpression expression, IType targetType)
+    {
+        if (expression.GetExpressionType(scope).IsEqualTo(targetType))
+        {
+            return expression;
+        }
+
+        return new TypeCastExpression(targetType, expression);
     }
 
     public override void EmitTo(IEmitScope scope)
