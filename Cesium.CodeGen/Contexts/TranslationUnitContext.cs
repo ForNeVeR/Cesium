@@ -14,10 +14,6 @@ namespace Cesium.CodeGen.Contexts;
 
 public class TranslationUnitContext
 {
-    private const string _cPtrFullTypeName = "Cesium.Runtime.CPtr`1";
-    private const string _voidPtrFullTypeName = "Cesium.Runtime.VoidPtr";
-    private const string _funcPtrFullTypeName = "Cesium.Runtime.FuncPtr`1";
-
     public AssemblyContext AssemblyContext { get; }
     public string Name { get; }
 
@@ -47,9 +43,9 @@ public class TranslationUnitContext
             assemblyContext.CesiumRuntimeAssembly.GetType(typeName) ??
             throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
 
-        _runtimeCPtr = Module.ImportReference(GetRuntimeType(_cPtrFullTypeName));
-        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(_voidPtrFullTypeName));
-        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(_funcPtrFullTypeName));
+        _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
+        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
+        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
 
         _importedActionDelegates = new("System", "Action", Module, TypeSystem);
         _importedFuncDelegates = new("System", "Func", Module, TypeSystem);

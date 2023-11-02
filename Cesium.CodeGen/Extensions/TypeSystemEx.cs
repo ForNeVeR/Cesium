@@ -9,6 +9,10 @@ namespace Cesium.CodeGen.Extensions;
 
 internal static class TypeSystemEx
 {
+    public const string CPtrFullTypeName = "Cesium.Runtime.CPtr`1";
+    public const string VoidPtrFullTypeName = "Cesium.Runtime.VoidPtr";
+    public const string FuncPtrFullTypeName = "Cesium.Runtime.FuncPtr`1";
+
     public static MethodReference MethodLookup(
         this TranslationUnitContext context,
         string memberName,
@@ -85,7 +89,7 @@ internal static class TypeSystemEx
         }
 
         var declReturnReified = returnType.Resolve(context);
-        if (declReturnReified.FullName != method.ReturnType.FullName)
+        if (!TypesCorrespond(declReturnReified, method.ReturnType))
         {
             similarMethods.Add((method, $"Returns types do not match: {declReturnReified.Name} in declaration, {method.ReturnType.Name} in source."));
             return false;
@@ -99,7 +103,7 @@ internal static class TypeSystemEx
             var srcParam = methodParameters[i];
             var srcParamType = srcParam.ParameterType;
 
-            if (declParamType.FullName != srcParamType.FullName)
+            if (!TypesCorrespond(declParamType, srcParamType))
             {
                 similarMethods.Add((method, $"Type of argument #{i} does not match: {declParamType} in declaration, {srcParamType} in source."));
                 return false;
@@ -130,6 +134,41 @@ internal static class TypeSystemEx
 
         // sic! no backwards check: if the last argument is a params array in source, and a plain array in declaration, it's safe to pass it as is
         return true;
+    }
+
+    /// <summary>Determines whether the types correspond to each other.</summary>
+    /// <remarks>
+    /// This tries to handle the pointer interop between the arch-independent pointer types introduced by the Cesium
+    /// compatibility model and the actual runtime pointer types.
+    /// </remarks>
+    private static bool TypesCorrespond(TypeReference type1, TypeReference type2)
+    {
+        // let type 1 to be pointer out of these two
+        if (type2.IsPointer || type2.IsFunctionPointer) (type1, type2) = (type2, type1);
+        var isType1AnyPointer = type1.IsPointer || type1.IsFunctionPointer;
+        var isType2AnyPointer = type2.IsPointer || type2.IsFunctionPointer;
+        if (!isType1AnyPointer || isType2AnyPointer)
+        {
+            // If type1 is not a pointer, then we don't need to use the compatibility model for this type pair.
+            // If type2 is a pointer, then type1 is also a pointer, and so no compatibility is required as well.
+            return type1.FullName == type2.FullName;
+        }
+
+        if (!type2.IsGenericInstance) return false;
+        type2 = type2.GetElementType();
+        if (type1.IsPointer)
+        {
+            // TODO: Analyze the generic argument.
+            return type2.FullName == CPtrFullTypeName || type2.FullName == VoidPtrFullTypeName;
+        }
+
+        if (type1.IsFunctionPointer)
+        {
+            // TODO: Analyze the generic argument.
+            return type2.FullName == FuncPtrFullTypeName;
+        }
+
+        throw new AssertException("Impossible: type1 should be either a pointer or a function pointer.");
     }
 
     private static string SimilarMethodsMessage(string name, List<(MethodDefinition, string)> similarMethods)
