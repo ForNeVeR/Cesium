@@ -45,13 +45,10 @@ internal interface IType
     /// <remarks>For simple types, will emit a constant.</remarks>
     IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
     {
-        var size = GetSizeInBytes(arch);
-        if (size == null)
-            throw new AssertException(
+        int size = GetSizeInBytes(arch) ?? throw new AssertException(
                 $"Cannot determine static size of type {this}, " +
                 $"and {nameof(GetSizeInBytesExpression)} method for dynamic calculation is not overridden.");
-
-        return new ConstantLiteralExpression(new IntegerConstant(size.Value));
+        return new ConstantLiteralExpression(new IntegerConstant(size));
     }
 }
 

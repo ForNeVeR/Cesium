@@ -1,17 +1,18 @@
 using Cesium.Preprocessor;
+using System.Collections.Immutable;
 
 namespace Cesium.Compiler;
 
-public class FileSystemIncludeContext : IIncludeContext
+public sealed class FileSystemIncludeContext : IIncludeContext
 {
     private readonly string _stdLibDirectory;
-    private readonly string[] _userIncludeDirectories;
+    private readonly ImmutableArray<string> _userIncludeDirectories;
     private readonly List<string> _guardedIncludedFiles = new();
 
-    public FileSystemIncludeContext(string stdLibDirectory, string[] currentDirectory)
+    public FileSystemIncludeContext(string stdLibDirectory, IEnumerable<string> currentDirectory)
     {
         _stdLibDirectory = stdLibDirectory;
-        _userIncludeDirectories = currentDirectory;
+        _userIncludeDirectories = currentDirectory.ToImmutableArray();
     }
 
     public string LookUpAngleBracedIncludeFile(string filePath)
