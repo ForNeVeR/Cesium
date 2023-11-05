@@ -6,8 +6,7 @@ namespace Cesium.CodeGen.Contexts.Utilities;
 internal record GenericDelegateTypeCache(
     string Namespace,
     string TypeName,
-    ModuleDefinition TargetModule,
-    TypeSystem TypeSystem)
+    ModuleDefinition TargetModule)
 {
     private readonly object _delegateCacheLock = new();
     private readonly Dictionary<int, TypeReference> _cache = new();
@@ -27,7 +26,7 @@ internal record GenericDelegateTypeCache(
             Namespace,
             realTypeName,
             null,
-            TypeSystem.CoreLibrary);
+            TargetModule.TypeSystem.CoreLibrary);
         for (var i = 0; i < typeArgumentCount; ++i)
             type.GenericParameters.Add(new GenericParameter(type));
 

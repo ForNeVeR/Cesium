@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using PointerType = Mono.Cecil.PointerType;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -89,7 +90,7 @@ internal static class TypeSystemEx
         }
 
         var declReturnReified = returnType.Resolve(context);
-        if (!TypesCorrespond(declReturnReified, method.ReturnType))
+        if (!TypesCorrespond(context.TypeSystem, declReturnReified, method.ReturnType))
         {
             similarMethods.Add((method, $"Returns types do not match: {declReturnReified.Name} in declaration, {method.ReturnType.Name} in source."));
             return false;
@@ -103,7 +104,7 @@ internal static class TypeSystemEx
             var srcParam = methodParameters[i];
             var srcParamType = srcParam.ParameterType;
 
-            if (!TypesCorrespond(declParamType, srcParamType))
+            if (!TypesCorrespond(context.TypeSystem, declParamType, srcParamType))
             {
                 similarMethods.Add((method, $"Type of argument #{i} does not match: {declParamType} in declaration, {srcParamType} in source."));
                 return false;
@@ -141,7 +142,7 @@ internal static class TypeSystemEx
     /// This tries to handle the pointer interop between the arch-independent pointer types introduced by the Cesium
     /// compatibility model and the actual runtime pointer types.
     /// </remarks>
-    private static bool TypesCorrespond(TypeReference type1, TypeReference type2)
+    private static bool TypesCorrespond(TypeSystem typeSystem, TypeReference type1, TypeReference type2)
     {
         // let type 1 to be pointer out of these two
         if (type2.IsPointer || type2.IsFunctionPointer) (type1, type2) = (type2, type1);
@@ -154,12 +155,17 @@ internal static class TypeSystemEx
             return type1.FullName == type2.FullName;
         }
 
+        if (type2.FullName.Equals(VoidPtrFullTypeName))
+        {
+            return type1 is PointerType pt && pt.ElementType.IsEqualTo(typeSystem.Void);
+        }
+
         if (!type2.IsGenericInstance) return false;
         type2 = type2.GetElementType();
         if (type1.IsPointer)
         {
             // TODO: Analyze the generic argument.
-            return type2.FullName == CPtrFullTypeName || type2.FullName == VoidPtrFullTypeName;
+            return type2.FullName == CPtrFullTypeName;
         }
 
         if (type1.IsFunctionPointer)

@@ -1,13 +1,11 @@
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
-using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
-using Mono.Cecil.Rocks;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -30,62 +28,11 @@ public class TranslationUnitContext
 
     private GlobalConstructorScope? _initializerScope;
 
-    private readonly TypeReference _runtimeCPtr;
-    public TypeReference RuntimeVoidPtr { get; }
-    private readonly TypeReference _runtimeFuncPtr;
-
     public TranslationUnitContext(AssemblyContext assemblyContext, string name)
     {
         AssemblyContext = assemblyContext;
         Name = name;
-
-        TypeReference GetRuntimeType(string typeName) =>
-            assemblyContext.CesiumRuntimeAssembly.GetType(typeName) ??
-            throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
-
-        _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
-        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
-        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
-
-        _importedActionDelegates = new("System", "Action", Module, TypeSystem);
-        _importedFuncDelegates = new("System", "Func", Module, TypeSystem);
     }
-
-    public TypeReference RuntimeCPtr(TypeReference typeReference)
-    {
-        return _runtimeCPtr.MakeGenericInstanceType(typeReference);
-    }
-
-    public TypeReference RuntimeFuncPtr(TypeReference delegateTypeReference)
-    {
-        return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
-    }
-
-    /// <summary>
-    /// Resolves a standard delegate type (i.e. an <see cref="Action"/> or a <see cref="Func{TResult}"/>), depending on
-    /// the return type.
-    /// </summary>
-    public TypeReference StandardDelegateType(TypeReference returnType, IEnumerable<TypeReference> arguments)
-    {
-        var isAction = returnType == TypeSystem.Void;
-        var typeArguments = (isAction ? arguments : arguments.Append(returnType)).ToArray();
-        var typeArgumentCount = typeArguments.Length;
-        if (typeArgumentCount > 16)
-        {
-            throw new WipException(
-                WipException.ToDo,
-                $"Mapping of function for argument count {typeArgumentCount} is not supported.");
-        }
-
-        var delegateCache = isAction ? _importedActionDelegates : _importedFuncDelegates;
-        var delegateType = delegateCache.GetDelegateType(typeArguments.Length);
-        return typeArguments.Length == 0
-            ? delegateType
-            : delegateType.MakeGenericInstanceType(typeArguments);
-    }
-
-    private readonly GenericDelegateTypeCache _importedActionDelegates;
-    private readonly GenericDelegateTypeCache _importedFuncDelegates;
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have
@@ -102,12 +49,12 @@ public class TranslationUnitContext
         var existingDeclaration = Functions.GetValueOrDefault(identifier);
         if (existingDeclaration is null)
         {
-            Functions.Add(identifier, functionInfo);
             if (functionInfo.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
-                functionInfo.MethodReference = method;
+                functionInfo = ProcessCliImport(functionInfo, method);
             }
+            Functions.Add(identifier, functionInfo);
         }
         else
         {
@@ -272,5 +219,53 @@ public class TranslationUnitContext
             Module.TypeSystem.Object);
         Module.Types.Add(type);
         return type;
+    }
+
+    private FunctionInfo ProcessCliImport(FunctionInfo declaration, MethodReference implementation)
+    {
+        return declaration with
+        {
+            MethodReference = implementation,
+            Parameters = declaration.Parameters is null ? null : declaration.Parameters with
+            {
+                Parameters = ProcessParameters(declaration.Parameters.Parameters)
+            }
+        };
+
+        List<ParameterInfo> ProcessParameters(ICollection<ParameterInfo> parameters)
+        {
+            // For now, only wrap the interop types.
+            if (implementation.Parameters.Count != parameters.Count)
+                throw new CompilationException(
+                    $"Parameter count for function {declaration.CliImportMember} " +
+                    $"doesn't match the parameter count of imported CLI method {implementation.FullName}.");
+
+            return parameters.Zip(implementation.Parameters)
+                .Select(pair =>
+                {
+                    var (declared, actual) = pair;
+                    var type = WrapInteropType(actual.ParameterType);
+                    if (type == null) return declared;
+                    return declared with { Type = type };
+                }).ToList();
+        }
+
+        InteropType? WrapInteropType(TypeReference actual)
+        {
+            if (actual.FullName == TypeSystemEx.VoidPtrFullTypeName)
+                return new InteropType(actual);
+
+            if (actual.IsGenericInstance)
+            {
+                var parent = actual.GetElementType();
+                if (parent.FullName == TypeSystemEx.CPtrFullTypeName
+                    || parent.FullName == TypeSystemEx.FuncPtrFullTypeName)
+                {
+                    return new InteropType(actual);
+                }
+            }
+
+            return null;
+        }
     }
 }

@@ -74,7 +74,7 @@ public static class Test
         @"using Cesium.Runtime;
 public static class Test
 {
-    public static int Func(VoidPtr<int> ptr) => 1;
+    public static int Func(VoidPtr ptr) => 1;
 }
 ", """
    __cli_import("Test::Func")

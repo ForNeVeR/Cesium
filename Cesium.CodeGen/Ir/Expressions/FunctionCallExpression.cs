@@ -80,9 +80,6 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
             throw new CompilationException($"Function \"{functionName}\" was not found.");
         }
 
-        if (callee.MethodReference is not null)
-            throw new WipException(WipException.ToDo,
-                "TODO: Inspect the actual method reference argument list instead of the formal argument list");
         return new FunctionCallExpression(
             _function,
             callee,
@@ -91,12 +88,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
     private List<IExpression> ConvertArgs(IDeclarationScope scope, ParametersInfo? parameters)
     {
-        int firstVarArgArgument = 0;
-        if (parameters?.IsVarArg == true)
-        {
-            firstVarArgArgument = parameters.Parameters.Count;
-        }
-
+        int firstVarArgArgument = parameters?.Parameters.Count ?? 0;
         return _arguments.Select((a, index) =>
         {
             IType targetType;

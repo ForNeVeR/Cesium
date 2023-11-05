@@ -29,7 +29,7 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
             throw new WipException(WipException.ToDo, $"A function with an empty parameter list is not implemented, yet: {this}.");
 
         var arguments = parameterInfos.Select(p => p.Type.Resolve(context));
-        return context.StandardDelegateType(returnType, arguments);
+        return context.AssemblyContext.StandardDelegateType(returnType, arguments);
     }
 
     public TypeReference ResolvePointer(TranslationUnitContext context)

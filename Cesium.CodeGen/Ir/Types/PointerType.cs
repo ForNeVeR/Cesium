@@ -30,9 +30,9 @@ internal sealed record PointerType(IType Base) : IType
         {
             TargetArchitectureSet.Wide => Base switch
             {
-                FunctionType rawFunc => context.RuntimeFuncPtr(rawFunc.ResolveAsDelegateType(context)),
-                PrimitiveType { Kind: PrimitiveTypeKind.Void } => context.RuntimeVoidPtr,
-                _ => context.RuntimeCPtr(Base.ResolveForTypeMember(context)),
+                FunctionType rawFunc => context.AssemblyContext.RuntimeFuncPtr(rawFunc.ResolveAsDelegateType(context)),
+                PrimitiveType { Kind: PrimitiveTypeKind.Void } => context.AssemblyContext.RuntimeVoidPtr,
+                _ => context.AssemblyContext.RuntimeCPtr(Base.ResolveForTypeMember(context)),
             },
             _ => Resolve(context)
         };

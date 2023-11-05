@@ -56,6 +56,15 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_R8);
         else if (TargetType is PointerType || TargetType.Equals(ts.NativeInt) || TargetType.Equals(ts.NativeUInt))
             Add(OpCodes.Conv_I);
+        else if (TargetType is InteropType iType)
+        {
+            if (iType.UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
+            {
+                scope.Method.Body.Instructions.Add(
+                    Instruction.Create(OpCodes.Call, iType.GetConvertCall(scope.AssemblyContext)));
+            }
+            else throw new WipException(WipException.ToDo, $"Cast to {iType.UnderlyingType} is not implemented, yet.");
+        }
         else
             throw new AssertException($"Type {TargetType} is not supported.");
 

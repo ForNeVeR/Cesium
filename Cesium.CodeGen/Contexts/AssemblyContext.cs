@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Emitting;
 using Cesium.CodeGen.Ir.Lowering;
@@ -10,6 +11,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -74,6 +76,13 @@ public class AssemblyContext
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
 
+    private readonly TypeReference _runtimeCPtr;
+    public TypeReference RuntimeVoidPtr { get; }
+    private readonly TypeReference _runtimeFuncPtr;
+
+    private readonly Lazy<MethodReference> _voidPtrConverter;
+    public MethodReference VoidPtrConverter => _voidPtrConverter.Value;
+
     private AssemblyContext(
         AssemblyDefinition assembly,
         ModuleDefinition module,
@@ -115,6 +124,59 @@ public class AssemblyContext
         {
             GlobalType = Module.GetType("<Module>");
         }
+
+        TypeDefinition GetRuntimeType(string typeName) =>
+            CesiumRuntimeAssembly.GetType(typeName) ??
+            throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
+
+        _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
+        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
+        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
+
+        _importedActionDelegates = new("System", "Action", Module);
+        _importedFuncDelegates = new("System", "Func", Module);
+
+        _voidPtrConverter = new(() =>
+        {
+            var voidPtrType = GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName);
+            return Module.ImportReference(voidPtrType.Methods.Single(m => m.Name == "op_Implicit"));
+        });
+    }
+
+    public TypeReference RuntimeCPtr(TypeReference typeReference)
+    {
+        return _runtimeCPtr.MakeGenericInstanceType(typeReference);
+    }
+
+    public TypeReference RuntimeFuncPtr(TypeReference delegateTypeReference)
+    {
+        return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
+    }
+
+    private readonly GenericDelegateTypeCache _importedActionDelegates;
+    private readonly GenericDelegateTypeCache _importedFuncDelegates;
+
+    /// <summary>
+    /// Resolves a standard delegate type (i.e. an <see cref="Action"/> or a <see cref="Func{TResult}"/>), depending on
+    /// the return type.
+    /// </summary>
+    public TypeReference StandardDelegateType(TypeReference returnType, IEnumerable<TypeReference> arguments)
+    {
+        var isAction = returnType == Module.TypeSystem.Void;
+        var typeArguments = (isAction ? arguments : arguments.Append(returnType)).ToArray();
+        var typeArgumentCount = typeArguments.Length;
+        if (typeArgumentCount > 16)
+        {
+            throw new WipException(
+                WipException.ToDo,
+                $"Mapping of function for argument count {typeArgumentCount} is not supported.");
+        }
+
+        var delegateCache = isAction ? _importedActionDelegates : _importedFuncDelegates;
+        var delegateType = delegateCache.GetDelegateType(typeArguments.Length);
+        return typeArguments.Length == 0
+            ? delegateType
+            : delegateType.MakeGenericInstanceType(typeArguments);
     }
 
     internal VariableInfo? GetGlobalField(string identifier)
