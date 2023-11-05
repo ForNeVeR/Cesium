@@ -7,9 +7,10 @@
       IL_0000: ldc.i4.0
       IL_0001: stloc.0
       IL_0002: ldloca.s V_0
-      IL_0004: call Cesium.Runtime.VoidPtr Cesium.Runtime.VoidPtr::op_Implicit(System.Void*)
-      IL_0009: call System.Int32 Test::Func(Cesium.Runtime.VoidPtr)
-      IL_000e: ret
+      IL_0004: conv.i
+      IL_0005: call Cesium.Runtime.VoidPtr Cesium.Runtime.VoidPtr::op_Implicit(System.Void*)
+      IL_000a: call System.Int32 Test::Func(Cesium.Runtime.VoidPtr)
+      IL_000f: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

@@ -60,6 +60,7 @@ internal sealed class TypeCastExpression : IExpression
         {
             if (iType.UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
             {
+                Add(OpCodes.Conv_I); // TODO: Should only emit if required.
                 scope.Method.Body.Instructions.Add(
                     Instruction.Create(OpCodes.Call, iType.GetConvertCall(scope.AssemblyContext)));
             }
