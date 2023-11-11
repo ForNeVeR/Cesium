@@ -185,6 +185,7 @@ internal sealed class FunctionDefinition : IBlockItem
         // argC = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
         instructions.Add(Instruction.Create(OpCodes.Ldlen));
+        // argC = 1 + argC;
         instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
         instructions.Add(Instruction.Create(OpCodes.Add));
         instructions.Add(Instruction.Create(OpCodes.Stloc_0)); // 0 = argC.Index
