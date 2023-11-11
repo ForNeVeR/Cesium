@@ -1,9 +1,9 @@
-﻿System.Void <Module>::.cctor()
+System.Void <Module>::.cctor()
   IL_0000: ldc.i4.s 12
   IL_0002: conv.u
   IL_0003: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
   IL_0008: stsfld System.Int32* <Module>::ints1
-  IL_000d: ldsflda <ConstantPool>/<ConstantPoolItemType24> <ConstantPool>::ConstDataBuffer0
+  IL_000d: ldsflda <ConstantPool>/<ConstantPoolItemType12> <ConstantPool>::ConstDataBuffer0
   IL_0012: ldsflda System.Int32* <Module>::ints1
   IL_0017: ldc.i4.s 12
   IL_0019: conv.u
@@ -12,7 +12,7 @@
   IL_0021: conv.u
   IL_0022: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
   IL_0027: stsfld System.Int32* <Module>::ints2
-  IL_002c: ldsflda <ConstantPool>/<ConstantPoolItemType24> <ConstantPool>::ConstDataBuffer1
+  IL_002c: ldsflda <ConstantPool>/<ConstantPoolItemType12> <ConstantPool>::ConstDataBuffer1
   IL_0031: ldsflda System.Int32* <Module>::ints2
   IL_0036: ldc.i4.s 12
   IL_0038: conv.u
