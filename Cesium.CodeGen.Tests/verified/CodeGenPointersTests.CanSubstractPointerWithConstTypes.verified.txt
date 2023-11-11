@@ -1,0 +1,11 @@
+﻿System.Void <Module>::foo(System.Int32* x, System.Int32* y)
+  Locals:
+    System.Int32 V_0
+  IL_0000: ldarg.0
+  IL_0001: ldarg.1
+  IL_0002: sub
+  IL_0003: ldc.i4.4
+  IL_0004: div
+  IL_0005: conv.i4
+  IL_0006: stloc.0
+  IL_0007: ret
