@@ -13,5 +13,7 @@ public abstract class ParserTestBase : VerifyTestBase
         TypeNameHandling = TypeNameHandling.Objects
     };
 
-    protected static string JsonSerialize(object value) => JsonConvert.SerializeObject(value, SerializerOptions);
+    protected static string JsonSerialize(object value) =>
+        System.Text.Json.JsonSerializer.Serialize(value);
+    //JsonConvert.SerializeObject(value, SerializerOptions);
 }
