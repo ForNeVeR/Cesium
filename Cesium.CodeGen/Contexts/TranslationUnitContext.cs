@@ -1,4 +1,4 @@
-using Cesium.Ast;
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -6,7 +6,6 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
-using System.Diagnostics;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;

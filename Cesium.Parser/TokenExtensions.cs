@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.RegularExpressions;
 using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
@@ -131,7 +130,7 @@ public static class TokenExtensions
                         }
                     default:
                         // TODO[#295]: maybe smarter handling of this edge case with errors/warnings
-                        builder.Append("\\");
+                        builder.Append('\\');
                         --i; // don't skip next
                         break;
                 }

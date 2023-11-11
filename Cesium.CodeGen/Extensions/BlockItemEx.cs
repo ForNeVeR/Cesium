@@ -28,14 +28,11 @@ internal static class BlockItemEx
 
     private static IBlockItem ToIntermediate(Ast.Declaration d)
     {
-        switch (IScopedDeclarationInfo.Of(d))
+        return IScopedDeclarationInfo.Of(d) switch
         {
-            case ScopedIdentifierDeclaration declaration:
-                return new DeclarationBlockItem(declaration);
-            case TypeDefDeclaration typeDefDeclaration:
-                return new TypeDefBlockItem(typeDefDeclaration);
-            default:
-                throw new WipException(212, $"Unknown kind of declaration: {d}.");
-        }
+            ScopedIdentifierDeclaration declaration => new DeclarationBlockItem(declaration),
+            TypeDefDeclaration typeDefDeclaration => new TypeDefBlockItem(typeDefDeclaration),
+            _ => throw new WipException(212, $"Unknown kind of declaration: {d}."),
+        };
     }
 }

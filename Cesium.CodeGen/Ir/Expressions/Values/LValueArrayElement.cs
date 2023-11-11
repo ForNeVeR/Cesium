@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueArrayElement : ILValue
+internal sealed class LValueArrayElement : ILValue
 {
     private readonly IValue _array;
     private readonly IExpression _index;
@@ -42,12 +42,7 @@ internal class LValueArrayElement : ILValue
 
     private PrimitiveType GetElementType()
     {
-        InPlaceArrayType? type = GetValueType() as InPlaceArrayType;
-        if (type == null)
-        {
-            throw new AssertException("Array type expected.");
-        }
-
+        InPlaceArrayType? type = GetValueType() as InPlaceArrayType ?? throw new AssertException("Array type expected.");
         var primitiveType = (PrimitiveType)GetBaseType(type);
         return primitiveType;
     }

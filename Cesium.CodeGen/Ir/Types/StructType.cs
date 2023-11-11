@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class StructType : IGeneratedType
+internal sealed class StructType : IGeneratedType
 {
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
     {
@@ -72,7 +72,7 @@ internal class StructType : IGeneratedType
         if (constSize != null)
             return ConstantLiteralExpression.OfInt32(constSize.Value);
 
-        return new SizeOfExpression(this);
+        return new SizeOfOperatorExpression(this);
     }
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch

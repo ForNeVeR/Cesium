@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 namespace Cesium.CodeGen.Ir.Expressions;
 
 /// <summary>Takes an address of an instance of the passed type as part of the offsetof expression.</summary>
-internal class InstanceForOffsetOfExpression : IExpression, IValueExpression, IAddressableValue
+internal sealed class InstanceForOffsetOfExpression : IExpression, IValueExpression, IAddressableValue
 {
     private readonly StructType _resolvedType;
 

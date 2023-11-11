@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Reflection.Metadata;
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions.Constants;
@@ -10,7 +8,7 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class StringLiteralListExpression : IExpression
+internal sealed class StringLiteralListExpression : IExpression
 {
     public static StringLiteralListExpression OfInt32(int value) => new(new IntegerConstant(value));
 

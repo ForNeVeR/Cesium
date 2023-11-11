@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Yoakke.SynKit.Lexer;
-using Yoakke.SynKit.Parser;
 using Yoakke.SynKit.Parser.Attributes;
 
 

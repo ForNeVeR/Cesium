@@ -3,7 +3,7 @@ using Cesium.CodeGen.Ir.Expressions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ReturnStatement : IBlockItem
+internal sealed class ReturnStatement : IBlockItem
 {
     public IExpression? Expression { get; }
 

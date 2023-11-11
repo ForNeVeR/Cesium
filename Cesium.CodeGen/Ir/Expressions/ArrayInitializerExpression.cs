@@ -1,11 +1,10 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using System.Collections.Immutable;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class ArrayInitializerExpression : IExpression
+internal sealed class ArrayInitializerExpression : IExpression
 {
     public ArrayInitializerExpression(ImmutableArray<IExpression?> initializers)
     {

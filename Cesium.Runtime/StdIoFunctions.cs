@@ -267,7 +267,7 @@ public unsafe static class StdIoFunctions
         }
 
         int stringLength = encoding.GetCharCount(str, byteLength);
-        string s = new string('\0', stringLength);
+        string s = new('\0', stringLength);
         fixed (char* pTempChars = s)
         {
             encoding.GetChars(str, byteLength, pTempChars, stringLength);

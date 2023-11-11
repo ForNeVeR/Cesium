@@ -11,8 +11,8 @@ namespace Cesium.Preprocessor;
 
 public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
 {
-    private bool IncludeTokens => IncludeTokensStack.All(includeToken => includeToken);
-    private Stack<bool> IncludeTokensStack = new();
+    private bool IncludeTokens => _includeTokensStack.All(includeToken => includeToken);
+    private readonly Stack<bool> _includeTokensStack = new();
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -26,17 +26,17 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
     private void PushIncludeTokensDepth(bool includeTokes)
     {
-        IncludeTokensStack.Push(includeTokes);
+        _includeTokensStack.Push(includeTokes);
     }
 
     private void PopIncludeTokensDepth()
     {
-        IncludeTokensStack.Pop();
+        _includeTokensStack.Pop();
     }
 
     private void SwitchIncludeTokensDepth()
     {
-        var lastItem = IncludeTokensStack.Pop();
+        var lastItem = _includeTokensStack.Pop();
         this.PushIncludeTokensDepth(!lastItem);
     }
 
@@ -292,7 +292,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
+    private static IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
         IStream<IToken<CPreprocessorTokenType>> stream)
     {
         while (!stream.IsEnd)
@@ -510,7 +510,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         bool includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
-    private (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private static (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
             expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();

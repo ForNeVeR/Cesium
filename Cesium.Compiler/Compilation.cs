@@ -1,11 +1,11 @@
-using System.Linq;
-using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
+using System.Collections.Immutable;
+using System.Text;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
@@ -61,7 +61,7 @@ internal static class Compilation
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
         var includeDirectories = new[] { compilationFileDirectory }
             .Concat(compilationOptions.AdditionalIncludeDirectories)
-            .ToArray();
+            .ToImmutableArray();
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
@@ -100,15 +100,12 @@ internal static class Compilation
         var translationUnitParseError = parser.ParseTranslationUnit();
         if (translationUnitParseError.IsError)
         {
-            switch (translationUnitParseError.Error.Got)
+            throw translationUnitParseError.Error.Got switch
             {
-                case CToken token:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
-                case char ch:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
-                default:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
-            }
+                CToken token => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
+                char ch => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
+                _ => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}."),
+            };
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;

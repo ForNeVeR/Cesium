@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueField : ILValue
+internal sealed class LValueField : ILValue
 {
     private readonly IExpression _expression;
     private readonly StructType _structType;

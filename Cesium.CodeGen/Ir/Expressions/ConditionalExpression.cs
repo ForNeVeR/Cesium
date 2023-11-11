@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class ConditionalExpression : IExpression
+internal sealed class ConditionalExpression : IExpression
 {
     private readonly IExpression _condition;
     private readonly IExpression _trueExpression;

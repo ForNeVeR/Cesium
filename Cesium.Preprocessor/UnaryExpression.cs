@@ -2,7 +2,7 @@ using Cesium.Core;
 
 namespace Cesium.Preprocessor;
 
-internal class UnaryExpression : IPreprocessorExpression
+internal sealed class UnaryExpression : IPreprocessorExpression
 {
     public UnaryExpression(CPreprocessorOperator @operator, IPreprocessorExpression expression)
     {
@@ -16,12 +16,10 @@ internal class UnaryExpression : IPreprocessorExpression
     public string? EvaluateExpression(IMacroContext context)
     {
         string? expressionValue = Expression.EvaluateExpression(context);
-        switch(Operator)
+        return Operator switch
         {
-            case CPreprocessorOperator.Negation:
-                return !expressionValue.AsBoolean() ? "1" : "0";
-            default:
-                throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives");
-        }
+            CPreprocessorOperator.Negation => !expressionValue.AsBoolean() ? "1" : "0",
+            _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives"),
+        };
     }
 }

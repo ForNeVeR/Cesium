@@ -1,5 +1,3 @@
-using Cesium.CodeGen;
-
 namespace Cesium.Compiler.Tests
 {
     public class CommandLineParsingTest

@@ -1,9 +1,8 @@
 using Cesium.Core;
-using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
-internal class BinaryExpression : IPreprocessorExpression
+internal sealed class BinaryExpression : IPreprocessorExpression
 {
     public BinaryExpression(IPreprocessorExpression first, CPreprocessorOperator @operator, IPreprocessorExpression second)
     {
@@ -20,26 +19,17 @@ internal class BinaryExpression : IPreprocessorExpression
     {
         string? firstValue = First.EvaluateExpression(context);
         string? secondValue = Second.EvaluateExpression(context);
-        switch(Operator)
+        return Operator switch
         {
-            case CPreprocessorOperator.Equals:
-                return firstValue == secondValue ? "1" : "0";
-            case CPreprocessorOperator.NotEquals:
-                return firstValue != secondValue ? "1" : "0";
-            case CPreprocessorOperator.LessOrEqual:
-                return (firstValue ?? "").CompareTo(secondValue ?? "") <= 0 ? "1" : "0";
-            case CPreprocessorOperator.GreaterOrEqual:
-                return (firstValue ?? "").CompareTo(secondValue ?? "") >= 0 ? "1" : "0";
-            case CPreprocessorOperator.LessThan:
-                return (firstValue ?? "").CompareTo(secondValue ?? "") < 0 ? "1" : "0";
-            case CPreprocessorOperator.GreaterThan:
-                return (firstValue ?? "").CompareTo(secondValue ?? "") > 0 ? "1" : "0";
-            case CPreprocessorOperator.LogicalAnd:
-                return (firstValue.AsBoolean() && secondValue.AsBoolean()) ? "1" : "0";
-            case CPreprocessorOperator.LogicalOr:
-                return (firstValue.AsBoolean() || secondValue.AsBoolean()) ? "1" : "0";
-            default:
-                throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives");
-        }
+            CPreprocessorOperator.Equals => firstValue == secondValue ? "1" : "0",
+            CPreprocessorOperator.NotEquals => firstValue != secondValue ? "1" : "0",
+            CPreprocessorOperator.LessOrEqual => (firstValue ?? "").CompareTo(secondValue ?? "") <= 0 ? "1" : "0",
+            CPreprocessorOperator.GreaterOrEqual => (firstValue ?? "").CompareTo(secondValue ?? "") >= 0 ? "1" : "0",
+            CPreprocessorOperator.LessThan => (firstValue ?? "").CompareTo(secondValue ?? "") < 0 ? "1" : "0",
+            CPreprocessorOperator.GreaterThan => (firstValue ?? "").CompareTo(secondValue ?? "") > 0 ? "1" : "0",
+            CPreprocessorOperator.LogicalAnd => (firstValue.AsBoolean() && secondValue.AsBoolean()) ? "1" : "0",
+            CPreprocessorOperator.LogicalOr => (firstValue.AsBoolean() || secondValue.AsBoolean()) ? "1" : "0",
+            _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives"),
+        };
     }
 }

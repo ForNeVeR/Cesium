@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueIndirection : ILValue
+internal sealed class LValueIndirection : ILValue
 {
     private readonly IExpression _pointerExpression;
     private readonly PointerType _pointerType;

@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueLocalVariable : ILValue
+internal sealed class LValueLocalVariable : ILValue
 {
     private readonly IType _variableType;
     private readonly string _name;

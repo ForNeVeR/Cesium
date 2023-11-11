@@ -59,13 +59,8 @@ internal static class TranslationUnitEx
                         long currentValue = -1;
                         foreach (var enumeratorDeclaration in enumType.Members)
                         {
-                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier;
-                            if (enumeratorName is null)
-                            {
-                                throw new CompilationException(
+                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
                                     $"Enum type {enumType.Identifier} has enumerator without name");
-                            }
-
                             if (enumeratorDeclaration.Initializer is null)
                             {
                                 currentValue++;

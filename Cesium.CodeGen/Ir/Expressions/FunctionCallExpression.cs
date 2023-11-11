@@ -5,11 +5,10 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class FunctionCallExpression : FunctionCallExpressionBase
+internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IdentifierExpression _function;
     private readonly IReadOnlyList<IExpression> _arguments;
@@ -98,12 +97,7 @@ internal class FunctionCallExpression : FunctionCallExpressionBase
                 }).ToList());
         }
 
-        var callee = scope.GetFunctionInfo(functionName);
-        if (callee is null)
-        {
-            throw new CompilationException($"Function \"{functionName}\" was not found.");
-        }
-
+        var callee = scope.GetFunctionInfo(functionName) ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
         int firstVarArgArgument = 0;
         if (callee.Parameters?.IsVarArg == true)
         {

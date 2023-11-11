@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class CommaExpression : IExpression
+internal sealed class CommaExpression : IExpression
 {
     private readonly IExpression _left;
     private readonly IExpression _right;

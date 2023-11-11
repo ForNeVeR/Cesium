@@ -2,11 +2,10 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class GetAddressValueExpression : IExpression
+internal sealed class GetAddressValueExpression : IExpression
 {
     private readonly IAddressableValue _value;
 

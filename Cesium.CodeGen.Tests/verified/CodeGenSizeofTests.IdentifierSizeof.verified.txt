@@ -1,0 +1,17 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Int32 V_0
+  IL_0000: ldc.i4.1
+  IL_0001: stloc.0
+  IL_0002: sizeof System.Int32
+  IL_0008: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>()
+  Locals:
+    System.Int32 V_0
+  IL_0000: call System.Int32 <Module>::main()
+  IL_0005: stloc.s V_0
+  IL_0007: ldloc.s V_0
+  IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_000e: ldloc.s V_0
+  IL_0010: ret

@@ -1,6 +1,6 @@
 namespace Cesium.Core;
 
-public class WipException : CesiumException
+public sealed class WipException : CesiumException
 {
     /// <summary>A marker value for an issue number not yet assigned.</summary>
     public const int ToDo = -1;
