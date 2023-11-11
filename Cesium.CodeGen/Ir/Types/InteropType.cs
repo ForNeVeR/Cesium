@@ -40,8 +40,10 @@ internal record InteropType(TypeReference UnderlyingType) : IType
         if (UnderlyingType.IsGenericInstance)
         {
             var parent = UnderlyingType.GetElementType();
+            if (parent.FullName == TypeSystemEx.CPtrFullTypeName)
+                return context.CPtrConverter;
 
-            throw new WipException(WipException.ToDo, "Cannot import converter methods for CPtr or FuncPtr, yet.");
+            throw new WipException(WipException.ToDo, "Cannot import the converter method for FuncPtr, yet.");
         }
 
         throw new AssertException(

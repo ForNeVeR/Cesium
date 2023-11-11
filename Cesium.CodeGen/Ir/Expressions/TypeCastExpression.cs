@@ -58,7 +58,9 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_I);
         else if (TargetType is InteropType iType)
         {
-            if (iType.UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
+            var type = iType.UnderlyingType;
+            if (type.FullName == TypeSystemEx.VoidPtrFullTypeName
+                || type.IsGenericInstance && type.GetElementType().FullName == TypeSystemEx.CPtrFullTypeName)
             {
                 Add(OpCodes.Conv_I); // TODO: Should only emit if required.
                 scope.Method.Body.Instructions.Add(

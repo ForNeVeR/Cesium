@@ -77,6 +77,9 @@ public class AssemblyContext
     private MethodDefinition? _globalInitializer;
 
     private readonly TypeReference _runtimeCPtr;
+    private readonly Lazy<MethodReference> _cPtrConverter;
+    public MethodReference CPtrConverter => _cPtrConverter.Value;
+
     public TypeReference RuntimeVoidPtr { get; }
     private readonly TypeReference _runtimeFuncPtr;
 
@@ -136,11 +139,15 @@ public class AssemblyContext
         _importedActionDelegates = new("System", "Action", Module);
         _importedFuncDelegates = new("System", "Func", Module);
 
-        _voidPtrConverter = new(() =>
+        _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
+        _cPtrConverter = new(() => throw new WipException(WipException.ToDo, "TODO: Make the cast operators specialized by types, introduce a cache or something."));
+        return;
+
+        MethodReference GetImplicitCastOperator(string typeName)
         {
-            var voidPtrType = GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName);
-            return Module.ImportReference(voidPtrType.Methods.Single(m => m.Name == "op_Implicit"));
-        });
+            var type = GetRuntimeType(typeName);
+            return Module.ImportReference(type.Methods.Single(m => m.Name == "op_Implicit"));
+        }
     }
 
     public TypeReference RuntimeCPtr(TypeReference typeReference)
