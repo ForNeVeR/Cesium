@@ -289,13 +289,15 @@ internal static class BlockItemLowering
                 }
             case GlobalVariableDefinition d:
                 {
-                    scope.AddVariable(d.StorageClass, d.Identifier, d.Type, null);
+                    var resolvedType = scope.ResolveType(d.Type);
+                    scope.AddVariable(d.StorageClass, d.Identifier, resolvedType, null);
 
                     return d with { Initializer = d.Initializer?.Lower(scope) };
                 }
             case EnumConstantDefinition d:
                 {
-                    scope.AddVariable(StorageClass.Static, d.Identifier, d.Type, d.Value);
+                    var resolvedType = scope.ResolveType(d.Type);
+                    scope.AddVariable(StorageClass.Static, d.Identifier, resolvedType, d.Value);
 
                     return d;
                 }
