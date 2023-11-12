@@ -177,6 +177,7 @@ internal static class PrimitiveTypeInfo
     {
         { PrimitiveTypeKind.Char, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.SignedChar, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { PrimitiveTypeKind.UnsignedChar, (OpCodes.Ldind_U1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.Short, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.UnsignedShort, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.Int, (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
