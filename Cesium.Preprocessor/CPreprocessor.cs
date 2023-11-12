@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
@@ -284,7 +283,6 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                             yield return nestedT;
 
                         }
-                        //yield return new Token<CPreprocessorTokenType>(token.Range, subToken.Text, subToken.Kind);
                     }
                 }
                 else
