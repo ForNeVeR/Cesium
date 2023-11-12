@@ -242,4 +242,11 @@ typedef struct {
 
     [Fact]
     public Task StaticFileScopedVariable() => DoTest(@"static int x = 123;");
+
+    [Fact]
+    public Task StaticStruct() => DoTest(@"struct _foo {
+    int x[4];
+};
+
+static struct _foo foo;");
 }
