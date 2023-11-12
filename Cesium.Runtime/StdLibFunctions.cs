@@ -119,4 +119,15 @@ public unsafe static class StdLibFunctions
         var str = StdIoFunctions.Unmarshal(ptr);
         return Convert.ToInt32(str);
     }
+
+    public static byte* GetEnv(byte* ptr)
+    {
+        var str = StdIoFunctions.Unmarshal(ptr);
+        if (str is null)
+        {
+            return null;
+        }
+
+        return StdIoFunctions.MarshalStr(Environment.GetEnvironmentVariable(str)?.TrimEnd('\\'));
+    }
 }

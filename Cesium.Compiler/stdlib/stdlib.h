@@ -42,3 +42,6 @@ void abort(void);
 
 __cli_import("Cesium.Runtime.StdLibFunctions::Atoi")
 int atoi(const char* str);
+
+__cli_import("Cesium.Runtime.StdLibFunctions::GetEnv")
+char* getenv(const char* name);

@@ -1,7 +1,5 @@
 using System.Runtime.InteropServices;
-#if NETSTANDARD
 using System.Text;
-#endif
 
 namespace Cesium.Runtime;
 
@@ -244,6 +242,24 @@ public unsafe static class StdIoFunctions
 #else
         return Marshal.PtrToStringUTF8((nint)str);
 #endif
+    }
+
+    internal static byte* MarshalStr(string? str)
+    {
+        Encoding encoding = Encoding.UTF8;
+        if (str is null)
+        {
+            return null;
+        }
+
+        var bytes = encoding.GetBytes(str);
+        var storage = (byte*)StdLibFunctions.Malloc((nuint)bytes.Length);
+        for (var i = 0; i < bytes.Length;i++)
+        {
+            storage[i] = bytes[i];
+        }
+
+        return storage;
     }
 
     private static StreamHandle? GetStreamHandle(void* stream)
