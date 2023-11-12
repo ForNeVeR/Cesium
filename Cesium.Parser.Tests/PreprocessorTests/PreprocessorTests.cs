@@ -390,4 +390,32 @@ int main() { return foo(11,x,test); }
 int x,test;
 int main() { return foo(x,test,11); }
 ");
+
+    [Fact]
+    public Task IfExpressionDisableDefines() => DoTest(
+@"#ifdef NON_EXISTS
+#define foo fake_foo
+#endif
+int foo() { return 0; }
+");
+
+    [Fact]
+    public Task IfExpressionDisableUnDefines() => DoTest(
+@"
+#define fake_foo foo
+
+#ifdef NON_EXISTS
+#undef fake_foo
+#endif
+
+int fake_foo() { return 0; }
+");
+
+    [Fact]
+    public Task UnrollNestedDefines() => DoTest(
+@"
+#define nested_foo foo
+#define _(code) nested_foo(code)
+_(""test"")
+");
 }
