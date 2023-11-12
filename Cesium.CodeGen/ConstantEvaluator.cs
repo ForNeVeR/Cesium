@@ -40,15 +40,15 @@ internal static class ConstantEvaluator
                     rightConstant is not IntegerConstant rightInt)
                     throw new CompilationException("Evaluated constants are not integer");
 
-                    return binOp.Operator switch
+                return binOp.Operator switch
                     {
                         BinaryOperator.Add => new IntegerConstant(leftInt.Value + rightInt.Value),
                         BinaryOperator.Subtract => new IntegerConstant(leftInt.Value - rightInt.Value),
                         BinaryOperator.Multiply => new IntegerConstant(leftInt.Value * rightInt.Value),
                         BinaryOperator.Divide => new IntegerConstant(leftInt.Value / rightInt.Value),
                         BinaryOperator.Remainder => new IntegerConstant(leftInt.Value % rightInt.Value),
-                        BinaryOperator.BitwiseLeftShift => new IntegerConstant(leftInt.Value << rightInt.Value),
-                        BinaryOperator.BitwiseRightShift => new IntegerConstant(leftInt.Value >> rightInt.Value),
+                        BinaryOperator.BitwiseLeftShift => new IntegerConstant(leftInt.Value << (int)rightInt.Value),
+                        BinaryOperator.BitwiseRightShift => new IntegerConstant(leftInt.Value >> (int)rightInt.Value),
                         BinaryOperator.BitwiseOr => new IntegerConstant(leftInt.Value | rightInt.Value),
                         BinaryOperator.BitwiseAnd => new IntegerConstant(leftInt.Value & rightInt.Value),
                         BinaryOperator.BitwiseXor => new IntegerConstant(leftInt.Value ^ rightInt.Value),

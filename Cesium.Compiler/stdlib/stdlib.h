@@ -43,5 +43,13 @@ void abort(void);
 __cli_import("Cesium.Runtime.StdLibFunctions::Atoi")
 int atoi(const char* str);
 
+__cli_import("Cesium.Runtime.StdLibFunctions::StrToL")
+long strtol(const char* str, char** str_end, int base);
+
+__cli_import("Cesium.Runtime.StdLibFunctions::GetErrNo")
+int* _errno(void);
+
+#define errno (*_errno())
+
 __cli_import("Cesium.Runtime.StdLibFunctions::GetEnv")
 char* getenv(const char* name);

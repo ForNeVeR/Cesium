@@ -138,6 +138,23 @@ public unsafe static class StdIoFunctions
                 addition++;
             }
 
+            int precision = 0; // 0 - not set, -1 - star
+            if (formatString[formatStartPosition + addition] == '.')
+            {
+                addition++;
+                if (formatString[formatStartPosition + addition] == '*')
+                {
+                    precision = -1;
+                    addition++;
+
+                    while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+                    {
+                        precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
+                        addition++;
+                    }
+                }
+            }
+
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
             if (formatString[formatStartPosition + addition] == 'l')
             {
@@ -148,8 +165,23 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case "s":
+                    int trim = -1;
+                    if (precision == -1)
+                    {
+                        trim = (int)((long*)varargs)[consumedArgs];
+                        consumedArgs++;
+                    }
+
                     string? stringValue = Unmarshal((byte*)((long*)varargs)[consumedArgs]);
-                    streamWriter.Write(stringValue);
+                    if (precision == -1)
+                    {
+                        streamWriter.Write(stringValue?.Substring(0, Math.Max(0, Math.Min(stringValue.Length - 1, trim))));
+                    }
+                    else
+                    {
+                        streamWriter.Write(stringValue);
+                    }
+
                     consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
@@ -159,8 +191,9 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "d":
-                case "li":
+                case "ld":
                 case "i":
+                case "li":
                     int intValue = (int)((long*)varargs)[consumedArgs];
                     var intValueString = intValue.ToString();
                     streamWriter.Write(intValueString);

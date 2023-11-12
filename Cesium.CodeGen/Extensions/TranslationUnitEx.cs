@@ -56,7 +56,7 @@ internal static class TranslationUnitEx
 
                     if (type is EnumType enumType)
                     {
-                        int currentValue = -1;
+                        long currentValue = -1;
                         foreach (var enumeratorDeclaration in enumType.Members)
                         {
                             var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
