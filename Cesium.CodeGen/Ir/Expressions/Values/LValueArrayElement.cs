@@ -42,8 +42,8 @@ internal sealed class LValueArrayElement : ILValue
 
     private PrimitiveType GetElementType()
     {
-        InPlaceArrayType? type = GetValueType() as InPlaceArrayType ?? throw new AssertException("Array type expected.");
-        var primitiveType = (PrimitiveType)GetBaseType(type);
+        var valueType = GetValueType();
+        var primitiveType = (PrimitiveType)GetBaseType(valueType);
         return primitiveType;
     }
 
@@ -59,11 +59,32 @@ internal sealed class LValueArrayElement : ILValue
         method.Emit(OpCodes.Add);
     }
 
-    private static IType GetBaseType(InPlaceArrayType valueType)
+    private static IType GetBaseType(IType valueType)
+    {
+        var baseType = valueType switch
+        {
+            InPlaceArrayType arrayType => arrayType.Base,
+            PointerType pointerType => pointerType.Base,
+            _ => throw new AssertException("Array or pointer type expected.")
+        };
+        if (baseType is InPlaceArrayType or PointerType)
+        {
+            return GetBaseType(baseType);
+        }
+
+        return baseType;
+    }
+
+    private static IType GetBaseType(PointerType valueType)
     {
         if (valueType.Base is InPlaceArrayType inPlaceArrayType)
         {
             return GetBaseType(inPlaceArrayType);
+        }
+
+        if (valueType.Base is PointerType pointerType)
+        {
+            return GetBaseType(pointerType);
         }
 
         return valueType.Base;
