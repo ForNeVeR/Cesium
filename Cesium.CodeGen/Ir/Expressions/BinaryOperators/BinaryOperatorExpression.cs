@@ -40,6 +40,15 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         var leftType = left.GetExpressionType(scope);
         var rightType = right.GetExpressionType(scope);
+        if (leftType is ConstType leftTypeConst)
+        {
+            leftType = leftTypeConst.Base;
+        }
+
+        if (rightType is ConstType rightTypeConst)
+        {
+            rightType = rightTypeConst.Base;
+        }
 
         if (Operator.IsComparison())
         {
