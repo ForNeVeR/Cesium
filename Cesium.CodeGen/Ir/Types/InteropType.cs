@@ -37,11 +37,11 @@ internal record InteropType(TypeReference UnderlyingType) : IType
         if (UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
             return context.VoidPtrConverter;
 
-        if (UnderlyingType.IsGenericInstance)
+        if (UnderlyingType is GenericInstanceType typeInstance)
         {
-            var parent = UnderlyingType.GetElementType();
+            var parent = typeInstance.GetElementType();
             if (parent.FullName == TypeSystemEx.CPtrFullTypeName)
-                return context.CPtrConverter;
+                return context.CPtrConverter(typeInstance.GenericArguments.Single());
 
             throw new WipException(WipException.ToDo, "Cannot import the converter method for FuncPtr, yet.");
         }

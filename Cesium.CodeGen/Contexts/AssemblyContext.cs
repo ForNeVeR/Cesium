@@ -77,8 +77,9 @@ public class AssemblyContext
     private MethodDefinition? _globalInitializer;
 
     private readonly TypeReference _runtimeCPtr;
-    private readonly Lazy<MethodReference> _cPtrConverter;
-    public MethodReference CPtrConverter => _cPtrConverter.Value;
+    private readonly ConversionMethodCache _cPtrConverterCache;
+    public MethodReference CPtrConverter(TypeReference argument) =>
+        _cPtrConverterCache.GetOrImportMethod(argument);
 
     public TypeReference RuntimeVoidPtr { get; }
     private readonly TypeReference _runtimeFuncPtr;
@@ -133,6 +134,7 @@ public class AssemblyContext
             throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
 
         _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
+        _cPtrConverterCache = new ConversionMethodCache(_runtimeCPtr, "op_Implicit", Module);
         RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
         _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
 
@@ -140,8 +142,6 @@ public class AssemblyContext
         _importedFuncDelegates = new("System", "Func", Module);
 
         _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
-        _cPtrConverter = new(() => throw new WipException(WipException.ToDo, "TODO: Make the cast operators specialized by types, introduce a cache or something."));
-        return;
 
         MethodReference GetImplicitCastOperator(string typeName)
         {
