@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Security.AccessControl;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
@@ -20,7 +21,7 @@ internal sealed class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
 
-        var (loadOp, _) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
+        var (loadOp, _) = GetElementOpcodes();
         scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
@@ -33,17 +34,38 @@ internal sealed class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
         value.EmitTo(scope);
-        var (_, storeOp) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
+        var (_, storeOp) = GetElementOpcodes();
         scope.Method.Body.GetILProcessor().Emit(storeOp);
+    }
+
+    private (OpCode, OpCode) GetElementOpcodes()
+    {
+        var elementType = GetElementType();
+        if (elementType is PrimitiveType primitive)
+        {
+            return PrimitiveTypeInfo.Opcodes[primitive.Kind];
+        }
+
+        if (elementType is PointerType)
+        {
+            return (OpCodes.Ldind_I, OpCodes.Stind_I);
+        }
+
+        throw new InvalidOperationException("Arrays of structs are not supported");
     }
 
     public IType GetValueType()
         => _array.GetValueType();
 
-    private PrimitiveType GetElementType()
+    private IType GetElementType()
     {
         var valueType = GetValueType();
-        var primitiveType = (PrimitiveType)GetBaseType(valueType);
+        var primitiveType = GetBaseType(valueType);
+        if (primitiveType is InPlaceArrayType or PointerType)
+        {
+            return GetBaseType(primitiveType);
+        }
+
         return primitiveType;
     }
 
@@ -53,8 +75,16 @@ internal sealed class LValueArrayElement : ILValue
         _index.EmitTo(scope);
         var method = scope.Method.Body.GetILProcessor();
         method.Emit(OpCodes.Conv_I);
-        var elementSize = PrimitiveTypeInfo.Size[GetElementType().Kind];
-        method.Emit(OpCodes.Ldc_I4, elementSize);
+        var elementSize = GetElementType().GetSizeInBytes(scope.AssemblyContext.ArchitectureSet);
+        if (elementSize.HasValue)
+        {
+            method.Emit(OpCodes.Ldc_I4, elementSize.Value);
+        }
+        else
+        {
+            method.Emit(OpCodes.Sizeof, scope.Module.TypeSystem.IntPtr);
+        }
+
         method.Emit(OpCodes.Mul);
         method.Emit(OpCodes.Add);
     }
@@ -67,26 +97,7 @@ internal sealed class LValueArrayElement : ILValue
             PointerType pointerType => pointerType.Base,
             _ => throw new AssertException("Array or pointer type expected.")
         };
-        if (baseType is InPlaceArrayType or PointerType)
-        {
-            return GetBaseType(baseType);
-        }
 
         return baseType;
-    }
-
-    private static IType GetBaseType(PointerType valueType)
-    {
-        if (valueType.Base is InPlaceArrayType inPlaceArrayType)
-        {
-            return GetBaseType(inPlaceArrayType);
-        }
-
-        if (valueType.Base is PointerType pointerType)
-        {
-            return GetBaseType(pointerType);
-        }
-
-        return valueType.Base;
     }
 }

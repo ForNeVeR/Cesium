@@ -125,4 +125,15 @@ int foo(int ints[]) { return ints[0]; }");
     char c = argv[0][0];
     return argv[1];
  }");
+
+    [Fact]
+    public Task PointerArrayIndexing() => DoTest(@"
+int f(char*** t) {
+    char* c = t[2][3];
+    return c[1];
+}
+
+int main() {
+    return 42;
+ }");
 }
