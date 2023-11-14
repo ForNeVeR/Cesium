@@ -292,6 +292,7 @@ public unsafe static class StdIoFunctions
             storage[i] = bytes[i];
         }
 
+        storage[bytes.Length] = 0;
         return storage;
     }
 

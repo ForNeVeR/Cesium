@@ -146,7 +146,7 @@ public unsafe static class StdLibFunctions
             return null;
         }
 
-        return StdIoFunctions.MarshalStr(Environment.GetEnvironmentVariable(str)?.TrimEnd('\\'));
+        return StdIoFunctions.MarshalStr(Environment.GetEnvironmentVariable(str));
     }
 
     public static long StrToL(byte* str, byte** str_end, int @base)
