@@ -286,7 +286,7 @@ public unsafe static class StdIoFunctions
         }
 
         var bytes = encoding.GetBytes(str);
-        var storage = (byte*)StdLibFunctions.Malloc((nuint)bytes.Length);
+        var storage = (byte*)StdLibFunctions.Malloc((nuint)bytes.Length + 1);
         for (var i = 0; i < bytes.Length;i++)
         {
             storage[i] = bytes[i];
