@@ -192,6 +192,12 @@ int console_read(void);
 int console_read(void) { return 0; }");
 
     [Fact]
+    public Task CanHaveTwoFunctionDeclarationsWithDifferentParameterNames() => DoTest(@"
+int console_read(int argc);
+
+int console_read(int __argc) { return 0; }");
+
+    [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
 int console_read() { return 2; }", "Double definition of function console_read.");
 

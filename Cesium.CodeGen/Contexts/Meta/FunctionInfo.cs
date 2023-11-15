@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
@@ -46,7 +47,8 @@ internal record FunctionInfo(
         var declaredParams = Parameters?.Parameters ?? Array.Empty<ParameterInfo>();
         foreach (var (a, b) in actualParams.Zip(declaredParams))
         {
-            if (a != b)
+            if (!a.Type.IsEqualTo(b.Type))
+            //if (a != b)
                 throw new CompilationException(
                     $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
