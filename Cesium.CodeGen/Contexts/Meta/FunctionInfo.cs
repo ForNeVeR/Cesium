@@ -48,7 +48,6 @@ internal record FunctionInfo(
         foreach (var (a, b) in actualParams.Zip(declaredParams))
         {
             if (!a.Type.IsEqualTo(b.Type))
-            //if (a != b)
                 throw new CompilationException(
                     $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
