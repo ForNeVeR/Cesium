@@ -138,6 +138,17 @@ public unsafe static class StdLibFunctions
         return Convert.ToInt32(str);
     }
 
+    public static byte* GetEnv(byte* ptr)
+    {
+        var str = StdIoFunctions.Unmarshal(ptr);
+        if (str is null)
+        {
+            return null;
+        }
+
+        return StdIoFunctions.MarshalStr(Environment.GetEnvironmentVariable(str));
+    }
+
     public static long StrToL(byte* str, byte** str_end, int @base)
     {
         byte* current = str;

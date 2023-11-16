@@ -50,3 +50,6 @@ __cli_import("Cesium.Runtime.StdLibFunctions::GetErrNo")
 int* _errno(void);
 
 #define errno (*_errno())
+
+__cli_import("Cesium.Runtime.StdLibFunctions::GetEnv")
+char* getenv(const char* name);
