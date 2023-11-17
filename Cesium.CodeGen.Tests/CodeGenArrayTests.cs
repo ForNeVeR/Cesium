@@ -119,4 +119,21 @@ int main() {
     [Fact]
     public Task ArrayParameterPassing() => DoTest(@"
 int foo(int ints[]) { return ints[0]; }");
+
+    [Fact]
+    public Task ArrayOverPointer() => DoTest(@"int main(int argc, char** argv) {
+    char c = argv[0][0];
+    return argv[1];
+ }");
+
+    [Fact]
+    public Task PointerArrayIndexing() => DoTest(@"
+int f(char*** t) {
+    char* c = t[2][3];
+    return c[1];
+}
+
+int main() {
+    return 42;
+ }");
 }

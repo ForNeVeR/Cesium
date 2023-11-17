@@ -41,6 +41,13 @@ int main() {
 }");
 
     [Fact]
+    public Task ArraySizeofLong() => DoTest(@"
+int main() {
+    long x[] = { 1,2,3,4,5 };
+    return sizeof(x);
+}");
+
+    [Fact]
     public Task EnumSizeof() => DoTest(@"
 int main() {
     enum foo {

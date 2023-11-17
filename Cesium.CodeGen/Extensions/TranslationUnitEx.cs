@@ -47,7 +47,8 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType or PointerType or InPlaceArrayType)
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType
+                        || (type is StructType varStructType && varStructType.Identifier != identifier))
                     {
                         var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
@@ -56,7 +57,7 @@ internal static class TranslationUnitEx
 
                     if (type is EnumType enumType)
                     {
-                        int currentValue = -1;
+                        long currentValue = -1;
                         foreach (var enumeratorDeclaration in enumType.Members)
                         {
                             var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(

@@ -184,4 +184,23 @@ public static unsafe class StringFunctions
 
         return dest;
     }
+    public static byte* StrChr(byte* str, int ch)
+    {
+        if (str == null)
+        {
+            return null;
+        }
+
+        while (*str != 0)
+        {
+            if (*str == ch)
+            {
+                return str;
+            }
+
+            str++;
+        }
+
+        return null;
+    }
 }

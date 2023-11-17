@@ -56,8 +56,17 @@ internal sealed class CompoundInitializationExpression : IExpression
         {
             case PrimitiveTypeKind.Int:
             case PrimitiveTypeKind.SignedInt:
-                var data = BitConverter.GetBytes(integer.Value);
+                var data = BitConverter.GetBytes((int)integer.Value);
                 stream.Write(data);
+                break;
+            case PrimitiveTypeKind.Long:
+            case PrimitiveTypeKind.SignedLong:
+            case PrimitiveTypeKind.SignedLongInt:
+                stream.Write(BitConverter.GetBytes(integer.Value));
+                break;
+            case PrimitiveTypeKind.UnsignedLong:
+            case PrimitiveTypeKind.UnsignedLongInt:
+                stream.Write(BitConverter.GetBytes(unchecked((ulong)integer.Value)));
                 break;
             case PrimitiveTypeKind.UnsignedInt:
                 stream.Write(BitConverter.GetBytes(unchecked((uint)integer.Value)));

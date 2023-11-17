@@ -1,6 +1,26 @@
 ﻿System.Int32 <Module>::main(System.Int32 argc, System.Byte** argv)
-  IL_0000: ldc.i4.0
-  IL_0001: ret
+  Locals:
+    System.Byte V_0
+  IL_0000: ldarg.1
+  IL_0001: ldc.i4.0
+  IL_0002: conv.i
+  IL_0003: ldc.i4 1
+  IL_0008: mul
+  IL_0009: add
+  IL_000a: ldind.i1
+  IL_000b: sizeof System.Byte*
+  IL_0011: ldc.i4.0
+  IL_0012: mul
+  IL_0013: add
+  IL_0014: ldind.i
+  IL_0015: stloc.0
+  IL_0016: ldarg.1
+  IL_0017: sizeof System.Byte*
+  IL_001d: ldc.i4.1
+  IL_001e: mul
+  IL_001f: add
+  IL_0020: ldind.i
+  IL_0021: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
   Locals:
