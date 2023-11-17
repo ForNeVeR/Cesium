@@ -2,6 +2,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.Core;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -32,18 +33,24 @@ internal record InteropType(TypeReference UnderlyingType) : IType
             $"{nameof(InteropType)} doesn't know how to get size of an underlying {UnderlyingType}.");
     }
 
-    public MethodReference GetConvertCall(AssemblyContext context)
+    public Instruction GetConvertInstruction(AssemblyContext context)
     {
         if (UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
-            return context.VoidPtrConverter;
+            return Instruction.Create(OpCodes.Call, context.VoidPtrConverter);
 
         if (UnderlyingType is GenericInstanceType typeInstance)
         {
             var parent = typeInstance.GetElementType();
-            if (parent.FullName == TypeSystemEx.CPtrFullTypeName)
-                return context.CPtrConverter(typeInstance.GenericArguments.Single());
-
-            throw new WipException(WipException.ToDo, "Cannot import the converter method for FuncPtr, yet.");
+            return parent.FullName switch
+            {
+                TypeSystemEx.CPtrFullTypeName =>
+                    Instruction.Create(OpCodes.Call, context.CPtrConverter(typeInstance.GenericArguments.Single())),
+                TypeSystemEx.FuncPtrFullTypeName =>
+                    Instruction.Create(
+                        OpCodes.Newobj,
+                        context.FuncPtrConstructor(typeInstance.GenericArguments.Single())),
+                _ => throw new AssertException($"No conversion available for interop type {parent}.")
+            };
         }
 
         throw new AssertException(

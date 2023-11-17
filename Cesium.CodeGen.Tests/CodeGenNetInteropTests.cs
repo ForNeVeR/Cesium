@@ -95,7 +95,7 @@ public static class Test
         @"using Cesium.Runtime;
 public static class Test
 {
-    public static int Func(FPtr<Func<int>> ptr) => 1;
+    public static int Func(FuncPtr<Func<int>> ptr) => 1;
 }
 ", """
 __cli_import("Test::Func")

@@ -82,10 +82,13 @@ public class AssemblyContext
         _cPtrConverterCache.GetOrImportMethod(argument);
 
     public TypeReference RuntimeVoidPtr { get; }
-    private readonly TypeReference _runtimeFuncPtr;
-
     private readonly Lazy<MethodReference> _voidPtrConverter;
     public MethodReference VoidPtrConverter => _voidPtrConverter.Value;
+
+    private readonly TypeReference _runtimeFuncPtr;
+    private readonly ConversionMethodCache _funcPtrConstructorCache;
+    public MethodReference FuncPtrConstructor(TypeReference argument) =>
+        _funcPtrConstructorCache.GetOrImportMethod(argument);
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -135,13 +138,15 @@ public class AssemblyContext
 
         _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
         _cPtrConverterCache = new ConversionMethodCache(_runtimeCPtr, "op_Implicit", Module);
+
         RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
+        _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
+
         _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
+        _funcPtrConstructorCache = new ConversionMethodCache(_runtimeFuncPtr, ".ctor", Module);
 
         _importedActionDelegates = new("System", "Action", Module);
         _importedFuncDelegates = new("System", "Func", Module);
-
-        _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
 
         MethodReference GetImplicitCastOperator(string typeName)
         {
