@@ -23,6 +23,14 @@ public unsafe class StringFunctionTests
         }
     }
 
+    [Fact]
+    public void StrLen_Null()
+    {
+        var actual = StringFunctions.StrLen(null);
+
+        Assert.Equal((nuint)0, actual);
+    }
+
     [Theory]
     [InlineData("Hello\n", 5)]
     [InlineData("Goodbye\n", 7)]
@@ -39,5 +47,13 @@ public unsafe class StringFunctionTests
             Assert.Equal((byte)needle, *ptr);
             Assert.Equal(expectedOffset, (int)(ptr - str));
         }
+    }
+
+    [Fact]
+    public void StrChr_Null()
+    {
+        var actual = StringFunctions.StrChr(null, '\0');
+
+        Assert.True(actual is null);
     }
 }
