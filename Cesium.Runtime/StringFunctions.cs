@@ -1,7 +1,9 @@
 #if NETSTANDARD
+using System;
 using System.Text;
 #else
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #endif
 
@@ -14,26 +16,8 @@ public unsafe static class StringFunctions
 {
     public static nuint StrLen(byte* str)
     {
-#if NETSTANDARD
-        if (str == null)
-        {
-            return 0;
-        }
-
-        Encoding encoding = Encoding.UTF8;
-        int byteLength = 0;
-        byte* search = str;
-        while (*search != '\0')
-        {
-            byteLength++;
-            search++;
-        }
-
-        int stringLength = encoding.GetCharCount(str, byteLength);
-        return (uint)stringLength;
-#else
-        return (uint)(Marshal.PtrToStringUTF8((nint)str)?.Length ?? 0);
-#endif
+        var offset = StrChr(str, 0);
+        return (nuint)(offset - str);
     }
     public static byte* StrCpy(byte* dest, byte* src)
     {
@@ -186,19 +170,21 @@ public unsafe static class StringFunctions
     }
     public static byte* StrChr(byte* str, int ch)
     {
-        if (str == null)
+        if (str != null)
         {
-            return null;
-        }
+            int match;
+            nuint offset = 0;
+            byte c = (byte)ch;
 
-        while (*str != 0)
-        {
-            if (*str == ch)
+            // TODO: Copy IndexOfNullByte impl. from CoreLib in a distant future
+            var span = new Span<byte>(str, int.MaxValue);
+            while ((match = span.IndexOf(c)) < 0)
             {
-                return str;
+                offset += int.MaxValue;
+                span = new Span<byte>(str + offset, int.MaxValue);
             }
 
-            str++;
+            return str + ((uint)match + offset);
         }
 
         return null;
