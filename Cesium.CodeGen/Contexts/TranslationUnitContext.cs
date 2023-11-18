@@ -53,9 +53,10 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             if (functionInfo.CliImportMember is not null && existingDeclaration.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
-                if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
+                var methodReference = existingDeclaration.MethodReference!;
+                if (!method.FullName.Equals(methodReference.FullName))
                 {
-                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
+                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {methodReference.FullName}.");
                 }
             }
 
@@ -63,7 +64,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
                 ? existingDeclaration.StorageClass
                 : functionInfo.StorageClass;
             var mergedIsDefined = existingDeclaration.IsDefined || functionInfo.IsDefined;
-            Functions[identifier] = existingDeclaration with { StorageClass = mergedStorageClass, IsDefined = mergedIsDefined };
+            existingDeclaration.Parameters = functionInfo.Parameters;
+            existingDeclaration.IsDefined = mergedIsDefined;
+            existingDeclaration.StorageClass = mergedStorageClass;
         }
     }
 
@@ -73,16 +76,16 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         IType returnType,
         ParametersInfo? parameters)
     {
-        var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
-        var method = owningType.DefineMethod(
-            this,
-            name,
-            returnType.Resolve(this),
-            parameters);
+            var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
+            var method = owningType.DefineMethod(
+                this,
+                name,
+                returnType.Resolve(this),
+                parameters);
         var existingDeclaration = Functions.GetValueOrDefault(name);
         Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
         Functions[name] = existingDeclaration with { MethodReference = method };
-        return method;
+            return method;
     }
 
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();

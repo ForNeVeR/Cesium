@@ -26,7 +26,7 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
             if (isVarArg)
                 throw new WipException(196, $"A pointer to a vararg function is not implemented, yet: {this}.");
 
-            foreach (var (type, name) in parameterInfos)
+            foreach (var (type, name, index) in parameterInfos)
             {
                 pointer.Parameters.Add(new ParameterDefinition(type.Resolve(context))
                 {

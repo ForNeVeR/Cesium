@@ -51,7 +51,7 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
     public ParameterInfo? GetParameterInfo(string name) => null;
-    public ParameterDefinition ResolveParameter(string name) =>
+    public ParameterDefinition ResolveParameter(int index) =>
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
 
     /// <inheritdoc />

@@ -38,7 +38,7 @@ internal static class TypeDefinitionEx
 
         foreach (var parameter in parameters)
         {
-            var (type, name) = parameter;
+            var (type, name, _) = parameter;
             var parameterDefinition = new ParameterDefinition(type.Resolve(context))
             {
                 Name = name

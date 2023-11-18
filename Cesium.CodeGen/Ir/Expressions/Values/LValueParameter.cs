@@ -53,8 +53,7 @@ internal sealed class LValueParameter : ILValue
             return _definition;
         }
 
-        var parameterName = _parameterInfo.Name ?? throw new AssertException("Name of parameter does not specified");
-        _definition = scope.ResolveParameter(parameterName);
+        _definition = scope.ResolveParameter(_parameterInfo.Index);
         return _definition;
     }
 

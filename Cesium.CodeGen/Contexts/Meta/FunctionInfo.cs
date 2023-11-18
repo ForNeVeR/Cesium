@@ -13,6 +13,9 @@ internal record FunctionInfo(
     StorageClass StorageClass,
     bool IsDefined)
 {
+    public ParametersInfo? Parameters { get; set; } = Parameters;
+    public StorageClass StorageClass { get; set; } = StorageClass;
+    public bool IsDefined { get; set; } = IsDefined;
     public MethodReference? MethodReference { get; set; }
     public string? CliImportMember { get; set; }
 

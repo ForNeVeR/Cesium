@@ -10,6 +10,7 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using System.Diagnostics;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -65,6 +66,7 @@ internal sealed class FunctionDefinition : IBlockItem
         var (parameters, returnType) = FunctionType;
 
         var declaration = context.GetFunctionInfo(Name);
+        Debug.Assert(declaration != null, $"Function {Name} does not declared.");
 
         var method = declaration switch
         {
