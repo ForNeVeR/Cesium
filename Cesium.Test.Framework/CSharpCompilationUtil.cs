@@ -10,7 +10,8 @@ public static class CSharpCompilationUtil
 {
     public static readonly TargetRuntimeDescriptor DefaultRuntime = TargetRuntimeDescriptor.Net60;
     private const string _configuration = "Debug";
-    private const string _targetRuntime = "net6.0";
+    private const string _targetRuntime = "net7.0";
+    private const string _cesiumRuntimeLibTargetRuntime = "net6.0";
     private const string _projectName = "TestProject";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
@@ -76,7 +77,7 @@ public static class CSharpCompilationUtil
         "Cesium.Runtime",
         "bin",
         _configuration,
-        _targetRuntime,
+        _cesiumRuntimeLibTargetRuntime,
         "Cesium.Runtime.dll");
 
     private static Task CompileCSharpProject(ITestOutputHelper output, string directory, string projectName) =>
