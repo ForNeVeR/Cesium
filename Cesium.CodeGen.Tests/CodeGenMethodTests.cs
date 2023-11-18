@@ -425,6 +425,18 @@ int main()
     return fooptr(123);
 }", "Attempted to call non-function pointer");
 
+    [Fact]
+    public Task StructParameters() => DoTest(@"
+struct struct1 {
+    int x;
+};
+
+int console_read(struct struct1* __s);
+
+int console_read(struct struct1* s) {
+    return s->x;
+}");
+
     // TODO [#196]
     /* [Fact]
     public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
