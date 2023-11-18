@@ -203,4 +203,21 @@ public unsafe static class StringFunctions
 
         return null;
     }
+
+    public static int StrCmp(byte* lhs, byte* rhs)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        for (; *lhs != 0 && *rhs != 0; lhs++, rhs++)
+        {
+            if (*lhs < *rhs) return -1;
+            if (*lhs > *rhs) return 1;
+        }
+
+
+        if (*lhs < *rhs) return -1;
+        if (*lhs > *rhs) return 1;
+        return 0;
+    }
 }
