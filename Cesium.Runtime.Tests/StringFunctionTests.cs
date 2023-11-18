@@ -50,6 +50,18 @@ public unsafe class StringFunctionTests
     }
 
     [Fact]
+    public void StrChr_NotFound()
+    {
+        var bytes = Encoding.UTF8.GetBytes("Hello\0");
+        fixed (byte* str = bytes)
+        {
+            var actual = StringFunctions.StrChr(str, '\n');
+
+            Assert.True(actual is null);
+        }
+    }
+
+    [Fact]
     public void StrChr_Null()
     {
         var actual = StringFunctions.StrChr(null, '\0');

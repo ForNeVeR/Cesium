@@ -1,12 +1,3 @@
-#if NETSTANDARD
-using System;
-using System.Text;
-#else
-using System.Collections.Specialized;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-#endif
-
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -16,8 +7,22 @@ public unsafe static class StringFunctions
 {
     public static nuint StrLen(byte* str)
     {
-        var offset = StrChr(str, 0);
-        return (nuint)(offset - str);
+        if (str != null)
+        {
+            int match;
+            nuint offset = 0;
+
+            // TODO: Copy IndexOfNullByte impl. from CoreLib in a distant future
+            while ((match = new Span<byte>(str + offset, int.MaxValue)
+                .IndexOf((byte)0)) < 0)
+            {
+                offset += int.MaxValue;
+            }
+
+            return offset + (uint)match;
+        }
+
+        return 0;
     }
     public static byte* StrCpy(byte* dest, byte* src)
     {
@@ -173,18 +178,19 @@ public unsafe static class StringFunctions
         if (str != null)
         {
             int match;
-            nuint offset = 0;
             byte c = (byte)ch;
 
-            // TODO: Copy IndexOfNullByte impl. from CoreLib in a distant future
-            var span = new Span<byte>(str, int.MaxValue);
-            while ((match = span.IndexOf(c)) < 0)
+            while ((match = new Span<byte>(str, int.MaxValue)
+                .IndexOfAny<byte>(c, 0)) < 0)
             {
-                offset += int.MaxValue;
-                span = new Span<byte>(str + offset, int.MaxValue);
+                str += int.MaxValue;
             }
+            str += (nint)(uint)match;
 
-            return str + ((uint)match + offset);
+            if (*str == c)
+            {
+                return str;
+            }
         }
 
         return null;
