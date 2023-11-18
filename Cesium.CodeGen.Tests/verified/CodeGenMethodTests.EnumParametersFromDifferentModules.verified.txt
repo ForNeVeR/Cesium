@@ -1,0 +1,4 @@
+﻿
+System.Int32 testInput<Statics>::console_read(System.Int32 _s)
+  IL_0000: ldc.i4.s 111
+  IL_0002: ret

@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed class StructType : IGeneratedType
+internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 {
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
     {
@@ -85,4 +85,29 @@ internal sealed class StructType : IGeneratedType
                 _ => throw new WipException(355, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
             }
     };
+
+    public bool Equals(StructType? other)
+    {
+        if (other is null) return false;
+
+        if (Identifier != other.Identifier) return false;
+
+        if (Members.Count != other.Members.Count) return false;
+        for (var i =0;i< Members.Count;i++)
+        {
+            if (!Members[i].Equals(other.Members[i])) return false;
+        }
+
+        return true;
+    }
+
+    public override bool Equals(object? other)
+    {
+        if (other is StructType)
+        {
+            return Equals((StructType)other);
+        }
+
+        return false;
+    }
 }
