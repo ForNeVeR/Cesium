@@ -118,7 +118,7 @@ int main(void)
     public Task FunctionPointerInterop(TargetArchitectureSet architecture) => DoTest(
         architecture,
         """
-public static class Test
+public static unsafe class Test
 {
     public static int Func(delegate*<int> ptr) => 1;
 }
