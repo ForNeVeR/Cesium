@@ -16,6 +16,17 @@ public class CodeGenMethodTests : CodeGenTestBase
         return VerifyMethods(new[] { moduleType, staticType });
     }
 
+    [MustUseReturnValue]
+    private static Task DoTest(string source1, string source2)
+    {
+        var assembly = GenerateAssembly(default, source1, source2);
+
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
+    }
+
     [Fact]
     public Task EmptyMainTest() => DoTest("int main() {}");
 
@@ -404,6 +415,44 @@ static int main()
     int x = 0;
     ++x;
     return x + 1;
+}");
+
+    [Fact]
+    public Task StructParametersFromDifferentModules() => DoTest(@"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);  ", @"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);
+
+int console_read(const struct struct1* s) {
+    return s->x;
+}");
+
+    [Fact]
+    public Task EnumParametersFromDifferentModules() => DoTest(@"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);  ", @"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);
+
+int console_read(enum enum1 s) {
+    return 111;
 }");
 
     [Fact]
