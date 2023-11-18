@@ -234,11 +234,15 @@ public class TranslationUnitContext
 
         List<ParameterInfo> ProcessParameters(ICollection<ParameterInfo> parameters)
         {
-            // For now, only wrap the interop types.
-            if (implementation.Parameters.Count != parameters.Count)
+            var areParametersValid =
+                implementation.Parameters.Count == parameters.Count
+                || declaration.Parameters.IsVarArg; // TODO: A better check for interop functions + vararg.
+            if (!areParametersValid)
+            {
                 throw new CompilationException(
                     $"Parameter count for function {declaration.CliImportMember} " +
                     $"doesn't match the parameter count of imported CLI method {implementation.FullName}.");
+            }
 
             return parameters.Zip(implementation.Parameters)
                 .Select(pair =>
