@@ -10,7 +10,9 @@
       IL_0004: conv.i
       IL_0005: call Cesium.Runtime.VoidPtr Cesium.Runtime.VoidPtr::op_Implicit(System.Void*)
       IL_000a: call System.Int32 Test::Func(Cesium.Runtime.VoidPtr)
-      IL_000f: ret
+      IL_000f: ldc.i4.1
+      IL_0010: sub
+      IL_0011: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

@@ -14,6 +14,7 @@ namespace Cesium.CodeGen.Contexts.Utilities;
 /// </remarks>
 internal record ConversionMethodCache(
     TypeReference GenericType,
+    TypeReference? ReturnType,
     string MethodName,
     ModuleDefinition TargetModule)
 {
@@ -33,17 +34,11 @@ internal record ConversionMethodCache(
     {
         var genericMethod = GenericType.Resolve().Methods.Single(m => m.Name == MethodName);
         var declaringType = GenericType.MakeGenericInstanceType(argument);
-        var methodReference = new MethodReference(
-            genericMethod.Name,
-            returnType: GenericType.MakeGenericInstanceType(
-                GenericType.GenericParameters.Single()),
-            declaringType);
-        foreach (var p in genericMethod.Parameters)
-        {
-            methodReference.Parameters.Add(
-                new ParameterDefinition(p.Name, p.Attributes, p.ParameterType));
-        }
+        var methodReference = TargetModule.ImportReference(genericMethod);
+        methodReference.DeclaringType = declaringType;
+        if (ReturnType != null)
+            methodReference.ReturnType = ReturnType;
 
-        return TargetModule.ImportReference(methodReference);
+        return methodReference;
     }
 }

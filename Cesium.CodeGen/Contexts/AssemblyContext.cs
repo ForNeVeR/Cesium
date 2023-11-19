@@ -137,13 +137,21 @@ public class AssemblyContext
             throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
 
         _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
-        _cPtrConverterCache = new ConversionMethodCache(_runtimeCPtr, "op_Implicit", Module);
+        _cPtrConverterCache = new ConversionMethodCache(
+            _runtimeCPtr,
+            ReturnType: _runtimeCPtr.MakeGenericInstanceType(_runtimeCPtr.GenericParameters.Single()),
+            "op_Implicit",
+            Module);
 
         RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
         _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
 
         _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
-        _funcPtrConstructorCache = new ConversionMethodCache(_runtimeFuncPtr, ".ctor", Module);
+        _funcPtrConstructorCache = new ConversionMethodCache(
+            _runtimeFuncPtr,
+            ReturnType: null,
+            ".ctor",
+            Module);
 
         _importedActionDelegates = new("System", "Action", Module);
         _importedFuncDelegates = new("System", "Func", Module);

@@ -62,9 +62,8 @@ public static class CSharpCompilationUtil
         project.Add(new XElement("PropertyGroup",
             new XElement(new XElement("AllowUnsafeBlocks", "true"))));
 
-        var runtimeLibraryPath = GetCesiumRuntimeLibraryPath();
         project.Add(new XElement("ItemGroup",
-            new XElement("Reference", new XAttribute("Include", runtimeLibraryPath))));
+            new XElement("Reference", new XAttribute("Include", CesiumRuntimeLibraryPath))));
 
         await using var outputStream = new FileStream(projectFilePath, FileMode.Truncate, FileAccess.Write);
         await csProj.SaveAsync(outputStream, SaveOptions.None, CancellationToken.None);
@@ -72,7 +71,7 @@ public static class CSharpCompilationUtil
         return projectDirectory;
     }
 
-    private static string GetCesiumRuntimeLibraryPath() => Path.Combine(
+    public static readonly string CesiumRuntimeLibraryPath = Path.Combine(
         TestStructureUtil.SolutionRootPath,
         "Cesium.Runtime",
         "bin",

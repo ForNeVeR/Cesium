@@ -29,6 +29,12 @@ internal sealed class TypeCastExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
+        if (TargetType is InteropType iType)
+        {
+            iType.EmitConversion(scope, Expression);
+            return;
+        }
+
         Expression.EmitTo(scope);
 
         var ts = scope.CTypeSystem;
@@ -56,11 +62,6 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_R8);
         else if (TargetType is PointerType || TargetType.Equals(ts.NativeInt) || TargetType.Equals(ts.NativeUInt))
             Add(OpCodes.Conv_I);
-        else if (TargetType is InteropType iType)
-        {
-            Add(OpCodes.Conv_I); // TODO: Should only emit if required.
-            scope.Method.Body.Instructions.Add(iType.GetConvertInstruction(scope.AssemblyContext));
-        }
         else
             throw new AssertException($"Type {TargetType} is not supported.");
 

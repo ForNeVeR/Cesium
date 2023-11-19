@@ -15,16 +15,28 @@ namespace Cesium.CodeGen.Tests;
 [UseInvariantCulture]
 public abstract class CodeGenTestBase : VerifyTestBase
 {
-    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources) =>
-        GenerateAssembly(sources, runtime, TargetArchitectureSet.Dynamic, "", "", Array.Empty<string>());
+    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
+    {
+        var (assembly, _) = GenerateAssembly(
+            sources,
+            runtime,
+            @namespace: "",
+            globalTypeFqn: "",
+            referencePaths: Array.Empty<string>());
+        return assembly;
+    }
+
     protected static AssemblyDefinition GenerateAssembly(
         TargetRuntimeDescriptor? runtime,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
         string @namespace = "",
-        string globalTypeFqn = "", params string[] sources) =>
-        GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+        string globalTypeFqn = "", params string[] sources)
+    {
+        var (assembly, _) = GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+        return assembly;
+    }
 
-    protected static AssemblyDefinition GenerateAssembly(
+    protected static (AssemblyDefinition, byte[]) GenerateAssembly(
         string[] sources,
         TargetRuntimeDescriptor? runtime = null,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
@@ -104,7 +116,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         }
     }
 
-    private static AssemblyDefinition EmitAssembly(AssemblyContext context)
+    private static (AssemblyDefinition, byte[]) EmitAssembly(AssemblyContext context)
     {
         var assembly = context.VerifyAndGetAssembly();
 
@@ -112,7 +124,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         using var stream = new MemoryStream();
         assembly.Write(stream);
 
-        return assembly;
+        return (assembly, stream.ToArray());
     }
 
     [MustUseReturnValue]
@@ -138,7 +150,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
 
     [MustUseReturnValue]
-    protected static Task VerifyMethods(IEnumerable<TypeDefinition> types, params object[] parameters)
+    protected static Task VerifyMethods(IEnumerable<TypeDefinition?> types, params object[] parameters)
     {
         var result = new StringBuilder();
         int i = 0;
@@ -149,7 +161,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine();
             }
 
-            DumpMethods(type, result);
+            DumpMethods(type!, result);
             i++;
         }
 

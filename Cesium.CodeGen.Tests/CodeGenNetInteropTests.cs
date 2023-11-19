@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using Cesium.Compiler;
 using Cesium.Test.Framework;
 using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
 
+// TODO: Make them run in parallel, as all the integration tests
 public class CodeGenNetInteropTests : CodeGenTestBase
 {
     private readonly ITestOutputHelper _output;
@@ -21,8 +23,40 @@ public class CodeGenNetInteropTests : CodeGenTestBase
             _output,
             CSharpCompilationUtil.DefaultRuntime,
             cSharpCode);
-        var cesiumAssembly = GenerateAssembly(runtime: null, arch: architecture, sources: new[]{cCode}, referencePaths: new[] { cSharpAssemblyPath });
+        var (cesiumAssembly, assemblyContents) = GenerateAssembly(runtime: null, arch: architecture, sources: new[]{cCode}, referencePaths: new[] { cSharpAssemblyPath });
         await VerifyTypes(cesiumAssembly, architecture);
+        await VerifyAssemblyRuns(assemblyContents.ToArray(), cSharpAssemblyPath);
+    }
+
+    private async Task VerifyAssemblyRuns(byte[] assemblyContentToRun, string referencePath)
+    {
+        var testDirectoryPath = Path.GetTempFileName();
+        File.Delete(testDirectoryPath);
+        Directory.CreateDirectory(testDirectoryPath);
+
+        try
+        {
+            var assemblyPath = Path.Combine(testDirectoryPath, "EntryPoint.dll");
+            var runtimeConfigPath = Path.ChangeExtension(assemblyPath, ".runtimeconfig.json");
+
+            await File.WriteAllBytesAsync(assemblyPath, assemblyContentToRun);
+            await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet7());
+
+            DeployReferenceAssembly(CSharpCompilationUtil.CesiumRuntimeLibraryPath);
+            DeployReferenceAssembly(referencePath);
+
+            await ExecUtil.RunToSuccess(_output, "dotnet", testDirectoryPath, new[] { assemblyPath });
+        }
+        finally
+        {
+            Directory.Delete(testDirectoryPath, recursive: true);
+        }
+
+        void DeployReferenceAssembly(string assemblyPath)
+        {
+            var targetFilePath = Path.Combine(testDirectoryPath, Path.GetFileName(assemblyPath));
+            File.Copy(assemblyPath, targetFilePath);
+        }
     }
 
     [Theory]
@@ -41,7 +75,7 @@ int Func(int *ptr);
 int main(void)
 {
     int x = 0;
-    return Func(&x);
+    return Func(&x) - 1;
 }
 """);
 
@@ -62,7 +96,7 @@ public static class Test
    int main(void)
    {
        int x = 0;
-       return Func(&x);
+       return Func(&x) - 1;
    }
    """);
 
@@ -83,7 +117,7 @@ public static class Test
    int main(void)
    {
        int x = 0;
-       return Func(&x);
+       return Func(&x) - 1;
    }
    """);
 
@@ -108,7 +142,7 @@ int myFunc()
 
 int main(void)
 {
-   return Func(&myFunc);
+   return Func(&myFunc) - 1;
 }
 """);
 
@@ -133,7 +167,7 @@ int myFunc()
 
 int main(void)
 {
-   return Func(&myFunc);
+   return Func(&myFunc) - 1;
 }
 """);
 }

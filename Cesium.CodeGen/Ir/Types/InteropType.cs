@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -33,24 +34,46 @@ internal record InteropType(TypeReference UnderlyingType) : IType
             $"{nameof(InteropType)} doesn't know how to get size of an underlying {UnderlyingType}.");
     }
 
-    public Instruction GetConvertInstruction(AssemblyContext context)
+    public void EmitConversion(IEmitScope scope, IExpression expression)
     {
+        void EmitExprAndGetPtr()
+        {
+            expression.EmitTo(scope);
+            scope.AddInstruction(OpCodes.Conv_I); // TODO: Should only emit if required.
+        }
+
+        var assemblyContext = scope.AssemblyContext;
         if (UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
-            return Instruction.Create(OpCodes.Call, context.VoidPtrConverter);
+        {
+            EmitExprAndGetPtr();
+            scope.AddInstruction(OpCodes.Call, assemblyContext.VoidPtrConverter);
+            return;
+        }
 
         if (UnderlyingType is GenericInstanceType typeInstance)
         {
             var parent = typeInstance.GetElementType();
-            return parent.FullName switch
+            switch (parent.FullName)
             {
-                TypeSystemEx.CPtrFullTypeName =>
-                    Instruction.Create(OpCodes.Call, context.CPtrConverter(typeInstance.GenericArguments.Single())),
-                TypeSystemEx.FuncPtrFullTypeName =>
+                case TypeSystemEx.CPtrFullTypeName:
+                    EmitExprAndGetPtr();
+                    scope.AddInstruction(
+                        OpCodes.Call,
+                        assemblyContext.CPtrConverter(typeInstance.GenericArguments.Single()));
+                    break;
+                case TypeSystemEx.FuncPtrFullTypeName:
+                    var funcPtrVariable = new VariableDefinition(UnderlyingType);
+                    scope.Method.Body.Variables.Add(funcPtrVariable);
+                    scope.AddInstruction(OpCodes.Ldloca, funcPtrVariable); // TODO: Use common mechanism to efficiently address local variables, use ldloca.s when necessary
+                    EmitExprAndGetPtr();
                     Instruction.Create(
-                        OpCodes.Newobj,
-                        context.FuncPtrConstructor(typeInstance.GenericArguments.Single())),
-                _ => throw new AssertException($"No conversion available for interop type {parent}.")
-            };
+                        OpCodes.Call,
+                        assemblyContext.FuncPtrConstructor(typeInstance.GenericArguments.Single()));
+                    break;
+                default:
+                    throw new AssertException($"No conversion available for interop type {parent}.");
+            }
+            return;
         }
 
         throw new AssertException(
