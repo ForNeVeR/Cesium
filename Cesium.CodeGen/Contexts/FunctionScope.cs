@@ -62,7 +62,17 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
         return variableDefinition;
     }
-    public ParameterInfo? GetParameterInfo(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name);
+    public ParameterInfo? GetParameterInfo(string name)
+    {
+        var parametersInfo = FunctionInfo.Parameters;
+        if (parametersInfo is null) return null;
+        if (name == "varargs" && parametersInfo.IsVarArg)
+        {
+            return new ParameterInfo(new Ir.Types.PointerType(this.CTypeSystem.Void), name);
+        }
+
+        return parametersInfo.Parameters.FirstOrDefault(p => p.Name == name);
+    }
 
     public ParameterDefinition ResolveParameter(int index)
     {

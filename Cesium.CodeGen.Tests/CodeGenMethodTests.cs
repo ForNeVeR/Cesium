@@ -361,10 +361,11 @@ int main()
 }");
 
     [Fact]
-    public void InvalidPointerWithIntSubtractionTest() => DoesNotCompile(@"int main() {
+    public void InvalidPointerWithIntSubtractionTest() => DoTest(@"int main() {
     int foo[10];
-    return &foo[10] - 123;
-}", "Operator Subtract is not supported for pointer/value operands");
+    int* diff = &foo[10] - 1;
+    return 1;
+}");
 
     [Fact]
     public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {

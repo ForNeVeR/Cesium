@@ -149,6 +149,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
                 TargetArchitectureSet.Bit64 => 8,
                 _ => throw new AssertException($"Architecture set not supported: {arch}.")
             },
+            PrimitiveTypeKind.Void => 1,
 
             _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };

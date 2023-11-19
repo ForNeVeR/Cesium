@@ -118,7 +118,7 @@ internal sealed class BinaryOperatorExpression : IExpression
                 );
             }
 
-            if (Operator != BinaryOperator.Add)
+            if (Operator != BinaryOperator.Add && Operator != BinaryOperator.Subtract)
             {
                 throw new CompilationException($"Operator {Operator} is not supported for pointer/value operands");
             }
