@@ -36,16 +36,12 @@ internal record InteropType(TypeReference UnderlyingType) : IType
 
     public void EmitConversion(IEmitScope scope, IExpression expression)
     {
-        void EmitExprAndGetPtr()
-        {
-            expression.EmitTo(scope);
-            scope.AddInstruction(OpCodes.Conv_I); // TODO: Should only emit if required.
-        }
+        expression.EmitTo(scope);
+        scope.AddInstruction(OpCodes.Conv_I); // TODO: Should only emit if required.
 
         var assemblyContext = scope.AssemblyContext;
         if (UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
         {
-            EmitExprAndGetPtr();
             scope.AddInstruction(OpCodes.Call, assemblyContext.VoidPtrConverter);
             return;
         }
@@ -56,18 +52,13 @@ internal record InteropType(TypeReference UnderlyingType) : IType
             switch (parent.FullName)
             {
                 case TypeSystemEx.CPtrFullTypeName:
-                    EmitExprAndGetPtr();
                     scope.AddInstruction(
                         OpCodes.Call,
                         assemblyContext.CPtrConverter(typeInstance.GenericArguments.Single()));
                     break;
                 case TypeSystemEx.FuncPtrFullTypeName:
-                    var funcPtrVariable = new VariableDefinition(UnderlyingType);
-                    scope.Method.Body.Variables.Add(funcPtrVariable);
-                    scope.AddInstruction(OpCodes.Ldloca, funcPtrVariable); // TODO: Use common mechanism to efficiently address local variables, use ldloca.s when necessary
-                    EmitExprAndGetPtr();
-                    Instruction.Create(
-                        OpCodes.Call,
+                    scope.AddInstruction(
+                        OpCodes.Newobj,
                         assemblyContext.FuncPtrConstructor(typeInstance.GenericArguments.Single()));
                     break;
                 default:
