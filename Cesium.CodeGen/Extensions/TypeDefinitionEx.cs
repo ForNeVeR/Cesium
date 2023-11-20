@@ -49,7 +49,7 @@ internal static class TypeDefinitionEx
         {
             var parameterDefinition = new ParameterDefinition(context.TypeSystem.Void.MakePointerType())
             {
-                Name = "varargs"
+                Name = "__varargs"
             };
             method.Parameters.Add(parameterDefinition);
         }

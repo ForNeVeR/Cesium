@@ -66,7 +66,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     {
         var parametersInfo = FunctionInfo.Parameters;
         if (parametersInfo is null) return null;
-        if (name == "varargs" && parametersInfo.IsVarArg)
+        if (name == "__varargs" && parametersInfo.IsVarArg)
         {
             return new ParameterInfo(new Ir.Types.PointerType(this.CTypeSystem.Void), name);
         }
