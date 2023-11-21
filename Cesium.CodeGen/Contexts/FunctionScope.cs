@@ -64,15 +64,9 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     }
     public ParameterInfo? GetParameterInfo(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name);
 
-    private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
-    public ParameterDefinition ResolveParameter(string name)
+    public ParameterDefinition ResolveParameter(int index)
     {
-        if (_parameterCache.TryGetValue(name, out var parameter))
-            return parameter;
-
-        parameter = Method.Parameters.FirstOrDefault(p => p.Name == name) ?? throw new AssertException($"Cannot resolve parameter with name name {name}");
-        _parameterCache.Add(name, parameter);
-        return parameter;
+        return Method.Parameters[index];
     }
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);

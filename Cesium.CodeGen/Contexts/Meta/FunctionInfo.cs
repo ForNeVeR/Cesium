@@ -14,6 +14,9 @@ internal record FunctionInfo(
     bool IsDefined,
     MethodReference? MethodReference = null)
 {
+    public ParametersInfo? Parameters { get; set; } = Parameters;
+    public StorageClass StorageClass { get; set; } = StorageClass;
+    public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
