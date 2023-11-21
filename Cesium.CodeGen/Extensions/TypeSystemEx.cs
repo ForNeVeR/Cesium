@@ -160,18 +160,31 @@ internal static class TypeSystemEx
             return type1 is PointerType pt && pt.ElementType.IsEqualTo(typeSystem.Void);
         }
 
-        if (!type2.IsGenericInstance) return false;
-        type2 = type2.GetElementType();
+        if (type2 is not GenericInstanceType type2Instance) return false;
+        var type2Definition = type2.GetElementType();
         if (type1.IsPointer)
         {
-            // TODO: Analyze the generic argument.
-            return type2.FullName == CPtrFullTypeName;
+            if (type2Definition.FullName != CPtrFullTypeName)
+            {
+                // Non-pointer gets compared to a pointer.
+                return false;
+            }
+
+            var pointed1 = ((PointerType)type1).ElementType;
+            var pointed2 = type2Instance.GenericArguments.Single();
+            return TypesCorrespond(typeSystem, pointed1, pointed2);
         }
 
         if (type1.IsFunctionPointer)
         {
-            // TODO: Analyze the generic argument.
-            return type2.FullName == FuncPtrFullTypeName;
+            if (type2Definition.FullName != FuncPtrFullTypeName)
+            {
+                // A function pointer gets compared to not a function pointer.
+                return false;
+            }
+
+            // TODO: Compare the function type signatures here.
+            return true;
         }
 
         throw new AssertException("Impossible: type1 should be either a pointer or a function pointer.");

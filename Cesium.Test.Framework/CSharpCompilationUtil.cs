@@ -15,10 +15,8 @@ public static class CSharpCompilationUtil
     private const string _projectName = "TestProject";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
-    // TODO: Should not be static, make a fixture.
     private static readonly SemaphoreSlim _testSemaphore = new(Environment.ProcessorCount);
 
-    // TODO: Support references
     public static async Task<string> CompileCSharpAssembly(
         ITestOutputHelper output,
         TargetRuntimeDescriptor runtime,
