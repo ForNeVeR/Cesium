@@ -64,7 +64,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     }
     public ParameterInfo? GetParameterInfo(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name);
 
-    private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
     public ParameterDefinition ResolveParameter(int index)
     {
         return Method.Parameters[index];
