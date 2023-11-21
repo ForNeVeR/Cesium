@@ -122,5 +122,5 @@ typedef struct
 {
     hostFunc foo;
 } foo;
-"""); // TODO: Check if the resulting field signature works on CLR at all
+""");
 }

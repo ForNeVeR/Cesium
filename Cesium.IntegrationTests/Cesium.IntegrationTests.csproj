@@ -25,4 +25,8 @@
       <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ClCompile Include="pointers\pointers_functions.c" />
+    </ItemGroup>
+
 </Project>
