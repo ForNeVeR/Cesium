@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
 
-// TODO: Make them run in parallel, as all the integration tests
+// TODO[#488]: Make them run in parallel, as all the integration tests
 public class CodeGenNetInteropTests : CodeGenTestBase
 {
     private readonly ITestOutputHelper _output;

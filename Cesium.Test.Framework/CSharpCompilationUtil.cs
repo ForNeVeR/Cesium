@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace Cesium.Test.Framework;
 
-// TODO: Make a normal disposable class to delete the whole directory in the end of the test.
+// TODO[#492]: Make a normal disposable class to delete the whole directory in the end of the test.
 public static class CSharpCompilationUtil
 {
     public static readonly TargetRuntimeDescriptor DefaultRuntime = TargetRuntimeDescriptor.Net60;

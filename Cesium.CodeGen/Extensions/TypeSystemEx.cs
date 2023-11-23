@@ -183,7 +183,7 @@ internal static class TypeSystemEx
                 return false;
             }
 
-            // TODO: Compare the function type signatures here.
+            // TODO[#490]: Compare the function type signatures here.
             return true;
         }
 

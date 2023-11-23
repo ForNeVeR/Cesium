@@ -107,8 +107,8 @@ struct Foo
     func x;
 };
 """);
-    // TODO: empty-paren-func ptr
-    // TODO: vararg-func ptr
+    // TODO[#487]: empty-paren-func ptr
+    // TODO[#487]: vararg-func ptr
 
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]

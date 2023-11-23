@@ -239,7 +239,7 @@ public class TranslationUnitContext
         {
             var areParametersValid =
                 implementation.Parameters.Count == parameters.Count
-                || declaration.Parameters.IsVarArg; // TODO: A better check for interop functions + vararg.
+                || declaration.Parameters.IsVarArg; // TODO[#487]: A better check for interop functions + vararg.
             if (!areParametersValid)
             {
                 throw new CompilationException(

@@ -37,7 +37,7 @@ internal record InteropType(TypeReference UnderlyingType) : IType
     public void EmitConversion(IEmitScope scope, IExpression expression)
     {
         expression.EmitTo(scope);
-        scope.AddInstruction(OpCodes.Conv_I); // TODO: Should only emit if required.
+        scope.AddInstruction(OpCodes.Conv_I); // TODO[#491]: Should only emit if required.
 
         var assemblyContext = scope.AssemblyContext;
         if (UnderlyingType.FullName == TypeSystemEx.VoidPtrFullTypeName)
