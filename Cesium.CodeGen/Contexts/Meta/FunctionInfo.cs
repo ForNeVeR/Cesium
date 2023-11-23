@@ -7,6 +7,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts.Meta;
 
+// TODO: This is confusing, make immutable.
 internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
