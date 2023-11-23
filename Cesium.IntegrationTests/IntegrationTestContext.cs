@@ -1,5 +1,4 @@
 using Cesium.Test.Framework;
-using Cesium.Test.Framework;
 using JetBrains.Annotations;
 using NeoSmart.AsyncLock;
 using Xunit.Abstractions;
