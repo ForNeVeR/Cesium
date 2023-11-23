@@ -188,7 +188,7 @@ public class AssemblyContext
         if (typeArgumentCount > 16)
         {
             throw new WipException(
-                WipException.ToDo,
+                493,
                 $"Mapping of function for argument count {typeArgumentCount} is not supported.");
         }
 

@@ -23,10 +23,10 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
 
         var (parameterInfos, isVoid, isVarArg) = Parameters;
         if (isVarArg)
-            throw new WipException(WipException.ToDo, $"A vararg function is not implemented, yet: {this}.");
+            throw new WipException(487, $"A vararg function is not implemented, yet: {this}.");
 
         if (parameterInfos.Count == 0 && !isVoid)
-            throw new WipException(WipException.ToDo, $"A function with an empty parameter list is not implemented, yet: {this}.");
+            throw new WipException(487, $"A function with an empty parameter list is not implemented, yet: {this}.");
 
         var arguments = parameterInfos.Select(p => p.Type.Resolve(context));
         return context.AssemblyContext.StandardDelegateType(returnType, arguments);
