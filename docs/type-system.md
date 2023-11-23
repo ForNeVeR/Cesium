@@ -29,6 +29,18 @@ This should be kept in sync with section **6.7.2 Type Specifiers** of the actual
 | `__nint`[^1]                                                                | `System.IntPtr`  |
 | `__nuint`[^1]                                                               | `System.UIntPtr` |
 
-All pointer types are mapped to the CLI pointers of the corresponding type.
+All the pointer types are mapped to the CLI pointers of the corresponding type on **dynamic**, **32b** and **64b** architecture sets.
+
+The **wide** architecture set supports mapping to raw pointers as well, but supports additional types that have architecture-independent size and memory alignment, according to the following table.
+
+| C type                                                 | CLI Type                            |
+|--------------------------------------------------------|-------------------------------------|
+| `void*`                                                | `Cesium.Runtime.VoidPtr`            |
+| Function pointer                                       | `Cesium.Runtime.FuncPtr<TDelegate>` |
+| `T*` (where `T` is not `void` and not a function type) | `Cesium.Runtime.CPtr<T>`            |
+
+Note that function and function pointer signatures (i.e. the arguments and the return types) still use raw pointers even in the **wide** architecture set, because this has no effect on memory requirement and alignment, and thus more type safety is preferred by default.
+
+To be compatible with both **wide** and other architecture sets, the Cesium.Runtime library uses `VoidPtr`, `CPtr<T>` and `FuncPtr<TDelegate>`, where appropriate, in all of its standard APIs.
 
 [^1]: Cesium-specific extensions.

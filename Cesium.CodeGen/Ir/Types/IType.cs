@@ -15,8 +15,14 @@ internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
 
+    /// <remarks>
+    /// For cases when a type gets resolved differently for a type member context. For example, a pointer will
+    /// recursively get resolved as a <c>CPtr</c> on a wide architecture.
+    /// </remarks>
+    TypeReference ResolveForTypeMember(TranslationUnitContext context) => Resolve(context);
+
     FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName) =>
-        new(fieldName, FieldAttributes.Public, Resolve(context));
+        new(fieldName, FieldAttributes.Public, ResolveForTypeMember(context));
 
     /// <summary>Determines the size of an object of this type in bytes, if possible.</summary>
     /// <param name="arch">Target architecture set.</param>

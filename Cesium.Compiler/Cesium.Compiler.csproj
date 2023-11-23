@@ -25,6 +25,7 @@
         </ProjectReference>
         <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
         <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+        <InternalsVisibleTo Include="Cesium.CodeGen.Tests" />
     </ItemGroup>
 
     <ItemGroup>

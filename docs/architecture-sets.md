@@ -25,6 +25,10 @@ Cesium aims to support the following architecture sets:
   Not every C construct allows to use dynamically-calculated size (in particular, it's impossible for pointer-dependent arrays embedded into structures), so this architecture doesn't support all the C standard. It still should be practical for many applications.
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.
-- **Wide** architecture **is not implemented, yet** (see issue [#354: Wide architecture support](https://github.com/ForNeVeR/Cesium/issues/354)), and uses the fixed pointer size of 64 bits on all computers. This allows it to cover all the features of the C standard, for the cost of some redundancy on 32-bit architectures, and slightly different method signatures for .NET interop.
+- **Wide** architecture uses the fixed pointer size of 64 bits on all computers. This allows it to cover all the features of the C standard, for the cost of some redundancy on 32-bit architectures, and slightly different method signatures for .NET interop.
 
   **This architecture is machine-independent** and results in producing of an Any CPU-targeting assembly.
+
+Specifically for the **wide** architecture, the types `VoidPtr`, `CPtr<T>` and `FuncPtr<TDelegate>` were introduced. They correspond to 64-bit pointers universally, and the **wide** architecture uses it in place of normal pointer types everywhere in the API. For cross-compatibility with any architecture, these types are also used in the Cesium.Runtime library. See [the type system documentation][docs.type-system] for more information.
+
+[docs.type-system]: type-system.md

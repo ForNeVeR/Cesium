@@ -9,6 +9,29 @@ internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : ITy
     public TypeReference Resolve(TranslationUnitContext context) =>
         throw new AssertException($"Function type {this} cannot be directly expressed in the byte code.");
 
+    /// <summary>Resolves a delegate type corresponding to this function's signature.</summary>
+    /// <remarks>
+    /// Most useful for interop, since every function gets resolved to a <see cref="Func{TResult}"/> or an
+    /// <see cref="Action{T}"/> corresponding to it.
+    /// </remarks>
+    public TypeReference ResolveAsDelegateType(TranslationUnitContext context)
+    {
+        var returnType = ReturnType.Resolve(context);
+
+        if (Parameters is null)
+            throw new CompilationException("Function parameters should not be null.");
+
+        var (parameterInfos, isVoid, isVarArg) = Parameters;
+        if (isVarArg)
+            throw new WipException(487, $"A vararg function is not implemented, yet: {this}.");
+
+        if (parameterInfos.Count == 0 && !isVoid)
+            throw new WipException(487, $"A function with an empty parameter list is not implemented, yet: {this}.");
+
+        var arguments = parameterInfos.Select(p => p.Type.Resolve(context));
+        return context.AssemblyContext.StandardDelegateType(returnType, arguments);
+    }
+
     public TypeReference ResolvePointer(TranslationUnitContext context)
     {
         var pointer = new FunctionPointerType

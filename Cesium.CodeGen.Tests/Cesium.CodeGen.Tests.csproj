@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="Verify.Xunit" Version="16.3.5" />
         <PackageReference Include="xunit" Version="2.4.1" />
@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
+      <ProjectReference Include="..\Cesium.Compiler\Cesium.Compiler.csproj" />
       <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
       <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
       <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />

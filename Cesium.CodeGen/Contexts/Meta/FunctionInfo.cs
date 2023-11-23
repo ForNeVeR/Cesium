@@ -7,16 +7,17 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts.Meta;
 
+// TODO[#489]: This is confusing, make immutable.
 internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
     StorageClass StorageClass,
-    bool IsDefined)
+    bool IsDefined,
+    MethodReference? MethodReference = null)
 {
     public ParametersInfo? Parameters { get; set; } = Parameters;
     public StorageClass StorageClass { get; set; } = StorageClass;
     public bool IsDefined { get; set; } = IsDefined;
-    public MethodReference? MethodReference { get; set; }
     public string? CliImportMember { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)

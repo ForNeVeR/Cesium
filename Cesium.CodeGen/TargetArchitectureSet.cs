@@ -16,5 +16,8 @@ public enum TargetArchitectureSet
     Bit32,
 
     /// <summary>An architecture with 64-bit pointers. Targets ARM64 and x86-64 CPUs.</summary>
-    Bit64
+    Bit64,
+
+    /// <summary>An architecture with 64-bit pointers (even on 32-bit runtime). Targets any CPUs.</summary>
+    Wide
 }

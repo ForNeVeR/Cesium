@@ -10,8 +10,11 @@ using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record TranslationUnitContext(AssemblyContext AssemblyContext, string Name)
+public class TranslationUnitContext
 {
+    public AssemblyContext AssemblyContext { get; }
+    public string Name { get; }
+
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
@@ -24,6 +27,12 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
     private GlobalConstructorScope? _initializerScope;
+
+    public TranslationUnitContext(AssemblyContext assemblyContext, string name)
+    {
+        AssemblyContext = assemblyContext;
+        Name = name;
+    }
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have
@@ -40,12 +49,12 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         var existingDeclaration = Functions.GetValueOrDefault(identifier);
         if (existingDeclaration is null)
         {
-            Functions.Add(identifier, functionInfo);
             if (functionInfo.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
-                functionInfo.MethodReference = method;
+                functionInfo = ProcessCliImport(functionInfo, method);
             }
+            Functions.Add(identifier, functionInfo);
         }
         else
         {
@@ -213,5 +222,57 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             Module.TypeSystem.Object);
         Module.Types.Add(type);
         return type;
+    }
+
+    private FunctionInfo ProcessCliImport(FunctionInfo declaration, MethodReference implementation)
+    {
+        return declaration with
+        {
+            MethodReference = implementation,
+            Parameters = declaration.Parameters is null ? null : declaration.Parameters with
+            {
+                Parameters = ProcessParameters(declaration.Parameters.Parameters)
+            }
+        };
+
+        List<ParameterInfo> ProcessParameters(ICollection<ParameterInfo> parameters)
+        {
+            var areParametersValid =
+                implementation.Parameters.Count == parameters.Count
+                || declaration.Parameters.IsVarArg; // TODO[#487]: A better check for interop functions + vararg.
+            if (!areParametersValid)
+            {
+                throw new CompilationException(
+                    $"Parameter count for function {declaration.CliImportMember} " +
+                    $"doesn't match the parameter count of imported CLI method {implementation.FullName}.");
+            }
+
+            return parameters.Zip(implementation.Parameters)
+                .Select(pair =>
+                {
+                    var (declared, actual) = pair;
+                    var type = WrapInteropType(actual.ParameterType);
+                    if (type == null) return declared;
+                    return declared with { Type = type };
+                }).ToList();
+        }
+
+        InteropType? WrapInteropType(TypeReference actual)
+        {
+            if (actual.FullName == TypeSystemEx.VoidPtrFullTypeName)
+                return new InteropType(actual);
+
+            if (actual.IsGenericInstance)
+            {
+                var parent = actual.GetElementType();
+                if (parent.FullName == TypeSystemEx.CPtrFullTypeName
+                    || parent.FullName == TypeSystemEx.FuncPtrFullTypeName)
+                {
+                    return new InteropType(actual);
+                }
+            }
+
+            return null;
+        }
     }
 }

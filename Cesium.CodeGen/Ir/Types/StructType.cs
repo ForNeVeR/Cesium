@@ -35,6 +35,7 @@ internal sealed class StructType : IGeneratedType
                 // TODO[#355]: enable explicit layout.
                 break;
             case TargetArchitectureSet.Bit64:
+            case TargetArchitectureSet.Wide:
                 structType.PackingSize = 8;
                 // TODO[#355]: enable explicit layout.
                 break;

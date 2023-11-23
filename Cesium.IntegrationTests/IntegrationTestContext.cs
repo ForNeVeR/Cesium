@@ -1,4 +1,3 @@
-using System.Reflection;
 using Cesium.Test.Framework;
 using JetBrains.Annotations;
 using NeoSmart.AsyncLock;
@@ -9,7 +8,6 @@ namespace Cesium.IntegrationTests;
 [UsedImplicitly]
 public class IntegrationTestContext : IAsyncDisposable
 {
-    public static readonly string SolutionRootPath = GetSolutionRoot();
     public const string BuildConfiguration = "Release";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
@@ -76,30 +74,19 @@ public class IntegrationTestContext : IAsyncDisposable
         await DotNetCliHelper.ShutdownBuildServer();
     }
 
-    private static string GetSolutionRoot()
-    {
-        var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var currentDirectory = assemblyDirectory;
-        while (currentDirectory != null)
-        {
-            if (File.Exists(Path.Combine(currentDirectory, "Cesium.sln")))
-                return currentDirectory;
-
-            currentDirectory = Path.GetDirectoryName(currentDirectory);
-        }
-
-        throw new Exception($"Could not find the solution directory going up from directory \"{assemblyDirectory}\".");
-    }
-
     private static async Task BuildRuntime(ITestOutputHelper output)
     {
-        var runtimeProjectFile = Path.Combine(SolutionRootPath, "Cesium.Runtime/Cesium.Runtime.csproj");
+        var runtimeProjectFile = Path.Combine(
+            TestStructureUtil.SolutionRootPath,
+            "Cesium.Runtime/Cesium.Runtime.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, runtimeProjectFile);
     }
 
     private static async Task BuildCompiler(ITestOutputHelper output)
     {
-        var compilerProjectFile = Path.Combine(SolutionRootPath, "Cesium.Compiler/Cesium.Compiler.csproj");
+        var compilerProjectFile = Path.Combine(
+            TestStructureUtil.SolutionRootPath,
+            "Cesium.Compiler/Cesium.Compiler.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, compilerProjectFile);
     }
 }

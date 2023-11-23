@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Fields:
+    method System.Int32 *(method System.Int32 *()) <typedef>foo::foo

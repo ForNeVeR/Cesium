@@ -11,7 +11,7 @@ namespace Cesium.Runtime;
 public unsafe static class StdLibFunctions
 {
     public const int RAND_MAX = 0x7FFFFFFF;
-    private static System.Random shared = new();
+    private static Random shared = new();
 
     [FixedAddressValueType]
     private static int errNo;
@@ -44,7 +44,7 @@ public unsafe static class StdLibFunctions
 
     public static int System(byte* command)
     {
-        string? shellCommand = StdIoFunctions.Unmarshal(command);
+        string? shellCommand = RuntimeHelpers.Unmarshal(command);
         if (shellCommand is null)
         {
             return 8 /*ENOEXEC*/;

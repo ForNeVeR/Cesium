@@ -46,7 +46,7 @@ public unsafe static class StdIoFunctions
     {
         try
         {
-            Console.WriteLine(Unmarshal(str));
+            Console.WriteLine(RuntimeHelpers.Unmarshal(str));
             return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
@@ -96,7 +96,7 @@ public unsafe static class StdIoFunctions
 
     public static int FPrintF(void* stream, byte* str, void* varargs)
     {
-        var formatString = Unmarshal(str);
+        var formatString = RuntimeHelpers.Unmarshal(str);
         if (formatString == null)
         {
             return -1;
@@ -172,7 +172,7 @@ public unsafe static class StdIoFunctions
                         consumedArgs++;
                     }
 
-                    string? stringValue = Unmarshal((byte*)((long*)varargs)[consumedArgs]);
+                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)((long*)varargs)[consumedArgs]);
                     if (precision == -1)
                     {
                         streamWriter.Write(stringValue?.Substring(0, Math.Max(0, Math.Min(stringValue.Length - 1, trim))));
@@ -181,7 +181,6 @@ public unsafe static class StdIoFunctions
                     {
                         streamWriter.Write(stringValue);
                     }
-
                     consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
