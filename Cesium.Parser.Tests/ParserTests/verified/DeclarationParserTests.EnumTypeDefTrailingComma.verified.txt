@@ -1,0 +1,45 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.StorageClassSpecifier, Cesium.Ast",
+      "Name": "typedef"
+    },
+    {
+      "$type": "Cesium.Ast.EnumSpecifier, Cesium.Ast",
+      "Identifier": null,
+      "StructDeclarations": [
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "TK_PUNCT",
+          "Constant": null
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "TK_NUM",
+          "Constant": null
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "TK_EOF",
+          "Constant": null
+        }
+      ]
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": null,
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+          "Identifier": "TokenKind",
+          "Base": null
+        }
+      },
+      "Initializer": null
+    }
+  ]
+}

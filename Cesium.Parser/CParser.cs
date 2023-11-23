@@ -508,12 +508,12 @@ public partial class CParser
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
         new(identifier.Text, null);
 
-    [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
-    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
-        new(identifier.Text, enumeratorList);
+    [Rule("enum_specifier: 'enum' Identifier? '{' enumerator_list '}'")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken? identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
+        new(identifier?.Text, enumeratorList);
 
-    [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
-    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
+    [Rule("enumerator_list: (enumerator (',' enumerator)*) ','?")]
+    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations, ICToken _) =>
         declarations.Values.ToImmutableArray();
 
     [Rule("enumerator: Identifier")]
@@ -731,6 +731,10 @@ public partial class CParser
     [Rule("initializer: assignment_expression")]
     private static Initializer MakeInitializer(Expression assignmentExpression) =>
         new AssignmentInitializer(assignmentExpression);
+
+    [Rule("initializer: '{' '}' ")]
+    private static Initializer MakeInitializer(IToken _, IToken __) =>
+        new ArrayInitializer(ImmutableArray<Initializer>.Empty);
 
     [Rule("initializer: '{' initializer_list '}' ")]
     private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>
