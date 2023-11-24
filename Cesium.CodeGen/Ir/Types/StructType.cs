@@ -110,4 +110,15 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
         return false;
     }
+
+    public override int GetHashCode()
+    {
+        var hash = (Identifier?.GetHashCode() ?? 0) ^ 0;
+        foreach (var m in Members)
+        {
+            hash ^= m.GetHashCode();
+        }
+
+        return hash;
+    }
 }
