@@ -22,7 +22,7 @@ using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
 using LiteralExpressionList = ImmutableArray<IToken<CTokenType>>;
 
-/// <remarks>See the section 6 of the C17 standard.</remarks>
+/// <remarks>See the section 6 of the C23 standard.</remarks>
 [Parser(typeof(CTokenType))]
 [SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
 public partial class CParser
