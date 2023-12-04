@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -24,16 +23,16 @@ public static unsafe class RuntimeHelpers
         byte* AllocateUtf8String(string s)
         {
             var bytes = encoding.GetBytes(s);
-            var buffer = (byte*)Marshal.AllocHGlobal(s.Length + 1);
+            var buffer = (byte*)Marshal.AllocHGlobal(bytes.Length + 1);
             Marshal.Copy(bytes, 0, (IntPtr)buffer, bytes.Length);
-            buffer[s.Length] = 0;
+            buffer[bytes.Length] = 0;
             return buffer;
         }
 
         // Last item should be a null pointer; the first one we'll allocate from the executable path, so + 2:
         var pointers = new byte*[args.Length + 2];
 
-        var executablePath = Assembly.GetEntryAssembly()?.Location ?? "";
+        var executablePath = Environment.GetCommandLineArgs().ElementAtOrDefault(0) ?? "";
         pointers[0] = AllocateUtf8String(executablePath);
         for (var i = 0; i < args.Length; ++i)
             pointers[i + 1] = AllocateUtf8String(args[i]);
@@ -51,6 +50,46 @@ public static unsafe class RuntimeHelpers
 
     public static void Exit(int exitCode)
     {
-        System.Environment.Exit(exitCode);
+        Environment.Exit(exitCode);
+    }
+
+    public static void* AllocateGlobalField(uint size)
+    {
+        return (void*)Marshal.AllocHGlobal(checked((int)size));
+    }
+
+    public static void FreeGlobalField(void* field)
+    {
+        Marshal.FreeHGlobal((IntPtr)field);
+    }
+
+    public static void InitializeCompound(void* source, void* target, uint size)
+    {
+        Buffer.MemoryCopy(source, target, size, size);
+    }
+
+    internal static string? Unmarshal(byte* str)
+    {
+#if NETSTANDARD
+        Encoding encoding = Encoding.UTF8;
+        int byteLength = 0;
+        byte* search = str;
+        while (*search != '\0')
+        {
+            byteLength++;
+            search++;
+        }
+
+        int stringLength = encoding.GetCharCount(str, byteLength);
+        string s = new string('\0', stringLength);
+        fixed (char* pTempChars = s)
+        {
+            encoding.GetChars(str, byteLength, pTempChars, stringLength);
+        }
+
+        return s;
+#else
+        return Marshal.PtrToStringUTF8((nint)str);
+#endif
     }
 }

@@ -1,4 +1,7 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
+using Cesium.Core;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
@@ -12,14 +15,46 @@ internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
 
-    FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName) =>
-        new(fieldName, FieldAttributes.Public, Resolve(context));
+    /// <remarks>
+    /// For cases when a type gets resolved differently for a type member context. For example, a pointer will
+    /// recursively get resolved as a <c>CPtr</c> on a wide architecture.
+    /// </remarks>
+    TypeReference ResolveForTypeMember(TranslationUnitContext context) => Resolve(context);
 
-    int SizeInBytes { get; }
+    FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName) =>
+        new(fieldName, FieldAttributes.Public, ResolveForTypeMember(context));
+
+    /// <summary>Determines the size of an object of this type in bytes, if possible.</summary>
+    /// <param name="arch">Target architecture set.</param>
+    /// <returns>The size if it was possible to determine. <c>null</c> otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    ///     Certain types (mostly pointers and derivatives) may not be able to determine their size in dynamic
+    ///     architecture.
+    /// </para>
+    /// <para>
+    ///     In this case, only <see cref="GetSizeInBytesExpression"/> would be available to get the size dynamically.
+    /// </para>
+    /// </remarks>
+    int? GetSizeInBytes(TargetArchitectureSet arch);
+
+    /// <summary>
+    /// Generates an expression to determine the type's size in bytes in runtime. This expression will leave the only
+    /// value of size (32-bit integer) on the execution stack.
+    /// </summary>
+    /// <remarks>For simple types, will emit a constant.</remarks>
+    IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
+    {
+        int size = GetSizeInBytes(arch) ?? throw new AssertException(
+                $"Cannot determine static size of type {this}, " +
+                $"and {nameof(GetSizeInBytesExpression)} method for dynamic calculation is not overridden.");
+        return new ConstantLiteralExpression(new IntegerConstant(size));
+    }
 }
 
 /// <summary>A generated type, i.e. a type that has some bytecode to be generated once.</summary>
 internal interface IGeneratedType : IType
 {
+    public string? Identifier { get; }
     TypeDefinition Emit(string name, TranslationUnitContext context);
 }

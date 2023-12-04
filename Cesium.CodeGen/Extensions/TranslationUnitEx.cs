@@ -1,16 +1,14 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using FunctionDefinition = Cesium.CodeGen.Ir.BlockItems.FunctionDefinition;
-using IBlockItem = Cesium.CodeGen.Ir.BlockItems.IBlockItem;
 
 namespace Cesium.CodeGen.Extensions;
 
 internal static class TranslationUnitEx
 {
-    public static IEnumerable<IBlockItem> ToIntermediate(this TranslationUnit translationUnit) =>
+    public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
             Ast.FunctionDefinition func => new IBlockItem[] { new FunctionDefinition(func) },
@@ -20,12 +18,13 @@ internal static class TranslationUnitEx
 
     private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym)
     {
-        sym.Deconstruct(out var xdeclaration);
-        var _declaration = IScopedDeclarationInfo.Of(xdeclaration);
-        switch (_declaration)
+        sym.Deconstruct(out var astDeclaration);
+        var wholeDeclaration = IScopedDeclarationInfo.Of(astDeclaration);
+        switch (wholeDeclaration)
         {
             case ScopedIdentifierDeclaration scopedDeclaration:
-                scopedDeclaration.Deconstruct(out var items);
+                var (storageClass, items) = scopedDeclaration;
+
                 foreach (var (declaration, initializer) in items)
                 {
                     var (type, identifier, cliImportMemberName) = declaration;
@@ -38,7 +37,7 @@ internal static class TranslationUnitEx
                             throw new CompilationException(
                                 $"Initializer expression for a function declaration isn't supported: {initializer}.");
 
-                        var functionDeclaration = new FunctionDeclaration(identifier, functionType, cliImportMemberName);
+                        var functionDeclaration = new FunctionDeclaration(identifier, storageClass, functionType, cliImportMemberName);
                         yield return functionDeclaration;
                         continue;
                     }
@@ -48,10 +47,46 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType) // TODO[#75]: Consider other type categories.
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType
+                        || (type is StructType varStructType && varStructType.Identifier != identifier))
                     {
-                        var variable = new VariableDefinition(identifier, type, initializer);
+                        var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
+                        continue;
+                    }
+
+                    if (type is EnumType enumType)
+                    {
+                        long currentValue = -1;
+                        foreach (var enumeratorDeclaration in enumType.Members)
+                        {
+                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
+                                    $"Enum type {enumType.Identifier} has enumerator without name");
+                            if (enumeratorDeclaration.Initializer is null)
+                            {
+                                currentValue++;
+                            }
+                            else
+                            {
+                                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                                if (constantValue is not IntegerConstant intConstant)
+                                {
+                                    throw new CompilationException(
+                                        $"Enumerator {enumeratorName} has non-integer initializer");
+                                }
+
+                                currentValue = intConstant.Value;
+                            }
+
+                            var variable = new EnumConstantDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+                            yield return variable;
+                        }
+                        continue;
+                    }
+
+                    if (type is StructType structType)
+                    {
+                        yield return new TagBlockItem(new[] { declaration });
                         continue;
                     }
 
@@ -63,7 +98,7 @@ internal static class TranslationUnitEx
                 yield return typeDefBlockItem;
                 break;
             default:
-                throw new WipException(212, $"Unknown kind of declaration: {_declaration}.");
+                throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
         }
     }
 }

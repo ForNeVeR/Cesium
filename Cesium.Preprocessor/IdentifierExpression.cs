@@ -1,9 +1,9 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
-internal class IdentifierExpression : IPreprocessorExpression
+internal sealed class IdentifierExpression : IPreprocessorExpression
 {
     public IdentifierExpression(string identifer)
     {
@@ -14,16 +14,23 @@ internal class IdentifierExpression : IPreprocessorExpression
 
     public string? EvaluateExpression(IMacroContext context)
     {
-        if (context.TryResolveMacro(this.Identifer, out var result))
+        string? lastValue = null;
+        var searchValue = this.Identifer;
+        do
         {
-            return result;
-        }
+            if (Regex.IsMatch(searchValue, $"^{Regexes.IntLiteral}$"))
+            {
+                return searchValue;
+            }
 
-        if (Regex.IsMatch(this.Identifer, Regexes.IntLiteral))
-        {
-            return this.Identifer;
-        }
+            if (context.TryResolveMacro(searchValue, out var parameters, out var macroReplacement))
+            {
+                searchValue = macroReplacement.SkipWhile(_ => _.Kind == CPreprocessorTokenType.WhiteSpace).FirstOrDefault()?.Text ?? "";
+                continue;
+            }
 
-        return result;
+            return lastValue;
+        }
+        while (true);
     }
 }

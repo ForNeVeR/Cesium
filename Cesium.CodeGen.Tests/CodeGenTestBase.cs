@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Test.Framework;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Yoakke.Streams;
@@ -15,38 +17,83 @@ public abstract class CodeGenTestBase : VerifyTestBase
 {
     protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
     {
-        var context = CreateAssembly(runtime);
-        GenerateCode(context, sources);
-        return EmitAssembly(context);
+        var (assembly, _) = GenerateAssembly(
+            sources,
+            runtime,
+            @namespace: "",
+            globalTypeFqn: "",
+            referencePaths: Array.Empty<string>());
+        return assembly;
     }
-    protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, string @namespace = "", string globalTypeFqn = "", params string[] sources)
+
+    protected static AssemblyDefinition GenerateAssembly(
+        TargetRuntimeDescriptor? runtime,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "", params string[] sources)
     {
-        var context = CreateAssembly(runtime, @namespace, globalTypeFqn);
+        var (assembly, _) = GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+        return assembly;
+    }
+
+    protected static (AssemblyDefinition, byte[]) GenerateAssembly(
+        string[] sources,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
+    {
+        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn, referencePaths);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
 
-    protected static void DoesNotCompile(string source, string expectedMessage)
+    protected static void DoesNotCompile(
+        [StringSyntax("cpp")] string source,
+        string expectedMessage,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "")
     {
-        DoesNotCompile<CompilationException>(source, expectedMessage);
+        DoesNotCompile<CompilationException>(source, expectedMessage, runtime, arch, @namespace, globalTypeFqn);
     }
 
-    protected static void DoesNotCompile<T>(string source, string expectedMessage) where T : CesiumException
+    protected static void DoesNotCompile<T>(
+        string source,
+        string expectedMessage,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "") where T : CesiumException
     {
-        var ex = Assert.Throws<T>(() => GenerateAssembly(default, source));
+        var ex = Assert.Throws<T>(() => GenerateAssembly(runtime, arch, @namespace, globalTypeFqn, source));
         Assert.Contains(expectedMessage, ex.Message);
     }
 
-    private static AssemblyContext CreateAssembly(TargetRuntimeDescriptor? targetRuntime, string @namespace = "", string globalTypeFqn = "")
+    private static AssemblyContext CreateAssembly(
+        TargetRuntimeDescriptor? targetRuntime,
+        TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
     {
-        CompilationOptions compilationOptions = new CompilationOptions(
-            targetRuntime ?? TargetRuntimeDescriptor.Net60,
+        var allReferences = (referencePaths ?? Array.Empty<string>()).ToList();
+        allReferences.Insert(0, typeof(Console).Assembly.Location);
+
+        CompilationOptions compilationOptions = new(
+            targetRuntime ?? CSharpCompilationUtil.DefaultRuntime,
+            targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
-            new[] { typeof(Console).Assembly.Location },
+            allReferences,
             @namespace,
-            globalTypeFqn);
+            globalTypeFqn,
+            Array.Empty<string>(),
+            Array.Empty<string>(),
+            ProducePreprocessedFile: false);
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);
@@ -65,11 +112,11 @@ public abstract class CodeGenTestBase : VerifyTestBase
             if (parser.TokenStream.Peek().Kind != CTokenType.End)
                 throw new ParseException($"Excessive output after the end of a translation unit at {lexer.Position}.");
 
-            context.EmitTranslationUnit(translationUnit.Ok.Value);
+            context.EmitTranslationUnit("testInput", translationUnit.Ok.Value);
         }
     }
 
-    private static AssemblyDefinition EmitAssembly(AssemblyContext context)
+    private static (AssemblyDefinition, byte[]) EmitAssembly(AssemblyContext context)
     {
         var assembly = context.VerifyAndGetAssembly();
 
@@ -77,10 +124,11 @@ public abstract class CodeGenTestBase : VerifyTestBase
         using var stream = new MemoryStream();
         assembly.Write(stream);
 
-        return assembly;
+        return (assembly, stream.ToArray());
     }
 
-    protected static Task VerifyTypes(AssemblyDefinition assembly)
+    [MustUseReturnValue]
+    protected static Task VerifyTypes(AssemblyDefinition assembly, params object[] parameters)
     {
         var result = new StringBuilder();
         foreach (var module in assembly.Modules)
@@ -89,15 +137,35 @@ public abstract class CodeGenTestBase : VerifyTestBase
             DumpTypes(module.Types, result, 1);
         }
 
-        return Verify(result, GetSettings());
+        return Verify(result, GetSettings(parameters));
     }
 
-    protected static Task VerifyMethods(TypeDefinition type)
+    [MustUseReturnValue]
+    protected static Task VerifyMethods(TypeDefinition type, params object[] parameters)
     {
         var result = new StringBuilder();
         DumpMethods(type, result);
 
-        return Verify(result, GetSettings());
+        return Verify(result, GetSettings(parameters));
+    }
+
+    [MustUseReturnValue]
+    protected static Task VerifyMethods(IEnumerable<TypeDefinition?> types, params object[] parameters)
+    {
+        var result = new StringBuilder();
+        int i = 0;
+        foreach (var type in types.Where(t => t is not null))
+        {
+            if (i != 0)
+            {
+                result.AppendLine();
+            }
+
+            DumpMethods(type!, result);
+            i++;
+        }
+
+        return Verify(result, GetSettings(parameters));
     }
 
     private static void DumpTypes(IEnumerable<TypeDefinition> types, StringBuilder result, int indent)

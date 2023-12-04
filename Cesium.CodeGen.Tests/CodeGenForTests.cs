@@ -1,7 +1,10 @@
+using JetBrains.Annotations;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenForTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source)
     {
         var assembly = GenerateAssembly(default, source);
@@ -49,5 +52,12 @@ public class CodeGenForTests : CodeGenTestBase
 {
     int i;
     for(;;) ++i;
+}");
+
+    [Fact]
+    public Task For_WithDeclaration() => DoTest(
+        @"int main()
+{
+    for(int i = 0; i < 10; ++i) ++i;
 }");
 }

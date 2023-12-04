@@ -1,73 +1,28 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
-using Cesium.CodeGen.Ir.Expressions.Constants;
-using Mono.Cecil.Cil;
-using ConstantExpression = Cesium.CodeGen.Ir.Expressions.ConstantExpression;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ForStatement : IBlockItem
+internal sealed class ForStatement : IBlockItem
 {
-    private readonly IExpression? _initExpression;
-    private readonly IExpression _testExpression;
-    private readonly IExpression? _updateExpression;
-    private readonly IBlockItem _body;
+    public IBlockItem? InitDeclaration { get; }
+    public IExpression? InitExpression { get; }
+    public IExpression? TestExpression { get; }
+    public IExpression? UpdateExpression { get; }
+    public IBlockItem Body { get; }
 
     public ForStatement(Ast.ForStatement statement)
     {
-        var (initExpression, testExpression, updateExpression, body) = statement;
-        _initExpression = initExpression?.ToIntermediate();
-        // 6.8.5.3.2 if testExpression is null it should be replaced by nonzero constant
-        _testExpression = testExpression?.ToIntermediate() ?? new ConstantExpression(new IntegerConstant("1"));
-        _updateExpression = updateExpression?.ToIntermediate();
-        _body = body.ToIntermediate();
-    }
+        var (initDeclaration, initExpression, testExpression, updateExpression, body) = statement;
+        InitDeclaration = initDeclaration?.ToIntermediate();
+        InitExpression = initExpression?.ToIntermediate();
 
-    private ForStatement(
-        IExpression? initExpression,
-        IExpression testExpression,
-        IExpression? updateExpression,
-        IBlockItem body)
-    {
-        _initExpression = initExpression;
-        _testExpression = testExpression;
-        _updateExpression = updateExpression;
-        _body = body;
-    }
+        if (InitDeclaration != null && InitExpression != null)
+            throw new CompilationException("for statement: can't have both init declaration and expression");
 
-    public IBlockItem Lower(IDeclarationScope scope)
-        => new ForStatement(
-            _initExpression?.Lower(scope),
-            _testExpression.Lower(scope),
-            _updateExpression?.Lower(scope),
-            _body.Lower(scope));
-
-    bool IBlockItem.HasDefiniteReturn => _body.HasDefiniteReturn;
-
-    public void EmitTo(IEmitScope scope)
-    {
-        var forScope = new ForScope(scope);
-
-        var bodyProcessor = forScope.Method.Body.GetILProcessor();
-        var instructions = bodyProcessor.Body.Instructions;
-        var stub = bodyProcessor.Create(OpCodes.Nop);
-
-        _initExpression?.EmitTo(forScope);
-        var brToTest = bodyProcessor.Create(OpCodes.Br, stub);
-        bodyProcessor.Append(brToTest);
-        var loopStartIndex = instructions.Count;
-        _body.EmitTo(forScope);
-        _updateExpression?.EmitTo(forScope);
-        var testStartIndex = instructions.Count;
-        _testExpression.EmitTo(forScope);
-        var testStart = instructions[testStartIndex];
-        brToTest.Operand = testStart;
-
-        var loopStart = instructions[loopStartIndex];
-        bodyProcessor.Emit(OpCodes.Brtrue, loopStart);
-
-        if (forScope.EndInstruction != null)
-            bodyProcessor.Append(forScope.EndInstruction);
+        TestExpression = testExpression?.ToIntermediate();
+        UpdateExpression = updateExpression?.ToIntermediate();
+        Body = body.ToIntermediate();
     }
 }

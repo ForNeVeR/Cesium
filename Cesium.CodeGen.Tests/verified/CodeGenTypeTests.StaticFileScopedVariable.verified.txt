@@ -1,0 +1,11 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::.cctor()
+      IL_0000: ldc.i4.s 123
+      IL_0002: stsfld System.Int32 testInput<Statics>::x
+      IL_0007: ret
+
+  Type: testInput<Statics>
+  Fields:
+    System.Int32 testInput<Statics>::x

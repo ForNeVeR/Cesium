@@ -1,0 +1,41 @@
+﻿{
+  "$type": "Cesium.Ast.SwitchStatement, Cesium.Ast",
+  "Expression": {
+    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+    "Constant": {
+      "Kind": "Identifier",
+      "Text": "x"
+    }
+  },
+  "Body": {
+    "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
+    "Block": [
+      {
+        "$type": "Cesium.Ast.CaseStatement, Cesium.Ast",
+        "Constant": {
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "0"
+          }
+        },
+        "Body": {
+          "$type": "Cesium.Ast.BreakStatement, Cesium.Ast"
+        }
+      },
+      {
+        "$type": "Cesium.Ast.CaseStatement, Cesium.Ast",
+        "Constant": {
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+          "Constant": {
+            "Kind": "IntLiteral",
+            "Text": "1"
+          }
+        },
+        "Body": {
+          "$type": "Cesium.Ast.BreakStatement, Cesium.Ast"
+        }
+      }
+    ]
+  }
+}

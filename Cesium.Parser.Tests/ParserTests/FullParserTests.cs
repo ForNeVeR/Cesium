@@ -138,6 +138,22 @@ int main()
  }");
 
     [Fact]
+    public Task PostfixVariableIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    x++;
+    return x;
+ }");
+
+    [Fact]
+    public Task PostfixConstantIncrementTest() => DoTest(@"int main()
+{
+    int x = 0;
+    x = 5++;
+    return x;
+ }");
+
+    [Fact]
     public Task SimpleStructDefinition() => DoTest(@"typedef struct { int x; } foo;");
 
     [Fact]
@@ -170,4 +186,10 @@ int main(void) { foo x; return x.x; }");
     [Fact]
     public Task StructUsageWithMemberAccessSet() => DoTest(@"typedef struct { int x; } foo;
 int main(void) { foo x; x.x = 42; return 0; }");
+
+    [Fact]
+    public Task StaticVariable() => DoTest(@"static int foo = 123;");
+
+    [Fact]
+    public Task StaticFunction() => DoTest(@"static int foo() { return 123; }");
 }

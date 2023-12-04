@@ -1,0 +1,23 @@
+﻿{
+  "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
+  "Expression": {
+    "$type": "Cesium.Ast.CastExpression, Cesium.Ast",
+    "TypeName": {
+      "$type": "Cesium.Ast.TypeName, Cesium.Ast",
+      "SpecifierQualifierList": [
+        {
+          "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+          "TypeName": "int"
+        }
+      ],
+      "AbstractDeclarator": null
+    },
+    "Target": {
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+      "Constant": {
+        "Kind": "IntLiteral",
+        "Text": "42"
+      }
+    }
+  }
+}

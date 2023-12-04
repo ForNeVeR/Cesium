@@ -45,6 +45,7 @@ internal enum PrimitiveTypeKind
 
     // This is band-aid type until we would be able perform lowering in controlled fashion.
     NativeInt,
+    NativeUInt
 }
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
@@ -90,11 +91,13 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => typeSystem.Int64,
             PrimitiveTypeKind.LongDouble => typeSystem.Double,
 
+            PrimitiveTypeKind.NativeUInt => typeSystem.UIntPtr,
+
             _ => throw new AssertException($"Primitive type not supported: {Kind}.")
         };
     }
 
-    public int SizeInBytes =>
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
         Kind switch
         {
             // Basic
@@ -132,6 +135,22 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.SignedLongLongInt => 8,
             PrimitiveTypeKind.LongDouble => 8,
 
+            PrimitiveTypeKind.NativeInt => arch switch
+            {
+                TargetArchitectureSet.Dynamic => null,
+                TargetArchitectureSet.Bit32 => 4,
+                TargetArchitectureSet.Bit64 => 8,
+                _ => throw new AssertException($"Architecture set not supported: {arch}.")
+            },
+            PrimitiveTypeKind.NativeUInt => arch switch
+            {
+                TargetArchitectureSet.Dynamic => null,
+                TargetArchitectureSet.Bit32 => 4,
+                TargetArchitectureSet.Bit64 => 8,
+                _ => throw new AssertException($"Architecture set not supported: {arch}.")
+            },
+            PrimitiveTypeKind.Void => 1,
+
             _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };
 
@@ -159,6 +178,7 @@ internal static class PrimitiveTypeInfo
     {
         { PrimitiveTypeKind.Char, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.SignedChar, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { PrimitiveTypeKind.UnsignedChar, (OpCodes.Ldind_U1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.Short, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.UnsignedShort, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.Int, (OpCodes.Ldind_I4, OpCodes.Stind_I4) },
@@ -166,6 +186,6 @@ internal static class PrimitiveTypeInfo
         { PrimitiveTypeKind.Float, (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
         { PrimitiveTypeKind.Long, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
         { PrimitiveTypeKind.UnsignedLong, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
-        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
+        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) }
     };
 }

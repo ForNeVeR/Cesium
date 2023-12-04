@@ -24,7 +24,7 @@
               },
               "TypeQualifiers": null,
               "Size": {
-                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "IntLiteral",
                   "Text": "1"
@@ -43,14 +43,14 @@
         "Left": {
           "$type": "Cesium.Ast.SubscriptingExpression, Cesium.Ast",
           "Base": {
-            "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
             "Constant": {
               "Kind": "Identifier",
               "Text": "a"
             }
           },
           "Index": {
-            "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
             "Constant": {
               "Kind": "IntLiteral",
               "Text": "0"
@@ -59,7 +59,7 @@
         },
         "Operator": "=",
         "Right": {
-          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
           "Constant": {
             "Kind": "IntLiteral",
             "Text": "0"

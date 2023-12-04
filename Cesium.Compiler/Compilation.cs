@@ -1,13 +1,14 @@
+using System.Collections.Immutable;
 using System.Text;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
 using Mono.Cecil;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Compiler;
 
@@ -18,7 +19,19 @@ internal static class Compilation
         string outputFilePath,
         CompilationOptions compilationOptions)
     {
+        if (compilationOptions.ProducePreprocessedFile)
+        {
+            foreach (var inputFilePath in inputFilePaths)
+            {
+                var content = await Preprocess(inputFilePath, compilationOptions);
+                Console.WriteLine(content);
+            }
+
+            return 0;
+        }
+
         Console.WriteLine($"Generating assembly {outputFilePath}.");
+
         var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
 
         foreach (var inputFilePath in inputFilePaths)
@@ -40,49 +53,69 @@ internal static class Compilation
             compilationOptions);
     }
 
-    private static Task<string> Preprocess(string compilationFileDirectory, TextReader reader)
+    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
         var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
                                  ?? throw new Exception("Cannot determine path to the compiler executable.");
 
         var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
-        var includeContext = new FileSystemIncludeContext(stdLibDirectory, compilationFileDirectory);
+        var includeDirectories = new[] { compilationFileDirectory }
+            .Concat(compilationOptions.AdditionalIncludeDirectories)
+            .ToImmutableArray();
+        var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
         var preprocessorLexer = new CPreprocessorLexer(reader);
         var definesContext = new InMemoryDefinesContext();
-        var preprocessor = new CPreprocessor(preprocessorLexer, includeContext, definesContext);
+        var outOfFileRange = new Yoakke.SynKit.Text.Range();
+        foreach (var define in compilationOptions.DefineConstants)
+        {
+            definesContext.DefineMacro(
+                define,
+                macroDefinition: new ObjectMacroDefinition(define),
+                replacement: new IToken<CPreprocessorTokenType>[]
+                {
+                    new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken)
+                });
+        }
+
+        var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
         return preprocessor.ProcessSource();
+    }
+
+    private static async Task<string> Preprocess(string inputFilePath, CompilationOptions compilationOptions)
+    {
+        var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
+        var compilationSourcePath = Path.GetFullPath(inputFilePath);
+
+        using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
+
+        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, compilationOptions);
+        return content;
     }
 
     private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
     {
-        var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
-
-        await using var input = new FileStream(inputFilePath, FileMode.Open);
-        using var reader = new StreamReader(input, Encoding.UTF8);
-
-        var content = await Preprocess(compilationFileDirectory, reader);
+        var content = await Preprocess(inputFilePath, context.CompilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
         if (translationUnitParseError.IsError)
         {
-            switch (translationUnitParseError.Error.Got)
+            throw translationUnitParseError.Error.Got switch
             {
-                case CToken token:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}.");
-                case char ch:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}.");
-                default:
-                    throw new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}.");
-            }
+                CToken token => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
+                char ch => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
+                _ => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}."),
+            };
         }
 
         var translationUnit = translationUnitParseError.Ok.Value;
 
-        if (parser.TokenStream.Peek().Kind != CTokenType.End)
-            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}.");
+        var firstUnprocessedToken = parser.TokenStream.Peek();
+        if (firstUnprocessedToken.Kind != CTokenType.End)
+            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}. Next token {firstUnprocessedToken.Text}.");
 
-        context.EmitTranslationUnit(translationUnit);
+        var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
+        context.EmitTranslationUnit(translationUnitName, translationUnit);
     }
 
     private static void SaveAssembly(

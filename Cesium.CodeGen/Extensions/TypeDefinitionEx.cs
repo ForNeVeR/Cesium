@@ -1,9 +1,9 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using System.Xml.Linq;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -38,7 +38,7 @@ internal static class TypeDefinitionEx
 
         foreach (var parameter in parameters)
         {
-            var (type, name) = parameter;
+            var (type, name, _) = parameter;
             var parameterDefinition = new ParameterDefinition(type.Resolve(context))
             {
                 Name = name
@@ -49,7 +49,7 @@ internal static class TypeDefinitionEx
         {
             var parameterDefinition = new ParameterDefinition(context.TypeSystem.Void.MakePointerType())
             {
-                Name = "varargs"
+                Name = "__varargs"
             };
             method.Parameters.Add(parameterDefinition);
         }
@@ -71,5 +71,17 @@ internal static class TypeDefinitionEx
     {
         return typeDefinition.Methods.SingleOrDefault(method => method.Name == methodName)
                ?? throw new CompilationException($"Cannot find method {methodName} on type {typeDefinition.FullName}");
+    }
+
+    public static FieldDefinition GetOrAddField(this TypeDefinition typeDefinition, TranslationUnitContext context, IType type, string name)
+    {
+        var field = typeDefinition.Fields.FirstOrDefault(f => f.Name == name);
+        if (field == null)
+        {
+            field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type.Resolve(context));
+            typeDefinition.Fields.Add(field);
+        }
+
+        return field;
     }
 }

@@ -58,6 +58,9 @@ if (1)
     public Task LogicalOrOperator() => DoTest("return 1 || 2;");
 
     [Fact]
+    public Task ConditionalOperator() => DoTest("return 1 ? 2 ? 3 : 4 ? 5 : 6 : 7;");
+
+    [Fact]
     public Task ForStatement_Full() => DoTest("for (i = 1; i < 0; ++i) ++i;");
 
     [Fact]
@@ -104,4 +107,33 @@ if (1)
 
     [Fact]
     public Task IndirectionSet() => DoTest("*x = 42;");
+
+    [Fact]
+    public Task TypeCast() => DoTest("(int)42;");
+
+    [Fact]
+    public Task SwitchStatement_Empty() => DoTest(@"switch(x) { }");
+
+    [Fact]
+    public Task SwitchStatement_OneCase() => DoTest(@"switch(x) { case 0: break; }");
+
+    [Fact]
+    public Task SwitchStatement_MultiCases() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+}");
+
+    [Fact]
+    public Task SwitchStatement_MultiCasesWithDefault() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1: break;
+    default: break;
+}");
+
+    [Fact]
+    public Task SwitchStatement_FallthroughCase() => DoTest(@"switch(x) {
+    case 0: break;
+    case 1:
+    default: break;
+}");
 }

@@ -1,10 +1,12 @@
 using System.Runtime.Versioning;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
 
 public class TargetRuntimeTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTargetRuntimeTest(TargetRuntimeDescriptor? targetRuntime)
     {
         var assembly = GenerateAssembly(targetRuntime, "int main() {}");
@@ -14,7 +16,6 @@ public class TargetRuntimeTests : CodeGenTestBase
         var frameworkName = (string)targetFrameworkAttribute.ConstructorArguments.Single().Value;
 
         var result = new StringBuilder();
-        result.AppendLine($"CoreLibrary: {assembly.MainModule.TypeSystem.CoreLibrary}");
         result.AppendLine($"TargetFrameworkAttribute.FrameworkName: {frameworkName}");
 
         var verify = Verify(result, GetSettings());

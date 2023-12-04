@@ -3,23 +3,47 @@
 
 int main(int argc, char *argv[])
 {
-    printf("test");
+    if (printf("test") != 4) {
+        return -1;
+    }
 
-    printf("%s\n", "myNum");
+    if (printf("%s\n", "myNum") != 6) {
+        return -2;
+    }
 
     // Print variables
     int intValue = 5;
-    printf("%d\n", intValue);
-    printf("%u\n", -1);
-    printf("%lu\n", -1);
+    if (printf("%d\n", intValue) != 2) {
+        return -3;
+    }
+
+    if (printf("%u\n", -1) != 11) {
+        return -4;
+    }
+
+    if (printf("%lu\n", -1) != 11) {
+        return -5;
+    }
+
+    if (printf("%i\n", -1) != 3) {
+        return -6;
+    }
 
     float floatValue = 5.99;
-    printf("%f\n", floatValue);
+    if (printf("%f\n", floatValue) != 9) {
+        return -7;
+    }
+
     double doubleValue = 2.04;
-    printf("%f\n", doubleValue);
+    if (printf("%f\n", doubleValue) != 9) {
+        return -8;
+    }
 
     char myLetter = 'D';
-    printf("%c\n%c", myLetter, '1');
+    if (printf("%c\n%c", myLetter, '1') != 3) {
+        return -9;
+    }
+
     // We cannot validate this automatically, but at least we can uncomment and check
     // that this produce appropriate results.
     //printf("%p", &doubleValue);

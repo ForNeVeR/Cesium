@@ -2,6 +2,9 @@ namespace Cesium.Preprocessor;
 
 public interface IIncludeContext
 {
-    ValueTask<TextReader> LookUpAngleBracedIncludeFile(string filePath);
-    ValueTask<TextReader> LookUpQuotedIncludeFile(string filePath);
+    bool ShouldIncludeFile(string filePath);
+    void RegisterGuardedFileInclude(string filePath);
+    string LookUpAngleBracedIncludeFile(string filePath);
+    string LookUpQuotedIncludeFile(string filePath);
+    TextReader OpenFileStream(string filePath);
 }

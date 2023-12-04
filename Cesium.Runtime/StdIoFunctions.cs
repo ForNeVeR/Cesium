@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
-#if NETSTANDARD
 using System.Text;
+#if !NETSTANDARD
+using System.Runtime.InteropServices;
 #endif
 
 namespace Cesium.Runtime;
@@ -10,35 +10,153 @@ namespace Cesium.Runtime;
 /// </summary>
 public unsafe static class StdIoFunctions
 {
-    public static void PutS(byte* str)
+    internal record StreamHandle
+    {
+        public required string FileMode { get; set; }
+        public Func<TextReader>? Reader { get; set; }
+        public Func<TextWriter>? Writer { get; set; }
+    }
+
+    internal static List<StreamHandle> Handles = new();
+
+    private const int StdIn = 0;
+
+    private const int StdOut = 1;
+
+    private const int StdErr = 2;
+
+    static StdIoFunctions()
+    {
+        Handles.Add(new StreamHandle()
+        {
+            FileMode = "r",
+            Reader = () => Console.In,
+        });
+        Handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Out,
+        });
+        Handles.Add(new StreamHandle()
+        {
+            FileMode = "w",
+            Writer = () => Console.Error,
+        });
+    }
+
+    public static int PutS(byte* str)
     {
         try
         {
-            Console.Write(Unmarshal(str));
-            // return 0; // TODO[#156]: Uncomment
+            Console.WriteLine(RuntimeHelpers.Unmarshal(str));
+            return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
         {
             const int EOF = -1; // TODO[#155]: Extract to some common place.
-            // return EOF; // TODO[#156]: Uncomment
+            return EOF;
+        }
+    }
+    public static int PutChar(byte character)
+    {
+        try
+        {
+            Console.Write((char)character);
+            return character;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
         }
     }
 
-    public static void PrintF(byte* str, void* varargs)
+    public static int PutC(byte character, void* stream)
     {
-        var formatString = Unmarshal(str);
+        try
+        {
+            var streamDescriptor = GetStreamHandle(stream);
+            if (streamDescriptor == null)
+            {
+                return -1;
+            }
+
+            streamDescriptor.Writer!().Write((char)character);
+            return character;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
+
+    public static int PrintF(byte* str, void* varargs)
+    {
+        return FPrintF((void*)(IntPtr)StdOut, str, varargs);
+    }
+
+    public static int FPrintF(void* stream, byte* str, void* varargs)
+    {
+        var formatString = RuntimeHelpers.Unmarshal(str);
         if (formatString == null)
         {
-            return;
+            return -1;
         }
+
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return -1;
+        }
+
+        var streamWriterAccessor = streamHandle.Writer;
+        if (streamWriterAccessor == null)
+        {
+            return -1;
+        }
+
+        var streamWriter = streamWriterAccessor();
 
         int currentPosition = 0;
         var formatStartPosition = formatString.IndexOf('%', currentPosition);
         int consumedArgs = 0;
+        int consumedBytes = 0;
         while (formatStartPosition >= 0)
         {
-            Console.Write(formatString.Substring(currentPosition, formatStartPosition - currentPosition));
+            var lengthTillPercent = formatStartPosition - currentPosition;
+            streamWriter.Write(formatString.Substring(currentPosition, lengthTillPercent));
+            consumedBytes += lengthTillPercent;
             int addition = 1;
+            int width = 0;
+            if (formatString[formatStartPosition + addition] == '0')
+            {
+                addition++;
+            }
+
+            while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+            {
+                width = width * 10 + (formatString[formatStartPosition + addition] - '0');
+                addition++;
+            }
+
+            int precision = 0; // 0 - not set, -1 - star
+            if (formatString[formatStartPosition + addition] == '.')
+            {
+                addition++;
+                if (formatString[formatStartPosition + addition] == '*')
+                {
+                    precision = -1;
+                    addition++;
+
+                    while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+                    {
+                        precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
+                        addition++;
+                    }
+                }
+            }
+
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
             if (formatString[formatStartPosition + addition] == 'l')
             {
@@ -49,31 +167,78 @@ public unsafe static class StdIoFunctions
             switch (formatSpecifier)
             {
                 case "s":
-                    Console.Write(Unmarshal((byte*)((long*)varargs)[consumedArgs]));
+                    int trim = -1;
+                    if (precision == -1)
+                    {
+                        trim = (int)((long*)varargs)[consumedArgs];
+                        consumedArgs++;
+                    }
+
+                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)((long*)varargs)[consumedArgs]);
+                    if (precision == -1)
+                    {
+                        streamWriter.Write(stringValue?.Substring(0, Math.Max(0, Math.Min(stringValue.Length - 1, trim))));
+                    }
+                    else
+                    {
+                        streamWriter.Write(stringValue);
+                    }
+                    consumedBytes += stringValue?.Length ?? 0;
                     consumedArgs++;
                     break;
                 case "c":
-                    Console.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    streamWriter.Write((char)(byte)((long*)varargs)[consumedArgs]);
+                    consumedBytes++;
                     consumedArgs++;
                     break;
                 case "d":
-                    Console.Write((int)((long*)varargs)[consumedArgs]);
+                case "ld":
+                case "i":
+                case "li":
+                    int intValue = (int)((long*)varargs)[consumedArgs];
+                    var intValueString = intValue.ToString();
+                    streamWriter.Write(intValueString);
+                    consumedBytes += intValueString.Length;
                     consumedArgs++;
                     break;
                 case "u":
                 case "lu":
-                    Console.Write((uint)((long*)varargs)[consumedArgs]);
+                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                    var uintValueString = uintValue.ToString();
+                    streamWriter.Write(uintValueString);
+                    consumedBytes += uintValueString.Length;
                     consumedArgs++;
                     break;
                 case "f":
                     var floatNumber = ((double*)varargs)[consumedArgs];
-                    Console.Write(floatNumber.ToString("F6"));
+                    string floatNumberString = floatNumber.ToString("F6");
+                    streamWriter.Write(floatNumberString);
+                    consumedBytes += floatNumberString.Length;
                     consumedArgs++;
                     break;
                 case "p":
                     nint pointerValue = ((nint*)varargs)[consumedArgs];
-                    Console.Write(pointerValue.ToString("X"));
+                    string pointerValueString = pointerValue.ToString("X");
+                    streamWriter.Write(pointerValueString);
+                    consumedBytes += pointerValueString.Length;
                     consumedArgs++;
+                    break;
+                case "x":
+                case "X":
+                    nuint hexadecimalValue = ((nuint*)varargs)[consumedArgs];
+                    if (hexadecimalValue != 0)
+                    {
+                        var targetFormat = "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}";
+                        // NOTE: without converting nuint to long, this was broken on .NET Framework
+                        var hexadecimalValueString = string.Format(targetFormat, (long)hexadecimalValue);
+                        streamWriter.Write(hexadecimalValueString);
+                        consumedBytes += hexadecimalValueString.Length;
+                        consumedArgs++;
+                    }
+                    break;
+                case "%":
+                    streamWriter.Write('%');
+                    consumedBytes += 1;
                     break;
                 default:
                     throw new FormatException($"Format specifier {formatSpecifier} is not supported");
@@ -83,10 +248,12 @@ public unsafe static class StdIoFunctions
             formatStartPosition = formatString.IndexOf('%', currentPosition);
         }
 
-        Console.Write(formatString.Substring(currentPosition));
+        string remainderString = formatString.Substring(currentPosition);
+        streamWriter.Write(remainderString);
+        return consumedBytes + remainderString.Length;
     }
 
-    private static string? Unmarshal(byte* str)
+    internal static string? Unmarshal(byte* str)
     {
 #if NETSTANDARD
         Encoding encoding = Encoding.UTF8;
@@ -99,7 +266,7 @@ public unsafe static class StdIoFunctions
         }
 
         int stringLength = encoding.GetCharCount(str, byteLength);
-        string s = new string('\0', stringLength);
+        string s = new('\0', stringLength);
         fixed (char* pTempChars = s)
         {
             encoding.GetChars(str, byteLength, pTempChars, stringLength);
@@ -109,5 +276,31 @@ public unsafe static class StdIoFunctions
 #else
         return Marshal.PtrToStringUTF8((nint)str);
 #endif
+    }
+
+    internal static byte* MarshalStr(string? str)
+    {
+        Encoding encoding = Encoding.UTF8;
+        if (str is null)
+        {
+            return null;
+        }
+
+        var bytes = encoding.GetBytes(str);
+        var storage = (byte*)StdLibFunctions.Malloc((nuint)bytes.Length + 1);
+        for (var i = 0; i < bytes.Length;i++)
+        {
+            storage[i] = bytes[i];
+        }
+
+        storage[bytes.Length] = 0;
+        return storage;
+    }
+
+    private static StreamHandle? GetStreamHandle(void* stream)
+    {
+        var handleIndex = (int)(IntPtr)stream;
+        var result = Handles.ElementAtOrDefault(handleIndex);
+        return result;
     }
 }

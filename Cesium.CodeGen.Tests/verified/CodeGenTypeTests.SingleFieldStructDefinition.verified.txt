@@ -1,6 +1,6 @@
 ﻿Module: Primary
   Type: <Module>
 
-  Type: foo
+  Type: <typedef>foo
   Fields:
-    System.Int32 foo::x
+    System.Int32 <typedef>foo::x

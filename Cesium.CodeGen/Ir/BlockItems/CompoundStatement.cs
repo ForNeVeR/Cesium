@@ -3,32 +3,20 @@ using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class CompoundStatement : IBlockItem
+internal record CompoundStatement : IBlockItem
 {
-    private readonly List<IBlockItem> _items;
+    public IEmitScope? EmitScope { get; }
 
-    private CompoundStatement(List<IBlockItem> items)
+    public CompoundStatement(List<IBlockItem> items, IEmitScope? emitScope = null)
     {
-        _items = items;
+        EmitScope = emitScope;
+        Statements = items;
     }
 
     public CompoundStatement(Ast.CompoundStatement statement)
-        : this(statement.Block.Select(x => x.ToIntermediate()).ToList())
+        : this(statement.Block.Select(x => x.ToIntermediate()).ToList(), null)
     {
     }
 
-    bool IBlockItem.HasDefiniteReturn => _items.Any(x => x.HasDefiniteReturn);
-
-    public IBlockItem Lower(IDeclarationScope scope)
-    {
-        return new CompoundStatement(_items.Select(blockItem => blockItem.Lower(scope)).ToList());
-    }
-
-    public void EmitTo(IEmitScope scope)
-    {
-        foreach (var item in _items)
-        {
-            item.EmitTo(scope);
-        }
-    }
+    internal List<IBlockItem> Statements { get; init; }
 }

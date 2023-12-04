@@ -1,15 +1,15 @@
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.Core;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class CTypeSystem
+internal sealed class CTypeSystem
 {
+    public IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
     public IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Int); // TODO[#179]: Figure out the right type.
     public IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
     public IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
+    public IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
     public IType Short { get; } = new PrimitiveType(PrimitiveTypeKind.Short);
     public IType UnsignedShort { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedShort);
     public IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
@@ -20,6 +20,7 @@ internal class CTypeSystem
     public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
     public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
     public IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
+    public IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
 
     public bool IsConversionAvailable(IType type, IType targetType)
     {

@@ -9,7 +9,7 @@
         "Left": {
           "$type": "Cesium.Ast.ComparisonBinaryOperatorExpression, Cesium.Ast",
           "Left": {
-            "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
             "Constant": {
               "Kind": "IntLiteral",
               "Text": "1"
@@ -17,7 +17,7 @@
           },
           "Operator": ">",
           "Right": {
-            "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
             "Constant": {
               "Kind": "IntLiteral",
               "Text": "2"
@@ -26,7 +26,7 @@
         },
         "Operator": "<",
         "Right": {
-          "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
           "Constant": {
             "Kind": "IntLiteral",
             "Text": "4"
@@ -35,7 +35,7 @@
       },
       "Operator": "<=",
       "Right": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "IntLiteral",
           "Text": "5"
@@ -44,7 +44,7 @@
     },
     "Operator": ">=",
     "Right": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "IntLiteral",
         "Text": "6"

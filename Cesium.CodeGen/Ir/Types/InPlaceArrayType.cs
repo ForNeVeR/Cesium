@@ -1,6 +1,7 @@
-using System.Runtime.CompilerServices;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -8,17 +9,27 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record InPlaceArrayType(IType Base, int Size) : IType
+internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context)
     {
-        return Base.Resolve(context).MakePointerType();
+        TypeReference baseType = Base.Resolve(context);
+        if (baseType.IsPointer)
+        {
+            return baseType;
+        }
+
+        return baseType.MakePointerType();
     }
 
     public FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName)
     {
+        var arch = context.AssemblyContext.ArchitectureSet;
+        int size = GetSizeInBytes(arch) ?? throw new CompilationException(
+                $"Cannot statically determine a size of type {this} for architecture set \"{arch}\". " +
+                $"This size is required to generate a field \"{fieldName}\" inside of a type \"{ownerType}\".");
         var itemType = Base.Resolve(context);
-        var bufferType = CreateFixedBufferType(context.Module, itemType, fieldName);
+        var bufferType = CreateFixedBufferType(context, itemType, fieldName, size);
         ownerType.NestedTypes.Add(bufferType);
 
         return new FieldDefinition(fieldName, FieldAttributes.Public, bufferType)
@@ -28,17 +39,19 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
         CustomAttribute GenerateCustomFieldAttribute()
         {
-            var fixedBufferCtor = typeof(FixedBufferAttribute).GetConstructor(new[] { typeof(Type), typeof(int) });
-            if (fixedBufferCtor == null)
-                throw new AssertException(
-                    "Cannot find a constructor with signature (Type, Int32) in type FixedBufferAttribute.");
+            var typeType = context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type"));
+            var fixedBufferAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.FixedBufferAttribute") ?? throw new AssertException(
+                    "Cannot find a type System.Runtime.CompilerServices.FixedBufferAttribute.");
+            var fixedBufferCtor = new MethodReference(".ctor", context.TypeSystem.Void, fixedBufferAttributeType);
+            fixedBufferCtor.Parameters.Add(new ParameterDefinition(typeType));
+            fixedBufferCtor.Parameters.Add(new ParameterDefinition(context.TypeSystem.Int32));
 
             return new CustomAttribute(context.Module.ImportReference(fixedBufferCtor))
             {
                 ConstructorArguments =
                 {
-                    new CustomAttributeArgument(context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type")), itemType),
-                    new CustomAttributeArgument(context.TypeSystem.Int32, SizeInBytes)
+                    new CustomAttributeArgument(typeType, itemType),
+                    new CustomAttributeArgument(context.TypeSystem.Int32, size)
                 }
             };
         }
@@ -46,23 +59,41 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
 
     public void EmitInitializer(IEmitScope scope)
     {
-        if (Base is not PrimitiveType)
-            throw new WipException(232, $"Array of complex type specifiers aren't supported, yet: {Base}");
-
-        var arraySizeInBytes = SizeInBytes;
-
         var method = scope.Method.Body.GetILProcessor();
-        method.Emit(OpCodes.Ldc_I4, arraySizeInBytes);
+        var expression = GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+        expression.EmitTo(scope);
         method.Emit(OpCodes.Conv_U);
-        method.Emit(OpCodes.Localloc);
+        if (scope is GlobalConstructorScope)
+        {
+            var allocateGlobalFieldMethod = scope.Context.GetRuntimeHelperMethod("AllocateGlobalField");
+            method.Emit(OpCodes.Call, allocateGlobalFieldMethod);
+        }
+        else
+        {
+            method.Emit(OpCodes.Localloc);
+        }
     }
 
-    public int SizeInBytes => Base.SizeInBytes * Size;
+    public int? GetSizeInBytes(TargetArchitectureSet arch) =>
+        Base.GetSizeInBytes(arch) * Size;
 
-    private TypeDefinition CreateFixedBufferType(
-        ModuleDefinition module,
+    public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
+    {
+        var constSize = GetSizeInBytes(arch);
+        if (constSize != null) return ConstantLiteralExpression.OfInt32(constSize.Value);
+
+        return new BinaryOperatorExpression(
+            Base.GetSizeInBytesExpression(arch),
+            BinaryOperator.Multiply,
+            ConstantLiteralExpression.OfInt32(Size)
+        );
+    }
+
+    private static TypeDefinition CreateFixedBufferType(
+        TranslationUnitContext context,
         TypeReference fieldType,
-        string fieldName)
+        string fieldName,
+        int sizeInBytes)
     {
         // An example of what C# does for fixed int x[20]:
         //
@@ -74,20 +105,25 @@ internal record InPlaceArrayType(IType Base, int Size) : IType
         //     public int FixedElementField;
         // }
 
-        var compilerGeneratedCtor = typeof(CompilerGeneratedAttribute).GetConstructor(Array.Empty<Type>());
+        ModuleDefinition module = context.Module;
+        var compilerGeneratedAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.CompilerGeneratedAttribute") ?? throw new AssertException(
+                "Cannot find a type System.Runtime.CompilerServices.CompilerGeneratedAttribute.");
+        var compilerGeneratedCtor = new MethodReference(".ctor", context.TypeSystem.Void, compilerGeneratedAttributeType);
         var compilerGeneratedAttribute = new CustomAttribute(module.ImportReference(compilerGeneratedCtor));
 
-        var unsafeValueTypeCtor = typeof(UnsafeValueTypeAttribute).GetConstructor(Array.Empty<Type>());
+        var unsafeValueTypeAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.UnsafeValueTypeAttribute") ?? throw new AssertException(
+                "Cannot find a type System.Runtime.CompilerServices.UnsafeValueTypeAttribute.");
+        var unsafeValueTypeCtor = new MethodReference(".ctor", context.TypeSystem.Void, unsafeValueTypeAttributeType);
         var unsafeValueTypeAttribute = new CustomAttribute(module.ImportReference(unsafeValueTypeCtor));
 
         return new TypeDefinition(
             "",
             $"<SyntheticBuffer>{fieldName}",
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.NestedPublic,
-            module.ImportReference(typeof(ValueType)))
+            module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")))
         {
             PackingSize = 0,
-            ClassSize = SizeInBytes,
+            ClassSize = sizeInBytes,
             CustomAttributes = { compilerGeneratedAttribute, unsafeValueTypeAttribute },
             Fields = { new FieldDefinition("FixedElementField", FieldAttributes.Public, fieldType) }
         };

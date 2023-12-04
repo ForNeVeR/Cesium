@@ -10,26 +10,37 @@ internal static class ExpressionEx
     public static IExpression ToIntermediate(this Ast.Expression ex) => ex switch
     {
         Ast.IdentifierExpression e => new IdentifierExpression(e),
-        Ast.ConstantExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
-        Ast.ConstantExpression e => new ConstantExpression(e),
+        Ast.StringLiteralListExpression e => new StringLiteralListExpression(e),
+        Ast.ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new IdentifierExpression(e),
+        Ast.ConstantLiteralExpression e => new ConstantLiteralExpression(e),
+        Ast.ParenExpression e => ToIntermediate(e.Contents),
 
+        Ast.TypeCastOrNamedFunctionCallExpression e => new TypeCastOrNamedFunctionCallExpression(e),
         Ast.FunctionCallExpression e => new FunctionCallExpression(e),
 
         // Unary operators:
-        Ast.PrefixIncrementExpression e => new PrefixIncrementExpression(e),
+        Ast.PrefixIncrementDecrementExpression e => new PrefixIncrementDecrementExpression(e),
         Ast.IndirectionExpression e => new IndirectionExpression(e),
         Ast.UnaryOperatorExpression e => new UnaryOperatorExpression(e),
+        Ast.CastExpression e => new TypeCastExpression(e),
+        Ast.IdentifierSizeOfOperatorExpression e => new IdentifierSizeOfOperatorExpression(e),
+        Ast.TypeNameSizeOfOperatorExpression e => new TypeNameSizeOfOperatorExpression(e),
 
         // Binary operators:
         Ast.AssignmentExpression e => new AssignmentExpression(e),
-        Ast.LogicalBinaryOperatorExpression e => new LogicalBinaryOperatorExpression(e),
-        Ast.ArithmeticBinaryOperatorExpression e => new ArithmeticBinaryOperatorExpression(e),
-        Ast.BitwiseBinaryOperatorExpression e => new BitwiseBinaryOperatorExpression(e),
-        Ast.ComparisonBinaryOperatorExpression e => new ComparisonBinaryOperatorExpression(e),
+        Ast.LogicalBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ArithmeticBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.BitwiseBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+        Ast.ComparisonBinaryOperatorExpression e => new BinaryOperatorExpression(e),
+
+        Ast.ConditionalExpression e => new ConditionalExpression(e),
 
         Ast.SubscriptingExpression e => new SubscriptingExpression(e),
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
+        Ast.PostfixIncrementDecrementExpression e => new PostfixIncrementDecrementExpression(e),
+
+        Ast.CommaExpression e => new CommaExpression(e),
 
         _ => throw new WipException(208, $"Expression not supported, yet: {ex}."),
     };

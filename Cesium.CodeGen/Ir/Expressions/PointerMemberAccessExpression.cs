@@ -3,11 +3,10 @@ using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class PointerMemberAccessExpression : IExpression, IValueExpression
+internal sealed class PointerMemberAccessExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
     private readonly IdentifierExpression _memberIdentifier;
@@ -43,6 +42,6 @@ internal class PointerMemberAccessExpression : IExpression, IValueExpression
             throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
 
         var valueType = _target.GetExpressionType(scope);
-        return new LValueField(_target, valueType, memberIdentifier.Identifier);
+        return new LValueField(_target, (PointerType)valueType, memberIdentifier.Identifier);
     }
 }

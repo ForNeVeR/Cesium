@@ -1,0 +1,8 @@
+﻿System.Int32 <Module>::foo(System.Int32* ints)
+  IL_0000: ldarg.0
+  IL_0001: ldc.i4.4
+  IL_0002: ldc.i4.0
+  IL_0003: mul
+  IL_0004: add
+  IL_0005: ldind.i4
+  IL_0006: ret

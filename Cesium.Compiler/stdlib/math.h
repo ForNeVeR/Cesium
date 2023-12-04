@@ -1,4 +1,4 @@
-
+#pragma once
 #include <stdlib.h>
 
 #if FLT_EVAL_METHOD == 0

@@ -128,7 +128,7 @@
             "Expression": {
               "$type": "Cesium.Ast.MemberAccessExpression, Cesium.Ast",
               "Target": {
-                "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "Identifier",
                   "Text": "x"

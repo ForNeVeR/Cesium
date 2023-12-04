@@ -1,9 +1,11 @@
 using Cesium.Core;
+using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenBreakStatementTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source)
     {
         var assembly = GenerateAssembly(default, source);

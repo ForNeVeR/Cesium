@@ -1,6 +1,8 @@
+using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Declarations;
@@ -14,13 +16,45 @@ internal interface IScopedDeclarationInfo
     public static IScopedDeclarationInfo Of(Declaration declaration)
     {
         var (specifiers, initDeclarators) = declaration;
-        if (initDeclarators == null)
-            throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
         if (specifiers.Length > 0 && specifiers[0] is StorageClassSpecifier { Name: "typedef" })
         {
+            if (initDeclarators == null)
+                throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
+
             return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
         }
+
+        var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
+        if (declarationSpecifiers.Count > 0 && (declarationSpecifiers[0] is StructOrUnionSpecifier || declarationSpecifiers[0] is EnumSpecifier))
+        {
+            if (initDeclarators == null)
+            {
+                Declarator? declarator = null;
+                return new ScopedIdentifierDeclaration(storageClass,
+                    declarationSpecifiers.Select(_ =>
+                    {
+                        var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
+                        return new InitializableDeclarationInfo(ld, null);
+                    }).ToImmutableArray());
+            }
+
+            var initializationDeclarators = initDeclarators.Value.SelectMany(id => declarationSpecifiers.Select(_ =>
+            {
+                var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
+                if (id.Initializer is AssignmentInitializer assignmentInitializer)
+                    return new InitializableDeclarationInfo(ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression));
+
+                if (id.Initializer is null)
+                    return new InitializableDeclarationInfo(ld, null);
+
+                throw new CompilationException($"Struct initializers are not supported.");
+            })).ToImmutableArray();
+            return new ScopedIdentifierDeclaration(storageClass, initializationDeclarators);
+        }
+
+        if (initDeclarators == null)
+            throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
         return IdentifierOf(specifiers, initDeclarators);
     }
@@ -45,11 +79,13 @@ internal interface IScopedDeclarationInfo
         IReadOnlyList<IDeclarationSpecifier> specifiers,
         IEnumerable<InitDeclarator> initDeclarators)
     {
+        var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
+
         var declarations = initDeclarators
-            .Select(id => IdentifierOf(specifiers, id))
+            .Select(id => IdentifierOf(declarationSpecifiers, id))
             .ToList();
 
-        return new ScopedIdentifierDeclaration(declarations);
+        return new ScopedIdentifierDeclaration(storageClass, declarations);
     }
 
     private static InitializableDeclarationInfo IdentifierOf(
@@ -57,17 +93,83 @@ internal interface IScopedDeclarationInfo
         InitDeclarator initDeclarator)
     {
         var (declarator, initializer) = initDeclarator;
-        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator);
-        var expression = initializer switch
-        {
-            null => null,
-            AssignmentInitializer ai => ai.Expression.ToIntermediate(),
-            _ => throw new WipException(225, $"Object initializer not supported, yet: {initializer}.")
-        };
+        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator, initializer);
+        var (type, _, _) = declarationInfo;
+        var expression = ConvertInitializer(type, initializer);
         return new InitializableDeclarationInfo(declarationInfo, expression);
+    }
+
+    private static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer)
+    {
+        if (initializer is null)
+        {
+            return null;
+        }
+
+        if (initializer is AssignmentInitializer ai)
+        {
+            return ai.Expression.ToIntermediate();
+        }
+
+        if (initializer is ArrayInitializer arrayInitializer)
+        {
+            if (type is null)
+            {
+                throw new CompilationException($"Type for array initializer unknown.");
+            }
+
+            if (type is not InPlaceArrayType inPlaceArrayType)
+            {
+                throw new CompilationException($"Only in-place array types are supported.");
+            }
+
+            var nestedInitializers = arrayInitializer.Initializers.Select(i => ConvertInitializer(inPlaceArrayType.Base, i)).ToImmutableArray();
+            var expression = new ArrayInitializerExpression(nestedInitializers);
+            return new CompoundInitializationExpression(type, expression);
+        }
+
+        throw new WipException(225, $"Object initializer not supported, yet: {initializer}.");
+    }
+
+    private static (StorageClass, List<IDeclarationSpecifier>) ExtractStorageClass(
+        IEnumerable<IDeclarationSpecifier> specifiers)
+    {
+        StorageClass? storageClass = null;
+        var declarationSpecifiers = new List<IDeclarationSpecifier>();
+        foreach (var specifier in specifiers)
+        {
+            if (specifier is not StorageClassSpecifier scs)
+            {
+                declarationSpecifiers.Add(specifier);
+                continue;
+            }
+
+            if (storageClass != null)
+                throw new CompilationException(
+                    $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
+
+            storageClass = scs.Name switch
+            {
+                "static" => StorageClass.Static,
+                "extern" => StorageClass.Extern,
+                _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
+            };
+        }
+
+        return (storageClass ?? StorageClass.Auto, declarationSpecifiers);
     }
 }
 
 internal record TypeDefDeclaration(ICollection<LocalDeclarationInfo> Types) : IScopedDeclarationInfo;
-internal record ScopedIdentifierDeclaration(ICollection<InitializableDeclarationInfo> Items) : IScopedDeclarationInfo;
+internal record ScopedIdentifierDeclaration(
+    StorageClass StorageClass,
+    ICollection<InitializableDeclarationInfo> Items
+) : IScopedDeclarationInfo;
 internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, IExpression? Initializer);
+
+internal enum StorageClass
+{
+    Static,
+    Auto,
+    Extern,
+}

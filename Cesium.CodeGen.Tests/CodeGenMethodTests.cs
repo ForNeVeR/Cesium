@@ -1,15 +1,30 @@
 using Cesium.Core;
+using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenMethodTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source)
     {
         var assembly = GenerateAssembly(default, source);
 
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
+    }
+
+    [MustUseReturnValue]
+    private static Task DoTest(string source1, string source2)
+    {
+        var assembly = GenerateAssembly(default, source1, source2);
+
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
     }
 
     [Fact]
@@ -94,6 +109,12 @@ int main() { foo x,x2; x2.x=0; }");
 ");
 
     [Fact]
+    public Task ReturnWithoutArgument() => DoTest(@"void console_read()
+{
+    return;
+}");
+
+    [Fact]
     public void IncorrectReturnTypeDoesNotCompile() => DoesNotCompile(@"int foo(void);
 void foo(void) {}", "Incorrect return type");
 
@@ -117,13 +138,13 @@ __cli_import(""System.Console::Clear"")
 void console_beep(void);", "Function console_beep already defined as as CLI-import with System.Void System.Console::Beep().");
 
     [Fact]
-    public void CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
+    public Task CanHaveTwoCliImportDeclarations() => DoTest(@"__cli_import(""System.Console::Read"")
 int console_read(void);
 __cli_import(""System.Console::Read"")
 int console_read(void);");
 
     [Fact]
-    public void VarargCall() => DoTest(@"void console_read(int arg, ...);
+    public Task VarargCall() => DoTest(@"void console_read(int arg, ...);
 
 void console_read(int arg, ...)
 {
@@ -137,14 +158,23 @@ void test()
 }");
 
     [Fact]
-    public void ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
+    public Task TypeDefDeclaration() => DoTest(@"typedef void FILE;
+FILE* console_read(FILE* stream);
+
+FILE* console_read(FILE* stream)
+{
+    return 0;
+}");
+
+    [Fact]
+    public Task ImplicitVarargDeclarationCanBeIgnored() => DoTest(@"void console_read();
 
 void console_read()
 {
 }");
 
     [Fact]
-    public void ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
+    public Task ImplicitVarargDefinitionCanBeIgnored() => DoTest(@"void console_read(void);
 
 void console_read()
 {
@@ -165,12 +195,18 @@ void console_read(int x, ...)
 }", "Function console_read declared without varargs but defined with varargs.");
 
     [Fact]
-    public void CanHaveTwoFunctionDeclarations() => DoTest(@"
+    public Task CanHaveTwoFunctionDeclarations() => DoTest(@"
 int console_read(void);
 
 int console_read(void);
 
 int console_read(void) { return 0; }");
+
+    [Fact]
+    public Task CanHaveTwoFunctionDeclarationsWithDifferentParameterNames() => DoTest(@"
+int console_read(int argc);
+
+int console_read(int __argc) { return 0; }");
 
     [Fact]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
@@ -298,11 +334,18 @@ int main()
 }", "Function foo has no return statement.");
 
     [Fact]
+    public Task ConsumeUnusedResult() => DoTest(@"
+int test () { return 1; }
+int main()
+{
+    test();
+}");
+
+    [Fact]
     public Task StructSubscriptionTest() => DoTest(@"typedef struct
 {
     int fixedArr[4];
 } foo;
-
 int main()
 {
     foo x;
@@ -310,4 +353,148 @@ int main()
     return x.fixedArr[3];
 }
 ");
+
+    [Fact]
+    public Task StructArraySubscriptionTest() => DoTest(@"typedef struct { int x; int y; } foo;
+
+int main()
+{
+    foo a[10];
+    a[1].x = 42;
+    return a[1].x;
+}
+");
+
+    [Fact]
+    public Task ValidPointerSubtractionTest() => DoTest(@"int main() {
+    int foo[10];
+    return &foo[10] - &foo[1];
+}");
+
+    [Fact]
+    public void ValidPointerWithIntSubtractionTest() => DoTest(@"int main() {
+    int foo[10];
+    int* diff = &foo[10] - 1;
+    return 1;
+}");
+
+    [Fact]
+    public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {
+    int a;
+} bar;
+
+int main() {
+    int foo[10];
+    bar* qux = (bar*) 123;
+    return &foo[10] - qux;
+}", "Invalid pointer subtraction - pointers are referencing different base types");
+
+    [Fact]
+    public Task StaticMethod() => DoTest(@"static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDeclaration() => DoTest(@"static int main();
+
+int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StaticSpecificedDuringDefinition() => DoTest(@"int main();
+
+static int main()
+{
+    int x = 0;
+    ++x;
+    return x + 1;
+}");
+
+    [Fact]
+    public Task StructParametersFromDifferentModules() => DoTest(@"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);  ", @"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);
+
+int console_read(const struct struct1* s) {
+    return s->x;
+}");
+
+    [Fact]
+    public Task EnumParametersFromDifferentModules() => DoTest(@"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);  ", @"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);
+
+int console_read(enum enum1 s) {
+    return 111;
+}");
+
+    [Fact]
+    public Task FunctionPointerCallTest() => DoTest(@"int foo(int a) { return a; }
+
+int main()
+{
+    int (*fooptr)(int) = &foo;
+
+    return fooptr(123);
+}");
+
+    [Fact]
+    public void NonFunctionPointerCallTest() => DoesNotCompile(@"int foo(int a) { return a; }
+
+int main()
+{
+    void *fooptr = &foo;
+
+    return fooptr(123);
+}", "Attempted to call non-function pointer");
+
+    [Fact]
+    public Task StructParameters() => DoTest(@"
+struct struct1 {
+    int x;
+};
+
+int console_read(struct struct1* __s);
+
+int console_read(struct struct1* s) {
+    return s->x;
+}");
+
+    // TODO [#196]
+    /* [Fact]
+    public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
+
+int main()
+{
+    int (*fooptr)(int, ...) = &foo;
+
+    return fooptr(123, 456);
+}"); */
 }

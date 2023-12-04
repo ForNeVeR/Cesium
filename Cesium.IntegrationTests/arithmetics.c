@@ -8,5 +8,16 @@ int main(void)
     x += 1;
     ++x;
     x *= 2;
+
+    int z = 100;
+    if (z / 2 != 50) {
+        return -2;
+    }
+
+    --z;
+    if (z != 99) {
+        return -3;
+    }
+
     return x + 2;
 }

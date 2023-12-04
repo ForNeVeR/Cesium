@@ -1,11 +1,16 @@
 ﻿{
   "$type": "Cesium.Ast.ForStatement, Cesium.Ast",
+  "InitDeclaration": null,
   "InitExpression": null,
   "TestExpression": null,
   "UpdateExpression": {
-    "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+    "$type": "Cesium.Ast.PrefixIncrementDecrementExpression, Cesium.Ast",
+    "PrefixOperator": {
+      "Kind": "Increment",
+      "Text": "++"
+    },
     "Target": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "Identifier",
         "Text": "i"
@@ -15,9 +20,13 @@
   "Body": {
     "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
     "Expression": {
-      "$type": "Cesium.Ast.PrefixIncrementExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.PrefixIncrementDecrementExpression, Cesium.Ast",
+      "PrefixOperator": {
+        "Kind": "Increment",
+        "Text": "++"
+      },
       "Target": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "Identifier",
           "Text": "i"

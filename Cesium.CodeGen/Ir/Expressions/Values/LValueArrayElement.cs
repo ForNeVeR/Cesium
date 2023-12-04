@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueArrayElement : ILValue
+internal sealed class LValueArrayElement : ILValue
 {
     private readonly IValue _array;
     private readonly IExpression _index;
@@ -20,7 +20,7 @@ internal class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
 
-        var (loadOp, _) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
+        var (loadOp, _) = GetElementOpcodes();
         scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
@@ -33,22 +33,39 @@ internal class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
         value.EmitTo(scope);
-        var (_, storeOp) = PrimitiveTypeInfo.Opcodes[GetElementType().Kind];
+        var (_, storeOp) = GetElementOpcodes();
         scope.Method.Body.GetILProcessor().Emit(storeOp);
+    }
+
+    private (OpCode, OpCode) GetElementOpcodes()
+    {
+        var elementType = GetElementType();
+        if (elementType is PrimitiveType primitive)
+        {
+            return PrimitiveTypeInfo.Opcodes[primitive.Kind];
+        }
+
+        if (elementType is PointerType)
+        {
+            return (OpCodes.Ldind_I, OpCodes.Stind_I);
+        }
+
+        throw new InvalidOperationException("Arrays of structs are not supported");
     }
 
     public IType GetValueType()
         => _array.GetValueType();
 
-    private PrimitiveType GetElementType()
+    private IType GetElementType()
     {
-        InPlaceArrayType? type = GetValueType() as InPlaceArrayType;
-        if (type == null)
+        var valueType = GetValueType();
+        var primitiveType = GetBaseType(valueType);
+        if (primitiveType is InPlaceArrayType or PointerType)
         {
-            throw new AssertException("Array type expected.");
+            return GetBaseType(primitiveType);
         }
 
-        return (PrimitiveType)type.Base;
+        return primitiveType;
     }
 
     private void EmitPointerMoveToElement(IEmitScope scope)
@@ -57,9 +74,29 @@ internal class LValueArrayElement : ILValue
         _index.EmitTo(scope);
         var method = scope.Method.Body.GetILProcessor();
         method.Emit(OpCodes.Conv_I);
-        var elementSize = PrimitiveTypeInfo.Size[GetElementType().Kind];
-        method.Emit(OpCodes.Ldc_I4, elementSize);
+        var elementSize = GetElementType().GetSizeInBytes(scope.AssemblyContext.ArchitectureSet);
+        if (elementSize.HasValue)
+        {
+            method.Emit(OpCodes.Ldc_I4, elementSize.Value);
+        }
+        else
+        {
+            method.Emit(OpCodes.Sizeof, scope.Module.TypeSystem.IntPtr);
+        }
+
         method.Emit(OpCodes.Mul);
         method.Emit(OpCodes.Add);
+    }
+
+    private static IType GetBaseType(IType valueType)
+    {
+        var baseType = valueType switch
+        {
+            InPlaceArrayType arrayType => arrayType.Base,
+            PointerType pointerType => pointerType.Base,
+            _ => throw new AssertException("Array or pointer type expected.")
+        };
+
+        return baseType;
     }
 }

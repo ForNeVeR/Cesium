@@ -5,7 +5,7 @@
     "Left": {
       "$type": "Cesium.Ast.IndirectionExpression, Cesium.Ast",
       "Target": {
-        "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
         "Constant": {
           "Kind": "Identifier",
           "Text": "x"
@@ -14,7 +14,7 @@
     },
     "Operator": "=",
     "Right": {
-      "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
       "Constant": {
         "Kind": "IntLiteral",
         "Text": "42"

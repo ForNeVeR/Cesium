@@ -1,17 +1,24 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Emitting;
+using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Contexts;
 
 public class AssemblyContext
 {
     internal AssemblyDefinition Assembly { get; }
+    public TargetArchitectureSet ArchitectureSet { get; }
     internal AssemblyDefinition MscorlibAssembly { get; }
     internal AssemblyDefinition CesiumRuntimeAssembly { get; }
     public ModuleDefinition Module { get; }
@@ -20,8 +27,9 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-    private readonly Dictionary<string, IType> _globalFields = new();
-    internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
+    private readonly Dictionary<string, VariableInfo> _globalFields = new();
+
+    public CompilationOptions CompilationOptions { get; }
 
     public static AssemblyContext Create(
         AssemblyNameDefinition name,
@@ -31,21 +39,20 @@ public class AssemblyContext
         var module = assembly.MainModule;
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
-        var targetRuntime = compilationOptions.TargetRuntime ?? TargetRuntimeDescriptor.Net60;
+        var targetRuntime = compilationOptions.TargetRuntime;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
-        module.AssemblyReferences.Add(targetRuntime.GetSystemAssemblyReference());
 
         return assemblyContext;
     }
 
-    public void EmitTranslationUnit(Ast.TranslationUnit translationUnit)
+    public void EmitTranslationUnit(string name, TranslationUnit translationUnit)
     {
         var nodes = translationUnit.ToIntermediate();
-        var context = new TranslationUnitContext(this);
+        var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
-        nodes = nodes.Select(node => node.Lower(scope));
+        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node));
         foreach (var node in nodes)
-            node.EmitTo(scope);
+            BlockItemEmitting.EmitCode(scope, node);
     }
 
     /// <summary>Do final code generation tasks, analogous to linkage.</summary>
@@ -64,10 +71,24 @@ public class AssemblyContext
     public const string ConstantPoolTypeName = "<ConstantPool>";
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
-    private readonly Dictionary<string, FieldReference> _stringConstantHolders = new();
+    private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
+
+    private readonly TypeReference _runtimeCPtr;
+    private readonly ConversionMethodCache _cPtrConverterCache;
+    public MethodReference CPtrConverter(TypeReference argument) =>
+        _cPtrConverterCache.GetOrImportMethod(argument);
+
+    public TypeReference RuntimeVoidPtr { get; }
+    private readonly Lazy<MethodReference> _voidPtrConverter;
+    public MethodReference VoidPtrConverter => _voidPtrConverter.Value;
+
+    private readonly TypeReference _runtimeFuncPtr;
+    private readonly ConversionMethodCache _funcPtrConstructorCache;
+    public MethodReference FuncPtrConstructor(TypeReference argument) =>
+        _funcPtrConstructorCache.GetOrImportMethod(argument);
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -75,10 +96,13 @@ public class AssemblyContext
         CompilationOptions compilationOptions)
     {
         Assembly = assembly;
+        ArchitectureSet = compilationOptions.TargetArchitectureSet;
         Module = module;
+        CompilationOptions = compilationOptions;
+
         MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
         CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
-        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).ToArray();
+        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).Distinct().ToArray();
         _constantPool = new(
             () =>
             {
@@ -107,31 +131,102 @@ public class AssemblyContext
         {
             GlobalType = Module.GetType("<Module>");
         }
+
+        TypeDefinition GetRuntimeType(string typeName) =>
+            CesiumRuntimeAssembly.GetType(typeName) ??
+            throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
+
+        _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
+        _cPtrConverterCache = new ConversionMethodCache(
+            _runtimeCPtr,
+            ReturnType: _runtimeCPtr.MakeGenericInstanceType(_runtimeCPtr.GenericParameters.Single()),
+            "op_Implicit",
+            Module);
+
+        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
+        _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
+
+        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
+        _funcPtrConstructorCache = new ConversionMethodCache(
+            _runtimeFuncPtr,
+            ReturnType: null,
+            ".ctor",
+            Module);
+
+        _importedActionDelegates = new("System", "Action", Module);
+        _importedFuncDelegates = new("System", "Func", Module);
+
+        MethodReference GetImplicitCastOperator(string typeName)
+        {
+            var type = GetRuntimeType(typeName);
+            return Module.ImportReference(type.Methods.Single(m => m.Name == "op_Implicit"));
+        }
     }
 
-    internal void AddGlobalField(string name, IType type)
+    public TypeReference RuntimeCPtr(TypeReference typeReference)
     {
-        if (_globalFields.ContainsKey(name))
-            throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
-
-        _globalFields.Add(name, type);
+        return _runtimeCPtr.MakeGenericInstanceType(typeReference);
     }
 
-    public FieldDefinition ResolveGlobalField(string name, TranslationUnitContext context)
+    public TypeReference RuntimeFuncPtr(TypeReference delegateTypeReference)
+    {
+        return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
+    }
+
+    private readonly GenericDelegateTypeCache _importedActionDelegates;
+    private readonly GenericDelegateTypeCache _importedFuncDelegates;
+
+    /// <summary>
+    /// Resolves a standard delegate type (i.e. an <see cref="Action"/> or a <see cref="Func{TResult}"/>), depending on
+    /// the return type.
+    /// </summary>
+    public TypeReference StandardDelegateType(TypeReference returnType, IEnumerable<TypeReference> arguments)
+    {
+        var isAction = returnType == Module.TypeSystem.Void;
+        var typeArguments = (isAction ? arguments : arguments.Append(returnType)).ToArray();
+        var typeArgumentCount = typeArguments.Length;
+        if (typeArgumentCount > 16)
+        {
+            throw new WipException(
+                493,
+                $"Mapping of function for argument count {typeArgumentCount} is not supported.");
+        }
+
+        var delegateCache = isAction ? _importedActionDelegates : _importedFuncDelegates;
+        var delegateType = delegateCache.GetDelegateType(typeArguments.Length);
+        return typeArguments.Length == 0
+            ? delegateType
+            : delegateType.MakeGenericInstanceType(typeArguments);
+    }
+
+    internal VariableInfo? GetGlobalField(string identifier)
+    {
+        if (_globalFields.TryGetValue(identifier, out var value)) return value;
+
+        return null;
+    }
+
+    internal void AddAssemblyLevelField(string name, Ir.Declarations.StorageClass storageClass, IType type)
+    {
+        if (_globalFields.TryGetValue(name, out var globalField))
+        {
+            if (globalField.StorageClass != Ir.Declarations.StorageClass.Extern && storageClass != Ir.Declarations.StorageClass.Extern)
+                throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+
+            return;
+        }
+
+        _globalFields.Add(name, new (name, storageClass, type, null));
+    }
+
+    public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)
     {
         if (!_globalFields.TryGetValue(name, out var type))
         {
-            throw new CompilationException($"Cannot find a global field \"{name}\".");
+            return null;
         }
 
-        var field = GlobalType.Fields.FirstOrDefault(f => f.Name == name);
-        if (field == null)
-        {
-            field = new FieldDefinition(name, FieldAttributes.Public | FieldAttributes.Static, type.Resolve(context));
-            GlobalType.Fields.Add(field);
-        }
-
-        return field;
+        return GlobalType.GetOrAddField(context, type.Type, name);
     }
 
     /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>
@@ -157,18 +252,24 @@ public class AssemblyContext
 
     public FieldReference GetConstantPoolReference(string stringConstant)
     {
-        if (_stringConstantHolders.TryGetValue(stringConstant, out var field))
-            return field;
-
         var encoding = Encoding.UTF8;
         var bufferSize = encoding.GetByteCount(stringConstant) + 1;
         var data = new byte[bufferSize];
         var writtenBytes = encoding.GetBytes(stringConstant, data);
         Debug.Assert(writtenBytes == bufferSize - 1);
+        return GetConstantPoolReference(data);
+    }
 
+    public FieldReference GetConstantPoolReference(byte[] dataConstant)
+    {
+        var wrapper = new ByteArrayWrapper(dataConstant);
+        if (_dataConstantHolders.TryGetValue(wrapper, out var field))
+            return field;
+
+        var bufferSize = dataConstant.Length;
         var type = GetStubType(bufferSize);
-        field = GenerateFieldForStringConstant(type, data);
-        _stringConstantHolders.Add(stringConstant, field);
+        field = GenerateFieldForDataConstant(type, dataConstant);
+        _dataConstantHolders.Add(wrapper, field);
 
         return field;
     }
@@ -196,12 +297,12 @@ public class AssemblyContext
         return type;
     }
 
-    private FieldReference GenerateFieldForStringConstant(
+    private FieldReference GenerateFieldForDataConstant(
         TypeReference stubStructType,
         byte[] contentWithTerminatingZero)
     {
-        var number = _stringConstantHolders.Count;
-        var fieldName = $"ConstStringBuffer{number}";
+        var number = _dataConstantHolders.Count;
+        var fieldName = $"ConstDataBuffer{number}";
 
         var field = new FieldDefinition(fieldName, FieldAttributes.Static | FieldAttributes.InitOnly, stubStructType)
         {
@@ -211,5 +312,26 @@ public class AssemblyContext
         var constantPool = _constantPool.Value;
         constantPool.Fields.Add(field);
         return field;
+    }
+
+    private struct ByteArrayWrapper
+    {
+        private readonly byte[] _value;
+        private int? _hash;
+
+        public ByteArrayWrapper(byte[] value)
+        {
+            _value = value;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is ByteArrayWrapper other && _value.AsSpan().SequenceEqual(other._value);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hash ??= StructuralComparisons.StructuralEqualityComparer.GetHashCode(_value);
+        }
     }
 }

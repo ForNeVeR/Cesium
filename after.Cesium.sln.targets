@@ -1,0 +1,10 @@
+﻿<Project InitialTargets="WorkAroundMSBuild2064">
+    <Target Name="WorkAroundMSBuild2064">
+        <!-- Work around https://github.com/Microsoft/msbuild/issues/2064 by
+             removing *.proj from the generated solution metaproject. -->
+        <ItemGroup>
+            <ProjectReference Remove="%(ProjectReference.Identity)"
+                              Condition="'@(ProjectReference->'%(Extension)')' == '.proj'" />
+        </ItemGroup>
+    </Target>
+</Project>

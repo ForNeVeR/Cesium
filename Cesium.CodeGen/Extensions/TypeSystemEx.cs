@@ -4,11 +4,16 @@ using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using PointerType = Mono.Cecil.PointerType;
 
 namespace Cesium.CodeGen.Extensions;
 
 internal static class TypeSystemEx
 {
+    public const string CPtrFullTypeName = "Cesium.Runtime.CPtr`1";
+    public const string VoidPtrFullTypeName = "Cesium.Runtime.VoidPtr";
+    public const string FuncPtrFullTypeName = "Cesium.Runtime.FuncPtr`1";
+
     public static MethodReference MethodLookup(
         this TranslationUnitContext context,
         string memberName,
@@ -73,8 +78,8 @@ internal static class TypeSystemEx
     {
         var declParamCount = parameters switch
         {
-            {IsVoid: true} => 0,
-            {IsVarArg: true} => parameters.Parameters.Count + 1,
+            { IsVoid: true } => 0,
+            { IsVarArg: true } => parameters.Parameters.Count + 1,
             _ => parameters.Parameters.Count
         };
 
@@ -85,7 +90,7 @@ internal static class TypeSystemEx
         }
 
         var declReturnReified = returnType.Resolve(context);
-        if (declReturnReified.FullName != method.ReturnType.FullName)
+        if (!TypesCorrespond(context.TypeSystem, declReturnReified, method.ReturnType))
         {
             similarMethods.Add((method, $"Returns types do not match: {declReturnReified.Name} in declaration, {method.ReturnType.Name} in source."));
             return false;
@@ -99,7 +104,7 @@ internal static class TypeSystemEx
             var srcParam = methodParameters[i];
             var srcParamType = srcParam.ParameterType;
 
-            if (declParamType.FullName != srcParamType.FullName)
+            if (!TypesCorrespond(context.TypeSystem, declParamType, srcParamType))
             {
                 similarMethods.Add((method, $"Type of argument #{i} does not match: {declParamType} in declaration, {srcParamType} in source."));
                 return false;
@@ -132,6 +137,59 @@ internal static class TypeSystemEx
         return true;
     }
 
+    /// <summary>Determines whether the types correspond to each other.</summary>
+    /// <remarks>
+    /// This tries to handle the pointer interop between the arch-independent pointer types introduced by the Cesium
+    /// compatibility model and the actual runtime pointer types.
+    /// </remarks>
+    private static bool TypesCorrespond(TypeSystem typeSystem, TypeReference type1, TypeReference type2)
+    {
+        // let type 1 to be pointer out of these two
+        if (type2.IsPointer || type2.IsFunctionPointer) (type1, type2) = (type2, type1);
+        var isType1AnyPointer = type1.IsPointer || type1.IsFunctionPointer;
+        var isType2AnyPointer = type2.IsPointer || type2.IsFunctionPointer;
+        if (!isType1AnyPointer || isType2AnyPointer)
+        {
+            // If type1 is not a pointer, then we don't need to use the compatibility model for this type pair.
+            // If type2 is a pointer, then type1 is also a pointer, and so no compatibility is required as well.
+            return type1.FullName == type2.FullName;
+        }
+
+        if (type2.FullName.Equals(VoidPtrFullTypeName))
+        {
+            return type1 is PointerType pt && pt.ElementType.IsEqualTo(typeSystem.Void);
+        }
+
+        if (type2 is not GenericInstanceType type2Instance) return false;
+        var type2Definition = type2.GetElementType();
+        if (type1.IsPointer)
+        {
+            if (type2Definition.FullName != CPtrFullTypeName)
+            {
+                // Non-pointer gets compared to a pointer.
+                return false;
+            }
+
+            var pointed1 = ((PointerType)type1).ElementType;
+            var pointed2 = type2Instance.GenericArguments.Single();
+            return TypesCorrespond(typeSystem, pointed1, pointed2);
+        }
+
+        if (type1.IsFunctionPointer)
+        {
+            if (type2Definition.FullName != FuncPtrFullTypeName)
+            {
+                // A function pointer gets compared to not a function pointer.
+                return false;
+            }
+
+            // TODO[#490]: Compare the function type signatures here.
+            return true;
+        }
+
+        throw new AssertException("Impossible: type1 should be either a pointer or a function pointer.");
+    }
+
     private static string SimilarMethodsMessage(string name, List<(MethodDefinition, string)> similarMethods)
     {
         return $"Cannot find an appropriate overload for CLI-imported function {name}. Candidates:\n"
@@ -151,22 +209,26 @@ internal static class TypeSystemEx
         return t.IsEqualTo(ts.SignedChar)
             || t.IsEqualTo(ts.Short)
             || t.IsEqualTo(ts.Int)
-            || t.IsEqualTo(ts.Long);
+            || t.IsEqualTo(ts.Long)
+            || t.IsEqualTo(ts.NativeInt);
     }
 
     public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
     {
         return t.IsEqualTo(ts.Bool)
             || t.IsEqualTo(ts.Char)
+            || t.IsEqualTo(ts.UnsignedChar)
             || t.IsEqualTo(ts.UnsignedShort)
             || t.IsEqualTo(ts.UnsignedInt)
-            || t.IsEqualTo(ts.UnsignedLong);
+            || t.IsEqualTo(ts.UnsignedLong)
+            || t.IsEqualTo(ts.NativeUInt);
     }
 
     public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
     public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t);
+    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || ts.IsEnum(t);
     public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Bool);
+    public static bool IsEnum(this CTypeSystem ts, IType t) => t is EnumType;
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
@@ -184,8 +246,9 @@ internal static class TypeSystemEx
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] {ts.SignedChar, ts.Short, ts.Int, ts.Long};
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong};
+        var signedTypes = new[] { ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt };
+        var unsignedTypes = new[] { ts.Char, ts.UnsignedChar, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt };
+        // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
         var bSignedRank = RankOf(b, signedTypes);
@@ -222,7 +285,7 @@ internal static class TypeSystemEx
 
         int? RankOf(IType t, IType[] family)
         {
-            for(var i = 0; i < family.Length; i++)
+            for (var i = 0; i < family.Length; i++)
                 if (t.IsEqualTo(family[i]))
                     return i;
             return null;
@@ -238,18 +301,21 @@ internal static class TypeSystemEx
     public static MethodReference GetRuntimeHelperMethod(this TranslationUnitContext context, string helperMethod)
     {
         var runtimeHelpersType = context.GetRuntimeHelperType();
-        var method = runtimeHelpersType.FindMethod(helperMethod);
-        if (method == null)
-        {
-            throw new AssertException($"RuntimeHelper {helperMethod} cannot be found.");
-        }
-
+        var method = runtimeHelpersType.FindMethod(helperMethod) ?? throw new AssertException($"RuntimeHelper {helperMethod} cannot be found.");
         return context.Module.ImportReference(method);
     }
 
     public static MethodReference GetArrayCopyToMethod(this TranslationUnitContext context)
     {
-        return context.Module.ImportReference(typeof(byte*[]).GetMethod("CopyTo", new[] { typeof(Array), typeof(int) }));
+        var typeSystem = context.Module.TypeSystem;
+        var arrayRef = context.Module.ImportReference(new TypeReference("System", "Array", context.Module, typeSystem.CoreLibrary));
+        var copyToMethodRef = new MethodReference("CopyTo", typeSystem.Void, arrayRef);
+        copyToMethodRef.HasThis = true;
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(arrayRef));
+        copyToMethodRef.Parameters.Add(new ParameterDefinition(typeSystem.Int32));
+        copyToMethodRef = context.Module.ImportReference(copyToMethodRef);
+
+        return context.Module.ImportReference(copyToMethodRef);
     }
     public static MethodReference GetTargetFrameworkAttributeConstructor(this TranslationUnitContext context)
     {

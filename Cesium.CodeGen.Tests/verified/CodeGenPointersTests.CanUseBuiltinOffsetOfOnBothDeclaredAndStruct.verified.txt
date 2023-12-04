@@ -1,0 +1,11 @@
+﻿System.Int32 <Module>::m()
+  Locals:
+    a_s V_0
+  IL_0000: ldloca V_0
+  IL_0004: ldflda System.Int32 a_s::x
+  IL_0009: conv.i4
+  IL_000a: ldloca V_0
+  IL_000e: ldflda System.Int32 a_s::x
+  IL_0013: conv.i4
+  IL_0014: add
+  IL_0015: ret

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Cesium.CodeGen;
 using CommandLine;
 using Mono.Cecil;
 
@@ -18,11 +19,14 @@ public class Arguments
     [Value(0)]
     public IList<string> InputFilePaths { get; init; } = null!;
 
-    [Option('o', "out", Required = true)]
+    [Option('o', "out")]
     public string OutputFilePath { get; init; } = null!;
 
     [Option("framework", Default = TargetFrameworkKind.Net)]
     public TargetFrameworkKind Framework { get; init; }
+
+    [Option("arch", Default = TargetArchitectureSet.Dynamic)]
+    public TargetArchitectureSet TargetArchitectureSet { get; init; }
 
     [Option("modulekind")]
     public ModuleKind? ModuleKind { get; init; } = null!;
@@ -44,5 +48,20 @@ public class Arguments
 
     [Option("runtime", HelpText = "Sets path to Cesium C Runtime assembly")]
     public string? CesiumCRuntime { get; init; }
+
+    [Option('O', HelpText = "Set the optimization level")]
+    public int OptimizationLevel { get; init; } = 0;
+
+    [Option('W', HelpText = "Enable warnings set")]
+    public string WarningsSet { get; init; } = "";
+
+    [Option('E', HelpText = "Produce preprocessed file")]
+    public bool ProducePreprocessedFile { get; init; } = false;
+
+    [Option('I', HelpText = "Adds include directory of header files")]
+    public IEnumerable<string> IncludeDirectories { get; init; } = Array.Empty<string>();
+
+    [Option('D', HelpText = "Define constants for preprocessor")]
+    public IEnumerable<string> DefineConstant { get; init; } = Array.Empty<string>();
 
 }

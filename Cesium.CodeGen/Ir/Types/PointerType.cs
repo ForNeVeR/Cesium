@@ -1,13 +1,23 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal record PointerType(IType Base) : IType
+internal sealed record PointerType(IType Base) : IType
 {
-    public virtual TypeReference Resolve(TranslationUnitContext context)
+    public static int? SizeInBytes(TargetArchitectureSet arch) => arch switch
+    {
+        TargetArchitectureSet.Dynamic => null,
+        TargetArchitectureSet.Bit32 => 4,
+        TargetArchitectureSet.Bit64 => 8,
+        TargetArchitectureSet.Wide => 8,
+        _ => throw new AssertException($"Unknown architecture set: {arch}.")
+    };
+
+    public TypeReference Resolve(TranslationUnitContext context)
     {
         if (Base is FunctionType ft)
             return ft.ResolvePointer(context);
@@ -15,9 +25,29 @@ internal record PointerType(IType Base) : IType
         return Base.Resolve(context).MakePointerType();
     }
 
-    public virtual int SizeInBytes => throw new WipException(132, "Could not calculate size yet.");
+    public TypeReference ResolveForTypeMember(TranslationUnitContext context) =>
+        context.AssemblyContext.ArchitectureSet switch
+        {
+            TargetArchitectureSet.Wide => Base switch
+            {
+                FunctionType rawFunc => context.AssemblyContext.RuntimeFuncPtr(rawFunc.ResolveAsDelegateType(context)),
+                PrimitiveType { Kind: PrimitiveTypeKind.Void } => context.AssemblyContext.RuntimeVoidPtr,
+                _ => context.AssemblyContext.RuntimeCPtr(Base.ResolveForTypeMember(context)),
+            },
+            _ => Resolve(context)
+        };
 
-    // explicit impl while Size not implemented
-    public override string ToString()
-        => $"PointerType {{ Base = {Base} }}";
+    public int? GetSizeInBytes(TargetArchitectureSet arch) => SizeInBytes(arch);
+
+    public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
+    {
+        var constSize = GetSizeInBytes(arch);
+        if (constSize != null)
+            return ConstantLiteralExpression.OfInt32(constSize.Value);
+
+        if (arch != TargetArchitectureSet.Dynamic)
+            throw new AssertException($"Architecture {arch} shouldn't enter dynamic pointer size calculation.");
+
+        return new SizeOfOperatorExpression(this);
+    }
 }

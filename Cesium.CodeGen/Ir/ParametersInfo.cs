@@ -39,21 +39,22 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
     }
 }
 
-internal record ParameterInfo(IType Type, string? Name)
+internal record ParameterInfo(IType Type, string? Name, int Index)
 {
-    public static ParameterInfo Of(ParameterDeclaration declaration)
+    public static ParameterInfo Of(ParameterDeclaration declaration, int index)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
-        if (abstractDeclarator != null)
-            throw new WipException(
-                234,
-                $"Parameter with abstract declarator is not supported, yet: {declaration}.");
-
-        var (type, identifier, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
+        var (type, identifier, cliImportMemberName) = (declarator, abstractDeclarator) switch
+        {
+            (null, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator),
+            (_, null) => LocalDeclarationInfo.Of(specifiers, declarator),
+            _ => throw new AssertException(
+                $"Both declarator and abstract declarator found for declaration {declaration}.")
+        };
 
         if (cliImportMemberName != null)
             throw new CompilationException("CLI import specifier isn't supported for a parameter.");
 
-        return new ParameterInfo(type, identifier);
+        return new ParameterInfo(type, identifier, index);
     }
 }

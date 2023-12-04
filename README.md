@@ -14,35 +14,9 @@ Implementation Status
 
 Unfortunately, not yet. You won't be able to use Cesium for anything useful today. Probably, you'll be able to start after [the next milestone][issue.next-milestone] is implemented. Stay tuned!
 
-### Dashboard
-
-- [ ] [C17 standard compatibility][issue.c17-standard]: poor
-  - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
-  - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
-  - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
-- [ ] **Compiler**
-  - [x] CIL code generator: basics are ready, new features get added
-  - [ ] [PDB support][issue.pdb]: none
-- [ ] [Standard library][stdlib]: a very few functions are supported
-- [ ] [.NET SDK][issue.sdk]: none (but planned!)
-
-**Have a question?** Welcome to [the discussions section][discussions]!
-
-**Looking to contribute?** Check [open issues with the "help-wanted" label][issues.help-wanted]. Cesium is a big project which lives thanks to its contributors.
-
-**Not sure where to contribute?** Check [open issues with the "good first issue" label][issues.good-first-issue].
-
-If you're interested in certain project areas, check the per-area issue labels:
-- [`area:cil-interop`][issues.cil-interop]: issues related to CLI interop
-- [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
-- [`area:parser`][issues.parser]: issues related to C parsing
-- [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
-- [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
-- [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
-
 ### Sneak Peek
 
-Currently, Cesium is able to compile a "Hello, world" C17 example to a .NET assembly:
+Currently, Cesium is able to compile a "Hello, world" C23 example to a .NET assembly:
 
 ```c
 #include <stdio.h>
@@ -54,16 +28,19 @@ int main(int argc, char *argv[])
 }
 ```
 
-The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **60%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
+The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **80%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
 
 Documentation
 -------------
 
-- [C17 Language Standard Draft][c17-draft]
+- [C23 Language Standard Draft][c23-draft]
 
+- [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
+- [Architecture Sets][docs.architecture-sets]
 - [CLI-Related Language Extensions][docs.language-extensions]
+- [Built-in Functions][docs.builtins]
 - [Exceptions in the Compiler Code][docs.exceptions]
 
 - [License (MIT)][docs.license]
@@ -90,66 +67,58 @@ $ mono ./out.exe # run with Mono
   - `NetFramework` for .NET Framework
   - `NetStandard` for .NET Standard
   - `Net` for .NET 5+
+- `--arch <architecture-set>`: specifies the [target architecture set][docs.architecture-sets], defaults to `Dynamic`. Possible values are:
+  - `Dynamic` (machine-independent, calculates pointer size and structure layout in runtime),
+  - `Bit32` (for 32-bit architectures),
+  - `Bit64` (for 64-bit architectures),
+  - `Wide` (machine-independent, uses 64-bit pointers even on 32-bit architectures).
 - `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
   - `Dll`: gets detected from a `.dll` extension
   - `Console`: gets detected from an `.exe` extension
   - `Windows`: doesn't get detected, so it's only possible to select manually
   - `NetModule`: is a rudiment from Cecil, not supported
 
-Testing
--------
+Implementation Dashboard
+------------------------
 
-**Want to add new tests to Cesium?** Read a separate [document on tests][docs.tests].
+- [ ] [C23 standard compatibility][issue.c23-standard]: poor
+    - [ ] [Preprocessor][issue.preprocessor]: about **30%** of all features are supported
+    - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
+    - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
+- [ ] **Compiler**
+    - [x] CIL code generator: basics are ready, new features get added
+    - [ ] [PDB support][issue.pdb]: none
+- [ ] [Standard library][stdlib]: a very few functions are supported
+- [ ] [.NET SDK][issue.sdk]: none (but planned!)
 
-There are two kinds of tests in Cesium: unit tests and integration tests.
+**Have a question?** Welcome to [the discussions section][discussions]!
 
-Run the unit tests using this shell command:
+**Looking to contribute?** Check [open issues with the "help-wanted" label][issues.help-wanted]. Cesium is a big project which lives thanks to its contributors.
 
-```console
-$ dotnet test
-```
+**Not sure where to contribute?** Check [open issues with the "good first issue" label][issues.good-first-issue].
 
-Run the integration tests using this shell command ([PowerShell][powershell] is required):
+Take a look at [the contributor guide][docs.contributing].
 
-```console
-$ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
-```
-
-(don't pass `-NoBuild` if you want to automatically rebuild the compiler before running the integration tests)
-
-If you debug integration tests and want to run just a single test, use this shell command:
-
-```console
-pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fallback.c
-```
-
-where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folder.
-
-Publishing
-----------
-
-For producing standalone compiler executable run
-
-```shell
-dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-contained
-```
-
-Then navigate to `Cesium.Compiler\bin\Debug\net6.0\win-x64\publish\` and that's your Cesium.
-
-Code Quality (Experimental)
-------------
-
-See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Cesium).
+If you're interested in certain project areas, check the per-area issue labels:
+- [`area:cil-interop`][issues.cil-interop]: issues related to CLI interop
+- [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
+- [`area:parser`][issues.parser]: issues related to C parsing
+- [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
+- [`area:standard-support`][issues.standard-support]: issues related to C23 standard support
+- [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
-[c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
+[c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
+[docs.architecture-sets]: docs/architecture-sets.md
+[docs.contributing]: CONTRIBUTING.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
-[issue.c17-standard]: https://github.com/ForNeVeR/Cesium/issues/62
+[docs.builtins]: docs/builtins.md
+[issue.c23-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61
 [issue.parser]: https://github.com/ForNeVeR/Cesium/issues/78
@@ -165,6 +134,5 @@ See [the Sonar dashboard](https://sonarcloud.io/project/overview?id=ForNeVeR_Ces
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
 [issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
-[powershell]: https://github.com/PowerShell/PowerShell
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
 [stdlib]: Cesium.Compiler/stdlib

@@ -1,0 +1,7 @@
+﻿System.Int32 <Module>::m()
+  Locals:
+    <typedef>b V_0
+  IL_0000: ldloca V_0
+  IL_0004: ldflda <typedef>a <typedef>b::a
+  IL_0009: ldflda System.Int32 <typedef>a::x
+  IL_000e: ret

@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class CharConstant : IConstant
+internal sealed class CharConstant : IConstant
 {
     private readonly byte _value;
 
@@ -32,6 +32,7 @@ internal class CharConstant : IConstant
         return text[1] switch
         {
             '\'' => '\'',
+            '0' => '\0',
             '"' => '"',
             '\\' => '\\',
             'a' => '\a',

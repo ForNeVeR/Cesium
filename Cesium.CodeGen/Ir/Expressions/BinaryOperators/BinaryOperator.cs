@@ -5,23 +5,14 @@ public enum BinaryOperator
     Add, // +
     Subtract, // -
     Multiply, // *
-
-    Assign, // =
-    AddAndAssign, // +=
-    SubtractAndAssign, // -=
-    MultiplyAndAssign, // *=
+    Divide, // /
+    Remainder, // %
 
     BitwiseLeftShift, // <<
     BitwiseRightShift, // >>
     BitwiseOr, // |
     BitwiseAnd, // &
     BitwiseXor, // ^
-
-    BitwiseLeftShiftAndAssign, // <<=
-    BitwiseRightShiftAndAssign, // >>=
-    BitwiseOrAndAssign, // |=
-    BitwiseAndAndAssign, // &=
-    BitwiseXorAndAssign, // ^=
 
     GreaterThan, // >
     LessThan, // <
@@ -39,7 +30,9 @@ public static class BinaryOperatorExtensions
     public static bool IsArithmetic(this BinaryOperator op) =>
         op is BinaryOperator.Add
            or BinaryOperator.Subtract
-           or BinaryOperator.Multiply;
+           or BinaryOperator.Multiply
+           or BinaryOperator.Divide
+           or BinaryOperator.Remainder;
 
     public static bool IsComparison(this BinaryOperator op) =>
         op is BinaryOperator.GreaterThan

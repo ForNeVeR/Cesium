@@ -10,10 +10,12 @@ public abstract class VerifyTestBase
         Environment.SetEnvironmentVariable("Verify_DisableClipboard", "true");
     }
 
-    protected static VerifySettings GetSettings()
+    protected static VerifySettings GetSettings(params object?[] parameters)
     {
         var settings = new VerifySettings();
         settings.UseDirectory("verified");
+        if (parameters.Length > 0)
+            settings.UseParameters(parameters);
         return settings;
     }
 }

@@ -3,11 +3,10 @@
   Methods:
     System.Int32 <Module>::main()
       Locals:
-        foo V_0
+        <typedef>foo V_0
       IL_0000: ldloca.s V_0
-      IL_0002: conv.u
-      IL_0003: ldfld System.Int32 foo::x
-      IL_0008: ret
+      IL_0002: ldfld System.Int32 <typedef>foo::x
+      IL_0007: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
@@ -19,6 +18,6 @@
       IL_000e: ldloc.s V_0
       IL_0010: ret
 
-  Type: foo
+  Type: <typedef>foo
   Fields:
-    System.Int32 foo::x
+    System.Int32 <typedef>foo::x

@@ -6,17 +6,25 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueField : ILValue
+internal sealed class LValueField : ILValue
 {
     private readonly IExpression _expression;
-    private readonly IType _fieldType;
+    private readonly StructType _structType;
     private readonly string _name;
     private FieldReference? _field;
 
-    public LValueField(IExpression expression, IType fieldType, string name)
+    public LValueField(IExpression expression, Types.PointerType structPointerType, string name)
     {
         _expression = expression;
-        _fieldType = fieldType;
+        if (structPointerType.Base is ConstType constType)
+        {
+            _structType = (StructType)constType.Base;
+        }
+        else
+        {
+            _structType = (StructType)structPointerType.Base;
+        }
+
         _name = name;
     }
 
@@ -42,7 +50,8 @@ internal class LValueField : ILValue
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, field));
     }
 
-    public IType GetValueType() => _fieldType;
+    public IType GetValueType() => _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type
+        ?? throw new CompilationException($"Member named \"{_name}\" not found");
 
     private FieldReference GetField(IEmitScope scope)
     {
@@ -51,13 +60,12 @@ internal class LValueField : ILValue
             return _field;
         }
 
-        var valueType = _fieldType;
-        var valueTypeReference = valueType.Resolve(scope.Context);
+        var valueTypeReference = _structType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
 
         var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == _name)
                 ?? throw new CompilationException(
-                    $"\"{valueTypeDef.Name}\" has no member named \"{_name}\"");
+                    $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{_name}\"");
         _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);
         return _field;
     }

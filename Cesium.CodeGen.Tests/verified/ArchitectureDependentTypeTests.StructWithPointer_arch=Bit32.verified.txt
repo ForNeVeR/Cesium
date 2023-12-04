@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Fields:
+    System.Byte* <typedef>foo::x

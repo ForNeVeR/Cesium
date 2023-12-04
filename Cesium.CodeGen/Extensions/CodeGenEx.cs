@@ -18,6 +18,8 @@ internal static class CodeGenEx
         scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
     public static void AddInstruction(this IEmitScope scope, OpCode opCode, VariableDefinition value) =>
         scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
+    public static void AddInstruction(this IEmitScope scope, OpCode opCode, FieldReference value) =>
+        scope.Method.Body.Instructions.Add(Instruction.Create(opCode, value));
 
     public static void StLoc(this IEmitScope scope, VariableDefinition variable)
     {
@@ -51,4 +53,7 @@ internal static class CodeGenEx
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldftn, method));
     }
+
+    public static void SizeOf(this IEmitScope scope, TypeReference type) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Sizeof, type));
 }

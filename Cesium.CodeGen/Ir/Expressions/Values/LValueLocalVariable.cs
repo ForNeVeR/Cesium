@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueLocalVariable : ILValue
+internal sealed class LValueLocalVariable : ILValue
 {
     private readonly IType _variableType;
     private readonly string _name;
@@ -34,21 +34,43 @@ internal class LValueLocalVariable : ILValue
     public void EmitGetAddress(IEmitScope scope)
     {
         var variable = GetVariableDefinition(scope);
-        scope.Method.Body.Instructions.Add(
-            Instruction.Create(
-                variable.Index <= sbyte.MaxValue
-                    ? OpCodes.Ldloca_S
-                    : OpCodes.Ldloca,
-                _definition
-            )
-        );
+        if (_variableType is InPlaceArrayType)
+        {
+            EmitGetValue(scope);
+        }
+        else
+        {
+            scope.Method.Body.Instructions.Add(
+                Instruction.Create(
+                    variable.Index <= sbyte.MaxValue
+                        ? OpCodes.Ldloca_S
+                        : OpCodes.Ldloca,
+                    _definition
+                )
+            );
+        }
     }
 
     public void EmitSetValue(IEmitScope scope, IExpression value)
     {
         var variable = GetVariableDefinition(scope);
         value.EmitTo(scope);
-        scope.StLoc(variable);
+        if (value is CompoundInitializationExpression)
+        {
+            // for compound initialization copy memory.s
+            scope.AddInstruction(OpCodes.Ldloc, variable);
+            var expression = ((InPlaceArrayType)_variableType).GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+            expression.EmitTo(scope);
+            scope.AddInstruction(OpCodes.Conv_U);
+
+            var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
+            scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
+        }
+        else
+        {
+            // Regular initialization.
+            scope.StLoc(variable);
+        }
     }
 
     public IType GetValueType() => _variableType;

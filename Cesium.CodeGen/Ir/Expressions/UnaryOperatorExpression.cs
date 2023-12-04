@@ -4,34 +4,35 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class UnaryOperatorExpression : IExpression
+internal sealed class UnaryOperatorExpression : IExpression
 {
-    private readonly UnaryOperator _operator;
-    private readonly IExpression _target;
+    public UnaryOperator Operator { get; }
+    public IExpression Target { get; }
 
     internal UnaryOperatorExpression(UnaryOperator @operator, IExpression target)
     {
-        _operator = @operator;
-        _target = target;
+        Operator = @operator;
+        Target = target;
     }
 
     public UnaryOperatorExpression(Ast.UnaryOperatorExpression expression)
     {
         var (@operator, target) = expression;
-        _operator = GetOperatorKind(@operator);
-        _target = target.ToIntermediate();
+        Operator = GetOperatorKind(@operator);
+        Target = target.ToIntermediate();
     }
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        if (_operator == UnaryOperator.AddressOf)
+        var loweredTarget = Target.Lower(scope);
+
+        if (Operator == UnaryOperator.AddressOf)
         {
-            if (_target is not IValueExpression expression)
-                throw new CompilationException($"Required a value expression to get address, got {_target} instead.");
+            if (loweredTarget is not IValueExpression expression)
+                throw new CompilationException($"Required a value expression to get address, got {Target} instead.");
 
             var value = expression.Resolve(scope);
             if (value is not IAddressableValue aValue)
@@ -40,38 +41,38 @@ internal class UnaryOperatorExpression : IExpression
             return new GetAddressValueExpression(aValue);
         }
 
-        return new UnaryOperatorExpression(_operator, _target.Lower(scope));
+        return new UnaryOperatorExpression(Operator, loweredTarget);
     }
 
     public void EmitTo(IEmitScope scope)
     {
-        switch (_operator)
+        switch (Operator)
         {
             case UnaryOperator.AddressOf:
                 throw new AssertException("Should be lowered");
             case UnaryOperator.LogicalNot:
-                _target.EmitTo(scope);
+                Target.EmitTo(scope);
                 scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
                 scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ceq));
                 break;
             default:
-                _target.EmitTo(scope);
+                Target.EmitTo(scope);
                 scope.Method.Body.Instructions.Add(GetInstruction());
                 break;
         }
 
-        Instruction GetInstruction() => _operator switch
+        Instruction GetInstruction() => Operator switch
         {
             UnaryOperator.Negation => Instruction.Create(OpCodes.Neg),
             UnaryOperator.BitwiseNot => Instruction.Create(OpCodes.Not),
-            _ => throw new WipException(197, $"Unsupported unary operator: {_operator}.")
+            _ => throw new WipException(197, $"Unsupported unary operator: {Operator}.")
         };
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => _operator switch
+    public IType GetExpressionType(IDeclarationScope scope) => Operator switch
     {
-        UnaryOperator.AddressOf => _target.GetExpressionType(scope).MakePointerType(), // address-of returns T*
-        _ => _target.GetExpressionType(scope), // other operators return T
+        UnaryOperator.AddressOf => Target.GetExpressionType(scope).MakePointerType(), // address-of returns T*
+        _ => Target.GetExpressionType(scope), // other operators return T
     };
 
     private static UnaryOperator GetOperatorKind(string @operator) => @operator switch

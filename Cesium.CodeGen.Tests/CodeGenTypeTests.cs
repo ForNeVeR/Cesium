@@ -1,10 +1,13 @@
+using JetBrains.Annotations;
+
 namespace Cesium.CodeGen.Tests;
 
 public class CodeGenTypeTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
     private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
     {
-        var assembly = GenerateAssembly(default, @namespace, globalTypeFqn, source);
+        var assembly = GenerateAssembly(default, @namespace: @namespace, globalTypeFqn: globalTypeFqn, sources: source);
         return VerifyTypes(assembly);
     }
 
@@ -77,6 +80,12 @@ int main()
 }");
 
     [Fact]
+    public Task TypeConversionTest() => DoTest(@"int main()
+{
+    return (int)42;
+}");
+
+    [Fact]
     public Task ConstIntLargeLiteralTest() => DoTest(@"int main()
 {
     return 1337;
@@ -86,6 +95,18 @@ int main()
     public Task ConstIntMinLiteralTest() => DoTest(@"int main()
 {
     return -2147483648;
+}");
+
+    [Fact]
+    public Task ConstIntHexLiteralTest() => DoTest(@"int main()
+{
+    return 0x42;
+}");
+
+    [Fact]
+    public Task ConstIntOctalLiteralTest() => DoTest(@"int main()
+{
+    return 042;
 }");
 
     [Fact]
@@ -158,6 +179,17 @@ int main(void) { foo x; return x.x; }");
 int main(void) { foo x; x.x = 42; return 0; }");
 
     [Fact]
+    public Task StructAndTypeDefHasSeparateNamespaces() => DoTest(@"struct tagFoo { int A; };
+typedef struct { int B; } Foo;
+int main(void) {
+  struct tagFoo a;
+  Foo b;
+  a.A = 0;
+  b.B = 0;
+}
+");
+
+    [Fact]
     public Task ArrayDeclaration() => DoTest(@"int main()
 {
     int i;
@@ -179,6 +211,11 @@ int main(void) { foo x = 0; return 0; }");
 } foo;");
 
     [Fact]
+    public Task NamedStruct() => DoTest(@"struct foo {
+    int x[4];
+};");
+
+    [Fact]
     public Task FunctionPointer() => DoTest(@"void foo(int) {}
 typedef int (*foo_t)(int);
 int main(void) {
@@ -191,4 +228,25 @@ int main(void) {
     foo x;
     return x.nonExisting;
 }", "\"foo\" has no member named \"nonExisting\"");
+
+    [Fact]
+    public Task ComplexStructDefinition() => DoTest(@"typedef void(*function)(int, const int*, const int*);
+typedef struct {
+	int a;
+	int b[5];
+	unsigned char c[64];
+	function func;
+
+	int array[80][5];
+} foo;");
+
+    [Fact]
+    public Task StaticFileScopedVariable() => DoTest(@"static int x = 123;");
+
+    [Fact]
+    public Task StaticStruct() => DoTest(@"struct _foo {
+    int x[4];
+};
+
+static struct _foo foo;");
 }

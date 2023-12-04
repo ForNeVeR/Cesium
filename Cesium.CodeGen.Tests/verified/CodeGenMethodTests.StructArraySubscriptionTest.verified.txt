@@ -1,0 +1,33 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    <typedef>foo* V_0
+  IL_0000: sizeof <typedef>foo
+  IL_0006: ldc.i4.s 10
+  IL_0008: mul
+  IL_0009: conv.u
+  IL_000a: localloc
+  IL_000c: stloc.0
+  IL_000d: ldloc.0
+  IL_000e: sizeof <typedef>foo
+  IL_0014: ldc.i4.1
+  IL_0015: mul
+  IL_0016: add
+  IL_0017: ldc.i4.s 42
+  IL_0019: stfld System.Int32 <typedef>foo::x
+  IL_001e: ldloc.0
+  IL_001f: sizeof <typedef>foo
+  IL_0025: ldc.i4.1
+  IL_0026: mul
+  IL_0027: add
+  IL_0028: ldfld System.Int32 <typedef>foo::x
+  IL_002d: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>()
+  Locals:
+    System.Int32 V_0
+  IL_0000: call System.Int32 <Module>::main()
+  IL_0005: stloc.s V_0
+  IL_0007: ldloc.s V_0
+  IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_000e: ldloc.s V_0
+  IL_0010: ret

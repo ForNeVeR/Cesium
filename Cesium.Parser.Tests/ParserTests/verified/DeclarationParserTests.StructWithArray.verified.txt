@@ -33,7 +33,7 @@
                   },
                   "TypeQualifiers": null,
                   "Size": {
-                    "$type": "Cesium.Ast.ConstantExpression, Cesium.Ast",
+                    "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                     "Constant": {
                       "Kind": "IntLiteral",
                       "Text": "4"
