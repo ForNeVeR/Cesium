@@ -26,6 +26,11 @@ internal sealed class SubscriptingExpression : IValueExpression
         _index = index;
     }
 
+    private static bool CheckIfTypeIsSubscriptable(IType type)
+    {
+        return type is InPlaceArrayType or PointerType;
+    }
+
     public IExpression Lower(IDeclarationScope scope)
     {
         var expression = LowerExpression(_expression, scope);
@@ -49,20 +54,17 @@ internal sealed class SubscriptingExpression : IValueExpression
         var offset = elementSize != 1
             ? new BinaryOperatorExpression(index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
             : index;
+
+        // TODO: Should not use the value here, use the `expression` instead
         var value = (IAddressableValue)((IValueExpression)expression).Resolve(scope);
         var indirection = new IndirectionExpression(
             new BinaryOperatorExpression(
-                value.GetValueType() is InPlaceArrayType ? new GetAddressValueExpression(value) : new GetValueExpression(value),
-                BinaryOperator.Add,
-                offset.Lower(scope)
+                expressionType is InPlaceArrayType ? new GetAddressValueExpression(value) : new GetValueExpression(value),
+        BinaryOperator.Add,
+        offset.Lower(scope)
             ));
         var lowered = indirection.Lower(scope);
         return lowered;
-    }
-
-    private static bool CheckIfTypeIsSubscriptable(IType type)
-    {
-        return type is InPlaceArrayType or PointerType;
     }
 
     private static int GetElementSize(IType type)
@@ -103,20 +105,9 @@ internal sealed class SubscriptingExpression : IValueExpression
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        if (_expression is IdentifierExpression identifier)
-        {
-            return new LValueArrayElement(identifier.Resolve(scope), _index);
-        }
-
-        if (_expression is SubscriptingExpression subscriptingExpression)
-        {
-            var a = subscriptingExpression.Resolve(scope);
-            return new LValueArrayElement(a, _index);
-        }
-
         if (_expression is IValueExpression valueExpression)
         {
-            return valueExpression.Resolve(scope);
+            return new LValueArrayElement(valueExpression.Resolve(scope), _index);
         }
 
         throw new CompilationException($"{_expression} is not a value expression");

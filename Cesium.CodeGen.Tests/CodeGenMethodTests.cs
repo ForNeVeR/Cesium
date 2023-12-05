@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Cesium.Core;
 using JetBrains.Annotations;
 
@@ -6,7 +7,7 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenMethodTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source)
+    private static Task DoTest([StringSyntax("cpp")] string source)
     {
         var assembly = GenerateAssembly(default, source);
 
@@ -364,6 +365,16 @@ int main()
     return a[1].x;
 }
 ");
+
+    [Fact]
+    public Task PointerAsArray() => DoTest("""
+int main(void)
+{
+    int x[30];
+    int *y = &x[5];
+    (y + 5)[0] = 0;
+}
+""");
 
     [Fact]
     public Task ValidPointerSubtractionTest() => DoTest(@"int main() {
