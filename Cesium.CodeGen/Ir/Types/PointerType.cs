@@ -6,7 +6,12 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed record PointerType(IType Base) : IType
+internal interface IPointerLikeType : IType
+{
+    public IType Base { get; }
+}
+
+internal sealed record PointerType(IType Base) : IPointerLikeType
 {
     public static int? SizeInBytes(TargetArchitectureSet arch) => arch switch
     {

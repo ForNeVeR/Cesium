@@ -53,8 +53,8 @@ internal sealed class BinaryOperatorExpression : IExpression
                 rightType = rightTypeConst.Base;
             }
 
-            if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not PointerType)
-                || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
+            if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not IPointerLikeType)
+                || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not IPointerLikeType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
             return new BinaryOperatorExpression(left, Operator, right);
@@ -62,7 +62,7 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         // rest of the operators are arithmetic
 
-        if (leftType is PointerType || rightType is PointerType)
+        if (leftType is IPointerLikeType || rightType is IPointerLikeType)
         {
             return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
@@ -85,9 +85,9 @@ internal sealed class BinaryOperatorExpression : IExpression
 
     private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
     {
-        if (leftType is PointerType leftPointerType)
+        if (leftType is IPointerLikeType leftPointerType)
         {
-            if (rightType is PointerType rightPointerType)
+            if (rightType is IPointerLikeType rightPointerType)
             {
                 if (Operator != BinaryOperator.Subtract)
                 {
@@ -133,7 +133,7 @@ internal sealed class BinaryOperatorExpression : IExpression
         }
         else
         {
-            var rightPointerType = (PointerType)rightType;
+            var rightPointerType = (IPointerLikeType)rightType;
 
             if (Operator != BinaryOperator.Add)
             {
@@ -162,9 +162,9 @@ internal sealed class BinaryOperatorExpression : IExpression
         {
             switch (leftType, rightType)
             {
-                case (PointerType, not PointerType): return leftType;
-                case (not PointerType, PointerType): return rightType;
-                case (PointerType left, PointerType right):
+                case (IPointerLikeType, not IPointerLikeType): return leftType;
+                case (not IPointerLikeType, IPointerLikeType): return rightType;
+                case (IPointerLikeType left, IPointerLikeType right):
                     Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) ==
                                  right.Base.GetSizeInBytes(scope.ArchitectureSet));
 

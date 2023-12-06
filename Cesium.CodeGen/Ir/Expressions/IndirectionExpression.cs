@@ -34,7 +34,7 @@ internal sealed class IndirectionExpression : IExpression, IValueExpression
     public IValue Resolve(IDeclarationScope scope)
     {
         var targetType = _target.GetExpressionType(scope);
-        if (targetType is not PointerType pointerType)
+        if (targetType is not IPointerLikeType pointerType)
             throw new CompilationException($"Required a pointer, got {targetType} instead.");
 
         return new LValueIndirection(_target, pointerType);

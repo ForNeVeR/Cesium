@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -5,7 +6,7 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenArrayTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source)
+    private static Task DoTest([StringSyntax("cpp")] string source)
     {
         var assembly = GenerateAssembly(default, source);
 
@@ -136,4 +137,13 @@ int f(char*** t) {
 int main() {
     return 42;
  }");
+
+    [Fact]
+    public Task ArrayArithmetic() => DoTest("""
+int main() {
+    int arr[2] = {0, 0};
+    int *p = arr + 1;
+    return *p;
+}
+""");
 }
