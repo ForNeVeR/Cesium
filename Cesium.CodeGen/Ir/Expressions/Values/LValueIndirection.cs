@@ -8,9 +8,9 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal sealed class LValueIndirection : ILValue
 {
     private readonly IExpression _pointerExpression;
-    private readonly IPointerLikeType _pointerType;
+    private readonly PointerType _pointerType;
 
-    public LValueIndirection(IExpression expression, IPointerLikeType pointerType)
+    public LValueIndirection(IExpression expression, PointerType pointerType)
     {
         _pointerExpression = expression;
         _pointerType = pointerType;
@@ -35,10 +35,10 @@ internal sealed class LValueIndirection : ILValue
 
     public IType GetValueType() => _pointerType.Base;
 
-    private static (OpCode load, OpCode store) GetOpcodes(IPointerLikeType pointerType) => SimplifyBaseType(pointerType.Base) switch
+    private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => SimplifyBaseType(pointerType.Base) switch
     {
         PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
-        IPointerLikeType => (OpCodes.Ldind_I, OpCodes.Stind_I),
+        PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
         _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
     };
 

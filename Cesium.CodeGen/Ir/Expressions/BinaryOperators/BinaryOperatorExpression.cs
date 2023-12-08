@@ -53,8 +53,8 @@ internal sealed class BinaryOperatorExpression : IExpression
                 rightType = rightTypeConst.Base;
             }
 
-            if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not IPointerLikeType)
-                || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not IPointerLikeType))
+            if ((!scope.CTypeSystem.IsNumeric(leftType) && leftType is not PointerType)
+                || (!scope.CTypeSystem.IsNumeric(rightType) && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
             return new BinaryOperatorExpression(left, Operator, right);
@@ -62,7 +62,7 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         // rest of the operators are arithmetic
 
-        if (leftType is IPointerLikeType || rightType is IPointerLikeType)
+        if (MayDecayToPointer(leftType) || MayDecayToPointer(rightType))
         {
             return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
@@ -83,11 +83,22 @@ internal sealed class BinaryOperatorExpression : IExpression
         return new BinaryOperatorExpression(left, Operator, right);
     }
 
+    private static bool MayDecayToPointer(IType type) => type is PointerType or InPlaceArrayType;
+    private static PointerType? DecayToPointer(IType type) => type switch
+    {
+        PointerType p => p,
+        InPlaceArrayType inPlaceArrayType => new PointerType(inPlaceArrayType.Base),
+        _ => null
+    };
+
     private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
     {
-        if (leftType is IPointerLikeType leftPointerType)
+        leftType = DecayToPointer(leftType) ?? leftType;
+        rightType = DecayToPointer(rightType) ?? rightType;
+
+        if (leftType is PointerType leftPointerType)
         {
-            if (rightType is IPointerLikeType rightPointerType)
+            if (rightType is PointerType rightPointerType)
             {
                 if (Operator != BinaryOperator.Subtract)
                 {
@@ -133,7 +144,7 @@ internal sealed class BinaryOperatorExpression : IExpression
         }
         else
         {
-            var rightPointerType = (IPointerLikeType)rightType;
+            var rightPointerType = (PointerType)rightType;
 
             if (Operator != BinaryOperator.Add)
             {
@@ -160,11 +171,13 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         if (Operator.IsArithmetic())
         {
+            leftType = DecayToPointer(leftType) ?? leftType;
+            rightType = DecayToPointer(rightType) ?? rightType;
             switch (leftType, rightType)
             {
-                case (IPointerLikeType, not IPointerLikeType): return leftType;
-                case (not IPointerLikeType, IPointerLikeType): return rightType;
-                case (IPointerLikeType left, IPointerLikeType right):
+                case (PointerType, not PointerType): return leftType;
+                case (not PointerType, PointerType): return rightType;
+                case (PointerType left, PointerType right):
                     Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) ==
                                  right.Base.GetSizeInBytes(scope.ArchitectureSet));
 

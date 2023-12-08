@@ -9,7 +9,7 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed record InPlaceArrayType(IType Base, int Size) : IPointerLikeType
+internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 {
     public TypeReference Resolve(TranslationUnitContext context)
     {

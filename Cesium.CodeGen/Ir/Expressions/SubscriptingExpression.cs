@@ -28,7 +28,7 @@ internal sealed class SubscriptingExpression : IValueExpression
 
     private static bool CheckIfTypeIsSubscriptable(IType type)
     {
-        return type is IPointerLikeType;
+        return type is InPlaceArrayType or PointerType;
     }
 
     public IExpression Lower(IDeclarationScope scope)
@@ -57,7 +57,9 @@ internal sealed class SubscriptingExpression : IValueExpression
 
         var indirection = new IndirectionExpression(
             new BinaryOperatorExpression(
-                expression,
+                expressionType is InPlaceArrayType
+                    ? new UnaryOperatorExpression(UnaryOperator.AddressOf, expression)
+                    : expression,
                 BinaryOperator.Add,
                 offset.Lower(scope)
             ));
