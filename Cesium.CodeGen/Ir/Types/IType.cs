@@ -56,5 +56,6 @@ internal interface IType
 internal interface IGeneratedType : IType
 {
     public string? Identifier { get; }
-    TypeDefinition Emit(string name, TranslationUnitContext context);
+    TypeDefinition StartEmit(string name, TranslationUnitContext context);
+    void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context);
 }
