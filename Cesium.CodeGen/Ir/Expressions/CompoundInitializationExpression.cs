@@ -46,47 +46,61 @@ internal sealed class CompoundInitializationExpression : IExpression
         if (_type is not InPlaceArrayType inPlaceArrayType)
             throw new NotImplementedException("Nested initializers not yet supported");
 
-        if (constantLiteralExpression.Constant is not IntegerConstant integer)
-            throw new NotImplementedException($"Non-integer constant not yet supported");
-
         if (inPlaceArrayType.Base is not PrimitiveType primitiveType)
             throw new NotImplementedException($"Non-primitive type not yet supported");
 
-        switch (primitiveType.Kind)
+        if (constantLiteralExpression.Constant is IntegerConstant integer)
         {
-            case PrimitiveTypeKind.Int:
-            case PrimitiveTypeKind.SignedInt:
-                var data = BitConverter.GetBytes((int)integer.Value);
-                stream.Write(data);
-                break;
-            case PrimitiveTypeKind.Long:
-            case PrimitiveTypeKind.SignedLong:
-            case PrimitiveTypeKind.SignedLongInt:
-                stream.Write(BitConverter.GetBytes(integer.Value));
-                break;
-            case PrimitiveTypeKind.UnsignedLong:
-            case PrimitiveTypeKind.UnsignedLongInt:
-                stream.Write(BitConverter.GetBytes(unchecked((ulong)integer.Value)));
-                break;
-            case PrimitiveTypeKind.UnsignedInt:
-                stream.Write(BitConverter.GetBytes(unchecked((uint)integer.Value)));
-                break;
-            case PrimitiveTypeKind.Short:
-            case PrimitiveTypeKind.SignedShort:
-                stream.Write(BitConverter.GetBytes((short)integer.Value));
-                break;
-            case PrimitiveTypeKind.UnsignedShort:
-                stream.Write(BitConverter.GetBytes(unchecked((ushort)integer.Value)));
-                break;
-            case PrimitiveTypeKind.Char:
-            case PrimitiveTypeKind.UnsignedChar:
-                stream.WriteByte((byte)integer.Value);
-                break;
-            case PrimitiveTypeKind.SignedChar:
-                stream.WriteByte(unchecked((byte)((sbyte)integer.Value)));
-                break;
-            default:
-                throw new NotImplementedException($"Primitive type {primitiveType.Kind} not yet supported");
+            WriteValue(integer.Value);
+            return;
+        }
+
+        if (constantLiteralExpression.Constant is CharConstant charConstant)
+        {
+            WriteValue(charConstant.Value);
+            return;
+        }
+
+        throw new NotImplementedException($"Non-integer constant not yet supported");
+
+        void WriteValue(long value)
+        {
+            switch (primitiveType.Kind)
+            {
+                case PrimitiveTypeKind.Int:
+                case PrimitiveTypeKind.SignedInt:
+                    var data = BitConverter.GetBytes((int)value);
+                    stream.Write(data);
+                    break;
+                case PrimitiveTypeKind.Long:
+                case PrimitiveTypeKind.SignedLong:
+                case PrimitiveTypeKind.SignedLongInt:
+                    stream.Write(BitConverter.GetBytes(value));
+                    break;
+                case PrimitiveTypeKind.UnsignedLong:
+                case PrimitiveTypeKind.UnsignedLongInt:
+                    stream.Write(BitConverter.GetBytes(unchecked((ulong)value)));
+                    break;
+                case PrimitiveTypeKind.UnsignedInt:
+                    stream.Write(BitConverter.GetBytes(unchecked((uint)value)));
+                    break;
+                case PrimitiveTypeKind.Short:
+                case PrimitiveTypeKind.SignedShort:
+                    stream.Write(BitConverter.GetBytes((short)value));
+                    break;
+                case PrimitiveTypeKind.UnsignedShort:
+                    stream.Write(BitConverter.GetBytes(unchecked((ushort)value)));
+                    break;
+                case PrimitiveTypeKind.Char:
+                case PrimitiveTypeKind.UnsignedChar:
+                    stream.WriteByte((byte)value);
+                    break;
+                case PrimitiveTypeKind.SignedChar:
+                    stream.WriteByte(unchecked((byte)(sbyte)value));
+                    break;
+                default:
+                    throw new NotImplementedException($"Primitive type {primitiveType.Kind} not yet supported");
+            }
         }
     }
 
