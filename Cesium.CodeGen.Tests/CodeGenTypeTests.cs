@@ -280,4 +280,12 @@ typedef struct Token {
     int x;
 } Token;
 ");
+
+    [Fact]
+    public Task StructAndNestedPointer() => DoTest(@"typedef struct Token Token;
+
+struct Token {
+    Token* x;
+};
+");
 }

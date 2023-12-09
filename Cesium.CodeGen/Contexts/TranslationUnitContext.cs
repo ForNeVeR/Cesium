@@ -105,8 +105,9 @@ public class TranslationUnitContext
     {
         if (!_generatedTypes.ContainsKey(type))
         {
-            var typeReference = type.Emit(name, this);
+            var typeReference = type.StartEmit(name, this);
             _generatedTypes.Add(type, typeReference);
+            type.FinishEmit(typeReference, name, this);
         }
     }
 
