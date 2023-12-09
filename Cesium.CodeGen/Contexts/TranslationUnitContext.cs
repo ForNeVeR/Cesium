@@ -103,8 +103,11 @@ public class TranslationUnitContext
 
     internal void GenerateType(string name, IGeneratedType type)
     {
-        var typeReference = type.Emit(name, this);
-        _generatedTypes.Add(type, typeReference);
+        if (!_generatedTypes.ContainsKey(type))
+        {
+            var typeReference = type.Emit(name, this);
+            _generatedTypes.Add(type, typeReference);
+        }
     }
 
     internal void AddTypeDefinition(string name, IType type)
@@ -115,7 +118,26 @@ public class TranslationUnitContext
         _types.Add(name, type);
     }
 
-    internal void AddTagDefinition(string name, IType type) => _tags.Add(name, type);
+    internal void AddTagDefinition(string name, IType type)
+    {
+        if (_tags.TryGetValue(name, out var existingType))
+        {
+            if (type == existingType) return;
+            if (existingType.GetType() != type.GetType())
+            {
+                throw new CompilationException($"Tag kind {GetTypeKind(type.GetType())} type {name} was already defined as {GetTypeKind(existingType.GetType())}");
+            }
+        }
+
+        _tags.Add(name, type);
+
+        string GetTypeKind(Type type) => type.Name switch
+        {
+            nameof(StructType) => "struct",
+            nameof(EnumType) => "enum",
+            _ => throw new InvalidOperationException($"Unsupported type {type} used."),
+        };
+    }
 
     internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
 
@@ -160,6 +182,18 @@ public class TranslationUnitContext
             var members = structType.Members
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();
+            if (structType.Members.Count != 0 && structType.Identifier is not null)
+            {
+                if (_types.TryGetValue(structType.Identifier, out var existingType))
+                {
+                    if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
+                    {
+                        existingStructType.Members = members;
+                        return existingType;
+                    }
+                }
+            }
+
             return new StructType(members, structType.Identifier);
         }
 

@@ -57,6 +57,7 @@ internal static class TranslationUnitEx
 
                     if (type is EnumType enumType)
                     {
+                        yield return new TagBlockItem(new[] { declaration });
                         long currentValue = -1;
                         foreach (var enumeratorDeclaration in enumType.Members)
                         {

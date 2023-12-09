@@ -15,7 +15,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         Identifier = identifier;
     }
 
-    internal IReadOnlyList<LocalDeclarationInfo> Members { get; }
+    internal IReadOnlyList<LocalDeclarationInfo> Members { get; set; }
     public string? Identifier { get; }
 
     public TypeDefinition Emit(string name, TranslationUnitContext context)
