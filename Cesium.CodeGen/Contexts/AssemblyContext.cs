@@ -50,7 +50,7 @@ public class AssemblyContext
         var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
-        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node));
+        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node)).ToList();
         foreach (var node in nodes)
             BlockItemEmitting.EmitCode(scope, node);
     }

@@ -128,8 +128,8 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
-
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
+        var methodReference = callee.MethodReference ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, methodReference));
     }
 
     public override IType GetExpressionType(IDeclarationScope scope)

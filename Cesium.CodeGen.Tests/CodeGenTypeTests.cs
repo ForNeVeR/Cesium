@@ -249,4 +249,35 @@ typedef struct {
 };
 
 static struct _foo foo;");
+    [Fact]
+    public void StructAndEnumSameName() => DoesNotCompile(@"enum Token { T };
+
+struct Token {
+    int x;
+};
+", "Tag kind struct type Token was already defined as enum");
+
+    [Fact]
+    public void EnumAndStructSameName() => DoesNotCompile(@"
+struct Token {
+    int x;
+};
+
+enum Token { T };
+", "Tag kind enum type Token was already defined as struct");
+
+    [Fact]
+    public Task StructAndTypeDefWithSameName() => DoTest(@"typedef struct Token Token;
+
+struct Token {
+    int x;
+};
+");
+
+    [Fact]
+    public Task StructAndTypeDefWithSameNameSingleDecl() => DoTest(@"
+typedef struct Token {
+    int x;
+} Token;
+");
 }
