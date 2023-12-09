@@ -28,7 +28,7 @@ public sealed record UnaryOperatorExpression(string Operator, Expression Target)
 public sealed record IndirectionExpression(Expression Target) : Expression;
 
 // 6.5.3.4 The sizeof and _Alignof operators
-public sealed record IdentifierSizeOfOperatorExpression(IdentifierExpression Identifier) : Expression;
+public sealed record UnaryExpressionSizeOfOperatorExpression(Expression TargetExpession) : Expression;
 
 public sealed record TypeNameSizeOfOperatorExpression(TypeName TypeName) : Expression;
 
