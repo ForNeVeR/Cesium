@@ -15,6 +15,9 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         Identifier = identifier;
     }
 
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Struct;
+
     internal IReadOnlyList<LocalDeclarationInfo> Members { get; set; }
     public string? Identifier { get; }
 

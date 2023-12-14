@@ -6,6 +6,9 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal record FunctionType(ParametersInfo? Parameters, IType ReturnType) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.FunctionType;
+
     public TypeReference Resolve(TranslationUnitContext context) =>
         throw new AssertException($"Function type {this} cannot be directly expressed in the byte code.");
 

@@ -124,18 +124,18 @@ public class TranslationUnitContext
         if (_tags.TryGetValue(name, out var existingType))
         {
             if (type == existingType) return;
-            if (existingType.GetType() != type.GetType())
+            if (existingType.TypeKind != type.TypeKind)
             {
-                throw new CompilationException($"Tag kind {GetTypeKind(type.GetType())} type {name} was already defined as {GetTypeKind(existingType.GetType())}");
+                throw new CompilationException($"Tag kind {GetTypeKind(type.TypeKind)} type {name} was already defined as {GetTypeKind(existingType.TypeKind)}");
             }
         }
 
         _tags.Add(name, type);
 
-        string GetTypeKind(Type type) => type.Name switch
+        string GetTypeKind(TypeKind type) => type switch
         {
-            nameof(StructType) => "struct",
-            nameof(EnumType) => "enum",
+            TypeKind.Struct => "struct",
+            TypeKind.Enum => "enum",
             _ => throw new InvalidOperationException($"Unsupported type {type} used."),
         };
     }
