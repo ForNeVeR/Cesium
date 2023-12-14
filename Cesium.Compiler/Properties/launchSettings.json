@@ -1,0 +1,104 @@
+{
+    "profiles": {
+        "Cesium.Compiler": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\variable_storage.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/out_cs.exe"
+        },
+        "Snake": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\snake.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/snake.exe"
+        },
+        "GOL": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\GOL.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/GOL.exe"
+        },
+        "quine": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\quine.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/quine.exe"
+        },
+        "test": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib/calloc.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/out_cs.exe"
+        },
+        "simple_entry": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\arithmetics.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/out_cs.exe"
+        },
+        "args_entry": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\array\\array_pointer.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/out_cs.exe"
+        },
+        "fixed_buff": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\structs\\struct_subscription.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/out_cs.exe"
+        },
+        "getopt": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\getopt.c C:\\d\\github\\Cesium\\Cesium.Samples\\getopt1.c -o C:\\d\\github\\Cesium\\Cesium.IntegrationTests/bin/getopt.exe -I C:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "getopt_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\getopt.c -E"
+        },
+        "getopt1_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\getopt1.c -E"
+        },
+        "getopt_failed": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.Samples\\getopt.c -I C:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "doom": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\doom-clr\\doom.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/doom.exe"
+        },
+        "sha1": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\sha1collisiondetection\\lib\\sha1.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/sha1.exe"
+        },
+        "create_exe_1": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\\\d\\\\github\\\\Cesium\\\\Cesium.Samples\\\\create_exe_1.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/create_exe_1.exe -I C:\\\\d\\\\github\\\\Cesium\\\\Cesium.Samples\\\\ -I \"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\""
+        },
+        "create_exe_1_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\\\d\\\\github\\\\Cesium\\\\Cesium.Samples\\\\create_exe_1.c -E -I C:\\\\d\\\\github\\\\Cesium\\\\Cesium.Samples\\\\ -I \"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um\" -I \"C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\shared\""
+        },
+        "chibicc": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\chibicc\\main.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/chibicc.exe"
+        },
+        "chibicc_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\chibicc\\main.c  -E"
+        },
+        "strtol": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\string\\byte\\strtol.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/strtol.exe"
+        },
+        "variadic": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\variadic\\variadic.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/variadic.exe"
+        },
+        "variadic_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\variadic\\variadic.c -E"
+        },
+        "islower": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\string\\byte\\islower.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/islower.exe"
+        },
+        "memcmp": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\string\\byte\\memcmp.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/memcmp.exe"
+        },
+        "memcmp_preprocessor": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\string\\byte\\memcmp.c -E"
+        },
+        "sizeof": {
+            "commandName": "Project",
+            "commandLineArgs": "C:\\d\\github\\Cesium\\Cesium.IntegrationTests\\sizeof.c -o C:\\\\d\\\\github\\\\Cesium\\\\Cesium.IntegrationTests/bin/sizeof.exe"
+        }
+    }
+}

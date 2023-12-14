@@ -6,6 +6,9 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal record ConstType(IType Base) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Const;
+
     public TypeReference Resolve(TranslationUnitContext context) => Base.Resolve(context);
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) =>

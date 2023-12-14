@@ -12,6 +12,9 @@ namespace Cesium.CodeGen.Ir.Types;
 /// </summary>
 internal record InteropType(TypeReference UnderlyingType) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.InteropType;
+
     public TypeReference Resolve(TranslationUnitContext context) => UnderlyingType;
 
     public int? GetSizeInBytes(TargetArchitectureSet arch)

@@ -50,6 +50,9 @@ internal enum PrimitiveTypeKind
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.PrimitiveType;
+
     public TypeReference Resolve(TranslationUnitContext context)
     {
         var typeSystem = context.TypeSystem;
