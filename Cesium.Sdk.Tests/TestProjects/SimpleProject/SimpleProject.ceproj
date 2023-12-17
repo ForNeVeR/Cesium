@@ -1,0 +1,9 @@
+<Project Sdk="Cesium.Sdk">
+    <ItemGroup>
+        <Compile Include="hello.c" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Cesium.Compiler" Version="0.0.1" />
+    </ItemGroup>
+</Project>

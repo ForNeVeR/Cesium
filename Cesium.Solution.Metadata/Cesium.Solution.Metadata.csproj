@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="Cesium.Solution.Metadata.SolutionMetadataAttribute">
+            <_Parameter1>$(CesiumSourceRoot)</_Parameter1>
+            <_Parameter2>$(VersionPrefix)</_Parameter2>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+</Project>

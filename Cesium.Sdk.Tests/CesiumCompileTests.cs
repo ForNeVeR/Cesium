@@ -1,9 +1,15 @@
+using Xunit.Abstractions;
+
 namespace Cesium.Sdk.Tests;
 
-public class CesiumCompileTests
+public class CesiumCompileTests : SdkTestBase
 {
-    [Fact]
-    public void Test1()
+    // [Theory]
+    // [InlineData()]
+    // public void CesiumCompile_ShouldSucceed(string projectPath)
+    // {
+    // }
+    public CesiumCompileTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
     }
 }

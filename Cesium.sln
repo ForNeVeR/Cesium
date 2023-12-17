@@ -89,6 +89,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.TestFramework.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Sdk.Tests", "Cesium.Sdk.Tests\Cesium.Sdk.Tests.csproj", "{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Solution.Metadata", "Cesium.Solution.Metadata\Cesium.Solution.Metadata.csproj", "{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
