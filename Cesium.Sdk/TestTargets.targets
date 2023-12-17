@@ -1,0 +1,10 @@
+<Project>
+    <UsingTask TaskName="Cesium.Sdk.CesiumCompile" AssemblyFile="$(OutputPath)Cesium.Sdk.dll" />
+    <Target Name="CompileCesium">
+        <CesiumCompile CompilerExe="Cesium.exe"
+                       OutputFile="Result.dll"
+                       InputFiles="@(CesiumInputFile)"
+                    />
+    </Target>
+</Project>
+

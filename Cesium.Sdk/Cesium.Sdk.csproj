@@ -11,9 +11,11 @@
         <Content Include="Sdk\Sdk.props" PackagePath="Sdk\Sdk.props" />
         <Content Include="Sdk\Sdk.targets" PackagePath="Sdk\Sdk.targets" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0" PrivateAssets="All" />
     </ItemGroup>
+
+    <Import Project="TestTargets.targets" />
 
 </Project>
