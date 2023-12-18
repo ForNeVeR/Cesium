@@ -7,8 +7,24 @@
             Outputs="@(IntermediateAssembly)">
 
         <PropertyGroup>
-            <_CompilerOutput>@(IntermediateAssembly->'%(FullPath)')</_CompilerOutput>
+            <_CompilerOutput>$(OutDir)$(AssemblyName)</_CompilerOutput>
         </PropertyGroup>
+
+        <CesiumCompile
+            CompilerExe="$(CesiumCompilerPath)"
+            InputFiles="@(Compile)"
+            OutputFile="$(_CompilerOutput)"
+            Namespace="$(RootNamespace)"
+            Framework="$(Framework)"
+            Architecture="$(Architecture)"
+            ModuleType="$(ModuleType)"
+            CoreLibPath="$(CoreLibPath)"
+            RuntimePath="$(RuntimePath)"
+            DryRun="$([System.Boolean]::Parse('$(DryRun)'))"
+            ImportItems="@(ImportItems)"
+            PreprocessorItems="@(PreprocessorItems)"
+            ResultingCommandLine="$(ResultingCommandLine)">
+        </CesiumCompile>
 
         <Exec Command="@(MainCompile -> '$(CesiumCompilerCommand) $(_PascalAbcCompilerArguments) &quot;/Output:$(_CompilerOutput)&quot; %(FullPath)')"
               Condition=" '%(Identity)' != ''"/>

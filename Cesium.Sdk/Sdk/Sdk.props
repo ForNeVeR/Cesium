@@ -9,21 +9,27 @@
     <PropertyGroup Label="DefaultProperties">
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler</CesiumCompilerPackageName>
-        <CesiumCompilerPackageVersionPrefix Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersionPrefix>
+        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">$(VersionPrefix)</CesiumCompilerPackageVersion>
     </PropertyGroup>
 
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <PackageReference Include="$(CesiumCompilerPackageName)"
-                          Version="$(CesiumCompilerPackageVersionPrefix)$(CesiumCompilerPackageVersionSuffix)"
+                          Version="$(CesiumCompilerPackageVersion)"
                           GeneratePathProperty="true"
                           PrivateAssets="All"/>
     </ItemGroup>
 
     <PropertyGroup Label="PostInstallProperties">
         <CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == '' AND $(PkgCesium_Compiler) != ''">$(PkgCesium_Compiler)</CesiumCompilerPackagePath>
-        <!-- TODO[seclerp]: OSX support -->
-        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName).exe</CesiumCompilerPath>
-        <CesiumCompilerCommand Condition="$(CesiumCompilerPath) == ''">$(CesiumCompilerPath)</CesiumCompilerCommand>
+        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">
+            $(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName)
+        </CesiumCompilerPath>
+        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">
+            $(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName).exe
+        </CesiumCompilerPath>
     </PropertyGroup>
+
+    <UsingTask TaskName="CesiumCompile"
+               AssemblyFile="$(MSBuildThisFileDirectory)..\tools\Cesium.Sdk.dll"/>
 
 </Project>

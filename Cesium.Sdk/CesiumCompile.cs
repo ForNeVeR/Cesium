@@ -27,18 +27,19 @@ namespace Cesium.Sdk;
   value pos. 0
  */
 
+// ReSharper disable once UnusedType.Global
 public class CesiumCompile : Task
 {
-    [Required] public ITaskItem CompilerExe { get; set; } = null!;
+    [Required] public string CompilerExe { get; set; } = null!;
     [Required] public ITaskItem[] InputFiles { get; set; } = null!;
-    [Required] public ITaskItem OutputFile { get; set; } = null!;
+    [Required] public string OutputFile { get; set; } = null!;
 
     public string? Namespace { get; set; }
     public string? Framework { get; set; }
     public string? Architecture { get; set; }
     public string? ModuleType { get; set; }
-    public ITaskItem? CoreLibPath { get; set; }
-    public ITaskItem? RuntimePath { get; set; }
+    public string? CoreLibPath { get; set; }
+    public string? RuntimePath { get; set; }
     public ITaskItem[] ImportItems { get; set; } = Array.Empty<ITaskItem>();
     public ITaskItem[] PreprocessorItems { get; set; } = Array.Empty<ITaskItem>();
     public bool DryRun = false;
@@ -112,9 +113,9 @@ public class CesiumCompile : Task
         var success = true;
 
 
-        if (!string.IsNullOrWhiteSpace(CompilerExe.ItemSpec) && !File.Exists(CompilerExe.ItemSpec))
+        if (!string.IsNullOrWhiteSpace(CompilerExe) && !File.Exists(CompilerExe))
         {
-            ReportValidationError("CES1000", $"Compiler executable doesn't exist under path '{CompilerExe?.ItemSpec}'");
+            ReportValidationError("CES1000", $"Compiler executable doesn't exist under path '{CompilerExe}'");
             success = false;
         }
 
@@ -149,15 +150,15 @@ public class CesiumCompile : Task
             success = false;
         }
 
-        if (!string.IsNullOrWhiteSpace(CoreLibPath?.ItemSpec) && !File.Exists(CoreLibPath.ItemSpec))
+        if (!string.IsNullOrWhiteSpace(CoreLibPath) && !File.Exists(CoreLibPath))
         {
-            ReportValidationError("CES1002", $"CorLib doesn't exist under path '{CoreLibPath?.ItemSpec}'");
+            ReportValidationError("CES1002", $"CorLib doesn't exist under path '{CoreLibPath}'");
             success = false;
         }
 
-        if (!string.IsNullOrWhiteSpace(RuntimePath?.ItemSpec) && !File.Exists(RuntimePath.ItemSpec))
+        if (!string.IsNullOrWhiteSpace(RuntimePath) && !File.Exists(RuntimePath))
         {
-            ReportValidationError("CES1003", $"Cesium.Runtime doesn't exist under path '{RuntimePath.ItemSpec}'");
+            ReportValidationError("CES1003", $"Cesium.Runtime doesn't exist under path '{RuntimePath}'");
             success = false;
         }
 
@@ -171,15 +172,15 @@ public class CesiumCompile : Task
         if (!success) return false;
 
         options = new ValidatedOptions(
-            CompilerExe: CompilerExe?.ItemSpec ?? throw new UnreachableException(),
+            CompilerExe: CompilerExe ?? throw new UnreachableException(),
             InputItems: InputFiles.Select(item => item.ItemSpec).ToArray(),
-            OutputFile: OutputFile?.ItemSpec ?? throw new UnreachableException(),
+            OutputFile: OutputFile ?? throw new UnreachableException(),
             Namespace: Namespace,
             Framework: framework,
             Architecture: arch,
             ModuleKind: moduleKind,
-            CoreLibPath: CoreLibPath?.ItemSpec,
-            RuntimePath: RuntimePath?.ItemSpec,
+            CoreLibPath: CoreLibPath,
+            RuntimePath: RuntimePath,
             ImportItems: ImportItems.Select(item => item.ItemSpec).ToArray(),
             PreprocessorItems: PreprocessorItems.Select(item => item.ItemSpec).ToArray()
         );
