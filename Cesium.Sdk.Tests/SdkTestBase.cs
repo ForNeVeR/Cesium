@@ -1,7 +1,6 @@
+using System.Diagnostics;
 using System.Reflection;
 using Cesium.Solution.Metadata;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
@@ -9,7 +8,10 @@ namespace Cesium.Sdk.Tests;
 public abstract class SdkTestBase
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly string _temporaryPath = Path.GetTempFileName();
+    private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+    protected string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
+    protected string GlobalJsonPath => Path.Combine(_temporaryPath, "global.json");
 
     public SdkTestBase(ITestOutputHelper testOutputHelper)
     {
@@ -21,46 +23,103 @@ public abstract class SdkTestBase
 
         var assemblyPath = Assembly.GetExecutingAssembly().Location;
         var testDataPath = Path.Combine(Path.GetDirectoryName(assemblyPath)!, "TestProjects");
+        _testOutputHelper.WriteLine($"Copying TestProjects to {_temporaryPath}...");
         CopyDirectoryRecursive(testDataPath, _temporaryPath);
 
         var nupkgPath = Path.GetFullPath(Path.Combine(SolutionMetadata.SourceRoot, "artifacts", "package", "debug"));
-        EmitNuGetConfig(Path.Combine(_temporaryPath, "NuGet.config"), nupkgPath);
-        EmitGlobalJson(Path.Combine(_temporaryPath, "global.json"), $"{SolutionMetadata.VersionPrefix}-dev");
+        _testOutputHelper.WriteLine($"Local NuGet feed: {nupkgPath}.");
+        EmitNuGetConfig(NuGetConfigPath, nupkgPath);
+        EmitGlobalJson(GlobalJsonPath, $"{SolutionMetadata.VersionPrefix}");
     }
 
-    protected BuildResult ExecuteTargets(string projectFile, params string[] targets)
+    protected BuildResult ExecuteTargets(string projectName, params string[] targets)
     {
-        var projectInstance = new ProjectInstance(projectFile);
-        var request = new BuildRequestData(projectInstance, targets);
-        var parameters = new BuildParameters
+        var projectFile = $"{projectName}/{projectName}.ceproj";
+        var joinedTargets = string.Join(";", targets);
+        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
+        var testProjectFolder = Path.GetDirectoryName(testProjectFile) ?? throw new ArgumentNullException(nameof(testProjectFile));
+        var startInfo = new ProcessStartInfo
         {
-            Loggers = new []{ new TestOutputLogger(_testOutputHelper) }
+            WorkingDirectory = testProjectFolder,
+            FileName = "dotnet",
+            Arguments = $"build \"{testProjectFile}\" -t:{joinedTargets} -v:d /bl:build_result.binlog",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            UseShellExecute = false,
         };
-        var result = BuildManager.DefaultBuildManager.Build(parameters, request);
-        return result;
+
+        using var process = new Process();
+        process.StartInfo = startInfo;
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                _testOutputHelper.WriteLine($"[stdout]: {e.Data}");
+            }
+        };
+
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                _testOutputHelper.WriteLine($"[stderr]: {e.Data}");
+            }
+        };
+
+        process.Start();
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        process.WaitForExit();
+
+        var success = process.ExitCode == 0;
+
+        _testOutputHelper.WriteLine(success
+            ? "Build succeeded"
+            : $"Build failed with exit code {process.ExitCode}");
+
+        var binFolder = Path.Combine(testProjectFolder, "bin");
+        var objFolder = Path.Combine(testProjectFolder, "obj");
+
+        var binArtifacts = CollectArtifacts(binFolder);
+        var objArtifacts = CollectArtifacts(objFolder);
+
+        return new BuildResult(process.ExitCode, binArtifacts, objArtifacts);
+
+        IReadOnlyCollection<string> CollectArtifacts(string folder) =>
+            Directory.Exists(folder)
+                ? Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
+                    .Select(path => Path.GetRelativePath(folder, path))
+                    .ToList()
+                : Array.Empty<string>();
     }
 
     private static void EmitNuGetConfig(string configFilePath, string packageSourcePath)
     {
-        File.WriteAllText(configFilePath, $@"<configuration>
-    <config>
-        <add key=""globalPackagesFolder"" value=""packages"" />
-    </config>
-    <packageSources>
-        <add key=""local"" value=""{packageSourcePath}"" />
-    </packageSources>
-</configuration>
-");
+        File.WriteAllText(configFilePath, $"""
+            <configuration>
+                <config>
+                    <add key="globalPackagesFolder" value="packages" />
+                </config>
+                <packageSources>
+                    <add key="local" value="{packageSourcePath}" />
+               </packageSources>
+            </configuration>
+            """);
     }
 
     private static void EmitGlobalJson(string globalJsonPath, string packageVersion)
     {
-        File.WriteAllText(globalJsonPath, $@"{{
-    ""msbuild-sdks"": {{
-        ""Cesium.Sdk"" : ""{packageVersion}""
-    }}
-}}
-");
+        File.WriteAllText(globalJsonPath, $$"""
+            {
+                "msbuild-sdks": {
+                    "Cesium.Sdk" : "{{packageVersion}}"
+                }
+            }
+            """);
     }
 
     private static void CopyDirectoryRecursive(string source, string target)
@@ -80,91 +139,13 @@ public abstract class SdkTestBase
         }
     }
 
-    private class TestOutputLogger : ILogger
+    protected record BuildResult(
+        int ExitCode,
+        IReadOnlyCollection<string> OutputArtifacts,
+        IReadOnlyCollection<string> IntermediateArtifacts);
+
+    protected void ClearOutput()
     {
-        public LoggerVerbosity Verbosity { get; set; } = LoggerVerbosity.Normal;
-        public string Parameters { get; set; } = string.Empty;
-
-        private readonly ITestOutputHelper _testOutputHelper;
-
-        public TestOutputLogger(ITestOutputHelper testOutputHelper)
-        {
-            _testOutputHelper = testOutputHelper;
-        }
-
-        public void Initialize(IEventSource eventSource)
-        {
-            eventSource.AnyEventRaised += HandleEvent;
-        }
-
-        public void Shutdown()
-        {
-        }
-
-        private void HandleEvent(object sender, BuildEventArgs args)
-        {
-            var entry = args switch
-            {
-                TargetFinishedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.TargetFinished, args.Message),
-                TargetStartedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.TargetStarted, args.Message),
-                TaskFinishedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.TaskFinished, args.Message),
-                TaskStartedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.TaskStarted, args.Message),
-                BuildFinishedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.BuildFinished, args.Message),
-                BuildStartedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.BuildStarted, args.Message),
-                CustomBuildEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.CustomEventRaised, args.Message),
-                BuildErrorEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Error, BuildLogKind.ErrorRaised, args.Message),
-                BuildMessageEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.MessageRaised, args.Message),
-                ProjectFinishedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.ProjectFinished, args.Message),
-                ProjectStartedEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.ProjectStarted, args.Message),
-                BuildStatusEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.StatusEventRaised, args.Message),
-                BuildWarningEventArgs =>
-                    new BuildLogEntry(BuildLogLevel.Warning, BuildLogKind.WarningRaised, args.Message),
-                var other =>
-                    new BuildLogEntry(BuildLogLevel.Info, BuildLogKind.AnyEventRaised, other.Message)
-            };
-
-            _testOutputHelper.WriteLine($"[{entry.Level.ToString()}]: {entry.Message}");
-        }
+        Directory.Delete(_temporaryPath, true);
     }
-
-    protected enum BuildLogLevel
-    {
-        Error,
-        Warning,
-        Info,
-        Verbose,
-        Trace,
-    }
-
-    protected enum BuildLogKind
-    {
-        AnyEventRaised,
-        BuildFinished,
-        BuildStarted,
-        CustomEventRaised,
-        ErrorRaised,
-        MessageRaised,
-        ProjectFinished,
-        ProjectStarted,
-        StatusEventRaised,
-        TargetFinished,
-        TargetStarted,
-        TaskFinished,
-        TaskStarted,
-        WarningRaised
-    }
-
-    protected record BuildLogEntry(BuildLogLevel Level, BuildLogKind Kind, string? Message);
 }

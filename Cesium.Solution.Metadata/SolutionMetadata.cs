@@ -4,11 +4,10 @@ namespace Cesium.Solution.Metadata;
 
 public static class SolutionMetadata
 {
-    public static string SourceRoot =>
-        Assembly.GetExecutingAssembly().GetCustomAttribute<SolutionMetadataAttribute>()?.SourceRoot
-        ?? throw new Exception($"Missing {nameof(SolutionMetadataAttribute)} metadata attribute.");
+    public static string SourceRoot => ResolvedAttribute.SourceRoot;
+    public static string VersionPrefix => ResolvedAttribute.VersionPrefix;
 
-    public static string VersionPrefix =>
-        Assembly.GetExecutingAssembly().GetCustomAttribute<SolutionMetadataAttribute>()?.VersionPrefix
+    private static SolutionMetadataAttribute ResolvedAttribute =>
+        Assembly.GetExecutingAssembly().GetCustomAttribute<SolutionMetadataAttribute>()
         ?? throw new Exception($"Missing {nameof(SolutionMetadataAttribute)} metadata attribute.");
 }

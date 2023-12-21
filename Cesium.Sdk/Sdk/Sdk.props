@@ -29,7 +29,7 @@
         </CesiumCompilerPath>
     </PropertyGroup>
 
-    <UsingTask TaskName="CesiumCompile"
+    <UsingTask TaskName="Cesium.Sdk.CesiumCompile"
                AssemblyFile="$(MSBuildThisFileDirectory)..\tools\Cesium.Sdk.dll"/>
 
 </Project>
