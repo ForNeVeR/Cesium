@@ -1,5 +1,8 @@
 <Project Sdk="Cesium.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
     <ItemGroup>
-        <Compile Include="hello.c" />
+        <CesiumCompile Include="hello.c" />
     </ItemGroup>
 </Project>

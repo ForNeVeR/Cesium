@@ -2,32 +2,72 @@
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
 
-    <Target Name="Compile" BeforeTargets="Build"
+    <PropertyGroup Label="MapOutputType" Condition="$(_CesiumModuleKind) == ''">
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Exe'">Console</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'WinExe'">Windows</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Dll'">Library</_CesiumModuleKind>
+    </PropertyGroup>
+
+    <Target Name="CheckModuleKind" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported OutputType: $(OutputType), Supported OutputTypes are: Exe, WinExe and Dll."
+               Condition="'$(_CesiumModuleKind)' == ''" />
+    </Target>
+
+    <PropertyGroup Label="MapTargetFramework" Condition="$(_CesiumFramework) == ''">
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">net6.0</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">net48</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">netstandard2.0</_CesiumFramework>
+    </PropertyGroup>
+
+    <Target Name="CheckFramework" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported TargetFramework: $(TargetFramework). Supported frameworks are: net6.0, netstandard2.0 and net48."
+               Condition="'$(_CesiumFramework)' == ''" />
+    </Target>
+
+    <PropertyGroup Label="MapArchitecture" Condition="$(_CesiumArchitecture) == ''">
+        <_CesiumArchitecture Condition="'$(Platform)' == 'AnyCPU'">Dynamic</_CesiumArchitecture>
+        <_CesiumArchitecture Condition="'$(Platform)' == 'x64'">Bit64</_CesiumArchitecture>
+        <_CesiumArchitecture Condition="'$(Platform)' == 'x86'">Bit32</_CesiumArchitecture>
+    </PropertyGroup>
+
+    <Target Name="CheckArchitecture" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported Platform: $(Platform). Supported platforms are: AnyCPU, x64 and x86."
+               Condition="'$(_CesiumFramework)' == ''" />
+    </Target>
+
+    <PropertyGroup>
+        <_CompilerOutput>$(OutDir)$(AssemblyName)</_CompilerOutput>
+    </PropertyGroup>
+
+    <Target Name="CesiumValidateProperties" BeforeTargets="CesiumCompile"/>
+
+    <Target Name="CesiumCompile" BeforeTargets="Build"
             Inputs="@(Compile)"
-            Outputs="@(IntermediateAssembly)">
+            Outputs="@(ResultingCommandLine)">
 
-        <PropertyGroup>
-            <_CompilerOutput>$(OutDir)$(AssemblyName)</_CompilerOutput>
-        </PropertyGroup>
+        <ResolvePackageAssets ProjectPath="$(MSBuildProjectFullPath)"
+                              TargetFramework="$(TargetFrameworkMoniker)"
+                              RuntimeIdentifier="$(RuntimeIdentifier)"
+                              CompilationOnly="false">
+            <Output TaskParameter="ResolvedCompileTimeAssemblies" ItemName="_CesiumImport"/>
+        </ResolvePackageAssets>
 
+        <!-- TODO[seclerp]: Add ability to set CoreLibPath -->
+        <!-- TODO[seclerp]: Add ability to set DryRun -->
         <CesiumCompile
             CompilerExe="$(CesiumCompilerPath)"
-            InputFiles="@(Compile)"
+            InputFiles="@(CesiumCompile)"
             OutputFile="$(_CompilerOutput)"
             Namespace="$(RootNamespace)"
-            Framework="$(Framework)"
-            Architecture="$(Architecture)"
-            ModuleType="$(ModuleType)"
-            CoreLibPath="$(CoreLibPath)"
+            Framework="$(_CesiumFramework)"
+            Architecture="$(_CesiumArchitecture)"
+            ModuleType="$(_CesiumModuleKind)"
             RuntimePath="$(RuntimePath)"
-            DryRun="$([System.Boolean]::Parse('$(DryRun)'))"
-            ImportItems="@(ImportItems)"
-            PreprocessorItems="@(PreprocessorItems)"
+            ImportItems="@(_CesiumImport)"
+            PreprocessorItems="$(DefineConstants.Split(';'))"
             ResultingCommandLine="$(ResultingCommandLine)">
         </CesiumCompile>
 
-        <Exec Command="@(MainCompile -> '$(CesiumCompilerCommand) $(_PascalAbcCompilerArguments) &quot;/Output:$(_CompilerOutput)&quot; %(FullPath)')"
-              Condition=" '%(Identity)' != ''"/>
     </Target>
 
 </Project>
