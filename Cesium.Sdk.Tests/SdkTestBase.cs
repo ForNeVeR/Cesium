@@ -42,7 +42,7 @@ public abstract class SdkTestBase
         {
             WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
-            Arguments = $"build \"{testProjectFile}\" -t:{joinedTargets} -v:d /bl:build_result.binlog",
+            Arguments = $"build \"{testProjectFile}\" -t:{joinedTargets} -v:diag /bl:build_result.binlog",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,

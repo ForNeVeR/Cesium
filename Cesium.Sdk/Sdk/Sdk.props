@@ -9,7 +9,7 @@
     <PropertyGroup Label="DefaultProperties">
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler</CesiumCompilerPackageName>
-        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">$(VersionPrefix)</CesiumCompilerPackageVersion>
+        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
     </PropertyGroup>
 
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
