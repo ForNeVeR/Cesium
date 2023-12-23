@@ -97,7 +97,7 @@ public class TranslationUnitContext
             return method;
     }
 
-    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<string, IType> _types = new();
     private readonly Dictionary<string, IType> _tags = new();
 
