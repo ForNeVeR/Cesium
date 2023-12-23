@@ -53,8 +53,4 @@ internal sealed record PointerType(IType Base) : IType
 
         return new SizeOfOperatorExpression(this);
     }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
 }
