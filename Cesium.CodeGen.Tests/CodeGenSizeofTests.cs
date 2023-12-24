@@ -56,14 +56,13 @@ int main() {
     return sizeof(enum foo);
 }");
 
-    /// TODO[#453]: Struct can't be resolved
-    //    [Fact]
-    //    public Task GlobalStructSizeof() => DoTest(@"
-    //typedef struct {
-    //    int x;
-    //    int y;
-    //} foo;
-    //int main() {
-    //    return sizeof(foo);
-    //}");
+    [Fact]
+    public Task GlobalStructSizeof() => DoTest(@"
+    typedef struct {
+        int x;
+        int y;
+    } foo;
+    int main() {
+        return sizeof(foo);
+    }");
 }

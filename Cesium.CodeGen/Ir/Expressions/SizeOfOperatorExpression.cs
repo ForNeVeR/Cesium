@@ -17,7 +17,7 @@ internal sealed class SizeOfOperatorExpression : IExpression
     public IExpression Lower(IDeclarationScope scope) => _type switch
     {
         InPlaceArrayType arrayType => arrayType.GetSizeInBytesExpression(scope.ArchitectureSet),
-        StructType structType => throw new WipException(453, $"sizeof(StructType) not supported, yet: {structType.Identifier}."),
+        StructType structType => this,
         _ => this
     };
 

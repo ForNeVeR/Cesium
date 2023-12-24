@@ -15,7 +15,13 @@ internal sealed class ExpressionSizeOfOperatorExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var typeResolved = _expression.GetExpressionType(scope);
+        IType? typeResolved = null;
+        if (_expression is IdentifierExpression identifierExpression)
+        {
+            typeResolved = scope.TryGetType(identifierExpression.Identifier);
+        }
+
+        typeResolved ??= _expression.GetExpressionType(scope);
         var sizeOfExpression = new SizeOfOperatorExpression(typeResolved);
         return sizeOfExpression.Lower(scope);
     }
