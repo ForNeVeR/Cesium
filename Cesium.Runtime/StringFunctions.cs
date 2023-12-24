@@ -245,7 +245,7 @@ public static unsafe class StringFunctions
         byte* lhs_ = (byte*)lhs;
         byte* rhs_ = (byte*)rhs;
 
-        for (; *lhs_ != 0 && *rhs_ != 0 && count != 0; rhs_ += 1, rhs_++, count--)
+        for (; *lhs_ != 0 && *rhs_ != 0 && count != 0; lhs_++, rhs_++, count--)
         {
             if (*lhs_ < *rhs_) return -1;
             if (*lhs_ > *rhs_) return 1;
