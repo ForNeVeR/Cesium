@@ -49,7 +49,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB714E-12F8-46E2-98D8-494723EA92E1}"
 	ProjectSection(SolutionItems) = preProject
 		scripts\approve-all.ps1 = scripts\approve-all.ps1
-		scripts\run-sonarqube-dotnet.sh = scripts\run-sonarqube-dotnet.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
