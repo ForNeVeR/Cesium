@@ -55,6 +55,34 @@ public unsafe static class StdIoFunctions
             return EOF;
         }
     }
+
+    public static int FPutS(byte* str, void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return -1;
+        }
+
+        var streamWriterAccessor = streamHandle.Writer;
+        if (streamWriterAccessor == null)
+        {
+            return -1;
+        }
+
+        var streamWriter = streamWriterAccessor();
+
+        try
+        {
+            streamWriter.Write(RuntimeHelpers.Unmarshal(str));
+            return 0;
+        }
+        catch (Exception) // TODO[#154]: Exception handling.
+        {
+            const int EOF = -1; // TODO[#155]: Extract to some common place.
+            return EOF;
+        }
+    }
     public static int PutChar(byte character)
     {
         try

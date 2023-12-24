@@ -220,4 +220,37 @@ public static unsafe class StringFunctions
         if (*lhs > *rhs) return 1;
         return 0;
     }
+
+    public static int StrCmpS(byte* lhs, byte* rhs, nuint count)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        for (; *lhs != 0 && *rhs != 0 && count != 0; lhs++, rhs++, count--)
+        {
+            if (*lhs < *rhs) return -1;
+            if (*lhs > *rhs) return 1;
+        }
+
+        if (*lhs < *rhs) return -1;
+        if (*lhs > *rhs) return 1;
+        return 0;
+    }
+
+    public static int MemCmp(void* lhs, void* rhs, nuint count)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        byte* lhs_ = (byte*)lhs;
+        byte* rhs_ = (byte*)rhs;
+
+        for (; *lhs_ != 0 && *rhs_ != 0 && count != 0; rhs_ += 1, rhs_++, count--)
+        {
+            if (*lhs_ < *rhs_) return -1;
+            if (*lhs_ > *rhs_) return 1;
+        }
+
+        return 0;
+    }
 }
