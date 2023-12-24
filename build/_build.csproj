@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace></RootNamespace>
+        <NoWarn>CS0649;CS0169</NoWarn>
+        <NukeRootDirectory>..</NukeRootDirectory>
+        <NukeScriptDirectory>..</NukeScriptDirectory>
+        <NukeTelemetryVersion>1</NukeTelemetryVersion>
+        <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Nuke.Common" Version="7.0.6"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Build.Sdk.cs">
+        <DependentUpon>Build.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+</Project>

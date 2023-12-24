@@ -4,9 +4,12 @@
 bin/
 obj/
 artifacts/
+/.nuke/temp
 
 *.dll
 *.exe
 *.runtimeconfig.json
 *.received.txt
 *.user
+
+

@@ -38,28 +38,4 @@
         <RdXmlFile Include="rd.xml" />
     </ItemGroup>
 
-    <Target Name="PublishAll" Condition=" '$(TargetFramework)' != '' and '$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == ''  " DependsOnTargets="Restore;Build">
-        <ItemGroup>
-            <_PublishRuntimeIdentifier Include="$(RuntimeIdentifiers)" />
-        </ItemGroup>
-
-        <Exec Command="dotnet publish --no-restore --no-build -r %(_PublishRuntimeIdentifier.Identity) -o &quot;$(PublishDir)/runtimes/%(_PublishRuntimeIdentifier.Identity)&quot; -c $(Configuration)"/>
-    </Target>
-
-    <Target Name="PackAll">
-        <ItemGroup>
-            <_PackRuntimeIdentifier Include="$(RuntimeIdentifiers)" />
-        </ItemGroup>
-
-        <Exec Command="dotnet pack --no-restore --no-build -p:RuntimeIdentifier=%(_PublishRuntimeIdentifier.Identity) -p:PackageId=$(PackageId).%(_PackRuntimeIdentifier.Identity) -c $(Configuration)"/>
-    </Target>
-
-    <ItemGroup>
-        <None Include="$(PublishDir)runtimes/$(RuntimeIdentifier)/**/*">
-            <Pack>true</Pack>
-            <PackagePath>tools</PackagePath>
-            <Visible>false</Visible>
-        </None>
-    </ItemGroup>
-
 </Project>
