@@ -118,6 +118,11 @@ internal interface IScopedDeclarationInfo
                 throw new CompilationException($"Type for array initializer unknown.");
             }
 
+            if (arrayInitializer.Initializers.Length == 0)
+            {
+                return null;
+            }
+
             if (type is not InPlaceArrayType inPlaceArrayType)
             {
                 throw new CompilationException($"Only in-place array types are supported.");

@@ -124,6 +124,13 @@ int main() {
 }");
 
     [Fact]
+    public Task EmptyArrayInitialization() => DoTest(@"int main() {
+    int a[4] = { };
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
     public Task ArrayParameterPassing() => DoTest(@"
 int foo(int ints[]) { return ints[0]; }");
 
