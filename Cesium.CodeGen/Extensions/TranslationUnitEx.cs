@@ -58,29 +58,9 @@ internal static class TranslationUnitEx
                     if (type is EnumType enumType)
                     {
                         yield return new TagBlockItem(new[] { declaration });
-                        long currentValue = -1;
-                        foreach (var enumeratorDeclaration in enumType.Members)
+                        foreach(var d in FindEnumConstants(enumType))
                         {
-                            var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
-                                    $"Enum type {enumType.Identifier} has enumerator without name");
-                            if (enumeratorDeclaration.Initializer is null)
-                            {
-                                currentValue++;
-                            }
-                            else
-                            {
-                                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
-                                if (constantValue is not IntegerConstant intConstant)
-                                {
-                                    throw new CompilationException(
-                                        $"Enumerator {enumeratorName} has non-integer initializer");
-                                }
-
-                                currentValue = intConstant.Value;
-                            }
-
-                            var variable = new EnumConstantDefinition(enumeratorName, type, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
-                            yield return variable;
+                            yield return d;
                         }
                         continue;
                     }
@@ -95,11 +75,53 @@ internal static class TranslationUnitEx
                 }
                 break;
             case TypeDefDeclaration typeDefDeclaration:
-                var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
-                yield return typeDefBlockItem;
+                {
+                    var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
+                    yield return typeDefBlockItem;
+                    foreach (var declaration in typeDefDeclaration.Types)
+                    {
+                        var (type, identifier, cliImportMemberName) = declaration;
+                        if (type is EnumType enumType)
+                        {
+                            foreach (var d in FindEnumConstants(enumType))
+                            {
+                                yield return d;
+                            }
+                            continue;
+                        }
+                    }
+                }
                 break;
             default:
                 throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
+        }
+    }
+
+    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType)
+    {
+        long currentValue = -1;
+        foreach (var enumeratorDeclaration in enumType.Members)
+        {
+            var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
+                    $"Enum type {enumType.Identifier} has enumerator without name");
+            if (enumeratorDeclaration.Initializer is null)
+            {
+                currentValue++;
+            }
+            else
+            {
+                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                if (constantValue is not IntegerConstant intConstant)
+                {
+                    throw new CompilationException(
+                        $"Enumerator {enumeratorName} has non-integer initializer");
+                }
+
+                currentValue = intConstant.Value;
+            }
+
+            var variable = new EnumConstantDefinition(enumeratorName, enumType, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+            yield return variable;
         }
     }
 }
