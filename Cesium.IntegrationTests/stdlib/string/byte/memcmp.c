@@ -26,7 +26,7 @@ int main(void)
 
     char* test = "memory";
     char* test2 = "m";
-    if (memcpy(test, test2, 1) != 0) return -1;
+    if (memcmp(test, test2, 1) != 0) return -1;
 
     return 42;
 }
