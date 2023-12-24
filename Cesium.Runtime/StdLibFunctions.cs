@@ -218,4 +218,9 @@ public unsafe static class StdLibFunctions
             *str_end = (foundSomething != 0) ? current - 1 : str;
         return result;
     }
+
+    public static ulong StrToUL(byte* str, byte** str_end, int @base)
+    {
+        return (ulong)StrToL(str, str_end, @base);
+    }
 }

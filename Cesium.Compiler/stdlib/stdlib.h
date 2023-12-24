@@ -46,6 +46,9 @@ int atoi(const char* str);
 __cli_import("Cesium.Runtime.StdLibFunctions::StrToL")
 long strtol(const char* str, char** str_end, int base);
 
+__cli_import("Cesium.Runtime.StdLibFunctions::StrToUL")
+unsigned long strtoul(const char* str, char** str_end, int base);
+
 __cli_import("Cesium.Runtime.StdLibFunctions::GetErrNo")
 int* _errno(void);
 

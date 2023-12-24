@@ -27,3 +27,6 @@ char* strchr(const char* str, int ch);
 
 __cli_import("Cesium.Runtime.StringFunctions::StrCmp")
 int strcmp(const char* lhs, const char* rhs);
+
+__cli_import("Cesium.Runtime.StringFunctions::MemCmp")
+int memcmp(const void* lhs, const void* rhs, size_t count);
