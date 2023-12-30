@@ -1,3 +1,8 @@
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.Arm;
+
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -9,44 +14,55 @@ public unsafe static class StringFunctions
     {
         if (str != null)
         {
-            int match;
-            nuint offset = 0;
-
-            // TODO: Copy IndexOfNullByte impl. from CoreLib in a distant future
-            while ((match = new Span<byte>(str + offset, int.MaxValue)
-                .IndexOf((byte)0)) < 0)
+            var start = str;
+            while ((nuint)str % 16 != 0)
             {
-                offset += int.MaxValue;
+                if (*str is 0)
+                {
+                    goto Done;
+                }
+                str++;
             }
 
-            return offset + (uint)match;
+            while (true)
+            {
+                var eqmask = Vector128.Equals(
+                    Vector128.LoadAligned(str),
+                    Vector128<byte>.Zero);
+                if (eqmask == Vector128<byte>.Zero)
+                {
+                    str += Vector128<byte>.Count;
+                    continue;
+                }
+
+                str += IndexOfMatch(eqmask);
+                break;
+            }
+        Done:
+            return (nuint)str - (nuint)start;
         }
 
         return 0;
     }
     public static byte* StrCpy(byte* dest, byte* src)
     {
-        if (dest == null)
+        if (dest != null)
         {
-            return null;
-        }
+            var result = dest;
+            if (src != null)
+            {
+                // SIMD scan into SIMD copy (traversing the data twice)
+                // is much faster than a single scalar check+copy loop.
+                var length = StrLen(src);
+                Buffer.MemoryCopy(src, dest, length, length);
+                dest += length;
+            }
 
-        var result = dest;
-        if (src == null)
-        {
+            *dest = 0;
             return dest;
         }
 
-        byte* search = src;
-        while (*search != '\0')
-        {
-            *dest = *search;
-            search++;
-            dest++;
-        }
-
-        *dest = 0;
-        return result;
+        return null;
     }
     public static byte* StrNCpy(byte* dest, byte* src, nuint count)
     {
@@ -177,22 +193,55 @@ public unsafe static class StringFunctions
     {
         if (str != null)
         {
-            int match;
             byte c = (byte)ch;
 
-            while ((match = new Span<byte>(str, int.MaxValue)
-                .IndexOfAny<byte>(c, 0)) < 0)
+            while ((nuint)str % 16 != 0)
             {
-                str += int.MaxValue;
+                var curr = *str;
+                if (curr == c || curr == 0)
+                {
+                    goto Done;
+                }
+                str++;
             }
-            str += (nint)(uint)match;
 
-            if (*str == c)
+            var element = Vector128.Create(c);
+            var nullByte = Vector128<byte>.Zero;
+            while (true)
             {
-                return str;
+                var chars = Vector128.LoadAligned(str);
+                var eqmask = Vector128.Equals(chars, element) |
+                             Vector128.Equals(chars, nullByte);
+                if (eqmask == Vector128<byte>.Zero)
+                {
+                    str += Vector128<byte>.Count;
+                    continue;
+                }
+
+                str += IndexOfMatch(eqmask);
+                break;
             }
+
+        Done:
+            return str;
         }
 
         return null;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static uint IndexOfMatch(Vector128<byte> eqmask)
+    {
+        if (AdvSimd.Arm64.IsSupported)
+        {
+            var res = AdvSimd
+                .ShiftRightLogicalNarrowingLower(eqmask.AsUInt16(), 4)
+                .AsUInt64()
+                .ToScalar();
+            return (uint)BitOperations.TrailingZeroCount(res) >> 2;
+        }
+
+        return (uint)BitOperations.TrailingZeroCount(
+            eqmask.ExtractMostSignificantBits());
     }
 }
