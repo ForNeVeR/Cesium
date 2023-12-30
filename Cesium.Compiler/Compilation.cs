@@ -141,7 +141,7 @@ internal static class Compilation
         {
             var runtimeConfigFilePath = Path.ChangeExtension(outputFilePath, "runtimeconfig.json");
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
-            File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet6());
+            File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet7());
         }
     }
 }
