@@ -49,10 +49,14 @@ public unsafe class StringFunctionTests
         }
     }
 
-    [Fact]
-    public void StrChr_NotFound()
+    [Theory]
+    [InlineData("Hello\0")]
+    [InlineData("Goodbye\0")]
+    [InlineData("Hello Goodbye\0")]
+    [InlineData("                  \0")]
+    public void StrChr_NotFound(string input)
     {
-        var bytes = Encoding.UTF8.GetBytes("Hello\0");
+        var bytes = Encoding.UTF8.GetBytes(input);
         fixed (byte* str = bytes)
         {
             var actual = StringFunctions.StrChr(str, '\n');
