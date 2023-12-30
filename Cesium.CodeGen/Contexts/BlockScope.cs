@@ -74,7 +74,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         return variableDefinition;
     }
 
-    public ParameterDefinition ResolveParameter(string name) => Parent.ResolveParameter(name);
+    public ParameterDefinition ResolveParameter(int index) => Parent.ResolveParameter(index);
     public ParameterInfo? GetParameterInfo(string name) => ((IDeclarationScope)Parent).GetParameterInfo(name);
 
     /// <inheritdoc />

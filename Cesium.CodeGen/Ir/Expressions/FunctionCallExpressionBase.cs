@@ -21,7 +21,7 @@ internal abstract class FunctionCallExpressionBase : IExpression
 
         if (paramInfo?.IsVarArg == true)
         {
-            // TODO: See https://github.com/ForNeVeR/Cesium/issues/285
+            // TODO[#285]:
             // Using sparse population of the parameters on the stack. 8 bytes should be enough for anybody.
             // Also we need perform localloc on empty stack, so we will use local variable to save vararg buffer to temporary variable.
             if (varArgParametersCount == 0)

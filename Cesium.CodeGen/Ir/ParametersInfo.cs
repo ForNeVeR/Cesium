@@ -39,9 +39,9 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
     }
 }
 
-internal record ParameterInfo(IType Type, string? Name)
+internal record ParameterInfo(IType Type, string? Name, int Index)
 {
-    public static ParameterInfo Of(ParameterDeclaration declaration)
+    public static ParameterInfo Of(ParameterDeclaration declaration, int index)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
         var (type, identifier, cliImportMemberName) = (declarator, abstractDeclarator) switch
@@ -55,6 +55,6 @@ internal record ParameterInfo(IType Type, string? Name)
         if (cliImportMemberName != null)
             throw new CompilationException("CLI import specifier isn't supported for a parameter.");
 
-        return new ParameterInfo(type, identifier);
+        return new ParameterInfo(type, identifier, index);
     }
 }

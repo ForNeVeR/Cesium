@@ -67,4 +67,29 @@ public static unsafe class RuntimeHelpers
     {
         Buffer.MemoryCopy(source, target, size, size);
     }
+
+    internal static string? Unmarshal(byte* str)
+    {
+#if NETSTANDARD
+        Encoding encoding = Encoding.UTF8;
+        int byteLength = 0;
+        byte* search = str;
+        while (*search != '\0')
+        {
+            byteLength++;
+            search++;
+        }
+
+        int stringLength = encoding.GetCharCount(str, byteLength);
+        string s = new string('\0', stringLength);
+        fixed (char* pTempChars = s)
+        {
+            encoding.GetChars(str, byteLength, pTempChars, stringLength);
+        }
+
+        return s;
+#else
+        return Marshal.PtrToStringUTF8((nint)str);
+#endif
+    }
 }

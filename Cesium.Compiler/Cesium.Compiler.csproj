@@ -4,7 +4,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <PublishAot Condition="$(TargetFramework) == 'net7.0'">true</PublishAot>
+        <PublishAot Condition="$(NETCoreSdkRuntimeIdentifier) != 'osx-x64'">true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
@@ -25,6 +25,7 @@
         </ProjectReference>
         <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
         <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+        <InternalsVisibleTo Include="Cesium.CodeGen.Tests" />
     </ItemGroup>
 
     <ItemGroup>

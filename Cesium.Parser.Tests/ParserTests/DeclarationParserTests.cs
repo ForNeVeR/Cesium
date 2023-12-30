@@ -36,6 +36,9 @@ public class DeclarationParserTests : ParserTestBase
     public Task ArrayDeclarationWithInitializerWithTrailingComma() => DoDeclarationParserTest("int x[4] = { 1, 2, 3, 4, };");
 
     [Fact]
+    public Task EmptyStructDeclarationWithInitializer() => DoDeclarationParserTest("Token head = {};");
+
+    [Fact]
     public Task StructTypeVariableDeclaration() => DoDeclarationParserTest("struct Foo x;");
 
     [Fact]
@@ -44,6 +47,23 @@ void *malloc(size_t);");
 
     [Fact]
     public Task FunctionTypeDef() => DoDeclarationParserTest("typedef void foo(int);");
+
+    [Fact]
+    public Task EnumTypeDef() => DoDeclarationParserTest(@"typedef enum {
+  TK_PUNCT,
+  TK_NUM,
+  TK_EOF
+} TokenKind;");
+
+    [Fact]
+    public Task EnumTypeDefTrailingComma() => DoDeclarationParserTest(@"typedef enum {
+  TK_PUNCT,
+  TK_NUM,
+  TK_EOF,
+} TokenKind;");
+
+    [Fact]
+    public Task StructShortTypeDeclaration() => DoDeclarationParserTest("typedef struct Foo Foo;");
 
     [Fact]
     public Task FunctionPointerTypeDef() => DoDeclarationParserTest("typedef void (*foo)(int);");

@@ -10,8 +10,11 @@ using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
-public record TranslationUnitContext(AssemblyContext AssemblyContext, string Name)
+public class TranslationUnitContext
 {
+    public AssemblyContext AssemblyContext { get; }
+    public string Name { get; }
+
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
@@ -24,6 +27,12 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
     internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
 
     private GlobalConstructorScope? _initializerScope;
+
+    public TranslationUnitContext(AssemblyContext assemblyContext, string name)
+    {
+        AssemblyContext = assemblyContext;
+        Name = name;
+    }
 
     /// <remarks>
     /// Architecturally, there's only one global initializer at the assembly level. But every translation unit may have
@@ -40,12 +49,12 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         var existingDeclaration = Functions.GetValueOrDefault(identifier);
         if (existingDeclaration is null)
         {
-            Functions.Add(identifier, functionInfo);
             if (functionInfo.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
-                functionInfo.MethodReference = method;
+                functionInfo = ProcessCliImport(functionInfo, method);
             }
+            Functions.Add(identifier, functionInfo);
         }
         else
         {
@@ -53,9 +62,10 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             if (functionInfo.CliImportMember is not null && existingDeclaration.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
-                if (!method.FullName.Equals(existingDeclaration.MethodReference!.FullName))
+                var methodReference = existingDeclaration.MethodReference!;
+                if (!method.FullName.Equals(methodReference.FullName))
                 {
-                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {existingDeclaration.MethodReference.FullName}.");
+                    throw new CompilationException($"Function {identifier} already defined as as CLI-import with {methodReference.FullName}.");
                 }
             }
 
@@ -63,7 +73,9 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
                 ? existingDeclaration.StorageClass
                 : functionInfo.StorageClass;
             var mergedIsDefined = existingDeclaration.IsDefined || functionInfo.IsDefined;
-            Functions[identifier] = existingDeclaration with { StorageClass = mergedStorageClass, IsDefined = mergedIsDefined };
+            existingDeclaration.Parameters = functionInfo.Parameters;
+            existingDeclaration.IsDefined = mergedIsDefined;
+            existingDeclaration.StorageClass = mergedStorageClass;
         }
     }
 
@@ -73,26 +85,30 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         IType returnType,
         ParametersInfo? parameters)
     {
-        var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
-        var method = owningType.DefineMethod(
-            this,
-            name,
-            returnType.Resolve(this),
-            parameters);
+            var owningType = storageClass == StorageClass.Auto ? GlobalType : GetOrCreateTranslationUnitType();
+            var method = owningType.DefineMethod(
+                this,
+                name,
+                returnType.Resolve(this),
+                parameters);
         var existingDeclaration = Functions.GetValueOrDefault(name);
         Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
         Functions[name] = existingDeclaration with { MethodReference = method };
-        return method;
+            return method;
     }
 
-    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<string, IType> _types = new();
     private readonly Dictionary<string, IType> _tags = new();
 
     internal void GenerateType(string name, IGeneratedType type)
     {
-        var typeReference = type.Emit(name, this);
-        _generatedTypes.Add(type, typeReference);
+        if (!_generatedTypes.ContainsKey(type))
+        {
+            var typeReference = type.StartEmit(name, this);
+            _generatedTypes.Add(type, typeReference);
+            type.FinishEmit(typeReference, name, this);
+        }
     }
 
     internal void AddTypeDefinition(string name, IType type)
@@ -103,7 +119,26 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
         _types.Add(name, type);
     }
 
-    internal void AddTagDefinition(string name, IType type) => _tags.Add(name, type);
+    internal void AddTagDefinition(string name, IType type)
+    {
+        if (_tags.TryGetValue(name, out var existingType))
+        {
+            if (type == existingType) return;
+            if (existingType.TypeKind != type.TypeKind)
+            {
+                throw new CompilationException($"Tag kind {GetTypeKind(type.TypeKind)} type {name} was already defined as {GetTypeKind(existingType.TypeKind)}");
+            }
+        }
+
+        _tags.Add(name, type);
+
+        string GetTypeKind(TypeKind type) => type switch
+        {
+            TypeKind.Struct => "struct",
+            TypeKind.Enum => "enum",
+            _ => throw new InvalidOperationException($"Unsupported type {type} used."),
+        };
+    }
 
     internal IType? TryGetType(string name) => _types.GetValueOrDefault(name);
 
@@ -148,6 +183,18 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             var members = structType.Members
                 .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
                 .ToList();
+            if (structType.Members.Count != 0 && structType.Identifier is not null)
+            {
+                if (_types.TryGetValue(structType.Identifier, out var existingType))
+                {
+                    if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
+                    {
+                        existingStructType.Members = members;
+                        return existingType;
+                    }
+                }
+            }
+
             return new StructType(members, structType.Identifier);
         }
 
@@ -210,5 +257,57 @@ public record TranslationUnitContext(AssemblyContext AssemblyContext, string Nam
             Module.TypeSystem.Object);
         Module.Types.Add(type);
         return type;
+    }
+
+    private FunctionInfo ProcessCliImport(FunctionInfo declaration, MethodReference implementation)
+    {
+        return declaration with
+        {
+            MethodReference = implementation,
+            Parameters = declaration.Parameters is null ? null : declaration.Parameters with
+            {
+                Parameters = ProcessParameters(declaration.Parameters.Parameters)
+            }
+        };
+
+        List<ParameterInfo> ProcessParameters(ICollection<ParameterInfo> parameters)
+        {
+            var areParametersValid =
+                implementation.Parameters.Count == parameters.Count
+                || declaration.Parameters.IsVarArg; // TODO[#487]: A better check for interop functions + vararg.
+            if (!areParametersValid)
+            {
+                throw new CompilationException(
+                    $"Parameter count for function {declaration.CliImportMember} " +
+                    $"doesn't match the parameter count of imported CLI method {implementation.FullName}.");
+            }
+
+            return parameters.Zip(implementation.Parameters)
+                .Select(pair =>
+                {
+                    var (declared, actual) = pair;
+                    var type = WrapInteropType(actual.ParameterType);
+                    if (type == null) return declared;
+                    return declared with { Type = type };
+                }).ToList();
+        }
+
+        InteropType? WrapInteropType(TypeReference actual)
+        {
+            if (actual.FullName == TypeSystemEx.VoidPtrFullTypeName)
+                return new InteropType(actual);
+
+            if (actual.IsGenericInstance)
+            {
+                var parent = actual.GetElementType();
+                if (parent.FullName == TypeSystemEx.CPtrFullTypeName
+                    || parent.FullName == TypeSystemEx.FuncPtrFullTypeName)
+                {
+                    return new InteropType(actual);
+                }
+            }
+
+            return null;
+        }
     }
 }

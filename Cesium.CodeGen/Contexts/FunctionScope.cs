@@ -62,17 +62,21 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
         return variableDefinition;
     }
-    public ParameterInfo? GetParameterInfo(string name) => FunctionInfo.Parameters?.Parameters.FirstOrDefault(p => p.Name == name);
-
-    private readonly Dictionary<string, ParameterDefinition> _parameterCache = new();
-    public ParameterDefinition ResolveParameter(string name)
+    public ParameterInfo? GetParameterInfo(string name)
     {
-        if (_parameterCache.TryGetValue(name, out var parameter))
-            return parameter;
+        var parametersInfo = FunctionInfo.Parameters;
+        if (parametersInfo is null) return null;
+        if (name == "__varargs" && parametersInfo.IsVarArg)
+        {
+            return new ParameterInfo(new Ir.Types.PointerType(this.CTypeSystem.Void), name, parametersInfo.Parameters.Count);
+        }
 
-        parameter = Method.Parameters.FirstOrDefault(p => p.Name == name) ?? throw new AssertException($"Cannot resolve parameter with name name {name}");
-        _parameterCache.Add(name, parameter);
-        return parameter;
+        return parametersInfo.Parameters.FirstOrDefault(p => p.Name == name);
+    }
+
+    public ParameterDefinition ResolveParameter(int index)
+    {
+        return Method.Parameters[index];
     }
     /// <inheritdoc />
     public IType ResolveType(IType type) => Context.ResolveType(type);

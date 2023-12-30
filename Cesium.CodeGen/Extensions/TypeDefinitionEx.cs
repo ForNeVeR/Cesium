@@ -38,7 +38,7 @@ internal static class TypeDefinitionEx
 
         foreach (var parameter in parameters)
         {
-            var (type, name) = parameter;
+            var (type, name, _) = parameter;
             var parameterDefinition = new ParameterDefinition(type.Resolve(context))
             {
                 Name = name
@@ -49,7 +49,7 @@ internal static class TypeDefinitionEx
         {
             var parameterDefinition = new ParameterDefinition(context.TypeSystem.Void.MakePointerType())
             {
-                Name = "varargs"
+                Name = "__varargs"
             };
             method.Parameters.Add(parameterDefinition);
         }

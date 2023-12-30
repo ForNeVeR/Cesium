@@ -1,4 +1,4 @@
-﻿System.Void <Module>::console_read(System.Int32 arg, System.Void* varargs)
+System.Void <Module>::console_read(System.Int32 arg, System.Void* __varargs)
   IL_0000: ret
 
 System.Void <Module>::test()

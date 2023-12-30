@@ -22,7 +22,7 @@ using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
 using LiteralExpressionList = ImmutableArray<IToken<CTokenType>>;
 
-/// <remarks>See the section 6 of the C17 standard.</remarks>
+/// <remarks>See the section 6 of the C23 standard.</remarks>
 [Parser(typeof(CTokenType))]
 [SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
 public partial class CParser
@@ -36,7 +36,7 @@ public partial class CParser
 
     // 6.4.5 String literals
 
-    // TODO:
+    // TODO[#78]:
     // string_literal:
     //      encoding-prefix? " s-char-sequence? "
     [Rule("string_literal: StringLiteral")]
@@ -188,9 +188,13 @@ public partial class CParser
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
+    [Rule("unary_expression: KeywordSizeof unary_expression")]
+    private static Expression MakeExpressionSizeOfOperator(ICToken _, Expression expression) =>
+        new UnaryExpressionSizeOfOperatorExpression(expression);
+
     [Rule("unary_expression: KeywordSizeof '(' Identifier ')'")]
     private static Expression MakeTypeNameSizeOfOperator(ICToken _, ICToken __, IToken identifier, ICToken ___) =>
-        new IdentifierSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
+        new UnaryExpressionSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
 
     [Rule("unary_expression: KeywordSizeof '(' type_name ')'")]
     private static Expression MakeTypeSpecifierSizeOfOperator(ICToken _, ICToken __, TypeName typeName, ICToken ___) =>
@@ -508,12 +512,12 @@ public partial class CParser
     private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
         new(identifier.Text, null);
 
-    [Rule("enum_specifier: 'enum' Identifier '{' enumerator_list '}'")]
-    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
-        new(identifier.Text, enumeratorList);
+    [Rule("enum_specifier: 'enum' Identifier? '{' enumerator_list '}'")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken? identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
+        new(identifier?.Text, enumeratorList);
 
-    [Rule("enumerator_list: (enumerator (',' enumerator)*)")]
-    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations) =>
+    [Rule("enumerator_list: (enumerator (',' enumerator)*) ','?")]
+    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations, ICToken _) =>
         declarations.Values.ToImmutableArray();
 
     [Rule("enumerator: Identifier")]
@@ -731,6 +735,10 @@ public partial class CParser
     [Rule("initializer: assignment_expression")]
     private static Initializer MakeInitializer(Expression assignmentExpression) =>
         new AssignmentInitializer(assignmentExpression);
+
+    [Rule("initializer: '{' '}' ")]
+    private static Initializer MakeInitializer(IToken _, IToken __) =>
+        new ArrayInitializer(ImmutableArray<Initializer>.Empty);
 
     [Rule("initializer: '{' initializer_list '}' ")]
     private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>

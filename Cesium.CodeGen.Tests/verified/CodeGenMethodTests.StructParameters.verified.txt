@@ -1,0 +1,4 @@
+System.Int32 <Module>::console_read(struct1* __s)
+  IL_0000: ldarg.0
+  IL_0001: ldfld System.Int32 struct1::x
+  IL_0006: ret

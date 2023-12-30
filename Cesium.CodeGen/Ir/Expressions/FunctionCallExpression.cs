@@ -71,61 +71,52 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
             return new IndirectFunctionCallExpression(
                 new GetValueExpression(new LValueLocalVariable(var.Type, var.Identifier)),
                 f,
-                _arguments.Select((a, index) =>
-                {
-                    int firstVarArgArgument = 0;
-                    if (f.Parameters?.IsVarArg == true)
-                    {
-                        firstVarArgArgument = f.Parameters.Parameters.Count;
-                    }
-
-                    if (index >= firstVarArgArgument)
-                    {
-                        var expressionType = a.GetExpressionType(scope);
-                        if (expressionType.Equals(scope.CTypeSystem.Float))
-                        {
-                            // Seems to be float always use float-point registers and as such we need to covert to double.
-                            return new TypeCastExpression(scope.CTypeSystem.Double, a.Lower(scope));
-                        }
-                        else
-                        {
-                            return a.Lower(scope);
-                        }
-                    }
-
-                    return a.Lower(scope);
-                }).ToList());
+                ConvertArgs(scope, f.Parameters));
         }
 
         var callee = scope.GetFunctionInfo(functionName) ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
-        int firstVarArgArgument = 0;
-        if (callee.Parameters?.IsVarArg == true)
-        {
-            firstVarArgArgument = callee.Parameters.Parameters.Count;
-        }
 
         return new FunctionCallExpression(
             _function,
             callee,
-            _arguments.Select((a, index) =>
-            {
-                if (index >= firstVarArgArgument)
-                {
-                    var loweredArg = a.Lower(scope);
-                    var expressionType = loweredArg.GetExpressionType(scope);
-                    if (expressionType.Equals(scope.CTypeSystem.Float))
-                    {
-                        // Seems to be float always use float-point registers and as such we need to covert to double.
-                        return new TypeCastExpression(scope.CTypeSystem.Double, loweredArg);
-                    }
-                    else
-                    {
-                        return loweredArg;
-                    }
-                }
+            ConvertArgs(scope, callee.Parameters));
+    }
 
-                return a.Lower(scope);
-            }).ToList());
+    private List<IExpression> ConvertArgs(IDeclarationScope scope, ParametersInfo? parameters)
+    {
+        int firstVarArgArgument = parameters?.Parameters.Count ?? 0;
+        return _arguments.Select((a, index) =>
+        {
+            IType targetType;
+            var loweredArg = a.Lower(scope);
+            if (index < firstVarArgArgument)
+            {
+                // Argument is not in vararg argument list. Just use the declared type.
+                targetType = parameters!.Parameters[index].Type;
+            }
+            else
+            {
+                // Argument is in a vararg list. Use the actual argument type, except for cases when it is float
+                // (convert to double then).
+                targetType = loweredArg.GetExpressionType(scope);
+                if (targetType.Equals(scope.CTypeSystem.Float))
+                {
+                    targetType = scope.CTypeSystem.Double;
+                }
+            }
+
+            return CastTypeIfRequired(scope, loweredArg, targetType);
+        }).ToList();
+    }
+
+    private static IExpression CastTypeIfRequired(IDeclarationScope scope, IExpression expression, IType targetType)
+    {
+        if (expression.GetExpressionType(scope).IsEqualTo(targetType))
+        {
+            return expression;
+        }
+
+        return new TypeCastExpression(targetType, expression);
     }
 
     public override void EmitTo(IEmitScope scope)
@@ -137,8 +128,8 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
-
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, callee.MethodReference));
+        var methodReference = callee.MethodReference ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
+        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, methodReference));
     }
 
     public override IType GetExpressionType(IDeclarationScope scope)

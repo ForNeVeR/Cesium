@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
@@ -16,23 +17,40 @@ public abstract class CodeGenTestBase : VerifyTestBase
 {
     protected static AssemblyDefinition GenerateAssembly(TargetRuntimeDescriptor? runtime, params string[] sources)
     {
-        var context = CreateAssembly(runtime);
-        GenerateCode(context, sources);
-        return EmitAssembly(context);
+        var (assembly, _) = GenerateAssembly(
+            sources,
+            runtime,
+            @namespace: "",
+            globalTypeFqn: "",
+            referencePaths: Array.Empty<string>());
+        return assembly;
     }
+
     protected static AssemblyDefinition GenerateAssembly(
         TargetRuntimeDescriptor? runtime,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
         string @namespace = "",
         string globalTypeFqn = "", params string[] sources)
     {
-        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn);
+        var (assembly, _) = GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+        return assembly;
+    }
+
+    protected static (AssemblyDefinition, byte[]) GenerateAssembly(
+        string[] sources,
+        TargetRuntimeDescriptor? runtime = null,
+        TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
+        string @namespace = "",
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
+    {
+        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn, referencePaths);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
 
     protected static void DoesNotCompile(
-        string source,
+        [StringSyntax("cpp")] string source,
         string expectedMessage,
         TargetRuntimeDescriptor? runtime = null,
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
@@ -58,15 +76,19 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetRuntimeDescriptor? targetRuntime,
         TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
         string @namespace = "",
-        string globalTypeFqn = "")
+        string globalTypeFqn = "",
+        string[]? referencePaths = null)
     {
+        var allReferences = (referencePaths ?? Array.Empty<string>()).ToList();
+        allReferences.Insert(0, typeof(Console).Assembly.Location);
+
         CompilationOptions compilationOptions = new(
-            targetRuntime ?? TargetRuntimeDescriptor.Net60,
+            targetRuntime ?? CSharpCompilationUtil.DefaultRuntime,
             targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,
             typeof(Runtime.RuntimeHelpers).Assembly.Location,
-            new[] { typeof(Console).Assembly.Location },
+            allReferences,
             @namespace,
             globalTypeFqn,
             Array.Empty<string>(),
@@ -94,7 +116,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         }
     }
 
-    private static AssemblyDefinition EmitAssembly(AssemblyContext context)
+    private static (AssemblyDefinition, byte[]) EmitAssembly(AssemblyContext context)
     {
         var assembly = context.VerifyAndGetAssembly();
 
@@ -102,7 +124,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         using var stream = new MemoryStream();
         assembly.Write(stream);
 
-        return assembly;
+        return (assembly, stream.ToArray());
     }
 
     [MustUseReturnValue]
@@ -128,7 +150,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
     }
 
     [MustUseReturnValue]
-    protected static Task VerifyMethods(IEnumerable<TypeDefinition> types, params object[] parameters)
+    protected static Task VerifyMethods(IEnumerable<TypeDefinition?> types, params object[] parameters)
     {
         var result = new StringBuilder();
         int i = 0;
@@ -139,7 +161,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine();
             }
 
-            DumpMethods(type, result);
+            DumpMethods(type!, result);
             i++;
         }
 

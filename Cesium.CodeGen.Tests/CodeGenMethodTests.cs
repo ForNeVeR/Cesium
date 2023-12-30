@@ -16,6 +16,17 @@ public class CodeGenMethodTests : CodeGenTestBase
         return VerifyMethods(new[] { moduleType, staticType });
     }
 
+    [MustUseReturnValue]
+    private static Task DoTest(string source1, string source2)
+    {
+        var assembly = GenerateAssembly(default, source1, source2);
+
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
+    }
+
     [Fact]
     public Task EmptyMainTest() => DoTest("int main() {}");
 
@@ -361,10 +372,11 @@ int main()
 }");
 
     [Fact]
-    public void InvalidPointerWithIntSubtractionTest() => DoesNotCompile(@"int main() {
+    public void ValidPointerWithIntSubtractionTest() => DoTest(@"int main() {
     int foo[10];
-    return &foo[10] - 123;
-}", "Operator Subtract is not supported for pointer/value operands");
+    int* diff = &foo[10] - 1;
+    return 1;
+}");
 
     [Fact]
     public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {
@@ -406,6 +418,44 @@ static int main()
 }");
 
     [Fact]
+    public Task StructParametersFromDifferentModules() => DoTest(@"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);  ", @"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);
+
+int console_read(const struct struct1* s) {
+    return s->x;
+}");
+
+    [Fact]
+    public Task EnumParametersFromDifferentModules() => DoTest(@"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);  ", @"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);
+
+int console_read(enum enum1 s) {
+    return 111;
+}");
+
+    [Fact]
     public Task FunctionPointerCallTest() => DoTest(@"int foo(int a) { return a; }
 
 int main()
@@ -424,6 +474,18 @@ int main()
 
     return fooptr(123);
 }", "Attempted to call non-function pointer");
+
+    [Fact]
+    public Task StructParameters() => DoTest(@"
+struct struct1 {
+    int x;
+};
+
+int console_read(struct struct1* __s);
+
+int console_read(struct struct1* s) {
+    return s->x;
+}");
 
     // TODO [#196]
     /* [Fact]
