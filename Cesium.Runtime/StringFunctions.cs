@@ -198,9 +198,13 @@ public static unsafe class StringFunctions
             while ((nuint)str % 16 != 0)
             {
                 var curr = *str;
-                if (curr == c || curr == 0)
+                if (curr == c)
                 {
                     goto Done;
+                }
+                else if (curr == 0)
+                {
+                    goto NotFound;
                 }
                 str++;
             }
@@ -219,6 +223,10 @@ public static unsafe class StringFunctions
                 }
 
                 str += IndexOfMatch(eqmask);
+                if (*str == 0)
+                {
+                    goto NotFound;
+                }
                 break;
             }
 
@@ -226,6 +234,7 @@ public static unsafe class StringFunctions
             return str;
         }
 
+    NotFound:
         return null;
     }
 
