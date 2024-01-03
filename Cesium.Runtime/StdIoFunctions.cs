@@ -155,6 +155,34 @@ public unsafe static class StdIoFunctions
             consumedBytes += lengthTillPercent;
             int addition = 1;
             int width = 0;
+            bool alwaysSign = false;
+            if (formatString[formatStartPosition + addition] == '+')
+            {
+                alwaysSign = true;
+                addition++;
+            }
+
+            bool leftAdjust = false;
+            if (formatString[formatStartPosition + addition] == '-')
+            {
+                leftAdjust = true;
+                addition++;
+            }
+
+            bool zeroPrepend = false;
+            if (formatString[formatStartPosition + addition] == '0')
+            {
+                zeroPrepend = true;
+                addition++;
+            }
+
+            bool alternativeImplementation = false;
+            if (formatString[formatStartPosition + addition] == '#')
+            {
+                alternativeImplementation = true;
+                addition++;
+            }
+
             if (formatString[formatStartPosition + addition] == '0')
             {
                 addition++;
@@ -166,17 +194,34 @@ public unsafe static class StdIoFunctions
                 addition++;
             }
 
-            int precision = 0; // 0 - not set, -1 - star
+            int paddingRequested = 0; // 0 - not set, -1 - star
+            if (formatString[formatStartPosition + addition] == '*')
+            {
+                paddingRequested = -1;
+                addition++;
+            }
+
+            int precision = -1; // -1 - not set, -2 - star
             if (formatString[formatStartPosition + addition] == '.')
             {
                 addition++;
                 if (formatString[formatStartPosition + addition] == '*')
                 {
-                    precision = -1;
+                    precision = -2;
                     addition++;
 
                     while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
                     {
+                        if (precision == -2) precision = 0;
+                        precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
+                        addition++;
+                    }
+                }
+                else
+                {
+                    while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+                    {
+                        if (precision == -1) precision = 0;
                         precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
                         addition++;
                     }
@@ -190,28 +235,59 @@ public unsafe static class StdIoFunctions
                 formatSpecifier += formatString[formatStartPosition + addition].ToString();
             }
 
+            int padding = -1;
+            if (paddingRequested == -1)
+            {
+                padding = (int)((long*)varargs)[consumedArgs];
+                consumedArgs++;
+            }
+            else if (width != 0)
+            {
+                padding = width;
+            }
+
+            int trim = -1;
+            if (precision == -2)
+            {
+                trim = (int)((long*)varargs)[consumedArgs];
+                consumedArgs++;
+            }
+            else if (precision >= 0)
+            {
+                trim = precision;
+            }
+
             switch (formatSpecifier)
             {
                 case "s":
-                    int trim = -1;
-                    if (precision == -1)
                     {
-                        trim = (int)((long*)varargs)[consumedArgs];
-                        consumedArgs++;
-                    }
+                        string? stringValue = RuntimeHelpers.Unmarshal((byte*)((long*)varargs)[consumedArgs]);
+                        if (trim != -1)
+                        {
+                            stringValue = stringValue?.Substring(0, Math.Max(0, Math.Min(stringValue.Length - 1, trim)));
+                        }
 
-                    string? stringValue = RuntimeHelpers.Unmarshal((byte*)((long*)varargs)[consumedArgs]);
-                    if (precision == -1)
-                    {
-                        streamWriter.Write(stringValue?.Substring(0, Math.Max(0, Math.Min(stringValue.Length - 1, trim))));
-                    }
-                    else
-                    {
+                        if (padding != -1)
+                        {
+                            if (leftAdjust)
+                            {
+                                var actualLength = stringValue?.Length ?? 0;
+                                if (actualLength < padding)
+                                {
+                                    stringValue += new string(' ', padding - actualLength);
+                                }
+                            }
+                            else
+                            {
+                                stringValue = string.Format("{0," + padding + "}", stringValue);
+                            }
+                        }
+
                         streamWriter.Write(stringValue);
+                        consumedBytes += stringValue?.Length ?? 0;
+                        consumedArgs++;
+                        break;
                     }
-                    consumedBytes += stringValue?.Length ?? 0;
-                    consumedArgs++;
-                    break;
                 case "c":
                     streamWriter.Write((char)(byte)((long*)varargs)[consumedArgs]);
                     consumedBytes++;
@@ -223,25 +299,98 @@ public unsafe static class StdIoFunctions
                 case "li":
                     int intValue = (int)((long*)varargs)[consumedArgs];
                     var intValueString = intValue.ToString();
-                    streamWriter.Write(intValueString);
+                    if (alwaysSign && intValue > 0)
+                    {
+                        streamWriter.Write('+');
+                    }
+
+                    if (intValueString.Length < precision)
+                    {
+                        streamWriter.Write(new string('0', precision - intValueString.Length));
+                    }
+
+                    if (precision != 0 || intValue != 0)
+                    {
+                        streamWriter.Write(intValueString);
+                    }
+
                     consumedBytes += intValueString.Length;
                     consumedArgs++;
                     break;
                 case "u":
                 case "lu":
-                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
-                    var uintValueString = uintValue.ToString();
-                    streamWriter.Write(uintValueString);
-                    consumedBytes += uintValueString.Length;
-                    consumedArgs++;
-                    break;
+                    {
+                        uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                        var uintValueString = uintValue.ToString();
+                        streamWriter.Write(uintValueString);
+                        consumedBytes += uintValueString.Length;
+                        consumedArgs++;
+                        break;
+                    }
                 case "f":
-                    var floatNumber = ((double*)varargs)[consumedArgs];
-                    string floatNumberString = floatNumber.ToString("F6");
-                    streamWriter.Write(floatNumberString);
-                    consumedBytes += floatNumberString.Length;
-                    consumedArgs++;
-                    break;
+                    {
+                        var floatNumber = ((double*)varargs)[consumedArgs];
+                        string floatNumberString = floatNumber.ToString("F" + (trim == -1 ? 6 : trim));
+                        if (alwaysSign && floatNumber > 0)
+                        {
+                            streamWriter.Write('+');
+                        }
+
+                        if (floatNumberString.Length < width)
+                        {
+                            streamWriter.Write(new string(zeroPrepend ? '0' : ' ', width - floatNumberString.Length));
+                        }
+
+                        streamWriter.Write(floatNumberString);
+                        consumedBytes += floatNumberString.Length;
+                        consumedArgs++;
+                        break;
+                    }
+                case "e":
+                case "E":
+                    {
+                        var floatNumber = ((double*)varargs)[consumedArgs];
+                        //streamWriter.Write($"!padding {padding} trim {trim} precision {precision} ");
+                        string floatNumberString = floatNumber.ToString("0." + new string('0', trim == -1 ? 6 : trim) + formatSpecifier + "+00");
+                        if (alwaysSign && floatNumber > 0)
+                        {
+                            streamWriter.Write('+');
+                        }
+
+                        streamWriter.Write(floatNumberString);
+                        //streamWriter.Write($"!");
+                        consumedBytes += floatNumberString.Length;
+                        consumedArgs++;
+                        break;
+                    }
+                case "o":
+                    {
+                        uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                        StringBuilder stringBuilder = new();
+                        while (uintValue >= 8)
+                        {
+                            stringBuilder.Insert(0, (uintValue % 8));
+                            uintValue /= 8;
+                        }
+
+                        stringBuilder.Insert(0, uintValue);
+
+                        var stringValue = stringBuilder.ToString();
+                        if (paddingRequested == -1)
+                        {
+                            stringValue = string.Format("{0," + padding + "}", stringValue);
+                        }
+
+                        if (alternativeImplementation && stringValue[0] != '0')
+                        {
+                            streamWriter.Write('0');
+                        }
+
+                        streamWriter.Write(stringValue);
+                        consumedBytes += stringValue.Length;
+                        consumedArgs++;
+                        break;
+                    }
                 case "p":
                     nint pointerValue = ((nint*)varargs)[consumedArgs];
                     string pointerValueString = pointerValue.ToString("X");
@@ -254,6 +403,12 @@ public unsafe static class StdIoFunctions
                     nuint hexadecimalValue = ((nuint*)varargs)[consumedArgs];
                     if (hexadecimalValue != 0)
                     {
+                        if (alternativeImplementation)
+                        {
+                            streamWriter.Write('0');
+                            streamWriter.Write(formatSpecifier);
+                        }
+
                         var targetFormat = "{0:" + formatSpecifier + (width == 0 ? "" : width) + "}";
                         // NOTE: without converting nuint to long, this was broken on .NET Framework
                         var hexadecimalValueString = string.Format(targetFormat, (long)hexadecimalValue);
