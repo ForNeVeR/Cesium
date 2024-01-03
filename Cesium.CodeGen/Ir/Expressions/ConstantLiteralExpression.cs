@@ -47,7 +47,7 @@ internal sealed class ConstantLiteralExpression : IExpression
 
     private static IConstant ParseFloatingPoint(string value)
     {
-        if (value.EndsWith('f'))
+        if (value.EndsWith('f') || value.EndsWith('F'))
         {
             if (!float.TryParse(value.AsSpan().Slice(0, value.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var floatValue))
             {
