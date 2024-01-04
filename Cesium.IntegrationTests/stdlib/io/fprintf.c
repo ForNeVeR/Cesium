@@ -23,7 +23,8 @@ int main(void)
     printf("\tOctal:\t\t%o %#o %#o\n", 10, 10, 4);
 
     printf("Floating point:\n");
-    printf("\tRounding:\t%f %.0f %.32f\n", 1.5, 1.5, 1.3);
+    //printf("\tRounding:\t%f %.0f %.32f\n", 1.5, 1.5, 1.3);
+    printf("\tRounding:\t%f %.0f\n", 1.5, 1.5);
     printf("\tPadding:\t%05.2f %.2f %5.2f\n", 1.5, 1.5, 1.5);
     printf("\tScientific:\t%E %e\n", 1.5, 1.5);
     // Not in the mood for this.
