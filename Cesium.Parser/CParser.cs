@@ -1031,5 +1031,5 @@ public partial class CParser
     }
 
     private static ICToken MergeTokens(ICToken token1, ICToken token2) =>
-        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Text + token2.Text, token2.Kind);
+        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Location, token1.Text + token2.Text, token2.Kind);
 }

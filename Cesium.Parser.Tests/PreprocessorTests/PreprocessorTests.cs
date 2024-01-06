@@ -418,4 +418,19 @@ int fake_foo() { return 0; }
 #define _(code) nested_foo(code)
 _(""test"")
 ");
+
+    [Fact]
+    public Task DoubleHashOperator() => DoTest(
+@"
+#define HASHME(x) L ## x
+#define NOHASHME(x) L x
+HASHME(""test"")
+NOHASHME(""test"")
+");
+
+    [Fact]
+    public Task LineDefine() => DoTest(
+@"
+int x = __LINE__;
+");
 }

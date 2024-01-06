@@ -1,9 +1,11 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Text;
 using static Cesium.Preprocessor.CPreprocessorTokenType;
 using Range = Yoakke.SynKit.Text.Range;
 
@@ -180,7 +182,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                                         if (replacement.TryGetValue("__VA_ARGS__", out var va_args))
                                         {
                                             va_args.AddRange(currentParameter);
-                                            va_args.Add(new Token<CPreprocessorTokenType>(token.Range, ",", CPreprocessorTokenType.Separator));
+                                            va_args.Add(new Token<CPreprocessorTokenType>(token.Range, token.Location, ",", CPreprocessorTokenType.Separator));
                                         }
                                     }
                                     else
@@ -242,9 +244,29 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 }
 
             }
+            if (macroDefinition is ObjectMacroDefinition objectMacro)
+            {
+                if (objectMacro.Name == "__FILE__")
+                {
+                    yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, "\"" + token.Location.File?.Path + "\"", PreprocessingToken);
+                    yield break;
+                }
 
+                if (token.Text == "__LINE__")
+                {
+                    var line = token.Location.Range.Start.Line;
+                    yield return new Token<CPreprocessorTokenType>(
+                        token.Range,
+                        token.Location,
+                        line.ToString(),
+                        PreprocessingToken);
+                    yield break;
+                }
+            }
             bool performStringReplace = false;
+            bool includeNextVerbatim = false;
             var nestedStream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokenReplacement);
+            var pendingWhitespaces = new List<Token<CPreprocessorTokenType>>();
             while (!nestedStream.IsEnd)
             {
                 var subToken = nestedStream.Consume();
@@ -254,40 +276,78 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                     continue;
                 }
 
+                if (subToken is { Kind: DoubleHash })
+                {
+                    includeNextVerbatim = true;
+                    continue;
+                }
+
                 if (subToken is { Kind: PreprocessingToken })
                 {
+                    if (!includeNextVerbatim)
+                    {
+                        foreach (var whitespaceToken in pendingWhitespaces)
+                        {
+                            yield return whitespaceToken;
+                        }
+
+                        pendingWhitespaces.Clear();
+                    }
+
                     if (replacement.TryGetValue(subToken.Text, out var parameterTokens))
                     {
-                        if (performStringReplace)
+                        if (includeNextVerbatim)
+                        {
+                            foreach (var parameterToken in parameterTokens)
+                            {
+                                yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, parameterToken.Text, parameterToken.Kind);
+                            }
+                        }
+                        else if (performStringReplace)
                         {
                             var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
                             var escapedStringValue = stringValue.Replace("\\", "\\\\")
                                 .Replace("\"", "\\\"")
                                 ;
                             escapedStringValue = $"\"{escapedStringValue}\"";
-                            yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
+                            yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, escapedStringValue, token.Kind);
                             performStringReplace = false;
                         }
                         else
                         {
                             foreach (var parameterToken in parameterTokens)
                             {
-                                yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
+                                yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, parameterToken.Text, parameterToken.Kind);
                             }
                         }
                     }
                     else
                     {
-                        foreach (var nestedT in ReplaceMacro(subToken, nestedStream))
+                        if (includeNextVerbatim)
                         {
-                            yield return nestedT;
-
+                            yield return subToken;
                         }
+                        else
+                        {
+                            foreach (var nestedT in ReplaceMacro(subToken, nestedStream))
+                            {
+                                yield return nestedT;
+                            }
+                        }
+                    }
+
+                    includeNextVerbatim = false;
+                }
+                else if (subToken is { Kind: WhiteSpace })
+                {
+                    if (!includeNextVerbatim)
+                    {
+                        pendingWhitespaces.Add(new Token<CPreprocessorTokenType>(token.Range, token.Location, subToken.Text, subToken.Kind));
                     }
                 }
                 else
                 {
-                    yield return new Token<CPreprocessorTokenType>(token.Range, subToken.Text, subToken.Kind);
+                    yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, subToken.Text, subToken.Kind);
                 }
             }
         }
@@ -521,7 +581,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
     private bool EvaluateExpression(IList<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
+            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), new Yoakke.SynKit.Text.Location(), "", End) })).ToBuffered();
         var p = new CPreprocessorExpressionParser(stream);
         var expression = p.ParseExpression();
         if (expression.IsError)
@@ -537,7 +597,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
     private static (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
+            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), new Yoakke.SynKit.Text.Location(), "", End) })).ToBuffered();
         var p = new CPreprocessorMacroDefinitionParser(stream);
         var macroDefinition = p.ParseMacro();
         var macroReplacement = new List<IToken<CPreprocessorTokenType>>();
@@ -567,13 +627,13 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(string compilationUnitPath, TextReader fileReader)
     {
-        var lexer = new CPreprocessorLexer(fileReader);
+        var lexer = new CPreprocessorLexer(new SourceFile(compilationUnitPath, fileReader));
         var subProcessor = new CPreprocessor(compilationUnitPath, lexer, IncludeContext, MacroContext);
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;
         }
 
-        yield return new Token<CPreprocessorTokenType>(new Range(), "\n", NewLine);
+        yield return new Token<CPreprocessorTokenType>(new Range(), new Yoakke.SynKit.Text.Location(), "\n", NewLine);
     }
 }

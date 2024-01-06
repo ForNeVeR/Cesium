@@ -17,7 +17,7 @@ public class TokenExtensionsTests
     [InlineData("\"\\x\"", "\\x")]
     public void Test(string tokenText, string expected)
     {
-        var token = new Token<CTokenType>(new Yoakke.SynKit.Text.Range(), tokenText, CTokenType.StringLiteral);
+        var token = new Token<CTokenType>(new Yoakke.SynKit.Text.Range(), new Yoakke.SynKit.Text.Location(), tokenText, CTokenType.StringLiteral);
 
         var actual = token.UnwrapStringLiteral();
 
