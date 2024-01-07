@@ -93,6 +93,8 @@ internal sealed class BinaryOperatorExpression : IExpression
 
     private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
     {
+        // TODO: This whole business is problematic. It tries to convert pointer-based arithmetics to byte-based arithmetics while keeping the type of the resulting pointer, which is wrong. For example, `someStructPtr + 10`.Lower().Lower() would return incorrect result.
+
         leftType = DecayToPointer(leftType) ?? leftType;
         rightType = DecayToPointer(rightType) ?? rightType;
 

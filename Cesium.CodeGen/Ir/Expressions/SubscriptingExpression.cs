@@ -1,7 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
-using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -33,8 +32,8 @@ internal sealed class SubscriptingExpression : IValueExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var expression = LowerExpression(_expression, scope);
-        var index = LowerExpression(_index, scope);
+        var expression = _expression.Lower(scope);
+        var index = _index.Lower(scope);
         var expressionType = expression.GetExpressionType(scope);
         var indexType = index.GetExpressionType(scope);
 
@@ -50,53 +49,31 @@ internal sealed class SubscriptingExpression : IValueExpression
             throw new AssertException($"Cannot index over type {expressionType} or {indexType}");
         }
 
-        var elementSize = GetElementSize(expressionType);
-        var offset = elementSize != 1
-            ? new BinaryOperatorExpression(index, BinaryOperator.Multiply, new ConstantLiteralExpression(new IntegerConstant(elementSize)))
-            : index;
+        IExpression fullExpression;
+        switch (expressionType)
+        {
+            case InPlaceArrayType:
+            {
+                var arrayExpression = (IValueExpression)expression;
+                var arrayValue = arrayExpression.Resolve(scope);
+                fullExpression = new GetValueExpression(new LValueArrayElement(arrayValue, index));
+                break;
+            }
+            case PointerType:
+                fullExpression = new IndirectionExpression(
+                    new BinaryOperatorExpression(
+                        expression,
+                        BinaryOperator.Add,
+                        index
+                    )
+                );
+                break;
+            default:
+                throw new CompilationException($"Expression is not subscriptable: {expression}.");
+        }
 
-        var indirection = new IndirectionExpression(
-            new BinaryOperatorExpression(
-                expressionType is InPlaceArrayType
-                    ? new UnaryOperatorExpression(UnaryOperator.AddressOf, expression)
-                    : expression,
-                BinaryOperator.Add,
-                offset.Lower(scope)
-            ));
-        var lowered = indirection.Lower(scope);
+        var lowered = fullExpression.Lower(scope);
         return lowered;
-    }
-
-    private static int GetElementSize(IType type)
-    {
-        if (type is InPlaceArrayType inPlaceArrayType)
-        {
-            return inPlaceArrayType.Base is InPlaceArrayType nestedArray ? GetElementsSize(nestedArray) : 1;
-        }
-        else if (type is PointerType pointerType)
-        {
-            return 1;
-        }
-        else
-        {
-            throw new AssertException($"Cannot index over type {type}");
-        }
-    }
-
-    private static IExpression LowerExpression(IExpression expression, IDeclarationScope scope)
-    {
-        if (expression is SubscriptingExpression subscriptingExpression)
-        {
-            var newExpression = LowerExpression(subscriptingExpression._expression, scope);
-            return new SubscriptingExpression(newExpression, subscriptingExpression._index.Lower(scope));
-        }
-
-        if (expression is MemberAccessExpression)
-        {
-            return expression.Lower(scope);
-        }
-
-        return expression;
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");

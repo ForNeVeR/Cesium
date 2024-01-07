@@ -1,7 +1,7 @@
 ﻿System.Int32 <Module>::main()
   Locals:
-    <typedef>foo* V_0
-  IL_0000: ldc.i4.s 40
+    System.Int32* V_0
+  IL_0000: ldc.i4.s 80
   IL_0002: conv.u
   IL_0003: localloc
   IL_0005: stloc.0
@@ -10,19 +10,18 @@
   IL_0008: ldc.i4.1
   IL_0009: sub
   IL_000a: conv.i
-  IL_000b: ldc.i4 4
+  IL_000b: ldc.i4 40
   IL_0010: mul
   IL_0011: add
-  IL_0012: ldc.i4.s 42
-  IL_0014: stfld System.Int32 <typedef>foo::x
-  IL_0019: ldloc.0
-  IL_001a: ldc.i4.1
-  IL_001b: conv.i
-  IL_001c: ldc.i4 4
-  IL_0021: mul
-  IL_0022: add
-  IL_0023: ldfld System.Int32 <typedef>foo::x
-  IL_0028: ret
+  IL_0012: ldc.i4.1
+  IL_0013: conv.i
+  IL_0014: ldc.i4 4
+  IL_0019: mul
+  IL_001a: add
+  IL_001b: ldc.i4.s 13
+  IL_001d: stind.i4
+  IL_001e: ldc.i4.0
+  IL_001f: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

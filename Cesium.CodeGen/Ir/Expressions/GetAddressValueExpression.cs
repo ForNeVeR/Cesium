@@ -29,11 +29,6 @@ internal sealed class GetAddressValueExpression : IExpression
 
     private static IType GetBasePointer(IType valueType)
     {
-        if (valueType is InPlaceArrayType inPlaceArrayType)
-        {
-            return GetBasePointer(inPlaceArrayType.Base);
-        }
-
         return valueType.MakePointerType();
     }
 }

@@ -33,55 +33,59 @@ internal sealed class LValueArrayElement : ILValue
     {
         EmitPointerMoveToElement(scope);
         value.EmitTo(scope);
-        var (_, storeOp) = GetElementOpcodes();
+        var (_, maybeStore) = GetElementOpcodes();
+        if (maybeStore is not {} storeOp)
+            throw new CompilationException($"Type {_array} doesn't support the array store operation.");
+
         scope.Method.Body.GetILProcessor().Emit(storeOp);
     }
 
-    private (OpCode, OpCode) GetElementOpcodes()
+    private (OpCode, OpCode?) GetElementOpcodes()
     {
-        var elementType = GetElementType();
-        if (elementType is PrimitiveType primitive)
+        var elementType = GetValueType();
+        return elementType switch
         {
-            return PrimitiveTypeInfo.Opcodes[primitive.Kind];
-        }
-
-        if (elementType is PointerType)
-        {
-            return (OpCodes.Ldind_I, OpCodes.Stind_I);
-        }
-
-        throw new InvalidOperationException("Arrays of structs are not supported");
+            PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
+            PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
+            InPlaceArrayType => (OpCodes.Ldind_I, null),
+            _ => throw new WipException(256, $"Unsupported type for array access: {elementType}.")
+        };
     }
 
     public IType GetValueType()
-        => _array.GetValueType();
-
-    private IType GetElementType()
     {
-        var valueType = GetValueType();
-        var primitiveType = GetBaseType(valueType);
-        if (primitiveType is InPlaceArrayType or PointerType)
+        var arrayType = _array.GetValueType();
+        return arrayType switch
         {
-            return GetBaseType(primitiveType);
-        }
-
-        return primitiveType;
+            InPlaceArrayType inPlaceArrayType => inPlaceArrayType.Base,
+            PointerType pointerType => pointerType.Base,
+            _ => throw new CompilationException($"Cannot get element of array of type {arrayType}.")
+        };
     }
 
     private void EmitPointerMoveToElement(IEmitScope scope)
     {
-        _array.EmitGetValue(scope);
-        _index.EmitTo(scope);
-        var method = scope.Method.Body.GetILProcessor();
-        method.Emit(OpCodes.Conv_I);
-        var elementSize = GetElementType().GetSizeInBytes(scope.AssemblyContext.ArchitectureSet);
-        if (elementSize.HasValue)
+        if (_array is IAddressableValue av)
         {
-            method.Emit(OpCodes.Ldc_I4, elementSize.Value);
+            av.EmitGetAddress(scope);
         }
         else
         {
-            method.Emit(OpCodes.Sizeof, scope.Module.TypeSystem.IntPtr);
+            _array.EmitGetValue(scope);
+        }
+
+        _index.EmitTo(scope);
+        var method = scope.Method.Body.GetILProcessor();
+        method.Emit(OpCodes.Conv_I);
+        var valueType = GetValueType();
+        var constSize = valueType.GetSizeInBytes(scope.AssemblyContext.ArchitectureSet);
+        if (constSize.HasValue)
+        {
+            method.Emit(OpCodes.Ldc_I4, constSize.Value);
+        }
+        else
+        {
+            valueType.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet).EmitTo(scope);
         }
 
         method.Emit(OpCodes.Mul);

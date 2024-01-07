@@ -367,16 +367,6 @@ int main()
 ");
 
     [Fact]
-    public Task PointerAsArray() => DoTest("""
-int main(void)
-{
-    int x[30];
-    int *y = &x[5];
-    (y + 5)[0] = 0;
-}
-""");
-
-    [Fact]
     public Task ValidPointerSubtractionTest() => DoTest(@"int main() {
     int foo[10];
     return &foo[10] - &foo[1];

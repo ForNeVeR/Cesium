@@ -19,6 +19,9 @@ internal sealed record PointerType(IType Base) : IType
 
     public TypeReference Resolve(TranslationUnitContext context)
     {
+        if (Base is InPlaceArrayType)
+            throw new CompilationException("Cannot resolve a pointer to an inline array.");
+
         if (Base is FunctionType ft)
             return ft.ResolvePointer(context);
 

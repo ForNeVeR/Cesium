@@ -60,6 +60,15 @@ int main() {
  }");
 
     [Fact]
+    public Task MultidimensionalArrayComplexExpr() => DoTest("""
+int main(void)
+{
+    int a[10][2];
+    a[2 - 1][1] = 13;
+}
+""");
+
+    [Fact]
     public Task ComplexTypeAssignment() => DoTest(@"typedef struct { int x; } foo;
 
 int main() {
@@ -144,6 +153,16 @@ int main() {
     int arr[2] = {0, 0};
     int *p = arr + 1;
     return *p;
+}
+""");
+
+    [Fact]
+    public Task PointerAsArray() => DoTest("""
+int main(void)
+{
+   int x[30];
+   int *y = &x[5];
+   (y + 5)[0] = 0;
 }
 """);
 }
