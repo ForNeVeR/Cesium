@@ -373,7 +373,7 @@ int main()
 }");
 
     [Fact]
-    public void ValidPointerWithIntSubtractionTest() => DoTest(@"int main() {
+    public Task ValidPointerWithIntSubtractionTest() => DoTest(@"int main() {
     int foo[10];
     int* diff = &foo[10] - 1;
     return 1;
