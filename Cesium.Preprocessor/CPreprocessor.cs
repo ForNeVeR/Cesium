@@ -254,7 +254,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
                 if (token.Text == "__LINE__")
                 {
-                    var line = token.Location.Range.Start.Line;
+                    var line = token.Location.Range.Start.Line + 1;
                     yield return new Token<CPreprocessorTokenType>(
                         token.Range,
                         token.Location,
