@@ -15,10 +15,11 @@ public class PreprocessorTests : VerifyTestBase
 
     private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
-        var lexer = new CPreprocessorLexer(source);
+        var filePath = "c:\\a\\b\\c.c";
+        var lexer = new CPreprocessorLexer(filePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
-        var preprocessor = new CPreprocessor(source, lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(filePath, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         return result;
     }
@@ -432,5 +433,11 @@ NOHASHME(""test"")
     public Task LineDefine() => DoTest(
 @"
 int x = __LINE__;
+");
+
+    [Fact]
+    public Task FileDefine() => DoTest(
+@"
+char* x = __FILE__;
 ");
 }

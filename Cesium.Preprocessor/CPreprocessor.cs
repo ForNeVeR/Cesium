@@ -248,7 +248,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             {
                 if (objectMacro.Name == "__FILE__")
                 {
-                    yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, "\"" + token.Location.File?.Path + "\"", PreprocessingToken);
+                    yield return new Token<CPreprocessorTokenType>(token.Range, token.Location, "\"" + token.Location.File?.Path.Replace("\\", "\\\\") + "\"", PreprocessingToken);
                     yield break;
                 }
 
