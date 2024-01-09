@@ -1,9 +1,7 @@
-#if NETSTANDARD
-using System.Text;
-#else
-using System.Collections.Specialized;
-using System.Runtime.InteropServices;
-#endif
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.Arm;
 
 namespace Cesium.Runtime;
 
@@ -14,50 +12,57 @@ public static unsafe class StringFunctions
 {
     public static nuint StrLen(byte* str)
     {
-#if NETSTANDARD
-        if (str == null)
+        if (str != null)
         {
-            return 0;
+            var start = str;
+            while ((nuint)str % 16 != 0)
+            {
+                if (*str is 0)
+                {
+                    goto Done;
+                }
+                str++;
+            }
+
+            while (true)
+            {
+                var eqmask = Vector128.Equals(
+                    Vector128.LoadAligned(str),
+                    Vector128<byte>.Zero);
+                if (eqmask == Vector128<byte>.Zero)
+                {
+                    str += Vector128<byte>.Count;
+                    continue;
+                }
+
+                str += IndexOfMatch(eqmask);
+                break;
+            }
+        Done:
+            return (nuint)str - (nuint)start;
         }
 
-        Encoding encoding = Encoding.UTF8;
-        int byteLength = 0;
-        byte* search = str;
-        while (*search != '\0')
-        {
-            byteLength++;
-            search++;
-        }
-
-        int stringLength = encoding.GetCharCount(str, byteLength);
-        return (uint)stringLength;
-#else
-        return (uint)(Marshal.PtrToStringUTF8((nint)str)?.Length ?? 0);
-#endif
+        return 0;
     }
     public static byte* StrCpy(byte* dest, byte* src)
     {
-        if (dest == null)
+        if (dest != null)
         {
-            return null;
-        }
+            var result = dest;
+            if (src != null)
+            {
+                // SIMD scan into SIMD copy (traversing the data twice)
+                // is much faster than a single scalar check+copy loop.
+                var length = StrLen(src);
+                Buffer.MemoryCopy(src, dest, length, length);
+                dest += length;
+            }
 
-        var result = dest;
-        if (src == null)
-        {
+            *dest = 0;
             return dest;
         }
 
-        byte* search = src;
-        while (*search != '\0')
-        {
-            *dest = *search;
-            search++;
-            dest++;
-        }
-
-        *dest = 0;
-        return result;
+        return null;
     }
     public static byte* StrNCpy(byte* dest, byte* src, nuint count)
     {
@@ -186,21 +191,50 @@ public static unsafe class StringFunctions
     }
     public static byte* StrChr(byte* str, int ch)
     {
-        if (str == null)
+        if (str != null)
         {
-            return null;
-        }
+            byte c = (byte)ch;
 
-        while (*str != 0)
-        {
-            if (*str == ch)
+            while ((nuint)str % 16 != 0)
             {
-                return str;
+                var curr = *str;
+                if (curr == c)
+                {
+                    goto Done;
+                }
+                else if (curr == 0)
+                {
+                    goto NotFound;
+                }
+                str++;
             }
 
-            str++;
+            var element = Vector128.Create(c);
+            var nullByte = Vector128<byte>.Zero;
+            while (true)
+            {
+                var chars = Vector128.LoadAligned(str);
+                var eqmask = Vector128.Equals(chars, element) |
+                             Vector128.Equals(chars, nullByte);
+                if (eqmask == Vector128<byte>.Zero)
+                {
+                    str += Vector128<byte>.Count;
+                    continue;
+                }
+
+                str += IndexOfMatch(eqmask);
+                if (*str == 0)
+                {
+                    goto NotFound;
+                }
+                break;
+            }
+
+        Done:
+            return str;
         }
 
+    NotFound:
         return null;
     }
 
@@ -214,7 +248,6 @@ public static unsafe class StringFunctions
             if (*lhs < *rhs) return -1;
             if (*lhs > *rhs) return 1;
         }
-
 
         if (*lhs < *rhs) return -1;
         if (*lhs > *rhs) return 1;
@@ -252,5 +285,21 @@ public static unsafe class StringFunctions
         }
 
         return 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static uint IndexOfMatch(Vector128<byte> eqmask)
+    {
+        if (AdvSimd.Arm64.IsSupported)
+        {
+            var res = AdvSimd
+                .ShiftRightLogicalNarrowingLower(eqmask.AsUInt16(), 4)
+                .AsUInt64()
+                .ToScalar();
+            return (uint)BitOperations.TrailingZeroCount(res) >> 2;
+        }
+
+        return (uint)BitOperations.TrailingZeroCount(
+            eqmask.ExtractMostSignificantBits());
     }
 }

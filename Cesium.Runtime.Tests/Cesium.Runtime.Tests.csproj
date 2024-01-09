@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net7.0</TargetFrameworks>
-        <TargetFrameworks Condition=" $([MSBuild]::IsOsPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
+        <!-- <TargetFrameworks Condition=" $([MSBuild]::IsOsPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks> -->
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
