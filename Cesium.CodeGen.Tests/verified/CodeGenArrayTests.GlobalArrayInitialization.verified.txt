@@ -11,7 +11,7 @@
   IL_001f: ret
 
 System.Int32 <Module>::main()
-  IL_0000: ldsflda System.Int32* <Module>::a
+  IL_0000: ldsfld System.Int32* <Module>::a
   IL_0005: ldc.i4.1
   IL_0006: conv.i
   IL_0007: ldc.i4 4
@@ -19,7 +19,7 @@ System.Int32 <Module>::main()
   IL_000d: add
   IL_000e: ldc.i4.2
   IL_000f: stind.i4
-  IL_0010: ldsflda System.Int32* <Module>::a
+  IL_0010: ldsfld System.Int32* <Module>::a
   IL_0015: ldc.i4.1
   IL_0016: conv.i
   IL_0017: ldc.i4 4

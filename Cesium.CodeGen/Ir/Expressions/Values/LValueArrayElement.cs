@@ -47,7 +47,6 @@ internal sealed class LValueArrayElement : ILValue
         {
             PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
             PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
-            InPlaceArrayType => (OpCodes.Ldind_I, null),
             _ => throw new WipException(256, $"Unsupported type for array access: {elementType}.")
         };
     }
@@ -65,9 +64,10 @@ internal sealed class LValueArrayElement : ILValue
 
     private void EmitPointerMoveToElement(IEmitScope scope)
     {
-        if (_array is IAddressableValue av)
+        // Nested array addressing mode:
+        if (_array is LValueArrayElement baseArray && _array.GetValueType() is InPlaceArrayType)
         {
-            av.EmitGetAddress(scope);
+            baseArray.EmitPointerMoveToElement(scope);
         }
         else
         {
@@ -90,17 +90,5 @@ internal sealed class LValueArrayElement : ILValue
 
         method.Emit(OpCodes.Mul);
         method.Emit(OpCodes.Add);
-    }
-
-    private static IType GetBaseType(IType valueType)
-    {
-        var baseType = valueType switch
-        {
-            InPlaceArrayType arrayType => arrayType.Base,
-            PointerType pointerType => pointerType.Base,
-            _ => throw new AssertException("Array or pointer type expected.")
-        };
-
-        return baseType;
     }
 }
