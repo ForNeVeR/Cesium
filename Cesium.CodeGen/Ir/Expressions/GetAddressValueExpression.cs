@@ -8,7 +8,6 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal sealed class GetAddressValueExpression : IExpression
 {
     private readonly IAddressableValue _value;
-
     public GetAddressValueExpression(IAddressableValue value)
     {
         _value = value;

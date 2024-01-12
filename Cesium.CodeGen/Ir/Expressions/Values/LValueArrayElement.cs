@@ -65,13 +65,24 @@ internal sealed class LValueArrayElement : ILValue
     private void EmitPointerMoveToElement(IEmitScope scope)
     {
         // Nested array addressing mode:
-        if (_array is LValueArrayElement baseArray && _array.GetValueType() is InPlaceArrayType)
+        if (_array is LValueArrayElement baseArray)
         {
             baseArray.EmitPointerMoveToElement(scope);
         }
         else
         {
-            _array.EmitGetValue(scope);
+            switch (_array.GetValueType())
+            {
+                case InPlaceArrayType:
+                    ((IAddressableValue)_array).EmitGetAddress(scope);
+                    break;
+                case PointerType:
+                    _array.EmitGetValue(scope);
+                    break;
+                case var other:
+                    throw new CompilationException($"Cannot get element of type {other}.");
+            }
+
         }
 
         _index.EmitTo(scope);

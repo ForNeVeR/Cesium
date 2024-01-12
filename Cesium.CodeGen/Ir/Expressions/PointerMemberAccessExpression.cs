@@ -6,7 +6,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal sealed class PointerMemberAccessExpression : IExpression, IValueExpression
+internal sealed class PointerMemberAccessExpression : IValueExpression
 {
     private readonly IExpression _target;
     private readonly IdentifierExpression _memberIdentifier;
@@ -38,10 +38,7 @@ internal sealed class PointerMemberAccessExpression : IExpression, IValueExpress
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        if (_memberIdentifier is not IdentifierExpression memberIdentifier)
-            throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
-
         var valueType = _target.GetExpressionType(scope);
-        return new LValueField(_target, (PointerType)valueType, memberIdentifier.Identifier);
+        return new LValueInstanceField(_target, (PointerType)valueType, _memberIdentifier.Identifier);
     }
 }
