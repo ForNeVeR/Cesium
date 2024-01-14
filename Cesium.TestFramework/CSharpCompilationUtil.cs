@@ -3,7 +3,7 @@ using System.Xml.XPath;
 using Cesium.CodeGen;
 using Xunit.Abstractions;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 // TODO[#492]: Make a normal disposable class to delete the whole directory in the end of the test.
 public static class CSharpCompilationUtil

@@ -1,7 +1,7 @@
 using Medallion.Shell;
 using Xunit.Abstractions;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public static class ExecUtil
 {

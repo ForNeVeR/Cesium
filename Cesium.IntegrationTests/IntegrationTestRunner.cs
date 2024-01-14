@@ -1,4 +1,4 @@
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;

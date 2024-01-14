@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Yoakke.SynKit.C.Syntax;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public abstract class ParserTestBase : VerifyTestBase
 {

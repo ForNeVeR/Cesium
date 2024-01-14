@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public static class TestStructureUtil
 {

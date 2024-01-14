@@ -3,7 +3,7 @@ using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public static class ParserResultExtensions
 {

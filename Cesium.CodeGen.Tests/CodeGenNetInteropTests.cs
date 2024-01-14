@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Compiler;
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;

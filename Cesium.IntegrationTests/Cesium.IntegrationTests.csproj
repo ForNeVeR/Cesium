@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
+      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
