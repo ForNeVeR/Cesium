@@ -79,7 +79,7 @@ int test()
 #include <foo.h>
 }", new() { ["foo.h"] = "#pragma once\nprintfn();" });
 
-    [Fact]
+    [Fact, NoVerify]
     public async Task ErrorMsg()
     {
         PreprocessorException err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
@@ -214,7 +214,7 @@ int main() { char* x = foo(int x; printf(""some string"")); }
 int main() { foo(0) return 0; }
 ");
 
-    [Fact]
+    [Fact, NoVerify]
     public Task IfExpressionCannotConsumeNonInteger()
     {
         return Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(

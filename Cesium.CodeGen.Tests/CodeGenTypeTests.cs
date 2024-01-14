@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -117,7 +118,7 @@ int main()
     const char *test3 = ""hellow"";
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void AbsentForwardDeclaration() => DoesNotCompile(@"int foo()
 {
     return bar();
@@ -222,7 +223,7 @@ int main(void) {
     foo_t x = &foo;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NonExistingStructMember() => DoesNotCompile(@"typedef struct { int x; } foo;
 int main(void) {
     foo x;
@@ -249,7 +250,8 @@ typedef struct {
 };
 
 static struct _foo foo;");
-    [Fact]
+
+    [Fact, NoVerify]
     public void StructAndEnumSameName() => DoesNotCompile(@"enum Token { T };
 
 struct Token {
@@ -257,7 +259,7 @@ struct Token {
 };
 ", "Tag kind struct type Token was already defined as enum");
 
-    [Fact]
+    [Fact, NoVerify]
     public void EnumAndStructSameName() => DoesNotCompile(@"
 struct Token {
     int x;

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -52,7 +53,8 @@ typedef struct
         } foo;
         """);
 
-    [Fact(DisplayName = "Struct with a fixed array of a pointer type isn't supported for dynamic architecture")]
+    [Fact(DisplayName = "Struct with a fixed array of a pointer type isn't supported for dynamic architecture"),
+     NoVerify]
     public void StructWithPointerArrayDynamic() => DoesNotCompile("""
 typedef struct
 {

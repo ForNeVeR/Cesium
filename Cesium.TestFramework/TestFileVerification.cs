@@ -11,7 +11,7 @@ public static class TestFileVerification
         var testAssembly = GetTestAssembly(types);
         var testProjectSourceDirectory = GetTestProjectSourceDirectory(testAssembly);
         var acceptedFileNames = GetAcceptedFilePaths(testProjectSourceDirectory);
-        var expectedFileNames = GetExpectedFilePaths(testProjectSourceDirectory, types);
+        var expectedFileNames = GetExpectedFilePaths(testAssembly, testProjectSourceDirectory, types);
 
         if (acceptedFileNames.SetEquals(expectedFileNames)) return;
 
@@ -66,20 +66,37 @@ public static class TestFileVerification
         return Directory.EnumerateFiles(sourceDirectory, "*.verified.txt", SearchOption.AllDirectories).ToHashSet();
     }
 
-    private static IReadOnlySet<string> GetExpectedFilePaths(string sourcePath, IEnumerable<Type> types)
+    private static IReadOnlySet<string> GetExpectedFilePaths(
+        Assembly assembly,
+        string sourcePath,
+        IEnumerable<Type> types)
     {
+        var assemblyName = assembly.GetName().Name!;
         return types.SelectMany(GetTestFilesFromTest).ToHashSet();
 
         IEnumerable<string> GetTestFilesFromTest(Type type)
         {
-            var factMethods = type.GetMethods().Where(m => m.GetCustomAttributes<FactAttribute>().Any());
-            var theoryMethods = type.GetMethods().Where(m => m.GetCustomAttributes<TheoryAttribute>().Any());
-            return factMethods.Select(GetTestFileFromFactMethod)
-                .Concat(theoryMethods.SelectMany(GetTestFilesFromTheoryMethod));
+            Assert.StartsWith(assemblyName, type.FullName!);
+            var subNamespace = type.FullName![assemblyName.Length..^type.Name.Length].Trim('.');
+            var verifiedDirectory = subNamespace.Length == 0
+                ? Path.Combine(sourcePath, "verified")
+                : Path.Combine(sourcePath, subNamespace, "verified");
+
+            var noVerifyMethods = type.GetMethods().Where(m => m.GetCustomAttributes<NoVerifyAttribute>().Any())
+                .ToList();
+            var theoryMethods = type.GetMethods().Where(m => m.GetCustomAttributes<TheoryAttribute>().Any())
+                .Except(noVerifyMethods)
+                .ToList();
+            var factMethods = type.GetMethods().Where(m => m.GetCustomAttributes<FactAttribute>().Any())
+                .Except(noVerifyMethods)
+                .Except(theoryMethods);
+            return factMethods.Select(GetFileNameFromFactMethod)
+                .Concat(theoryMethods.SelectMany(GetTestFilesFromTheoryMethod))
+                .Select(f => Path.Combine(verifiedDirectory, f));
         }
 
-        string GetTestFileFromFactMethod(MethodInfo method) =>
-            Path.Combine(sourcePath, "verified", $"{method.DeclaringType!.Name}.{method.Name}.verified.txt");
+        string GetFileNameFromFactMethod(MethodInfo method) =>
+            $"{method.DeclaringType!.Name}.{method.Name}.verified.txt";
 
         IEnumerable<string> GetTestFilesFromTheoryMethod(MethodInfo method)
         {
@@ -90,9 +107,8 @@ public static class TestFileVerification
             {
                 var data = da.GetData(method).Single();
                 Assert.Equal(parameterNames.Count, data.Length);
-                var dataString = string.Join(",", parameterNames.Zip(data).Select(pd => $"{pd.First}={pd.Second}"));
-                return Path.Combine(sourcePath, "verified",
-                    $"{method.DeclaringType!.Name}.{method.Name}_{dataString}.verified.txt");
+                var dataString = string.Join("_", parameterNames.Zip(data).Select(pd => $"{pd.First}={pd.Second}"));
+                return $"{method.DeclaringType!.Name}.{method.Name}_{dataString}.verified.txt";
             });
         }
     }
@@ -125,3 +141,10 @@ public class TestFileVerificationException : Exception
 
     public override string Message { get; }
 }
+
+/// <summary>
+/// This attribute marks tests that should not be expected to generate the verification files. In particular, these are
+/// the negative compilation tests.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+public class NoVerifyAttribute : Attribute;

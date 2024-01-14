@@ -3,7 +3,7 @@ using Cesium.TestFramework;
 
 namespace Cesium.CodeGen.Tests;
 
-public class AssemblyFileVerifier
+public class TestFileVerifierTests
 {
     [Fact]
     public void AssemblyHasNoUnusedTestFiles() =>

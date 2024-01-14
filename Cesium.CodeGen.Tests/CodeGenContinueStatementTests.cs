@@ -1,4 +1,5 @@
 using Cesium.Core;
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -42,14 +43,14 @@ public class CodeGenContinueStatementTests : CodeGenTestBase
     while (i < 10);
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public Task ContinueNotInFor() => Assert.ThrowsAsync<CompilationException>(
         () => DoTest(@"int main()
 {
     continue;
 }"));
 
-    [Fact]
+    [Fact, NoVerify]
     public void ContinueInSwitch() => DoesNotCompile(@"int main()
 {
     switch (1)
