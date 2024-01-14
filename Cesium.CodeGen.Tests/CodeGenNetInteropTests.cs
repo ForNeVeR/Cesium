@@ -40,7 +40,7 @@ public class CodeGenNetInteropTests : CodeGenTestBase
             var runtimeConfigPath = Path.ChangeExtension(assemblyPath, ".runtimeconfig.json");
 
             await File.WriteAllBytesAsync(assemblyPath, assemblyContentToRun);
-            await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet7());
+            await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet8());
 
             DeployReferenceAssembly(CSharpCompilationUtil.CesiumRuntimeLibraryPath);
             DeployReferenceAssembly(referencePath);
