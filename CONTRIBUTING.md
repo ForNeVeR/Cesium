@@ -6,7 +6,7 @@ Building
 
 ### Prerequisites
 
-To build Cesium, install [.NET 7 SDK][dotnet.download] or later.
+To build Cesium, install [.NET 8 SDK][dotnet.download] or later.
 
 Testing
 -------
