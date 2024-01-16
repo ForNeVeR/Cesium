@@ -1,4 +1,5 @@
 using Cesium.Core;
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -20,7 +21,7 @@ public class CodeGenBreakStatementTests : CodeGenTestBase
     for(;;) break;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public Task BreakNotInFor() => Assert.ThrowsAsync<CompilationException>(
         () => DoTest(@"int main()
 {

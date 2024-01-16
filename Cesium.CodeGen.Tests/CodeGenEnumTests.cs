@@ -40,4 +40,24 @@ void test()
     enum Colour x = 42;
     if (x == Green) ;
 }");
+
+    [Fact]
+    public Task EnumViaTypeDef() => DoTest(@"
+typedef enum { Red, Green, Blue } Colour;
+
+void test()
+{
+    Colour x = 42;
+    if (x == Green) ;
+}");
+
+    [Fact]
+    public Task EnumInFuncionCall() => DoTest(@"
+enum Colour { Red, Green, Blue };
+
+void work(enum Colour){}
+void test()
+{
+    work(Green);
+}");
 }

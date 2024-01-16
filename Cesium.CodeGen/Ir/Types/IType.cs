@@ -6,6 +6,19 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
+internal enum TypeKind
+{
+    Unresolved,
+    PrimitiveType,
+    Enum,
+    Struct,
+    FunctionType,
+    InPlaceArray,
+    Pointer,
+    Const,
+    InteropType,
+}
+
 /// <summary>An interface representing a C type.</summary>
 /// <remarks>
 /// Can be of two flavors: an <see cref="IGeneratedType"/> or a plain type that doesn't require any byte code to be
@@ -14,6 +27,11 @@ namespace Cesium.CodeGen.Ir.Types;
 internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
+
+    /// <summary>
+    /// Gets kind of a type.
+    /// </summary>
+    TypeKind TypeKind { get; }
 
     /// <remarks>
     /// For cases when a type gets resolved differently for a type member context. For example, a pointer will
@@ -56,5 +74,6 @@ internal interface IType
 internal interface IGeneratedType : IType
 {
     public string? Identifier { get; }
-    TypeDefinition Emit(string name, TranslationUnitContext context);
+    TypeDefinition StartEmit(string name, TranslationUnitContext context);
+    void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context);
 }

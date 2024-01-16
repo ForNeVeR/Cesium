@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <PublishAot Condition="$(NETCoreSdkRuntimeIdentifier) != 'osx-x64'">true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.9.1" />
-        <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2023.5.30-5.54.38-nightly" />
+        <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="Yoakke.SynKit.C.Syntax" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Yoakke.SynKit.Lexer;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public class TokenConverter<T> : JsonConverter<IToken<T>> where T : Enum
 {

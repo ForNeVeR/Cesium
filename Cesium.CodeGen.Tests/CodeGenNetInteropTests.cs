@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Compiler;
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
@@ -40,7 +40,7 @@ public class CodeGenNetInteropTests : CodeGenTestBase
             var runtimeConfigPath = Path.ChangeExtension(assemblyPath, ".runtimeconfig.json");
 
             await File.WriteAllBytesAsync(assemblyPath, assemblyContentToRun);
-            await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet7());
+            await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet8());
 
             DeployReferenceAssembly(CSharpCompilationUtil.CesiumRuntimeLibraryPath);
             DeployReferenceAssembly(referencePath);

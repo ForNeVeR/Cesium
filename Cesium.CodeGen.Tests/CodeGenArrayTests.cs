@@ -102,6 +102,13 @@ int main() {
  }");
 
     [Fact]
+    public Task ArrayInitializationChar() => DoTest(@"int main() {
+    int a[4] = { '1', '2', '3', '4', };
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
     public Task GlobalArrayInitialization() => DoTest(@"
 int a[4] = { 1, 2, 3, 4, };
 
@@ -125,6 +132,13 @@ int main() {
     int ints2[] = { 1, 2, 1 };
     return ints1[0] + ints2[2];
 }");
+
+    [Fact]
+    public Task EmptyArrayInitialization() => DoTest(@"int main() {
+    int a[4] = { };
+    a[1] = 2;
+    return a[1];
+ }");
 
     [Fact]
     public Task ArrayParameterPassing() => DoTest(@"

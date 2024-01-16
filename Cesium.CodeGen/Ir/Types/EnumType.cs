@@ -12,6 +12,9 @@ internal sealed class EnumType : IType, IEquatable<EnumType>
         Identifier = identifier;
     }
 
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Enum;
+
     internal IReadOnlyList<InitializableDeclarationInfo> Members { get; }
     public string? Identifier { get; }
 

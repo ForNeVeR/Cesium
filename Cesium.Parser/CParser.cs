@@ -188,9 +188,13 @@ public partial class CParser
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
 
+    [Rule("unary_expression: KeywordSizeof unary_expression")]
+    private static Expression MakeExpressionSizeOfOperator(ICToken _, Expression expression) =>
+        new UnaryExpressionSizeOfOperatorExpression(expression);
+
     [Rule("unary_expression: KeywordSizeof '(' Identifier ')'")]
     private static Expression MakeTypeNameSizeOfOperator(ICToken _, ICToken __, IToken identifier, ICToken ___) =>
-        new IdentifierSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
+        new UnaryExpressionSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
 
     [Rule("unary_expression: KeywordSizeof '(' type_name ')'")]
     private static Expression MakeTypeSpecifierSizeOfOperator(ICToken _, ICToken __, TypeName typeName, ICToken ___) =>
@@ -1027,5 +1031,5 @@ public partial class CParser
     }
 
     private static ICToken MergeTokens(ICToken token1, ICToken token2) =>
-        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Text + token2.Text, token2.Kind);
+        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Location, token1.Text + token2.Text, token2.Kind);
 }

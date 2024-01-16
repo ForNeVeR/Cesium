@@ -1,6 +1,6 @@
 using Cesium.Core;
 using Cesium.Preprocessor;
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Parser.Tests.PreprocessorTests;
@@ -15,10 +15,11 @@ public class PreprocessorTests : VerifyTestBase
 
     private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
-        var lexer = new CPreprocessorLexer(source);
+        var filePath = "c:\\a\\b\\c.c";
+        var lexer = new CPreprocessorLexer(filePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
-        var preprocessor = new CPreprocessor(source, lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(filePath, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         return result;
     }
@@ -79,7 +80,7 @@ int test()
 #include <foo.h>
 }", new() { ["foo.h"] = "#pragma once\nprintfn();" });
 
-    [Fact]
+    [Fact, NoVerify]
     public async Task ErrorMsg()
     {
         PreprocessorException err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
@@ -214,7 +215,7 @@ int main() { char* x = foo(int x; printf(""some string"")); }
 int main() { foo(0) return 0; }
 ");
 
-    [Fact]
+    [Fact, NoVerify]
     public Task IfExpressionCannotConsumeNonInteger()
     {
         return Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(
@@ -417,5 +418,26 @@ int fake_foo() { return 0; }
 #define nested_foo foo
 #define _(code) nested_foo(code)
 _(""test"")
+");
+
+    [Fact]
+    public Task DoubleHashOperator() => DoTest(
+@"
+#define HASHME(x) L ## x
+#define NOHASHME(x) L x
+HASHME(""test"")
+NOHASHME(""test"")
+");
+
+    [Fact]
+    public Task LineDefine() => DoTest(
+@"
+int x = __LINE__;
+");
+
+    [Fact]
+    public Task FileDefine() => DoTest(
+@"
+char* x = __FILE__;
 ");
 }

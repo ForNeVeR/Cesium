@@ -8,6 +8,9 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed record PointerType(IType Base) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Pointer;
+
     public static int? SizeInBytes(TargetArchitectureSet arch) => arch switch
     {
         TargetArchitectureSet.Dynamic => null,

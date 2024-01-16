@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2023.5.30-5.54.38-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Lexer" Version="2023.5.30-5.54.38-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Parser" Version="2023.5.30-5.54.38-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Parser.Generator" Version="2023.5.30-5.54.38-nightly" />
+      <PackageReference Include="Yoakke.SynKit.C.Syntax" />
+      <PackageReference Include="Yoakke.SynKit.Lexer" />
+      <PackageReference Include="Yoakke.SynKit.Parser" />
+      <PackageReference Include="Yoakke.SynKit.Parser.Generator" />
     </ItemGroup>
 
     <ItemGroup>

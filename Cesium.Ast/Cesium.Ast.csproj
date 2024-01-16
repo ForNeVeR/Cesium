@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2022.6.17-3.21.43-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Lexer" Version="2022.6.17-3.21.43-nightly" />
+      <PackageReference Include="Yoakke.SynKit.C.Syntax" />
+      <PackageReference Include="Yoakke.SynKit.Lexer" />
     </ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -117,7 +118,7 @@ int main()
     const char *test3 = ""hellow"";
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void AbsentForwardDeclaration() => DoesNotCompile(@"int foo()
 {
     return bar();
@@ -222,7 +223,7 @@ int main(void) {
     foo_t x = &foo;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NonExistingStructMember() => DoesNotCompile(@"typedef struct { int x; } foo;
 int main(void) {
     foo x;
@@ -249,4 +250,44 @@ typedef struct {
 };
 
 static struct _foo foo;");
+
+    [Fact, NoVerify]
+    public void StructAndEnumSameName() => DoesNotCompile(@"enum Token { T };
+
+struct Token {
+    int x;
+};
+", "Tag kind struct type Token was already defined as enum");
+
+    [Fact, NoVerify]
+    public void EnumAndStructSameName() => DoesNotCompile(@"
+struct Token {
+    int x;
+};
+
+enum Token { T };
+", "Tag kind enum type Token was already defined as struct");
+
+    [Fact]
+    public Task StructAndTypeDefWithSameName() => DoTest(@"typedef struct Token Token;
+
+struct Token {
+    int x;
+};
+");
+
+    [Fact]
+    public Task StructAndTypeDefWithSameNameSingleDecl() => DoTest(@"
+typedef struct Token {
+    int x;
+} Token;
+");
+
+    [Fact]
+    public Task StructAndNestedPointer() => DoTest(@"typedef struct Token Token;
+
+struct Token {
+    Token* x;
+};
+");
 }

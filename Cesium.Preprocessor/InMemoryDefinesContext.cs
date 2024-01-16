@@ -14,6 +14,16 @@ public class InMemoryDefinesContext : IMacroContext
             ? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>()
             : new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>(initialDefines);
         _defineMacros = new();
+
+        this.DefineMacro(
+            "__LINE__",
+            macroDefinition: new ObjectMacroDefinition("__LINE__"),
+            replacement: new IToken<CPreprocessorTokenType>[0]);
+
+        this.DefineMacro(
+            "__FILE__",
+            macroDefinition: new ObjectMacroDefinition("__FILE__"),
+            replacement: new IToken<CPreprocessorTokenType>[0]);
     }
 
     public void DefineMacro(string macro, MacroDefinition macroDefinition, IList<IToken<CPreprocessorTokenType>> replacement)

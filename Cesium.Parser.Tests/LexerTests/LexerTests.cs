@@ -1,4 +1,4 @@
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 
 namespace Cesium.Parser.Tests.LexerTests;
 

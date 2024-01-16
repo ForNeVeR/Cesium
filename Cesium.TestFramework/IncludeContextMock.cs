@@ -1,6 +1,6 @@
 using Cesium.Preprocessor;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public class IncludeContextMock : IIncludeContext
 {

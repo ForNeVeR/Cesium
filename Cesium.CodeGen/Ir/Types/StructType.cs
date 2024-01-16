@@ -15,10 +15,13 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         Identifier = identifier;
     }
 
-    internal IReadOnlyList<LocalDeclarationInfo> Members { get; }
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Struct;
+
+    internal IReadOnlyList<LocalDeclarationInfo> Members { get; set; }
     public string? Identifier { get; }
 
-    public TypeDefinition Emit(string name, TranslationUnitContext context)
+    public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
         var structType = new TypeDefinition(
             "",
@@ -43,7 +46,11 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
         }
         context.Module.Types.Add(structType);
+        return structType;
+    }
 
+    public void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context)
+    {
         foreach (var member in Members)
         {
             var (type, identifier, cliImportMemberName) = member;
@@ -56,12 +63,10 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
                 throw new CompilationException(
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
-            var field = type.CreateFieldOfType(context, structType, identifier);
+            var field = type.CreateFieldOfType(context, definition, identifier);
             // TODO[#355]: for every field, calculate the explicit layout position.
-            structType.Fields.Add(field);
+            definition.Fields.Add(field);
         }
-
-        return structType;
     }
 
     public TypeReference Resolve(TranslationUnitContext context) =>

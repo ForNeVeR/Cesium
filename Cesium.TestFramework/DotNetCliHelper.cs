@@ -1,7 +1,7 @@
 using Medallion.Shell;
 using Xunit.Abstractions;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 /// <summary>Utils to properly run commands like <c>dotnet build</c> and such.</summary>
 public static class DotNetCliHelper

@@ -1,5 +1,5 @@
 ﻿System.Int32 <Module>::main()
-  IL_0000: sizeof foo
+  IL_0000: sizeof <typedef>foo
   IL_0006: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()

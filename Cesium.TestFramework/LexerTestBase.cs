@@ -1,7 +1,7 @@
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 
-namespace Cesium.Test.Framework;
+namespace Cesium.TestFramework;
 
 public class LexerTestBase : VerifyTestBase
 {

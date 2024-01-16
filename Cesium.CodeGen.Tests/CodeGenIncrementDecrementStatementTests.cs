@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -21,7 +22,7 @@ public class CodeGenIncrementDecrementStatementTests : CodeGenTestBase
     return x;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void PostfixIncrementCannotBeConstant() => DoesNotCompile(@"int main()
 {
     int x;
@@ -37,7 +38,7 @@ public class CodeGenIncrementDecrementStatementTests : CodeGenTestBase
     return x;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void PrefixIncrementCannotBeConstant() => DoesNotCompile(@"int main()
 {
     int x;
@@ -45,7 +46,7 @@ public class CodeGenIncrementDecrementStatementTests : CodeGenTestBase
     return x;
 }", "'++' needs l-value");
 
-    [Fact]
+    [Fact, NoVerify]
     public void PrefixDecrementCannotBeConstant() => DoesNotCompile(@"int main()
 {
     int x;

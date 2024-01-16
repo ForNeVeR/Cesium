@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -37,7 +38,7 @@ public class CodeGenSwitchTests : CodeGenTestBase
     return 1;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NonConstEval() => DoesNotCompile(@"int main()
 {
     int x = 0;

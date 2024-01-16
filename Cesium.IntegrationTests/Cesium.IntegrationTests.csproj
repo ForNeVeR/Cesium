@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
@@ -12,17 +12,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
-        <PackageReference Include="MedallionShell" Version="1.6.2" />
-        <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" Version="2.1.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-        <PackageReference Include="NeoSmart.AsyncLock" Version="3.2.1" />
-        <PackageReference Include="xunit" Version="2.4.2" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3"/>
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="MedallionShell" />
+        <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="NeoSmart.AsyncLock" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Test.Framework\Cesium.Test.Framework.csproj" />
+      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
 </Project>

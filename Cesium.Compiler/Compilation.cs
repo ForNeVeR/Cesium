@@ -63,7 +63,7 @@ internal static class Compilation
             .Concat(compilationOptions.AdditionalIncludeDirectories)
             .ToImmutableArray();
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
-        var preprocessorLexer = new CPreprocessorLexer(reader);
+        var preprocessorLexer = new CPreprocessorLexer(new Yoakke.SynKit.Text.SourceFile(compilationSourcePath, reader));
         var definesContext = new InMemoryDefinesContext();
         var outOfFileRange = new Yoakke.SynKit.Text.Range();
         foreach (var define in compilationOptions.DefineConstants)
@@ -73,7 +73,7 @@ internal static class Compilation
                 macroDefinition: new ObjectMacroDefinition(define),
                 replacement: new IToken<CPreprocessorTokenType>[]
                 {
-                    new Token<CPreprocessorTokenType>(outOfFileRange, "1", CPreprocessorTokenType.PreprocessingToken)
+                    new Token<CPreprocessorTokenType>(outOfFileRange, new(), "1", CPreprocessorTokenType.PreprocessingToken)
                 });
         }
 

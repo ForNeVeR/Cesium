@@ -11,6 +11,9 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.InPlaceArray;
+
     public TypeReference Resolve(TranslationUnitContext context) => Base switch
     {
         InPlaceArrayType => Base.Resolve(context),

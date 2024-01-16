@@ -443,6 +443,11 @@ internal static class BlockItemLowering
                             scope.AddTagDefinition(tag, type);
                         }
 
+                        if (typeDef.Type is EnumType { Identifier: { } enumTag })
+                        {
+                            scope.AddTagDefinition(enumTag, type);
+                        }
+
                         list.Add(new LocalDeclarationInfo(type, identifier, cliImportMemberName));
                     }
 
