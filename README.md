@@ -42,6 +42,7 @@ Documentation
 - [CLI-Related Language Extensions][docs.language-extensions]
 - [Built-in Functions][docs.builtins]
 - [Exceptions in the Compiler Code][docs.exceptions]
+- [Design Notes][docs.design-notes]
 
 - [License (MIT)][docs.license]
 
@@ -111,13 +112,14 @@ If you're interested in certain project areas, check the per-area issue labels:
 [c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.architecture-sets]: docs/architecture-sets.md
+[docs.builtins]: docs/builtins.md
 [docs.contributing]: CONTRIBUTING.md
+[docs.design-notes]: docs/design-notes.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
-[docs.builtins]: docs/builtins.md
 [issue.c23-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61
