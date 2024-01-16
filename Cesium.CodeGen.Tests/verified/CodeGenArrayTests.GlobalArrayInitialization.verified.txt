@@ -4,7 +4,7 @@
   IL_0003: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
   IL_0008: stsfld System.Int32* <Module>::a
   IL_000d: ldsflda <ConstantPool>/<ConstantPoolItemType16> <ConstantPool>::ConstDataBuffer0
-  IL_0012: ldsflda System.Int32* <Module>::a
+  IL_0012: ldsfld System.Int32* <Module>::a
   IL_0017: ldc.i4.s 16
   IL_0019: conv.u
   IL_001a: call System.Void Cesium.Runtime.RuntimeHelpers::InitializeCompound(System.Void*,System.Void*,System.UInt32)
