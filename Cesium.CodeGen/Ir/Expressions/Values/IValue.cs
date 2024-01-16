@@ -10,7 +10,7 @@ internal interface IValue
 }
 
 /// <remarks>
-/// This is different from <see cref="LValue"/> because functions are not lvalues but still can be addressed.
+/// This is different from <see cref="ILValue"/> because functions are not lvalues but still can be addressed.
 /// </remarks>
 internal interface IAddressableValue : IValue
 {
