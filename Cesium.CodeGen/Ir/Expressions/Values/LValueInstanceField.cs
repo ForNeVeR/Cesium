@@ -27,9 +27,15 @@ internal sealed class LValueInstanceField : LValueField
         _name = name;
     }
 
-    public override IType GetValueType() =>
-        _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type
-        ?? throw new CompilationException($"Member named \"{_name}\" not found");
+    public override IType GetValueType()
+    {
+        var type = _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type;
+        if (type != null) return type;
+
+        var structName = _structType.Identifier == null ? "Struct" : $"\"{_structType.Identifier}\"";
+        throw new CompilationException(
+            $"{structName} has no member named \"{_name}\".");
+    }
 
     protected override void EmitGetFieldOwner(IEmitScope scope)
     {

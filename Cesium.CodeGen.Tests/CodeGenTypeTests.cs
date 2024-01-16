@@ -227,7 +227,7 @@ int main(void) {
 int main(void) {
     foo x;
     return x.nonExisting;
-}", "\"foo\" has no member named \"nonExisting\"");
+}", "has no member named \"nonExisting\"");
 
     [Fact]
     public Task ComplexStructDefinition() => DoTest(@"typedef void(*function)(int, const int*, const int*);

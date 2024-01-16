@@ -3,7 +3,7 @@ using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-/// <remarks>For in-place arrays, GetAddress and GetValue is the same.</remarks>
+/// <remarks>For in-place arrays, GetAddress and GetValue are the same.</remarks>
 internal abstract class AddressableValue : IAddressableValue
 {
     public abstract IType GetValueType();

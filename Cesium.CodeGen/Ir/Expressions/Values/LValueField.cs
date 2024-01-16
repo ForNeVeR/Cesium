@@ -9,7 +9,7 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 /// <remarks>
 /// In contrary to how <see cref="AddressableValue"/> behaves, an LValueField's <see cref="EmitGetValue"/> should be
-/// directed to <see cref="EmitGetAddress"/> for case of an inline array, because such a variable.
+/// directed to <see cref="EmitGetAddress"/> for case of an inline array, because such a variable should behave as a pointer in most contexts.
 /// </remarks>
 internal abstract class LValueField : ILValue
 {
@@ -46,7 +46,16 @@ internal abstract class LValueField : ILValue
         var field = GetField(scope);
         if (field.Resolve().IsStatic)
         {
-            scope.LdSFldA(field);
+            if (GetValueType() is InPlaceArrayType)
+            {
+                // Special treatment of global in-place arrays: they are not fields of special type but mere pointers to
+                // memory. As the field itself points to memory, we should just load it here, no need for lsflda.
+                scope.LdSFld(field);
+            }
+            else
+            {
+                scope.LdSFldA(field);
+            }
         }
         else
         {

@@ -11,16 +11,11 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 {
-    public TypeReference Resolve(TranslationUnitContext context)
+    public TypeReference Resolve(TranslationUnitContext context) => Base switch
     {
-        TypeReference baseType = Base.Resolve(context);
-        if (baseType.IsPointer)
-        {
-            return baseType;
-        }
-
-        return baseType.MakePointerType();
-    }
+        InPlaceArrayType => Base.Resolve(context),
+        _ => Base.Resolve(context).MakePointerType()
+    };
 
     public FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName)
     {
