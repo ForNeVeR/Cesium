@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -486,9 +485,9 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
                 bool hasRemaining;
                 while ((hasRemaining = enumerator.MoveNext())
-                       && enumerator.Current is { Kind: WhiteSpace })
+                       && enumerator.Current is { Kind: WhiteSpace or Comment })
                 {
-                    // eat remaining whitespace
+                    // eat remaining whitespace and comments
                 }
 
                 if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })

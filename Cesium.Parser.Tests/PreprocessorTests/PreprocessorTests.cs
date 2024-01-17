@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Cesium.Core;
 using Cesium.Preprocessor;
 using Cesium.TestFramework;
@@ -7,7 +8,10 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private static async Task DoTest(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+    private static async Task DoTest(
+        [StringSyntax("cpp")] string source,
+        Dictionary<string, string>? standardHeaders = null,
+        Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
         string result = await DoPreprocess(source, standardHeaders, defines);
         await Verify(result, GetSettings());
@@ -45,11 +49,16 @@ int test()
 }", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
 
     [Fact]
-    public Task IncludeTrailingWhiltespacesIgnored() => DoTest($@"#include <foo.h>{"\t\t\t" /*Make whitespaces visible here */}
+    public Task IncludeTrailingWhitespacesIgnored() => DoTest($@"#include <foo.h>{"\t\t\t" /*Make whitespaces visible here */}
 #include <bar.h>
 int test()
 {{
 }}", new() { ["foo.h"] = "void foo() {}", ["bar.h"] = "int bar = 0;" });
+
+    [Fact]
+    public Task IncludeTrailingCommentsAreAllowed() => DoTest(
+        "#include <foo.h> // comment",
+        new() { ["foo.h"] = "int x = 0;" });
 
     [Fact]
     public Task IncludeNoWhitespaces() => DoTest(@"#include<foo.h>
