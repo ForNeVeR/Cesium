@@ -460,27 +460,30 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         {
             case "include":
             {
-                // If in disabled block, do not attempt to include files.
+                if (!IncludeTokens)
+                {
+                    // Ignore everything after #include in a disabled block
+                    foreach (var _ in ConsumeLineAll()) {}
+                    return [];
+                }
+
                 var filePath = ConsumeNext(HeaderName).Text;
                 var tokensList = new List<IToken<CPreprocessorTokenType>>();
-                if (IncludeTokens)
+                var includeFilePath = LookUpIncludeFile(filePath);
+                if (!IncludeContext.ShouldIncludeFile(includeFilePath))
                 {
-                    var includeFilePath = LookUpIncludeFile(filePath);
-                    if (!IncludeContext.ShouldIncludeFile(includeFilePath))
-                    {
-                        return Array.Empty<IToken<CPreprocessorTokenType>>();
-                    }
+                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                }
 
-                    if (!File.Exists(includeFilePath))
-                    {
-                        Console.Error.WriteLine($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
-                    }
+                if (!File.Exists(includeFilePath))
+                {
+                    Console.Error.WriteLine($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
+                }
 
-                    using var reader = IncludeContext.OpenFileStream(includeFilePath);
-                    await foreach (var token in ProcessInclude(includeFilePath, reader))
-                    {
-                        tokensList.Add(token);
-                    }
+                using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                await foreach (var token in ProcessInclude(includeFilePath, reader))
+                {
+                    tokensList.Add(token);
                 }
 
                 bool hasRemaining;

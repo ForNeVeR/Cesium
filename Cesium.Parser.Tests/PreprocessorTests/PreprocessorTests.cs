@@ -82,6 +82,16 @@ int test()
 }", new() { ["foo.h"] = "#include <bar.h>", ["bar.h"] = "#include <baz.h>", ["baz.h"] = "int bar = 0;" });
 
     [Fact]
+    public Task IgnoredInclude() => DoTest("""
+#ifdef MY_INCLUDE
+#include MY_INCLUDE
+#endif
+#ifndef MY_INCLUDE
+test
+#endif
+""");
+
+    [Fact]
     public Task PragmaOnce() => DoTest(@"
 int test()
 {
