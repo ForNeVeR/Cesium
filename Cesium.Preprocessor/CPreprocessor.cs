@@ -10,10 +10,18 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
+public record CPreprocessor(
+    string CompilationUnitPath,
+    ILexer<IToken<CPreprocessorTokenType>> Lexer,
+    IIncludeContext IncludeContext,
+    IMacroContext MacroContext)
 {
-    private bool IncludeTokens => _includeTokensStack.All(includeToken => includeToken);
-    private readonly Stack<bool> _includeTokensStack = new();
+    private bool IncludeTokens => _includeTokensStack.All(includeToken => includeToken.Flag);
+    private readonly Stack<(string KeyWordText, bool Flag)> _includeTokensStack = new();
+
+    private bool Include => _includeTokensStack.Count == 0 ||
+                            _includeTokensStack.TryPeek(out var lastItem)
+                            && lastItem.Flag;
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -25,20 +33,9 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         return buffer.ToString();
     }
 
-    private void PushIncludeTokensDepth(bool includeTokes)
+    private void PushIncludeTokensDepth((string KeyWordText, bool Flag) includeTokens)
     {
-        _includeTokensStack.Push(includeTokes);
-    }
-
-    private void PopIncludeTokensDepth()
-    {
-        _includeTokensStack.Pop();
-    }
-
-    private void SwitchIncludeTokensDepth()
-    {
-        var lastItem = _includeTokensStack.Pop();
-        this.PushIncludeTokensDepth(!lastItem);
+        _includeTokensStack.Push(includeTokens);
     }
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
@@ -56,7 +53,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
                 case WhiteSpace:
                 case Comment:
-                    if (IncludeTokens)
+                    if (Include)
                     {
                         yield return token;
                     }
@@ -64,7 +61,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
                 case NewLine:
                     newLine = true;
-                    if (IncludeTokens)
+                    if (Include)
                     {
                         yield return token;
                     }
@@ -92,7 +89,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 case LeftParen:
                 case RightParen:
                     newLine = false;
-                    if (IncludeTokens)
+                    if (Include)
                     {
                         yield return token;
                     }
@@ -100,7 +97,7 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
                 case PreprocessingToken:
                     {
                         newLine = false;
-                        if (IncludeTokens)
+                        if (Include)
                         {
                             foreach (var producedToken in ReplaceMacro(token, stream))
                             {
@@ -536,32 +533,57 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
             case "ifdef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                PushIncludeTokensDepth(includeTokens);
+                var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+                PushIncludeTokensDepth(("ifdef", includeTokens));
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "if":
             {
                 var expressionTokens = ConsumeLine();
-                bool includeTokens = EvaluateExpression(expressionTokens.ToList());
-                PushIncludeTokensDepth(includeTokens);
+                var includeTokens = EvaluateExpression(expressionTokens.ToList());
+                PushIncludeTokensDepth(("if", includeTokens));
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "ifndef":
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool donotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                PushIncludeTokensDepth(!donotIncludeTokens);
+                var doNotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+                PushIncludeTokensDepth(("ifndef", !doNotIncludeTokens));
+                return Array.Empty<IToken<CPreprocessorTokenType>>();
+            }
+            case "elif":
+            {
+                var previousConditionsAreFalse = _includeTokensStack
+                    .TakeWhileWithLastInclude(i => i.KeyWordText != "if")
+                    .All(i => !i.Flag);
+                if (previousConditionsAreFalse)
+                {
+                    var expressionTokens = ConsumeLine();
+                    var includeTokens = EvaluateExpression(expressionTokens.ToList());
+                    PushIncludeTokensDepth(("elif", includeTokens));
+                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                }
+
+                PushIncludeTokensDepth(("elif", false));
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "endif":
             {
-                PopIncludeTokensDepth();
+                _includeTokensStack.PopWhileWithLastInclude(i => i.KeyWordText != "if");
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "else":
             {
-                SwitchIncludeTokensDepth();
+                var previousConditionsAreFalse = _includeTokensStack
+                    .TakeWhileWithLastInclude(i => i.KeyWordText != "if")
+                    .All(i => !i.Flag);
+                if (previousConditionsAreFalse)
+                {
+                    PushIncludeTokensDepth(("else", true));
+                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                }
+
+                PushIncludeTokensDepth(("else", false));
                 return Array.Empty<IToken<CPreprocessorTokenType>>();
             }
             case "pragma":
