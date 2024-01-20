@@ -1,0 +1,2 @@
+int ifFunc() { return 0; }
+

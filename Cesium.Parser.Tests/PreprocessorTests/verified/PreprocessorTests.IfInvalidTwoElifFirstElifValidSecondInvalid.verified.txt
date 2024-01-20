@@ -1,0 +1,2 @@
+int elifOneFunc() { return 0; }
+

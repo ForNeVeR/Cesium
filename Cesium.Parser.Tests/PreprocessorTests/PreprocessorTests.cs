@@ -148,6 +148,131 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfValidElifInvalid() => DoTest(
+@"#define num 1
+#if num == 1
+int ifFunc() { return 0; }
+#elif num == 2
+int elifFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifValid() => DoTest(
+@"#define num 1
+#if num == 2
+int ifFunc() { return 0; }
+#elif num == 1
+int elifFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidTwoElifFirstElifValidSecondInvalid() => DoTest(
+@"#define num 1
+#if num == 2
+int ifFunc() { return 0; }
+#elif num == 1
+int elifOneFunc() { return 0; }
+#elif num == 2
+int elifTwoFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidTwoElifFirstElifInvalidSecondValid() => DoTest(
+@"#define num 1
+#if num == 2
+int ifFunc() { return 0; }
+#elif num == 2
+int elifOneFunc() { return 0; }
+#elif num == 1
+int elifTwoFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidAllElifInvalidElseValid() => DoTest(
+@"#define num 1
+#if num == 2
+int ifFunc() { return 0; }
+#elif num == 2
+int elifOneFunc() { return 0; }
+#elif num == 2
+int elifTwoFunc() { return 0; }
+#else
+int elseFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifInvalidElseValid() => DoTest(
+@"#define num 1
+#if num == 2
+int ifFunc() { return 0; }
+#elif num == 3
+int elifFunc() { return 0; }
+#else
+int elseFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifValidNestedElifValidElseInvalid() => DoTest(
+@"#define NUM 9
+#if NUM == 2
+int ifFunc() { return 0; }
+#elif NUM > 4
+#if NUM == 4
+int nestedIfFunc() { return 0; }
+#elif NUM == 9
+int nestedElifFunc() { return 0; }
+#else
+int nestedElseFunc() { return 0; }
+#endif
+#else
+int elseFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifValidNestedElifInvalidElseInvalid() => DoTest(
+        @"#define NUM 9
+#if NUM == 2
+int ifFunc() { return 0; }
+#elif NUM > 3
+inf elifFunc() { return 0; }
+#if NUM == 3
+int nestedIfFunc() { return 0; }
+#elif NUM == 1
+int nestedElifFunc() { return 0; }
+#endif
+#else
+int elseFunc() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfdefValidElifInvalid() => DoTest(
+@"#define NUM 10
+#ifdef NUM
+int ifdefFunc() { return 1; }
+#elif NUM == 10
+int elifFunc() { return 1; }
+#endif
+");
+
+    [Fact]
+    public Task IfdefInvalidElifValid() => DoTest(
+@"#define NUM 10
+#ifdef NOTDEFINED
+int ifdefFunc() { return 1; }
+#elif NUM == 10
+int elifFunc() { return 1; }
+#endif
+");
+
+    [Fact]
     public Task NestedIfNotDefinedLiteral() => DoTest(
 @"#define foo main
 #ifndef foo1

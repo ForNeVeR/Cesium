@@ -1,0 +1,2 @@
+int elifTwoFunc() { return 0; }
+

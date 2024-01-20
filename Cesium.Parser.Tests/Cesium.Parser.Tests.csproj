@@ -40,6 +40,46 @@
         <ParentFile>StatementParserTests</ParentFile>
         <DependentUpon>StatementParserTests.cs</DependentUpon>
       </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfValidElifInvalid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidElifValid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidElifInvalidElseValid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidElifValidNestedElifValidElseInvalid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidElifValidNestedElifInvalidElseInvalid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfdefValidElifInvalid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfdefInvalidElifValid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidTwoElifFirstElifValidSecondInvalid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidTwoElifFirstElifInvalidSecondValid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
+      <None Update="PreprocessorTests\verified\PreprocessorTests.IfInvalidAllElifInvalidElseValid.verified.txt">
+        <ParentFile>PreprocessorTests</ParentFile>
+        <DependentUpon>PreprocessorTests.cs</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
