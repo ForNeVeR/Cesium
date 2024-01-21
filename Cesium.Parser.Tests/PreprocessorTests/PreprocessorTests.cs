@@ -92,6 +92,18 @@ test
 """);
 
     [Fact]
+    public Task IncludeInElif() => DoTest("""
+#define NUM 1
+#if NUM == 2
+#include NUM
+#elif NUM == 1
+#include <foo.h>
+#else
+#include NUM
+#endif
+""", new() { ["foo.h"] = "int x = 0;" });
+
+    [Fact]
     public Task PragmaOnce() => DoTest(@"
 int test()
 {
@@ -108,6 +120,20 @@ int test()
 {}"
         ));
         Assert.Equal(@"Error: ""Error message"" test", err.Message);
+    }
+
+    [Fact, NoVerify]
+    public async Task ErrorMsgInsideElif()
+    {
+        PreprocessorException err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
+@"#define NUM 1
+#if NUM == 2
+#elif NUM == 1
+#error ""Error message""
+#endif
+{}"
+        ));
+        Assert.Equal(@"Error: ""Error message""", err.Message);
     }
 
     [Fact]
@@ -281,6 +307,104 @@ int foo_included1() { return 0; }
 int foo() { return 0; }
 #endif
 int foo_included2() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task NestedElifInInvalidIf() => DoTest(
+@"#define TEST 3
+#if TEST == 2
+int ifFunc() { return 0; }
+#if TEST == 2
+int ifNestedFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
+    public Task NestedElifInInvalidIfdef() => DoTest(
+@"#define TEST 3
+#ifdef NOTEST
+int ifFunc() { return 0; }
+#if TEST == 2
+int ifNestedFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+    [Fact]
+    public Task NestedElifInValidIf() => DoTest(
+@"#define TEST 3
+#if TEST == 3
+#if TEST == 2
+int ifFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
+    public Task NestedElifInValidIfdef() => DoTest(
+@"#define TEST 3
+#ifdef TEST
+#if TEST == 2
+int ifFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
+    public Task NestedElifInInvalidIfndef() => DoTest(
+@"#define TEST 3
+#ifndef TEST
+#ifndef TEST
+int ifFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+
+    [Fact, NoVerify]
+    public async Task ElifWithoutStartConditionBlockKeyWord()
+    {
+        var exception = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoPreprocess(
+            @"#elif TEST == 1
+int foo() { return 0; }
+#endif
+"));
+        Assert.Equal("Elif can't exist without an if,ifdef,ifndef block", exception.Message);
+    }
+
+    [Fact]
+    public Task NestedElifInValidIfndef() => DoTest(
+@"#define TEST 3
+#ifndef NOTEST
+#ifndef TEST
+int ifFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
+#endif
+");
+
+    [Fact]
+    public Task NestedElifInElif() => DoTest(
+@"#define TEST 3
+#if TEST == 2
+int ifFunc() { return 0; }
+#elif TEST == 3
+#if TEST == 2
+int ifNestedFunc() { return 0; }
+#elif TEST == 3
+int main() { return 0; }
+#endif
 #endif
 ");
 
@@ -502,6 +626,19 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task UndefMacroInElif() => DoTest(
+        @"#define mycondition 1
+#ifdef TEST
+int ifDefFunc() { return 0; }
+#elif mycondition == 1
+#undef mycondition
+#endif
+#ifndef mycondition
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task ErrorInsideNotActiveBranchIsNotSupported() => DoTest(
 @"#define WINAPI_FAMILY_DESKTOP_APP          100
 #ifndef WINAPI_FAMILY_DESKTOP_APP
@@ -542,6 +679,17 @@ int main() { return foo(x,test,11); }
 #define foo fake_foo
 #endif
 int foo() { return 0; }
+");
+
+    [Fact]
+    public Task DefineInElif() => DoTest(
+@"#define TEST 1
+#ifdef NON_EXISTS
+#undef fake_foo
+#elif TEST == 1
+#define foo fake_foo
+#endif
+int fake_foo() { return 0; }
 ");
 
     [Fact]
