@@ -29,7 +29,7 @@ public unsafe static class StdLibFunctions
     [FixedAddressValueType]
     private static int errNo;
 
-    private static EnvVarsStorage? _envVarsStorage;
+    private static readonly Lazy<EnvVarsStorage> _envVarsStorage = new(InitEnvVarsStorage);
 
     public static int Abs(int value)
     {
@@ -162,11 +162,9 @@ public unsafe static class StdLibFunctions
             return null;
         }
 
-        _envVarsStorage ??= InitEnvVarsStorage();
-
-        if (_envVarsStorage.Indices.TryGetValue(envKey, out var envValueIndex))
+        if (_envVarsStorage.Value.Indices.TryGetValue(envKey, out var envValueIndex))
         {
-            return _envVarsStorage.Values + envValueIndex;
+            return _envVarsStorage.Value.Values + envValueIndex;
         }
 
         return null;
