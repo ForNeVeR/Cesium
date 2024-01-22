@@ -256,6 +256,7 @@ public unsafe static class StdLibFunctions
             // Windows variables are case-insensitive
             comparer: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : null);
 
+        var enc = Encoding.UTF8;
         var totalBufferLength = 0;
 
         foreach (DictionaryEntry entry in processEnvs)
@@ -265,14 +266,13 @@ public unsafe static class StdLibFunctions
             if (entry.Value is string entryValueStr)
             {
                 indices.Add(keyStr, totalBufferLength);
-                totalBufferLength += entryValueStr.Length + 1; // each value is null-terminated
+                totalBufferLength += enc.GetByteCount(entryValueStr) + 1; // each value is null-terminated
             }
         }
 
         // Last value has additional null-terminator
         var storage = new EnvVarsStorage(totalBufferLength + 1, indices);
 
-        var enc = Encoding.UTF8;
         foreach (KeyValuePair<string, int> kvp in indices)
         {
             var envVarKey = kvp.Key;
