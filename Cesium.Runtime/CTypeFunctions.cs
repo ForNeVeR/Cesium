@@ -45,6 +45,21 @@ public unsafe static class CTypeFunctions
         return (value >= '0' && value <= '9') || (value >= 'A' && value <= 'F') || (value >= 'a' && value <= 'f') ? 1 : 0;
     }
 
+    public static int IsCntrl(int value)
+    {
+        return (value <= 31) || (value == 127) ? 1 : 0;
+    }
+
+    public static int IsGraph(int value)
+    {
+        return (value >= 33 && value <= 126) ? 1 : 0;
+    }
+
+    public static int IsPunct(int value)
+    {
+        return (value >= 33 && value <= 47) || (value >= 58 && value <= 64) || (value >= 91 && value <= 96) || (value >= 123 && value <= 126) ? 1 : 0;
+    }
+
     public static int IsSpace(int value)
     {
         return value switch
@@ -57,5 +72,15 @@ public unsafe static class CTypeFunctions
             0x0b => 1,
             _ => 0,
         };
+    }
+
+    public static int IsBlank(int value)
+    {
+        return (value == 9) || (value == 32) ? 1 : 0;
+    }
+
+    public static int IsPrint(int value)
+    {
+        return (value >= 32 && value <= 126) ? 1 : 0;
     }
 }
