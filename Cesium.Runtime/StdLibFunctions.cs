@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Cesium.Runtime;
 
@@ -12,8 +14,22 @@ public unsafe static class StdLibFunctions
     public const int RAND_MAX = 0x7FFFFFFF;
     private static Random shared = new();
 
+    private class EnvVarsStorage
+    {
+        public byte* Values { get; }
+        public Dictionary<string, int> Indices { get; }
+
+        public EnvVarsStorage(int bufferLength, Dictionary<string, int> indices)
+        {
+            Values = (byte*)Malloc((nuint)bufferLength);
+            Indices = indices;
+        }
+    }
+
     [FixedAddressValueType]
     private static int errNo;
+
+    private static EnvVarsStorage? _envVarsStorage;
 
     public static int Abs(int value)
     {
@@ -139,13 +155,21 @@ public unsafe static class StdLibFunctions
 
     public static byte* GetEnv(byte* ptr)
     {
-        var str = StdIoFunctions.Unmarshal(ptr);
-        if (str is null)
+        var envKey = StdIoFunctions.Unmarshal(ptr);
+
+        if (envKey is null)
         {
             return null;
         }
 
-        return StdIoFunctions.MarshalStr(Environment.GetEnvironmentVariable(str));
+        _envVarsStorage ??= InitEnvVarsStorage();
+
+        if (_envVarsStorage.Indices.TryGetValue(envKey, out var envValueIndex))
+        {
+            return _envVarsStorage.Values + envValueIndex;
+        }
+
+        return null;
     }
 
     public static long StrToL(byte* str, byte** str_end, int @base)
@@ -221,5 +245,57 @@ public unsafe static class StdLibFunctions
     public static ulong StrToUL(byte* str, byte** str_end, int @base)
     {
         return (ulong)StrToL(str, str_end, @base);
+    }
+
+    private static EnvVarsStorage InitEnvVarsStorage()
+    {
+        var processEnvs = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+
+        var indices = new Dictionary<string, int>(
+            capacity: processEnvs.Count,
+            // Windows variables are case-insensitive
+            comparer: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : null);
+
+        var totalBufferLength = 0;
+
+        foreach (DictionaryEntry entry in processEnvs)
+        {
+            var keyStr = (string)entry.Key;
+
+            if (entry.Value is string entryValueStr)
+            {
+                indices.Add(keyStr, totalBufferLength);
+                totalBufferLength += entryValueStr.Length + 1; // each value is null-terminated
+            }
+        }
+
+        // Last value has additional null-terminator
+        var storage = new EnvVarsStorage(totalBufferLength + 1, indices);
+
+        var enc = Encoding.UTF8;
+        foreach (KeyValuePair<string, int> kvp in indices)
+        {
+            var envVarKey = kvp.Key;
+            var envVarIndex = kvp.Value;
+
+            if (processEnvs[envVarKey] is string envValueStr)
+            {
+                var envValueBytes = enc.GetBytes(envValueStr);
+
+#if NETSTANDARD
+                for (int i = 0; i < envValueBytes.Length; i++)
+                {
+                    storage.Values[envVarIndex + i] = envValueBytes[i];
+                }
+#else
+                envValueBytes.AsSpan().CopyTo(new Span<byte>(storage.Values + envVarIndex, envValueBytes.Length));
+#endif
+
+                storage.Values[envVarIndex + envValueBytes.Length] = 0;
+            }
+        }
+
+        storage.Values[totalBufferLength] = 0;
+        return storage;
     }
 }
