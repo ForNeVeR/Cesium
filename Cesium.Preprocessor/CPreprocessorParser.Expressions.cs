@@ -6,7 +6,7 @@ namespace Cesium.Preprocessor;
 
 using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 
-internal partial class CPreprocessorParser
+public partial class CPreprocessorParser
 {
     [Rule("identifier: PreprocessingToken")]
     private static ICPreprocessorToken MakeIdentifier(ICPreprocessorToken token) => token;

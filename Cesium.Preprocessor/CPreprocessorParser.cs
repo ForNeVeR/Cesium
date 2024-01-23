@@ -14,7 +14,7 @@ using IdentifierList = ImmutableArray<IToken<CPreprocessorTokenType>>;
 /// <remarks>C23 Standard, section 6.10 Preprocessing directives.</remarks>
 [Parser(typeof(CPreprocessorTokenType))]
 [SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
-internal partial class CPreprocessorParser
+public partial class CPreprocessorParser
 {
     [Rule("preprocessing_file: group?")]
     private static PreprocessingFile MakePreprocessingFile(Group? group) => new(group ?? []);
@@ -121,8 +121,8 @@ internal partial class CPreprocessorParser
         ICPreprocessorToken _,
         ICPreprocessorToken define,
         ICPreprocessorToken identifier,
-        PreprocessorTokens replacement,
-        ICPreprocessorToken __) => new(identifier, [], replacement);
+        PreprocessorTokens? replacementList,
+        ICPreprocessorToken __) => new(identifier, new MacroParameters([], HasEllipsis: false), replacementList ?? []);
 
     [Rule("control_line: '#' 'define' identifier lparen identifier_list? ')' replacement_list new_line")]
     private static DefineDirective MakeDefine(
@@ -132,8 +132,9 @@ internal partial class CPreprocessorParser
         ICPreprocessorToken __,
         IdentifierList? parameters,
         ICPreprocessorToken ___,
-        PreprocessorTokens replacementList,
-        ICPreprocessorToken ____) => new(identifier, parameters ?? [], replacementList);
+        PreprocessorTokens? replacementList,
+        ICPreprocessorToken ____) =>
+        new(identifier, new MacroParameters([], HasEllipsis: false), replacementList ?? []);
 
     [Rule("control_line: '#' 'define' identifier lparen '...' ')' replacement_list new_line")]
     private static DefineDirective MakeDefine(
@@ -143,8 +144,9 @@ internal partial class CPreprocessorParser
         ICPreprocessorToken __,
         ICPreprocessorToken ellipsis,
         ICPreprocessorToken ____,
-        PreprocessorTokens replacementList,
-        ICPreprocessorToken _____) => new(identifier, new MacroParameters([], HasEllipsis: true), replacementList);
+        PreprocessorTokens? replacementList,
+        ICPreprocessorToken _____) =>
+        new(identifier, new MacroParameters([], HasEllipsis: true), replacementList ?? []);
 
     [Rule("control_line: '#' 'define' identifier lparen identifier_list ',' '...' ')' replacement_list new_line")]
     private static DefineDirective MakeDefine(
@@ -156,9 +158,9 @@ internal partial class CPreprocessorParser
         ICPreprocessorToken ___,
         ICPreprocessorToken ellipsis,
         ICPreprocessorToken _____,
-        PreprocessorTokens replacementList,
+        PreprocessorTokens? replacementList,
         ICPreprocessorToken ______) =>
-        new(identifier, new MacroParameters(parameters, HasEllipsis: true), replacementList);
+        new(identifier, new MacroParameters(parameters, HasEllipsis: true), replacementList ?? []);
 
     [Rule("control_line: '#' 'undef' identifier new_line")]
     private static UndefDirective MakeUndef(
@@ -208,38 +210,53 @@ internal partial class CPreprocessorParser
     // TODO: Check that it is not immediately preceded by whitespace, according to the standard
     private static ICPreprocessorToken MakeLParen(ICPreprocessorToken token) => token;
 
-// TODO: replacement-list:
-// TODO: pp-tokensopt
-// TODO: 162 Language § 6.10
-// TODO: N3096 working draft — April 1, 2023 ISO/IEC 9899:2023 (E)
-// TODO: pp-tokens:
-// TODO: preprocessing-token
-// TODO: pp-tokens preprocessing-token
-// TODO: new-line:
-// TODO: the new-line character
-// TODO: identifier-list:
-// TODO: identifier
-// TODO: identifier-list , identifier
-// TODO: pp-parameter:
-// TODO: pp-parameter-name pp-parameter-clauseopt
-// TODO: pp-parameter-name:
-// TODO: pp-standard-parameter
-// TODO: pp-prefixed-parameter
-// TODO: pp-standard-parameter:
-// TODO: identifier
-// TODO: pp-prefixed-parameter:
-// TODO: identifier :: identifier
-// TODO: pp-parameter-clause:
-// TODO: ( pp-balanced-token-sequenceopt )
-// TODO: pp-balanced-token-sequence:
-// TODO: pp-balanced-token
-// TODO: pp-balanced-token-sequence pp-balanced-token
-// TODO: pp-balanced-token:
-// TODO: ( pp-balanced-token-sequenceopt )
-// TODO: [ pp-balanced-token-sequenceopt ]
-// TODO: { pp-balanced-token-sequenceopt }
-// TODO: any pp-token other than a parenthesis, a bracket, or a brace
-// TODO: embed-parameter-sequence:
-// TODO: pp-parameter
-// TODO: embed-parameter-sequence pp-parameter
+    [Rule("replacement_list: pp_tokens?")]
+    private static PreprocessorTokens? MakeReplacementList(PreprocessorTokens? tokens) => tokens;
+
+    [Rule("pp_tokens: preprocessing_token")]
+    private static PreprocessorTokens MakePPTokens(ICPreprocessorToken token) => [token];
+
+    [Rule("pp_tokens: pp_tokens preprocessing_token")]
+    private static PreprocessorTokens MakePPTokens(PreprocessorTokens tokens, ICPreprocessorToken token) => tokens.Add(token);
+
+    [Rule("new_line: NewLine")]
+    private static ICPreprocessorToken MakeNewLine(ICPreprocessorToken token) => token;
+
+    [Rule("identifier_list: identifier")]
+    private static IdentifierList MakeIdentifierList(ICPreprocessorToken identifier) => [identifier];
+
+    [Rule("identifier_list: identifier_list ',' identifier")]
+    private static IdentifierList MakeIdentifierList(
+        IdentifierList identifiers,
+        ICPreprocessorToken _,
+        ICPreprocessorToken identifier) => identifiers.Add(identifier);
+
+    // TODO: The following rules are only used in #embed:
+    // pp-parameter:
+    //  pp-parameter-name pp-parameter-clauseₒₚₜ
+    // pp-parameter-name:
+    //  pp-standard-parameter
+    //  pp-prefixed-parameter
+    // pp-standard-parameter:
+    //  identifier
+    // pp-prefixed-parameter:
+    //  identifier :: identifier
+    // pp-parameter-clause:
+    //  '(' pp-balanced-token-sequenceₒₚₜ ')'
+    // pp-balanced-token-sequence:
+    //  pp-balanced-token
+    //  pp-balanced-token-sequence pp-balanced-token
+    // pp-balanced-token:
+    //  '(' pp-balanced-token-sequenceₒₚₜ ')'
+    //  '[' pp-balanced-token-sequenceₒₚₜ ']'
+    //  '{' pp-balanced-token-sequenceₒₚₜ '}'
+    //  any pp-token other than a parenthesis, a bracket, or a brace
+    // embed-parameter-sequence:
+    //  pp-parameter
+    //  embed-parameter-sequence pp-parameter
+
+    // TODO: 6.10.1 Conditional inclusion
+    // - __has_include
+    // - __has_embed
+    // - __has_c_attribute
 }
