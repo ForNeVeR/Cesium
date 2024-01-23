@@ -24,9 +24,9 @@ public record CPreprocessor(
 
     private readonly string[] _conditionalBlockInitialWords =
     {
-        LiteralConstants.If,
-        LiteralConstants.IfDef,
-        LiteralConstants.IfnDef
+        Directives.If,
+        Directives.IfDef,
+        Directives.IfnDef
     };
 
     private bool UpperConditionInStackIsFalse => _includeTokensStack.TryPeek(out var lastItem)
@@ -248,7 +248,6 @@ public record CPreprocessor(
                             case { Kind: RightParen }:
                                 openParensCount--;
                                 break;
-                            default: break;
                         }
                     } while (openParensCount > 0);
                 }
@@ -491,13 +490,35 @@ public record CPreprocessor(
             }
         }
 
+        ConditionalElementResult GetIfInBlockForElif()
+        {
+            var ifConditionInBlock = _includeTokensStack
+                .FirstOrDefault(i => _conditionalBlockInitialWords.Contains(i.KeyWord));
+            if (ifConditionInBlock is null)
+                throw new PreprocessorException($"Directive such as an elif cannot exist" +
+                                                $" without a directive such as if");
+            if (_includeTokensStack.Count > 0 && ifConditionInBlock.UpperFlag is null)
+                throw new PreprocessorException($"Not the first {string.Join(',', _conditionalBlockInitialWords)}" +
+                                                $" blocks can't be without" +
+                                                $"{nameof(ConditionalElementResult.UpperFlag)}");
+            return ifConditionInBlock;
+        }
+
+        bool ArePreviousConditionalsFalse()
+        {
+            return _includeTokensStack
+                .TakeWhileWithLastInclude(i =>
+                    !_conditionalBlockInitialWords.Contains(i.KeyWord))
+                .All(i => !i.Flag);
+        }
+
         var hash = ConsumeNext(Hash);
         line = hash.Range.Start.Line;
         var preprocessorToken = ConsumeNext(PreprocessingToken);
 
         switch (preprocessorToken.Text)
         {
-            case LiteralConstants.Include:
+            case Directives.Include:
             {
                 if (!IncludeTokens)
                 {
@@ -537,7 +558,7 @@ public record CPreprocessor(
 
                 return tokensList;
             }
-            case LiteralConstants.Error:
+            case Directives.Error:
             {
                 var errorText = new StringBuilder();
                 while (enumerator.MoveNext())
@@ -550,7 +571,7 @@ public record CPreprocessor(
 
                 return [];
             }
-            case LiteralConstants.Define:
+            case Directives.Define:
             {
                 if (!IncludeTokens) return [];
 
@@ -560,7 +581,7 @@ public record CPreprocessor(
 
                 return [];
             }
-            case LiteralConstants.Undef:
+            case Directives.Undef:
             {
                 if (!IncludeTokens) return [];
 
@@ -570,101 +591,129 @@ public record CPreprocessor(
 
                 return [];
             }
-            case LiteralConstants.IfDef:
+            case Directives.IfDef:
             {
                 if (UpperConditionInStackIsFalse)
                 {
-                    _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.IfDef, false, false));
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, false, false));
                     return [];
                 }
 
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.IfDef, includeTokens, true));
+                _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, includeTokens, true));
                 return [];
             }
-            case LiteralConstants.If:
+            case Directives.If:
             {
                 if (UpperConditionInStackIsFalse)
                 {
-                    _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.If, false, false));
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.If, false, false));
                     return [];
                 }
 
                 var expressionTokens = ConsumeLine();
                 var includeTokens = EvaluateExpression(expressionTokens.ToList());
-                _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.If, includeTokens, true));
+                _includeTokensStack.Push(new ConditionalElementResult(Directives.If, includeTokens, true));
                 return [];
             }
-            case LiteralConstants.IfnDef:
+            case Directives.IfnDef:
             {
                 if (UpperConditionInStackIsFalse)
                 {
-                    _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.IfnDef, false, false));
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.IfnDef, false, false));
                     return [];
                 }
 
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 var doNotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
                 _includeTokensStack.Push(new ConditionalElementResult(
-                    LiteralConstants.IfnDef,
+                    Directives.IfnDef,
                     !doNotIncludeTokens,
                     true));
                 return [];
             }
-            case LiteralConstants.Elif:
+            case Directives.ElifDef:
             {
-                var previousConditionsAreFalse = _includeTokensStack
-                    .TakeWhileWithLastInclude(i =>
-                        !_conditionalBlockInitialWords.Contains(i.KeyWord))
-                    .All(i => !i.Flag);
-                var ifConditionInBlock = _includeTokensStack
-                    .FirstOrDefault(i => _conditionalBlockInitialWords.Contains(i.KeyWord));
-                if (ifConditionInBlock is null)
-                    throw new PreprocessorException($"{nameof(LiteralConstants.Elif)} can't exist without an " +
-                                                    $"{string.Join(',', _conditionalBlockInitialWords)} block");
-                if (_includeTokensStack.Count > 0 && ifConditionInBlock.UpperFlag is null)
-                    throw new PreprocessorException($"Not the first {string.Join(',', _conditionalBlockInitialWords)}" +
-                                                    $" blocks can't be without" +
-                                                    $"{nameof(ConditionalElementResult.UpperFlag)}");
-
+                var ifConditionInBlock = GetIfInBlockForElif();
                 if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
                 {
-                    _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.Elif, false, null));
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
                     return [];
                 }
 
-                if (previousConditionsAreFalse)
+                if (ArePreviousConditionalsFalse())
+                {
+                    var identifier = ConsumeNext(PreprocessingToken).Text;
+                    var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+                    _includeTokensStack.Push(new ConditionalElementResult(
+                        Directives.ElifDef,
+                        includeTokens,
+                        null));
+                    return [];
+                }
+
+                _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
+                return [];
+            }
+            case Directives.ElifNDef:
+            {
+                var ifConditionInBlock = GetIfInBlockForElif();
+                if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
+                {
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
+                    return [];
+                }
+
+                if (ArePreviousConditionalsFalse())
+                {
+                    var identifier = ConsumeNext(PreprocessingToken).Text;
+                    var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+                    _includeTokensStack.Push(new ConditionalElementResult(
+                        Directives.ElifNDef,
+                        !includeTokens,
+                        null));
+                    return [];
+                }
+
+                _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
+                return [];
+            }
+            case Directives.Elif:
+            {
+                var ifConditionInBlock = GetIfInBlockForElif();
+                if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
+                {
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
+                    return [];
+                }
+
+                if (ArePreviousConditionalsFalse())
                 {
                     var expressionTokens = ConsumeLine();
                     var includeTokens = EvaluateExpression(expressionTokens.ToList());
-                    _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.Elif, includeTokens, null));
+                    _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, includeTokens, null));
                     return [];
                 }
 
-                _includeTokensStack.Push(new ConditionalElementResult(LiteralConstants.Elif, false, null));
+                _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
                 return [];
             }
-            case LiteralConstants.Endif:
+            case Directives.Endif:
             {
                 _includeTokensStack.PopWhileWithLastInclude(i =>
                     !_conditionalBlockInitialWords.Contains(i.KeyWord));
                 return [];
             }
-            case LiteralConstants.Else:
+            case Directives.Else:
             {
-                var previousConditionsAreFalse = _includeTokensStack
-                    .TakeWhileWithLastInclude(i =>
-                        !_conditionalBlockInitialWords.Contains(i.KeyWord))
-                    .All(i => !i.Flag);
-
                 _includeTokensStack.Push(new ConditionalElementResult(
-                    LiteralConstants.Elif,
-                    previousConditionsAreFalse,
+                    Directives.Elif,
+                    ArePreviousConditionalsFalse(),
                     null));
                 return [];
             }
-            case LiteralConstants.Pragma:
+            case Directives.Pragma:
             {
                 var identifier = ConsumeNext(PreprocessingToken).Text;
                 if (identifier == "once")
