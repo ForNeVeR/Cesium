@@ -379,7 +379,8 @@ int main() { return 0; }
 int foo() { return 0; }
 #endif
 "));
-        Assert.Equal("Elif can't exist without an if,ifdef,ifndef block", exception.Message);
+        Assert.Equal($"Directive such as an elif cannot exist without a directive such as if",
+            exception.Message);
     }
 
     [Fact]
@@ -613,6 +614,69 @@ int foo() { return 0; }
 #define WINAPI_FAMILY WINAPI_FAMILY_DESKTOP_APP
 #if WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP
 int foo() { return 0; }
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifdefValid() => DoTest(@"#define NUM 3
+#if NUM == 2
+int ifFunc() {}
+#elifdef NUM
+int elifdefFunc() {}
+#else
+int elseFunc() {}
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifdefInvalidElifNDefValid() => DoTest(@"#define NUM 3
+#if NUM == 2
+int ifFunc() {}
+#elifdef NOEXIST
+int elifdefFunc() {}
+#elifndef NOEXIST
+int elifndefFunc() {}
+#else
+int elseFunc() {}
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifdefValidElifNDefValid() => DoTest(@"#define NUM 3
+#if NUM == 2
+int ifFunc() {}
+#elifdef NUM
+int elifdefFunc() {}
+#elifndef NOEXIST
+int elifndefFunc() {}
+#else
+int elseFunc() {}
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifdefValidElifNDefInvalid() => DoTest(@"#define NUM 3
+#if NUM == 2
+int ifFunc() {}
+#elifdef NUM
+int elifdefFunc() {}
+#elifndef NUM
+int elifndefFunc() {}
+#else
+int elseFunc() {}
+#endif
+");
+
+    [Fact]
+    public Task IfInvalidElifValidElifdefValid() => DoTest(@"#define NUM 3
+#if NUM == 2
+int ifFunc() {}
+#elif NUM == 3
+int elifFunc() {}
+#elifdef NUM
+int elifdefFunc() {}
+#else
+int elseFunc() {}
 #endif
 ");
 
