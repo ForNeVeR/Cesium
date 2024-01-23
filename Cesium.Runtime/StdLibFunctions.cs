@@ -162,9 +162,11 @@ public unsafe static class StdLibFunctions
             return null;
         }
 
-        if (_envVarsStorage.Value.Indices.TryGetValue(envKey, out var envValueIndex))
+        var storage = _envVarsStorage.Value;
+
+        if (storage.Indices.TryGetValue(envKey, out var envValueIndex))
         {
-            return _envVarsStorage.Value.Values + envValueIndex;
+            return storage.Values + envValueIndex;
         }
 
         return null;
