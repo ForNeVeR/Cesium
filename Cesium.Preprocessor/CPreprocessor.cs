@@ -44,7 +44,15 @@ public record CPreprocessor(
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
     {
-        var parser = new CPreprocessorParser(Lexer);
+        var file = ParsePreprocessingFile();
+        foreach (var group in file.Groups)
+        {
+            switch (group)
+            {
+                default: throw new WipException(WipException.ToDo, $"Preprocessing group not supported: {group}.");
+            }
+        }
+
         yield break;
 
         // var newLine = true;
@@ -118,6 +126,35 @@ public record CPreprocessor(
         //             throw new PreprocessorException($"Illegal token {token.Kind} {token.Text}.");
         //     }
         // }
+    }
+
+    private PreprocessingFile ParsePreprocessingFile()
+    {
+        var parser = new CPreprocessorParser(Lexer);
+        var file = parser.ParsePreprocessingFile();
+        if (file.IsError)
+        {
+            throw file.Error.Got switch
+            {
+                IToken<CPreprocessorTokenType> token => new PreprocessorException(
+                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
+                    $"Error at position {file.Error.Position}. Got {token.Text}."),
+                char ch => new PreprocessorException(
+                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
+                    $"Error at position {file.Error.Position}. Got {ch}."),
+                var other => new PreprocessorException(
+                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
+                    $"Error at position {file.Error.Position}. Got {other}."),
+            };
+        }
+
+        var firstUnprocessedToken = parser.TokenStream.Peek();
+        if (firstUnprocessedToken.Kind != End)
+            throw new PreprocessorException(
+                $"Excessive output after the end of a preprocessor unit \"{CompilationUnitPath}\" at {Lexer.Position}. " +
+                $"Next token {firstUnprocessedToken.Text}.");
+
+        return file.Ok;
     }
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
