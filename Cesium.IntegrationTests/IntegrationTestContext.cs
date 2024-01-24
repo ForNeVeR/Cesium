@@ -1,6 +1,6 @@
 using Cesium.TestFramework;
 using JetBrains.Annotations;
-using NeoSmart.AsyncLock;
+using AsyncKeyedLock;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
@@ -11,9 +11,9 @@ public class IntegrationTestContext : IAsyncDisposable
     public const string BuildConfiguration = "Release";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
-    private readonly SemaphoreSlim _testSemaphore = new(Environment.ProcessorCount);
+    private readonly AsyncNonKeyedLocker _testSemaphore = new(Environment.ProcessorCount);
 
-    private readonly AsyncLock _lock = new();
+    private readonly AsyncNonKeyedLocker _lock = new();
     private bool _initialized;
     private Exception? _initializationException;
 
@@ -21,14 +21,9 @@ public class IntegrationTestContext : IAsyncDisposable
 
     public async Task WrapTestBody(Func<Task> testBody)
     {
-        await _testSemaphore.WaitAsync();
-        try
+        using (await _testSemaphore.LockAsync())
         {
             await testBody();
-        }
-        finally
-        {
-            _testSemaphore.Release();
         }
     }
 
