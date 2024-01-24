@@ -18,8 +18,6 @@ internal record GuardedGroup(
     ImmutableArray<IGroupPart> Group
 );
 
-internal record EndIfLine; // #endif
-
 internal record IncludeDirective(Tokens Tokens) : IGroupPart;
 internal record EmbedDirective(Tokens Tokens) : IGroupPart;
 

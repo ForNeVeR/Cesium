@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Globalization;
 using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
@@ -16,21 +14,6 @@ public record CPreprocessor(
     IIncludeContext IncludeContext,
     IMacroContext MacroContext)
 {
-    private readonly Stack<ConditionalElementResult> _includeTokensStack = new();
-
-    private bool IncludeTokens => _includeTokensStack.Count == 0
-                                  || _includeTokensStack.TryPeek(out var lastItem)
-                                  && lastItem.Flag;
-
-    private readonly string[] _conditionalBlockInitialWords =
-    {
-        Directives.If,
-        Directives.IfDef,
-        Directives.IfnDef
-    };
-
-    private bool UpperConditionInStackIsFalse => _includeTokensStack.TryPeek(out var lastItem)
-                                                 && lastItem is {Flag: false};
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -45,6 +28,7 @@ public record CPreprocessor(
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
     {
         var file = ParsePreprocessingFile();
+
         foreach (var group in file.Groups)
         {
             switch (group)
@@ -53,79 +37,7 @@ public record CPreprocessor(
             }
         }
 
-        yield break;
-
-        // var newLine = true;
-        //
-        // var stream = Lexer.ToStream();
-        // while (!stream.IsEnd)
-        // {
-        //     var token = stream.Consume();
-        //     switch (token.Kind)
-        //     {
-        //         case End:
-        //             yield break;
-        //
-        //         case WhiteSpace:
-        //         case Comment:
-        //             if (IncludeTokens)
-        //             {
-        //                 yield return token;
-        //             }
-        //             break;
-        //
-        //         case NewLine:
-        //             newLine = true;
-        //             if (IncludeTokens)
-        //             {
-        //                 yield return token;
-        //             }
-        //             break;
-        //
-        //         case Hash:
-        //             if (newLine)
-        //             {
-        //                 foreach (var t in await ProcessDirective(ReadDirectiveLine(token, stream)))
-        //                     yield return t;
-        //
-        //                 // Leave newLine as true, since we've processed the directive at the previous line, so now we're
-        //                 // necessarily at the start of a new one.
-        //             }
-        //             else
-        //             {
-        //                 yield return token;
-        //             }
-        //             break;
-        //
-        //         case Error:
-        //         case DoubleHash:
-        //         case HeaderName:
-        //         case Separator:
-        //         case LeftParen:
-        //         case RightParen:
-        //             newLine = false;
-        //             if (IncludeTokens)
-        //             {
-        //                 yield return token;
-        //             }
-        //             break;
-        //         case PreprocessingToken:
-        //             {
-        //                 newLine = false;
-        //                 if (IncludeTokens)
-        //                 {
-        //                     foreach (var producedToken in ReplaceMacro(token, stream))
-        //                     {
-        //                         yield return producedToken;
-        //                     }
-        //                 }
-        //             }
-        //             break;
-        //
-        //         default:
-        //             throw new PreprocessorException($"Illegal token {token.Kind} {token.Text}.");
-        //     }
-        // }
+        yield break; // TODO: Remove this line.
     }
 
     private PreprocessingFile ParsePreprocessingFile()
@@ -151,7 +63,7 @@ public record CPreprocessor(
         var firstUnprocessedToken = parser.TokenStream.Peek();
         if (firstUnprocessedToken.Kind != End)
             throw new PreprocessorException(
-                $"Excessive output after the end of a preprocessor unit \"{CompilationUnitPath}\" at {Lexer.Position}. " +
+                $"Excessive output after the end of a preprocessor unit \"{CompilationUnitPath}\" at {firstUnprocessedToken.Location}. " +
                 $"Next token {firstUnprocessedToken.Text}.");
 
         return file.Ok;

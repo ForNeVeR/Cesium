@@ -6,10 +6,11 @@ namespace Cesium.Preprocessor;
 
 using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 
-internal partial class CPreprocessorParser
+[Parser(typeof(CPreprocessorTokenType))]
+internal partial class CPreprocessorExpressionParser
 {
     [Rule("identifier: PreprocessingToken")]
-    private static ICPreprocessorToken MakeIdentifier(ICPreprocessorToken token) => token;
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken token) => new IdentifierExpression(token.Text);
 
     [Rule("identifier_defined: 'defined' PreprocessingToken")]
     private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token)
@@ -20,8 +21,7 @@ internal partial class CPreprocessorParser
         => new DefinedExpression(token.Text);
 
     [Rule("simple_expression: identifier")]
-    private static IPreprocessorExpression MakeSimpleExpression(ICPreprocessorToken identifier) =>
-        new IdentifierExpression(identifier.Text);
+    private static IPreprocessorExpression MakeSimpleExpression(IPreprocessorExpression expression) => expression;
 
     [Rule("binary_expression: simple_expression '==' simple_expression")]
     [Rule("binary_expression: simple_expression '!=' simple_expression")]
@@ -39,8 +39,6 @@ internal partial class CPreprocessorParser
         => new(GetOperator(token), expression);
 
     [Rule("expression: identifier")]
-    private static IPreprocessorExpression MakeExpression(ICPreprocessorToken identifier) => new IdentifierExpression(identifier.Text);
-
     [Rule("expression: binary_expression")]
     [Rule("expression: prefix_expression")]
     [Rule("expression: identifier_defined")]
