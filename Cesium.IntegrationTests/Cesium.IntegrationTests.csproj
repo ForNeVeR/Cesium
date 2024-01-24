@@ -7,16 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="**/*.c"/>
-        <None Include="**/*.h"/>
+        <None Include="**/*.c" />
+        <None Include="**/*.h" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="AsyncKeyedLock" />
         <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="MedallionShell" />
         <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="NeoSmart.AsyncLock" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
