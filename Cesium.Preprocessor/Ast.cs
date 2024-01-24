@@ -12,9 +12,10 @@ internal interface IGroupPart;
 internal record NonDirective(Tokens Tokens) : IGroupPart;
 
 internal record IfSection(GuardedGroup IfGroup, ImmutableArray<GuardedGroup> ElIfGroups, GuardedGroup? ElseGroup) : IGroupPart;
+/// <param name="Clause">If <c>null</c> then this is an <c>else</c> clause.</param>
 internal record GuardedGroup(
     ICPreprocessorToken Keyword,
-    IPreprocessorExpression? Clause,
+    ImmutableArray<ICPreprocessorToken>? Clause,
     ImmutableArray<IGroupPart> Group
 );
 

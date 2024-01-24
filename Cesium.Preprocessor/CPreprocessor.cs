@@ -42,7 +42,8 @@ public record CPreprocessor(
 
     private PreprocessingFile ParsePreprocessingFile()
     {
-        var parser = new CPreprocessorParser(Lexer);
+        using var transactionalLexer = new TransactionalLexer(Lexer);
+        var parser = new CPreprocessorParser(transactionalLexer);
         var file = parser.ParsePreprocessingFile();
         if (file.IsError)
         {
@@ -51,20 +52,11 @@ public record CPreprocessor(
                 IToken<CPreprocessorTokenType> token => new PreprocessorException(
                     $"Error during preprocessing file \"{CompilationUnitPath}\"." +
                     $"Error at position {file.Error.Position}. Got {token.Text}."),
-                char ch => new PreprocessorException(
-                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
-                    $"Error at position {file.Error.Position}. Got {ch}."),
                 var other => new PreprocessorException(
                     $"Error during preprocessing file \"{CompilationUnitPath}\"." +
                     $"Error at position {file.Error.Position}. Got {other}."),
             };
         }
-
-        var firstUnprocessedToken = parser.TokenStream.Peek();
-        if (firstUnprocessedToken.Kind != End)
-            throw new PreprocessorException(
-                $"Excessive output after the end of a preprocessor unit \"{CompilationUnitPath}\" at {firstUnprocessedToken.Location}. " +
-                $"Next token {firstUnprocessedToken.Text}.");
 
         return file.Ok;
     }
