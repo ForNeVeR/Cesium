@@ -15,10 +15,14 @@ internal class BinaryExpression(
     public string EvaluateExpression(IMacroContext context)
     {
         var firstValue = First.EvaluateExpression(context);
-        var parsedFirstValue = Parse(firstValue ?? throw new Exception());
+        var parsedFirstValue = Parse(firstValue
+                                     ?? throw new PreprocessorException("The left-hand element of the " +
+                                                                        "expression was not found"));
 
         var secondValue = Second.EvaluateExpression(context);
-        var parsedSecondValue = Parse(secondValue ?? throw new Exception());
+        var parsedSecondValue = Parse(secondValue
+                                      ?? throw new PreprocessorException("The right-hand element of the " +
+                                                                         "expression was not found"));
 
         var result = Operator switch
         {
