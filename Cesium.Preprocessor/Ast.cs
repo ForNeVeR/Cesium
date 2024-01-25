@@ -51,7 +51,7 @@ internal record DefineDirective(
     Tokens Replacement
 ) : IGroupPart;
 
-internal record UndefDirective(ICPreprocessorToken Identifier) : IGroupPart;
+internal record UnDefDirective(ICPreprocessorToken Identifier) : IGroupPart;
 
 internal record LineDirective(Tokens LineNumber) : IGroupPart;
 

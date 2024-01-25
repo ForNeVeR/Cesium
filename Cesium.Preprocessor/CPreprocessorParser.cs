@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 
@@ -121,6 +122,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
+        throw new WipException(WipException.ToDo,
+            "the group that's a part of the if group should stop being parsed when encountering either an else-block or endif-block.");
         var group = ParseGroup();
         return transaction.End(
             Ok(
@@ -389,7 +392,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new UndefDirective(identifier.Ok.Value)));
+        return transaction.End(Ok<IGroupPart>(new UnDefDirective(identifier.Ok.Value)));
     }
 
     private ParseResult<IGroupPart> ParseLine()
@@ -467,6 +470,9 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     private ParseResult<IGroupPart> ParseTextLine()
     {
         using var transaction = lexer.BeginTransaction();
+
+        if (Peek() is { Kind: CPreprocessorTokenType.Hash } token)
+            return transaction.End(ParseResult.Error("not #", token, token.Range.Start, "text-line"));
 
         var tokens = ParsePpTokens();
         var newLine = ParseNewLine();

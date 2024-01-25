@@ -2,6 +2,7 @@ using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Parser;
 using Yoakke.SynKit.Text;
 using static Cesium.Preprocessor.CPreprocessorTokenType;
 using Range = Yoakke.SynKit.Text.Range;
@@ -46,15 +47,7 @@ public record CPreprocessor(
         var file = parser.ParsePreprocessingFile();
         if (file.IsError)
         {
-            throw file.Error.Got switch
-            {
-                IToken<CPreprocessorTokenType> token => new PreprocessorException(
-                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
-                    $"Error at position {file.Error.Position}. Got {token.Text}."),
-                var other => new PreprocessorException(
-                    $"Error during preprocessing file \"{CompilationUnitPath}\"." +
-                    $"Error at position {file.Error.Position}. Got {other}."),
-            };
+            RaisePreprocessorParseError(file.Error);
         }
 
         return file.Ok;
@@ -502,16 +495,13 @@ public record CPreprocessor(
 
                 return [];
             }
-            // case Directives.Undef:
-            // {
-            //     if (!IncludeTokens) return [];
-            //
-            //     var expressionTokens = ConsumeLineAll();
-            //     var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-            //     MacroContext.UndefineMacro(macroDefinition.Name);
-            //
-            //     return [];
-            // }
+            case UnDefDirective undef:
+            {
+                var identifier = GetSingleToken([undef.Identifier], PreprocessingToken).Text;
+                MacroContext.UndefineMacro(identifier);
+                return [];
+            }
+            // TODO: Uncomment all the lines below.
             // case Directives.IfDef:
             // {
             //     if (UpperConditionInStackIsFalse)
@@ -644,6 +634,8 @@ public record CPreprocessor(
             //
             //     return [];
             // }
+            case TextLine textLine:
+                return textLine.Tokens ?? [];
             default:
                 throw new WipException(
                     77,
@@ -667,8 +659,7 @@ public record CPreprocessor(
         var expression = p.ParseExpression();
         if (expression.IsError)
         {
-            throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}," +
-                                            $" got {expression.Error.Got}");
+            RaisePreprocessorParseError(expression.Error);
         }
 
         var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
@@ -699,6 +690,17 @@ public record CPreprocessor(
         }
 
         yield return new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+    }
+
+    private void RaisePreprocessorParseError(ParseError error)
+    {
+        var errorMessage = new StringBuilder($"Error during preprocessing file \"{CompilationUnitPath}\", {error.Position}.");
+        foreach (var item in error.Elements.Values)
+        {
+            errorMessage.AppendLine($"\n- {item.Context}: expected {string.Join(", ", item.Expected)}");
+        }
+
+        throw new PreprocessorException(errorMessage.ToString());
     }
 
     private static void EmitWarning(string text)
