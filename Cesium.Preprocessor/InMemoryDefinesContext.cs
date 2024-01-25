@@ -8,7 +8,8 @@ public class InMemoryDefinesContext : IMacroContext
     private readonly Dictionary<string, IList<IToken<CPreprocessorTokenType>>> _defines;
     private readonly Dictionary<string, MacroDefinition> _defineMacros;
 
-    public InMemoryDefinesContext(IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
+    public InMemoryDefinesContext(
+        IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
     {
         _defines = initialDefines == null
             ? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>()

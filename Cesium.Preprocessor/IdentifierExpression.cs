@@ -3,11 +3,11 @@ using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
-internal sealed class IdentifierExpression : IPreprocessorExpression
+public sealed class IdentifierExpression : IPreprocessorExpression
 {
     public IdentifierExpression(string identifer)
     {
-        this.Identifer = identifer;
+        Identifer = identifer;
     }
 
     public string Identifer { get; }
@@ -15,7 +15,7 @@ internal sealed class IdentifierExpression : IPreprocessorExpression
     public string? EvaluateExpression(IMacroContext context)
     {
         string? lastValue = null;
-        var searchValue = this.Identifer;
+        var searchValue = Identifer;
         do
         {
             if (Regex.IsMatch(searchValue, $"^{Regexes.IntLiteral}$"))
