@@ -18,7 +18,10 @@ internal sealed class IdentifierExpression : IPreprocessorExpression
         var searchValue = Identifer;
         do
         {
-            if (Regex.IsMatch(searchValue, $"^{Regexes.IntLiteral}$"))
+            if (Regex.IsMatch(searchValue, $"^{Regexes.IntLiteral}$")
+                || Regex.IsMatch(searchValue, $"^{Regexes.HexLiteral}$")
+                || Regex.IsMatch(searchValue, "^0[0-7]+$")
+                || Regex.IsMatch(searchValue, "^0b[01]+$"))
             {
                 return searchValue;
             }
