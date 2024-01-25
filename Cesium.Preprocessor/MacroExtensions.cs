@@ -18,4 +18,6 @@ internal static class MacroExtensions
 
         throw new PreprocessorException("Invalid integer constant expression");
     }
+
+    public static bool AsBoolean(this int num) => num != 0;
 }

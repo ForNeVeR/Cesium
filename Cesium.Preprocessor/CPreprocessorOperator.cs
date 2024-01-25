@@ -1,6 +1,6 @@
 namespace Cesium.Preprocessor;
 
-public enum CPreprocessorOperator
+internal enum CPreprocessorOperator
 {
     Equals,
     NotEquals,

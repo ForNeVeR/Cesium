@@ -1,6 +1,6 @@
 namespace Cesium.Preprocessor;
 
-public interface IPreprocessorExpression
+internal interface IPreprocessorExpression
 {
     string? EvaluateExpression(IMacroContext context);
 }
