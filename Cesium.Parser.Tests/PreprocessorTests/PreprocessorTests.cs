@@ -551,27 +551,19 @@ int foo() { return 0; }
 #endif
 ");
 
-    [Fact, NoVerify]
-    public async Task IfExpressionLessOrEqualsWhenNotDefinedLeft()
-    {
-        var err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
-@"#if mycondition <= 1
+    [Fact]
+    public Task IfExpressionLessOrEqualsWhenNotDefinedRight() => DoTest(@"
+#if mycondition == 0
 int foo() { return 0; }
 #endif
-"));
-        Assert.Equal("The left-hand element of the expression was not found", err.Message);
-    }
+");
 
-    [Fact, NoVerify]
-    public async Task IfExpressionLessOrEqualsWhenNotDefinedRight()
-    {
-        var err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
-@"#if 1 <= mycondition
+    [Fact]
+    public Task IfExpressionLessOrEqualsWhenNotDefinedLeft() => DoTest(@"
+#if mycondition < 0
 int foo() { return 0; }
 #endif
-"));
-        Assert.Equal("The right-hand element of the expression was not found", err.Message);
-    }
+");
 
     [Fact]
     public Task IfExpressionDefined() => DoTest(
@@ -844,7 +836,7 @@ char* x = __FILE__;
     [InlineData("0", "||", "1", true)]
     [InlineData("1", "||", "0", true)]
     [InlineData("1", "||", "1", true)]
-    public async Task EvaluateExpressionAllVariants(
+    public async Task EvaluateExpressionAllIntegerVariants(
         string firstValue,
         string oper,
         string secondValue,

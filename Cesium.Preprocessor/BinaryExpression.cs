@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using Cesium.Core;
+using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
 
@@ -15,14 +17,10 @@ internal class BinaryExpression(
     public string EvaluateExpression(IMacroContext context)
     {
         var firstValue = First.EvaluateExpression(context);
-        var parsedFirstValue = Parse(firstValue
-                                     ?? throw new PreprocessorException("The left-hand element of the " +
-                                                                        "expression was not found"));
-
         var secondValue = Second.EvaluateExpression(context);
-        var parsedSecondValue = Parse(secondValue
-                                      ?? throw new PreprocessorException("The right-hand element of the " +
-                                                                         "expression was not found"));
+
+        var parsedFirstValue = firstValue is null ? 0 : Parse(firstValue);
+        var parsedSecondValue = secondValue is null ? 0 : Parse(secondValue);
 
         var result = Operator switch
         {
@@ -46,13 +44,13 @@ internal class BinaryExpression(
             if (int.TryParse(macrosValue, out var parsedMacroValue))
                 return parsedMacroValue;
 
-            if (macrosValue.StartsWith("0b"))
+            if (Regex.IsMatch(macrosValue, "^0b[01]+$"))
                 return Convert.ToInt32(macrosValue[2..], 2);
 
-            if (macrosValue.StartsWith("0x"))
+            if (Regex.IsMatch(macrosValue, $"^{Regexes.HexLiteral}$"))
                 return Convert.ToInt32(macrosValue[2..], 16);
 
-            if (macrosValue[0] == '0' && char.IsDigit(macrosValue[1]))
+            if (Regex.IsMatch(macrosValue, "^0[0-7]+$"))
                 return Convert.ToInt32(macrosValue[2..], 8);
 
             throw new NotSupportedException("Invalid macros format");
