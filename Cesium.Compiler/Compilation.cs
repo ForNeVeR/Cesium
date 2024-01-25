@@ -70,7 +70,7 @@ internal static class Compilation
         {
             definesContext.DefineMacro(
                 define,
-                macroDefinition: new ObjectMacroDefinition(define),
+                parameters: null,
                 replacement: new IToken<CPreprocessorTokenType>[]
                 {
                     new Token<CPreprocessorTokenType>(outOfFileRange, new(), "1", CPreprocessorTokenType.PreprocessingToken)

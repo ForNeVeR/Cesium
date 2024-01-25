@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Preprocessor;
@@ -6,7 +7,7 @@ namespace Cesium.Preprocessor;
 using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 using Tokens = ImmutableArray<IToken<CPreprocessorTokenType>>;
 
-internal record PreprocessingFile(ImmutableArray<IGroupPart> Groups);
+internal record PreprocessingFile(ImmutableArray<IGroupPart> Group);
 
 internal interface IGroupPart;
 internal record NonDirective(Tokens Tokens) : IGroupPart;
@@ -22,10 +23,23 @@ internal record GuardedGroup(
 internal record IncludeDirective(Tokens Tokens) : IGroupPart;
 internal record EmbedDirective(Tokens Tokens) : IGroupPart;
 
-internal record MacroParameters(
+/// <remarks>
+/// In most cases, this may be <c>null</c> which means the macro is defined without parameters, an object-like macro.
+/// </remarks>
+public record MacroParameters(
     Tokens Parameters,
     bool HasEllipsis
-);
+)
+{
+    internal string GetName(int index)
+    {
+        var token = Parameters[index];
+        if (token.Kind != CPreprocessorTokenType.PreprocessingToken)
+            throw new PreprocessorException($"Parameter {token} is not an identifier.");
+
+        return token.Text;
+    }
+}
 
 /// <param name="Parameters">
 /// If <c>null</c> then the macro is not a function-like. If empty then it is function-like and requires parens to be

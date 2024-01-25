@@ -29,15 +29,14 @@ public record CPreprocessor(
     {
         var file = ParsePreprocessingFile();
 
-        foreach (var group in file.Groups)
+        foreach (var part in file.Group)
         {
-            switch (group)
+            var tokens = await ProcessGroupPart(part);
+            foreach (var token in tokens)
             {
-                default: throw new WipException(WipException.ToDo, $"Preprocessing group not supported: {group}.");
+                yield return token;
             }
         }
-
-        yield break; // TODO: Remove this line.
     }
 
     private PreprocessingFile ParsePreprocessingFile()
@@ -62,16 +61,15 @@ public record CPreprocessor(
     }
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
-        IToken<CPreprocessorTokenType> token,
+        IToken<CPreprocessorTokenType> macroNameToken,
         IStream<IToken<CPreprocessorTokenType>> stream)
     {
-        if (MacroContext.TryResolveMacro(token.Text, out var macroDefinition, out var tokenReplacement))
+        if (MacroContext.TryResolveMacro(macroNameToken.Text, out var parameters, out var tokenReplacement))
         {
             Dictionary<string, List<IToken<CPreprocessorTokenType>>> replacement = new();
-            if (macroDefinition is FunctionMacroDefinition functionMacro)
+            if (parameters is not null)
             {
-                if (functionMacro.Parameters is { } parameters
-                    && (parameters.Length > 0 || functionMacro.hasEllipsis))
+                if (parameters.Parameters.Length > 0 || parameters.HasEllipsis)
                 {
                     var parameterIndex = -1;
                     var openParensCount = 0;
@@ -79,7 +77,7 @@ public record CPreprocessor(
                     List<IToken<CPreprocessorTokenType>> currentParameter = new();
                     IToken<CPreprocessorTokenType> parametersParsingToken;
 
-                    if (functionMacro.hasEllipsis)
+                    if (parameters.HasEllipsis)
                     {
                         replacement.Add("__VA_ARGS__", new());
                     }
@@ -119,19 +117,19 @@ public record CPreprocessor(
 
                                 if (openParensCount == 1)
                                 {
-                                    if (parameters.Length > parameterIndex)
+                                    if (parameters.Parameters.Length > parameterIndex)
                                     {
-                                        replacement.Add(parameters[parameterIndex], currentParameter);
+                                        replacement.Add(parameters.GetName(parameterIndex), currentParameter);
                                         parameterIndex++;
                                     }
-                                    else if (functionMacro.hasEllipsis)
+                                    else if (parameters.HasEllipsis)
                                     {
                                         if (replacement.TryGetValue("__VA_ARGS__", out var va_args))
                                         {
                                             va_args.AddRange(currentParameter);
                                             va_args.Add(new Token<CPreprocessorTokenType>(
-                                                token.Range,
-                                                token.Location,
+                                                macroNameToken.Range,
+                                                macroNameToken.Location,
                                                 ",",
                                                 Separator));
                                         }
@@ -139,7 +137,7 @@ public record CPreprocessor(
                                     else
                                     {
                                         throw new PreprocessorException(
-                                            $"The function {functionMacro.Name} defined" +
+                                            $"The function {macroNameToken.Text} defined" +
                                             $" at {parametersParsingToken.Range} has more" +
                                             " parameters than the macro allows.");
                                     }
@@ -164,9 +162,9 @@ public record CPreprocessor(
                     while (openParensCount > 0 || !hitOpenToken);
 
 
-                    if (parameters.Length > parameterIndex)
+                    if (parameters.Parameters.Length > parameterIndex)
                     {
-                        replacement.Add(parameters[parameterIndex], currentParameter);
+                        replacement.Add(parameters.GetName(parameterIndex), currentParameter);
                     }
                     else
                     {
@@ -195,16 +193,15 @@ public record CPreprocessor(
                         }
                     } while (openParensCount > 0);
                 }
-
             }
-            if (macroDefinition is ObjectMacroDefinition objectMacro)
+            if (parameters is null) // an object-like macro
             {
-                if (objectMacro.Name == "__FILE__")
+                if (macroNameToken.Text == "__FILE__")
                 {
                     yield return new Token<CPreprocessorTokenType>(
-                        token.Range,
-                        token.Location,
-                        "\"" + token
+                        macroNameToken.Range,
+                        macroNameToken.Location,
+                        "\"" + macroNameToken
                             .Location
                             .File?
                             .Path
@@ -213,12 +210,12 @@ public record CPreprocessor(
                     yield break;
                 }
 
-                if (token.Text == "__LINE__")
+                if (macroNameToken.Text == "__LINE__")
                 {
-                    var line = token.Location.Range.Start.Line + 1;
+                    var line = macroNameToken.Location.Range.Start.Line + 1;
                     yield return new Token<CPreprocessorTokenType>(
-                        token.Range,
-                        token.Location,
+                        macroNameToken.Range,
+                        macroNameToken.Location,
                         line.ToString(),
                         PreprocessingToken);
                     yield break;
@@ -262,8 +259,8 @@ public record CPreprocessor(
                             foreach (var parameterToken in parameterTokens)
                             {
                                 yield return new Token<CPreprocessorTokenType>(
-                                    token.Range,
-                                    token.Location,
+                                    macroNameToken.Range,
+                                    macroNameToken.Location,
                                     parameterToken.Text,
                                     parameterToken.Kind);
                             }
@@ -276,10 +273,10 @@ public record CPreprocessor(
                                 .Replace("\"", "\\\"");
                             escapedStringValue = $"\"{escapedStringValue}\"";
                             yield return new Token<CPreprocessorTokenType>(
-                                token.Range,
-                                token.Location,
+                                macroNameToken.Range,
+                                macroNameToken.Location,
                                 escapedStringValue,
-                                token.Kind);
+                                macroNameToken.Kind);
                             performStringReplace = false;
                         }
                         else
@@ -287,8 +284,8 @@ public record CPreprocessor(
                             foreach (var parameterToken in parameterTokens)
                             {
                                 yield return new Token<CPreprocessorTokenType>(
-                                    token.Range,
-                                    token.Location,
+                                    macroNameToken.Range,
+                                    macroNameToken.Location,
                                     parameterToken.Text,
                                     parameterToken.Kind);
                             }
@@ -316,8 +313,8 @@ public record CPreprocessor(
                     if (!includeNextVerbatim)
                     {
                         pendingWhitespaces.Add(new Token<CPreprocessorTokenType>(
-                            token.Range,
-                            token.Location,
+                            macroNameToken.Range,
+                            macroNameToken.Location,
                             subToken.Text,
                             subToken.Kind));
                     }
@@ -325,8 +322,8 @@ public record CPreprocessor(
                 else
                 {
                     yield return new Token<CPreprocessorTokenType>(
-                        token.Range,
-                        token.Location,
+                        macroNameToken.Range,
+                        macroNameToken.Location,
                         subToken.Text,
                         subToken.Kind);
                 }
@@ -334,7 +331,7 @@ public record CPreprocessor(
         }
         else
         {
-            yield return token;
+            yield return macroNameToken;
         }
     }
 
@@ -385,356 +382,303 @@ public record CPreprocessor(
         }
     }
 
-    // private async ValueTask<IEnumerable<IToken<CPreprocessorTokenType>>> ProcessDirective(
-    //     IEnumerable<IToken<CPreprocessorTokenType>> directiveTokens)
-    // {
-    //     using var enumerator = directiveTokens.GetEnumerator();
-    //
-    //     int? line = null;
-    //     IToken<CPreprocessorTokenType> ConsumeNext(params CPreprocessorTokenType[] allowedTypes)
-    //     {
-    //         bool moved;
-    //         while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: WhiteSpace })
-    //         {
-    //             // Skip any whitespace in between tokens.
-    //         }
-    //
-    //         if (!moved)
-    //             throw new PreprocessorException(
-    //                 "Preprocessing directive too short at line " +
-    //                 $"{line?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
-    //
-    //         var token = enumerator.Current;
-    //         if (allowedTypes.Contains(token.Kind)) return enumerator.Current;
-    //
-    //         var expectedTypeString = string.Join(" or ", allowedTypes);
-    //         throw new PreprocessorException(
-    //             $"Cannot process preprocessor directive: expected {expectedTypeString}, " +
-    //             $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
-    //     }
-    //
-    //     IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLine()
-    //     {
-    //         while (enumerator.MoveNext())
-    //         {
-    //             if (enumerator.Current is { Kind: WhiteSpace })
-    //             {
-    //                 continue;
-    //             }
-    //
-    //             yield return enumerator.Current;
-    //         }
-    //     }
-    //
-    //     IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
-    //     {
-    //         while (enumerator.MoveNext())
-    //         {
-    //             yield return enumerator.Current;
-    //         }
-    //     }
-    //
-    //     ConditionalElementResult GetIfInBlockForElif()
-    //     {
-    //         var ifConditionInBlock = _includeTokensStack
-    //             .FirstOrDefault(i => _conditionalBlockInitialWords.Contains(i.KeyWord));
-    //         if (ifConditionInBlock is null)
-    //             throw new PreprocessorException($"Directive such as an elif cannot exist" +
-    //                                             $" without a directive such as if");
-    //         if (_includeTokensStack.Count > 0 && ifConditionInBlock.UpperFlag is null)
-    //             throw new PreprocessorException($"Not the first {string.Join(',', _conditionalBlockInitialWords)}" +
-    //                                             $" blocks can't be without" +
-    //                                             $"{nameof(ConditionalElementResult.UpperFlag)}");
-    //         return ifConditionInBlock;
-    //     }
-    //
-    //     bool ArePreviousConditionalsFalse()
-    //     {
-    //         return _includeTokensStack
-    //             .TakeWhileWithLastInclude(i =>
-    //                 !_conditionalBlockInitialWords.Contains(i.KeyWord))
-    //             .All(i => !i.Flag);
-    //     }
-    //
-    //     var hash = ConsumeNext(Hash);
-    //     line = hash.Range.Start.Line;
-    //     var preprocessorToken = ConsumeNext(PreprocessingToken);
-    //
-    //     switch (preprocessorToken.Text)
-    //     {
-    //         case Directives.Include:
-    //         {
-    //             if (!IncludeTokens)
-    //             {
-    //                 // Ignore everything after #include in a disabled block
-    //                 foreach (var _ in ConsumeLineAll()) {}
-    //                 return [];
-    //             }
-    //
-    //             var filePath = ConsumeNext(HeaderName).Text;
-    //             var tokensList = new List<IToken<CPreprocessorTokenType>>();
-    //             var includeFilePath = LookUpIncludeFile(filePath);
-    //             if (!IncludeContext.ShouldIncludeFile(includeFilePath))
-    //             {
-    //                 return [];
-    //             }
-    //
-    //             if (!File.Exists(includeFilePath))
-    //             {
-    //                 Console.Error.WriteLine($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
-    //             }
-    //
-    //             using var reader = IncludeContext.OpenFileStream(includeFilePath);
-    //             await foreach (var token in ProcessInclude(includeFilePath, reader))
-    //             {
-    //                 tokensList.Add(token);
-    //             }
-    //
-    //             bool hasRemaining;
-    //             while ((hasRemaining = enumerator.MoveNext())
-    //                    && enumerator.Current is { Kind: WhiteSpace or Comment })
-    //             {
-    //                 // eat remaining whitespace and comments
-    //             }
-    //
-    //             if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
-    //                 throw new PreprocessorException($"Invalid token after include path: {t.Kind} {t.Text}");
-    //
-    //             return tokensList;
-    //         }
-    //         case Directives.Error:
-    //         {
-    //             var errorText = new StringBuilder();
-    //             while (enumerator.MoveNext())
-    //             {
-    //                 errorText.Append(enumerator.Current.Text);
-    //             }
-    //
-    //             if (IncludeTokens)
-    //                 throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
-    //
-    //             return [];
-    //         }
-    //         case Directives.Define:
-    //         {
-    //             if (!IncludeTokens) return [];
-    //
-    //             var expressionTokens = ConsumeLineAll();
-    //             var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-    //             MacroContext.DefineMacro(macroDefinition.Name, macroDefinition, replacement);
-    //
-    //             return [];
-    //         }
-    //         case Directives.Undef:
-    //         {
-    //             if (!IncludeTokens) return [];
-    //
-    //             var expressionTokens = ConsumeLineAll();
-    //             var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-    //             MacroContext.UndefineMacro(macroDefinition.Name);
-    //
-    //             return [];
-    //         }
-    //         case Directives.IfDef:
-    //         {
-    //             if (UpperConditionInStackIsFalse)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, false, false));
-    //                 return [];
-    //             }
-    //
-    //             var identifier = ConsumeNext(PreprocessingToken).Text;
-    //             var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-    //             _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, includeTokens, true));
-    //             return [];
-    //         }
-    //         case Directives.If:
-    //         {
-    //             if (UpperConditionInStackIsFalse)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.If, false, false));
-    //                 return [];
-    //             }
-    //
-    //             var expressionTokens = ConsumeLine();
-    //             var includeTokens = EvaluateExpression(expressionTokens.ToList());
-    //             _includeTokensStack.Push(new ConditionalElementResult(Directives.If, includeTokens, true));
-    //             return [];
-    //         }
-    //         case Directives.IfnDef:
-    //         {
-    //             if (UpperConditionInStackIsFalse)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.IfnDef, false, false));
-    //                 return [];
-    //             }
-    //
-    //             var identifier = ConsumeNext(PreprocessingToken).Text;
-    //             var doNotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-    //             _includeTokensStack.Push(new ConditionalElementResult(
-    //                 Directives.IfnDef,
-    //                 !doNotIncludeTokens,
-    //                 true));
-    //             return [];
-    //         }
-    //         case Directives.ElifDef:
-    //         {
-    //             var ifConditionInBlock = GetIfInBlockForElif();
-    //             if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
-    //                 return [];
-    //             }
-    //
-    //             if (ArePreviousConditionalsFalse())
-    //             {
-    //                 var identifier = ConsumeNext(PreprocessingToken).Text;
-    //                 var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-    //                 _includeTokensStack.Push(new ConditionalElementResult(
-    //                     Directives.ElifDef,
-    //                     includeTokens,
-    //                     null));
-    //                 return [];
-    //             }
-    //
-    //             _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
-    //             return [];
-    //         }
-    //         case Directives.ElifNDef:
-    //         {
-    //             var ifConditionInBlock = GetIfInBlockForElif();
-    //             if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
-    //                 return [];
-    //             }
-    //
-    //             if (ArePreviousConditionalsFalse())
-    //             {
-    //                 var identifier = ConsumeNext(PreprocessingToken).Text;
-    //                 var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-    //                 _includeTokensStack.Push(new ConditionalElementResult(
-    //                     Directives.ElifNDef,
-    //                     !includeTokens,
-    //                     null));
-    //                 return [];
-    //             }
-    //
-    //             _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
-    //             return [];
-    //         }
-    //         case Directives.Elif:
-    //         {
-    //             var ifConditionInBlock = GetIfInBlockForElif();
-    //             if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-    //             {
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
-    //                 return [];
-    //             }
-    //
-    //             if (ArePreviousConditionalsFalse())
-    //             {
-    //                 var expressionTokens = ConsumeLine();
-    //                 var includeTokens = EvaluateExpression(expressionTokens.ToList());
-    //                 _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, includeTokens, null));
-    //                 return [];
-    //             }
-    //
-    //             _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
-    //             return [];
-    //         }
-    //         case Directives.Endif:
-    //         {
-    //             _includeTokensStack.PopWhileWithLastInclude(i =>
-    //                 !_conditionalBlockInitialWords.Contains(i.KeyWord));
-    //             return [];
-    //         }
-    //         case Directives.Else:
-    //         {
-    //             _includeTokensStack.Push(new ConditionalElementResult(
-    //                 Directives.Elif,
-    //                 ArePreviousConditionalsFalse(),
-    //                 null));
-    //             return [];
-    //         }
-    //         case Directives.Pragma:
-    //         {
-    //             var identifier = ConsumeNext(PreprocessingToken).Text;
-    //             if (identifier == "once")
-    //             {
-    //                 IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
-    //             }
-    //
-    //             return [];
-    //         }
-    //         default:
-    //             throw new WipException(
-    //                 77,
-    //                 $"Preprocessor directive not supported: {preprocessorToken.Kind} {preprocessorToken.Text}.");
-    //     }
-    // }
-    //private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
-    //{
-    //    var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-    //        expressionTokens.Union(new[]
-    //        {
-    //            new Token<CPreprocessorTokenType>(
-    //                new Range(),
-    //                new Location(),
-    //                "",
-    //                End)
-    //        })).ToBuffered();
-    //    var p = new CPreprocessorExpressionParser(stream);
-    //    var expression = p.ParseExpression();
-    //    if (expression.IsError)
-    //    {
-    //        throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}," +
-    //                                        $" got {expression.Error.Got}");
-    //    }
-//
-    //    var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
-    //    Debug.Assert(stream.IsEnd || stream.Peek().Kind == End);
-    //    bool includeTokens = macroExpression.AsBoolean();
-    //    return includeTokens;
-    //}
-    // private static (MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(
-    //     IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
-    // {
-    //     var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-    //         expressionTokens.Union(new[]
-    //         {
-    //             new Token<CPreprocessorTokenType>(
-    //                 new Range(),
-    //                 new Location(),
-    //                 "",
-    //                 End)
-    //         })).ToBuffered();
-    //     var p = new CPreprocessorMacroDefinitionParser(stream);
-    //     var macroDefinition = p.ParseMacro();
-    //     var macroReplacement = new List<IToken<CPreprocessorTokenType>>();
-    //     while (!stream.IsEnd)
-    //     {
-    //         var token = stream.Consume();
-    //         if (token is not { Kind: End })
-    //         {
-    //             macroReplacement.Add(token);
-    //         }
-    //     }
-    //
-    //     if (macroDefinition.IsError)
-    //     {
-    //         var expected = string.Join(",",
-    //             macroDefinition
-    //                 .Error
-    //                 .Elements
-    //                 .Values
-    //                 .Select(_ => $"{_.Context},{string.Join(",", _.Expected)}"));
-    //         throw new PreprocessorException(
-    //             $"Cannot parse macro definition. Expected: {expected} got: {macroDefinition.Error.Got}");
-    //     }
-    //
-    //     return (macroDefinition.Ok.Value, macroReplacement);
-    // }
+    private async ValueTask<IEnumerable<IToken<CPreprocessorTokenType>>> ProcessGroupPart(IGroupPart groupPart)
+    {
+        IToken<CPreprocessorTokenType> GetSingleToken(
+            IEnumerable<IToken<CPreprocessorTokenType>> tokens,
+            CPreprocessorTokenType type)
+        {
+            var token = tokens.Single();
+            if (token.Kind != type)
+            {
+                throw new PreprocessorException(
+                    $"Cannot process preprocessor directive: expected {type}, " +
+                    $"but got {token.Kind} {token.Text} at {token.Location}.");
+            }
+
+            return token;
+        }
+
+        // TODO: Clean this up / remove
+        //
+        // IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLine()
+        // {
+        //     while (enumerator.MoveNext())
+        //     {
+        //         if (enumerator.Current is { Kind: WhiteSpace })
+        //         {
+        //             continue;
+        //         }
+        //
+        //         yield return enumerator.Current;
+        //     }
+        // }
+        //
+        // IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
+        // {
+        //     while (enumerator.MoveNext())
+        //     {
+        //         yield return enumerator.Current;
+        //     }
+        // }
+        //
+        // ConditionalElementResult GetIfInBlockForElif()
+        // {
+        //     var ifConditionInBlock = _includeTokensStack
+        //         .FirstOrDefault(i => _conditionalBlockInitialWords.Contains(i.KeyWord));
+        //     if (ifConditionInBlock is null)
+        //         throw new PreprocessorException($"Directive such as an elif cannot exist" +
+        //                                         $" without a directive such as if");
+        //     if (_includeTokensStack.Count > 0 && ifConditionInBlock.UpperFlag is null)
+        //         throw new PreprocessorException($"Not the first {string.Join(',', _conditionalBlockInitialWords)}" +
+        //                                         $" blocks can't be without" +
+        //                                         $"{nameof(ConditionalElementResult.UpperFlag)}");
+        //     return ifConditionInBlock;
+        // }
+        //
+        // bool ArePreviousConditionalsFalse()
+        // {
+        //     return _includeTokensStack
+        //         .TakeWhileWithLastInclude(i =>
+        //             !_conditionalBlockInitialWords.Contains(i.KeyWord))
+        //         .All(i => !i.Flag);
+        // }
+        //
+        // var hash = ConsumeNext(Hash);
+        // line = hash.Range.Start.Line;
+        // var preprocessorToken = ConsumeNext(PreprocessingToken);
+
+        switch (groupPart)
+        {
+            case IncludeDirective include:
+            {
+                var filePath = include.Tokens.Single().Text;
+                var tokensList = new List<IToken<CPreprocessorTokenType>>();
+                var includeFilePath = LookUpIncludeFile(filePath);
+                if (!IncludeContext.ShouldIncludeFile(includeFilePath))
+                {
+                    return [];
+                }
+
+                if (!File.Exists(includeFilePath))
+                {
+                    EmitWarning($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
+                }
+
+                using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                await foreach (var token in ProcessInclude(includeFilePath, reader))
+                {
+                    tokensList.Add(token);
+                }
+
+                return tokensList;
+            }
+            case ErrorDirective error:
+            {
+                string errorText;
+                if (error.Tokens is null)
+                {
+                    // TODO: Add error location.
+                    errorText = $"[error at {CompilationUnitPath}]";
+                }
+                else
+                {
+                    var errorBuilder = new StringBuilder();
+                    foreach (var token in error.Tokens ?? [])
+                    {
+                        // TODO: Test for error with spaces and embedded comments
+                        errorBuilder.Append(token.Text);
+                    }
+
+                    errorText = errorBuilder.ToString();
+                }
+
+                throw new PreprocessorException($"Error: {errorText.Trim()}");
+            }
+            case DefineDirective define:
+            {
+                var macroName = define.Identifier.Text;
+                MacroContext.DefineMacro(macroName, define.Parameters, define.Replacement);
+
+                return [];
+            }
+            // case Directives.Undef:
+            // {
+            //     if (!IncludeTokens) return [];
+            //
+            //     var expressionTokens = ConsumeLineAll();
+            //     var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
+            //     MacroContext.UndefineMacro(macroDefinition.Name);
+            //
+            //     return [];
+            // }
+            // case Directives.IfDef:
+            // {
+            //     if (UpperConditionInStackIsFalse)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, false, false));
+            //         return [];
+            //     }
+            //
+            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
+            //     var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, includeTokens, true));
+            //     return [];
+            // }
+            // case Directives.If:
+            // {
+            //     if (UpperConditionInStackIsFalse)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.If, false, false));
+            //         return [];
+            //     }
+            //
+            //     var expressionTokens = ConsumeLine();
+            //     var includeTokens = EvaluateExpression(expressionTokens.ToList());
+            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.If, includeTokens, true));
+            //     return [];
+            // }
+            // case Directives.IfnDef:
+            // {
+            //     if (UpperConditionInStackIsFalse)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.IfnDef, false, false));
+            //         return [];
+            //     }
+            //
+            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
+            //     var doNotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+            //     _includeTokensStack.Push(new ConditionalElementResult(
+            //         Directives.IfnDef,
+            //         !doNotIncludeTokens,
+            //         true));
+            //     return [];
+            // }
+            // case Directives.ElifDef:
+            // {
+            //     var ifConditionInBlock = GetIfInBlockForElif();
+            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
+            //         return [];
+            //     }
+            //
+            //     if (ArePreviousConditionalsFalse())
+            //     {
+            //         var identifier = NextTokenOfType(PreprocessingToken).Text;
+            //         var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+            //         _includeTokensStack.Push(new ConditionalElementResult(
+            //             Directives.ElifDef,
+            //             includeTokens,
+            //             null));
+            //         return [];
+            //     }
+            //
+            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
+            //     return [];
+            // }
+            // case Directives.ElifNDef:
+            // {
+            //     var ifConditionInBlock = GetIfInBlockForElif();
+            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
+            //         return [];
+            //     }
+            //
+            //     if (ArePreviousConditionalsFalse())
+            //     {
+            //         var identifier = NextTokenOfType(PreprocessingToken).Text;
+            //         var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
+            //         _includeTokensStack.Push(new ConditionalElementResult(
+            //             Directives.ElifNDef,
+            //             !includeTokens,
+            //             null));
+            //         return [];
+            //     }
+            //
+            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
+            //     return [];
+            // }
+            // case Directives.Elif:
+            // {
+            //     var ifConditionInBlock = GetIfInBlockForElif();
+            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
+            //     {
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
+            //         return [];
+            //     }
+            //
+            //     if (ArePreviousConditionalsFalse())
+            //     {
+            //         var expressionTokens = ConsumeLine();
+            //         var includeTokens = EvaluateExpression(expressionTokens.ToList());
+            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, includeTokens, null));
+            //         return [];
+            //     }
+            //
+            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
+            //     return [];
+            // }
+            // case Directives.Endif:
+            // {
+            //     _includeTokensStack.PopWhileWithLastInclude(i =>
+            //         !_conditionalBlockInitialWords.Contains(i.KeyWord));
+            //     return [];
+            // }
+            // case Directives.Else:
+            // {
+            //     _includeTokensStack.Push(new ConditionalElementResult(
+            //         Directives.Elif,
+            //         ArePreviousConditionalsFalse(),
+            //         null));
+            //     return [];
+            // }
+            // case Directives.Pragma:
+            // {
+            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
+            //     if (identifier == "once")
+            //     {
+            //         IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
+            //     }
+            //
+            //     return [];
+            // }
+            default:
+                throw new WipException(
+                    77,
+                    $"Preprocessor directive not supported: {groupPart}.");
+            // TODO: Include the group part name into each the group name, for ease of identification, and include the name in this error message, together with the source information.
+        }
+    }
+
+    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    {
+        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
+            expressionTokens.Union(new[]
+            {
+                new Token<CPreprocessorTokenType>(
+                    new Range(),
+                    new Location(),
+                    "",
+                    End)
+            })).ToBuffered();
+        var p = new CPreprocessorExpressionParser(stream);
+        var expression = p.ParseExpression();
+        if (expression.IsError)
+        {
+            throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}," +
+                                            $" got {expression.Error.Got}");
+        }
+
+        var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
+
+        if (!(stream.IsEnd || stream.Peek().Kind == End))
+            throw new AssertException("(stream.IsEnd || stream.Peek().Kind == End) is not true.");
+
+        bool includeTokens = macroExpression.AsBoolean();
+        return includeTokens;
+    }
 
     private string LookUpIncludeFile(string filePath) => filePath[0] switch
     {
@@ -755,5 +699,10 @@ public record CPreprocessor(
         }
 
         yield return new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+    }
+
+    private static void EmitWarning(string text)
+    {
+        Console.Error.WriteLine(text);
     }
 }

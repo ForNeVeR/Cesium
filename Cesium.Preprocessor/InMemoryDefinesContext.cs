@@ -6,7 +6,7 @@ namespace Cesium.Preprocessor;
 public class InMemoryDefinesContext : IMacroContext
 {
     private readonly Dictionary<string, IList<IToken<CPreprocessorTokenType>>> _defines;
-    private readonly Dictionary<string, MacroDefinition> _defineMacros;
+    private readonly Dictionary<string, MacroParameters?> _defineMacros;
 
     public InMemoryDefinesContext(
         IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
@@ -16,21 +16,21 @@ public class InMemoryDefinesContext : IMacroContext
             : new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>(initialDefines);
         _defineMacros = new();
 
-        this.DefineMacro(
+        DefineMacro(
             "__LINE__",
-            macroDefinition: new ObjectMacroDefinition("__LINE__"),
-            replacement: new IToken<CPreprocessorTokenType>[0]);
+            parameters: null,
+            replacement: []);
 
-        this.DefineMacro(
+        DefineMacro(
             "__FILE__",
-            macroDefinition: new ObjectMacroDefinition("__FILE__"),
-            replacement: new IToken<CPreprocessorTokenType>[0]);
+            parameters: null,
+            replacement: []);
     }
 
-    public void DefineMacro(string macro, MacroDefinition macroDefinition, IList<IToken<CPreprocessorTokenType>> replacement)
+    public void DefineMacro(string macro, MacroParameters? parameters, IList<IToken<CPreprocessorTokenType>> replacement)
     {
         _defines[macro] = replacement;
-        _defineMacros[macro] = macroDefinition;
+        _defineMacros[macro] = parameters;
     }
 
     public void UndefineMacro(string macro)
@@ -39,9 +39,11 @@ public class InMemoryDefinesContext : IMacroContext
         _defineMacros.Remove(macro);
     }
 
-    public bool TryResolveMacro(string macro, out MacroDefinition? macroDefinition, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
+    public bool TryResolveMacro(string macro, out MacroParameters? parameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
     {
-        _defineMacros.TryGetValue(macro, out macroDefinition);
+        // TODO: Either add an assertion that the dictionaries are synchronized, or merge them into one dictionary with
+        // a struct as the value.
+        _defineMacros.TryGetValue(macro, out parameters);
         return _defines.TryGetValue(macro, out macroReplacement);
     }
 }

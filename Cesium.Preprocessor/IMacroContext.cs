@@ -5,8 +5,11 @@ namespace Cesium.Preprocessor;
 
 public interface IMacroContext
 {
-    bool TryResolveMacro(string macro, out MacroDefinition? macroDefinition, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement);
+    bool TryResolveMacro(
+        string macro,
+        out MacroParameters? parameters,
+        [NotNullWhen(true)] out IList<IToken<CPreprocessorTokenType>>? macroReplacement);
 
-    void DefineMacro(string macro, MacroDefinition macroDefinition, IList<IToken<CPreprocessorTokenType>> replacement);
+    void DefineMacro(string macro, MacroParameters? parameters, IList<IToken<CPreprocessorTokenType>> replacement);
     void UndefineMacro(string macro);
 }
