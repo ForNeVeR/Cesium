@@ -550,12 +550,27 @@ int foo() { return 0; }
 #endif
 ");
 
-    [Fact]
-    public Task IfExpressionLessOrEqualsWhenNotDefined() => DoTest(
+    [Fact, NoVerify]
+    public async Task IfExpressionLessOrEqualsWhenNotDefinedLeft()
+    {
+        var err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
 @"#if mycondition <= 1
 int foo() { return 0; }
 #endif
-");
+"));
+        Assert.Equal("The left-hand element of the expression was not found", err.Message);
+    }
+
+    [Fact, NoVerify]
+    public async Task IfExpressionLessOrEqualsWhenNotDefinedRight()
+    {
+        var err = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoTest(
+@"#if 1 <= mycondition
+int foo() { return 0; }
+#endif
+"));
+        Assert.Equal("The right-hand element of the expression was not found", err.Message);
+    }
 
     [Fact]
     public Task IfExpressionDefined() => DoTest(
@@ -733,7 +748,7 @@ int x = __LINE__;
 char* x = __FILE__;
 ");
 
-    [Theory]
+    [Theory, NoVerify]
     [InlineData("9", "==", "10", false)]
     [InlineData("10", "==", "10", true)]
 
