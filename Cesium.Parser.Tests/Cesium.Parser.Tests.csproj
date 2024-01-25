@@ -46,4 +46,9 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="PreprocessorTests\InMemoryDefinesContextBuilder.cs" />
+      <Compile Remove="PreprocessorTests\TokenBuilder.cs" />
+    </ItemGroup>
+
 </Project>
