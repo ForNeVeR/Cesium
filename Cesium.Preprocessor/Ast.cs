@@ -17,7 +17,7 @@ internal record IfSection(GuardedGroup IfGroup, ImmutableArray<GuardedGroup> ElI
 internal record GuardedGroup(
     ICPreprocessorToken Keyword,
     ImmutableArray<ICPreprocessorToken>? Clause,
-    ImmutableArray<IGroupPart> Group
+    ImmutableArray<IGroupPart> Tokens
 );
 
 internal record IncludeDirective(Tokens Tokens) : IGroupPart;

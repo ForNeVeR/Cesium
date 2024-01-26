@@ -29,14 +29,9 @@ public record CPreprocessor(
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
     {
         var file = ParsePreprocessingFile();
-
-        foreach (var part in file.Group)
+        await foreach (var token in ProcessGroup(file.Group))
         {
-            var tokens = await ProcessGroupPart(part);
-            foreach (var token in tokens)
-            {
-                yield return token;
-            }
+            yield return token;
         }
     }
 
@@ -375,7 +370,19 @@ public record CPreprocessor(
         }
     }
 
-    private async ValueTask<IEnumerable<IToken<CPreprocessorTokenType>>> ProcessGroupPart(IGroupPart groupPart)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroup(IEnumerable<IGroupPart> group)
+    {
+        foreach (var part in group)
+        {
+            var tokens = ProcessGroupPart(part);
+            await foreach (var token in tokens)
+            {
+                yield return token;
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroupPart(IGroupPart groupPart)
     {
         IToken<CPreprocessorTokenType> GetSingleToken(
             IEnumerable<IToken<CPreprocessorTokenType>> tokens,
@@ -446,25 +453,25 @@ public record CPreprocessor(
             case IncludeDirective include:
             {
                 var filePath = include.Tokens.Single().Text;
-                var tokensList = new List<IToken<CPreprocessorTokenType>>();
                 var includeFilePath = LookUpIncludeFile(filePath);
                 if (!IncludeContext.ShouldIncludeFile(includeFilePath))
                 {
-                    return [];
+                    yield break;
                 }
 
                 if (!File.Exists(includeFilePath))
                 {
                     EmitWarning($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
+                    yield break;
                 }
 
                 using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {
-                    tokensList.Add(token);
+                    yield return token;
                 }
 
-                return tokensList;
+                break;
             }
             case ErrorDirective error:
             {
@@ -493,154 +500,68 @@ public record CPreprocessor(
                 var macroName = define.Identifier.Text;
                 MacroContext.DefineMacro(macroName, define.Parameters, define.Replacement);
 
-                return [];
+                break;
             }
             case UnDefDirective undef:
             {
                 var identifier = GetSingleToken([undef.Identifier], PreprocessingToken).Text;
                 MacroContext.UndefineMacro(identifier);
-                return [];
+                break;
             }
-            // TODO: Uncomment all the lines below.
-            // case Directives.IfDef:
-            // {
-            //     if (UpperConditionInStackIsFalse)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, false, false));
-            //         return [];
-            //     }
-            //
-            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
-            //     var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.IfDef, includeTokens, true));
-            //     return [];
-            // }
-            // case Directives.If:
-            // {
-            //     if (UpperConditionInStackIsFalse)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.If, false, false));
-            //         return [];
-            //     }
-            //
-            //     var expressionTokens = ConsumeLine();
-            //     var includeTokens = EvaluateExpression(expressionTokens.ToList());
-            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.If, includeTokens, true));
-            //     return [];
-            // }
-            // case Directives.IfnDef:
-            // {
-            //     if (UpperConditionInStackIsFalse)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.IfnDef, false, false));
-            //         return [];
-            //     }
-            //
-            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
-            //     var doNotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-            //     _includeTokensStack.Push(new ConditionalElementResult(
-            //         Directives.IfnDef,
-            //         !doNotIncludeTokens,
-            //         true));
-            //     return [];
-            // }
-            // case Directives.ElifDef:
-            // {
-            //     var ifConditionInBlock = GetIfInBlockForElif();
-            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
-            //         return [];
-            //     }
-            //
-            //     if (ArePreviousConditionalsFalse())
-            //     {
-            //         var identifier = NextTokenOfType(PreprocessingToken).Text;
-            //         var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-            //         _includeTokensStack.Push(new ConditionalElementResult(
-            //             Directives.ElifDef,
-            //             includeTokens,
-            //             null));
-            //         return [];
-            //     }
-            //
-            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifDef, false, null));
-            //     return [];
-            // }
-            // case Directives.ElifNDef:
-            // {
-            //     var ifConditionInBlock = GetIfInBlockForElif();
-            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
-            //         return [];
-            //     }
-            //
-            //     if (ArePreviousConditionalsFalse())
-            //     {
-            //         var identifier = NextTokenOfType(PreprocessingToken).Text;
-            //         var includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-            //         _includeTokensStack.Push(new ConditionalElementResult(
-            //             Directives.ElifNDef,
-            //             !includeTokens,
-            //             null));
-            //         return [];
-            //     }
-            //
-            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.ElifNDef, false, null));
-            //     return [];
-            // }
-            // case Directives.Elif:
-            // {
-            //     var ifConditionInBlock = GetIfInBlockForElif();
-            //     if (ifConditionInBlock.UpperFlag is not null && (bool)!ifConditionInBlock.UpperFlag)
-            //     {
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
-            //         return [];
-            //     }
-            //
-            //     if (ArePreviousConditionalsFalse())
-            //     {
-            //         var expressionTokens = ConsumeLine();
-            //         var includeTokens = EvaluateExpression(expressionTokens.ToList());
-            //         _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, includeTokens, null));
-            //         return [];
-            //     }
-            //
-            //     _includeTokensStack.Push(new ConditionalElementResult(Directives.Elif, false, null));
-            //     return [];
-            // }
-            // case Directives.Endif:
-            // {
-            //     _includeTokensStack.PopWhileWithLastInclude(i =>
-            //         !_conditionalBlockInitialWords.Contains(i.KeyWord));
-            //     return [];
-            // }
-            // case Directives.Else:
-            // {
-            //     _includeTokensStack.Push(new ConditionalElementResult(
-            //         Directives.Elif,
-            //         ArePreviousConditionalsFalse(),
-            //         null));
-            //     return [];
-            // }
-            // case Directives.Pragma:
-            // {
-            //     var identifier = NextTokenOfType(PreprocessingToken).Text;
-            //     if (identifier == "once")
-            //     {
-            //         IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
-            //     }
-            //
-            //     return [];
-            // }
+            case IfSection ifSection:
+            {
+                var (ifGroup, elIfGroups, elseGroup) = ifSection;
+                List<GuardedGroup> conditionalGroups = [ifGroup, ..elIfGroups];
+                foreach (var group in conditionalGroups)
+                {
+                    var condition = group.Clause ??
+                                    throw new PreprocessorException($"Empty condition in group {group}");
+                    var evaluationResult = EvaluateExpression(condition);
+                    var keyword = group.Keyword.Text;
+                    var isPositive = keyword is "if" or "ifdef" or "elif" or "elifdef";
+                    var isNegative = keyword is "ifndef" or "elifndef";
+                    if (!isPositive && !isNegative)
+                        throw new PreprocessorException($"Unknown conditional directive {keyword}.");
+
+                    if ((evaluationResult && isPositive) || (!evaluationResult && isNegative)) // the first one wins
+                    {
+                        await foreach (var token in ProcessGroup(group.Tokens))
+                        {
+                            yield return token;
+                        }
+                        break;
+                    }
+                }
+
+                if (elseGroup == null) yield break;
+
+                await foreach (var token in ProcessGroup(elseGroup.Tokens))
+                {
+                    yield return token;
+                }
+                break;
+            }
+            case PragmaDirective pragma:
+            {
+                var identifier = pragma.Tokens?.FirstOrDefault()?.Text;
+                if (identifier == "once")
+                {
+                    IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
+                }
+
+                break;
+            }
             case TextLine textLine:
-                return textLine.Tokens ?? [];
+                foreach (var token in textLine.Tokens ?? [])
+                {
+                    yield return token;
+                }
+                break;
             default:
                 throw new WipException(
                     77,
                     $"Preprocessor directive not supported: {groupPart}.");
-            // TODO: Include the group part name into each the group name, for ease of identification, and include the name in this error message, together with the source information.
+            // TODO: Include the group part name token into each the group name, for ease of identification, and include the name in this error message, together with the source information.
         }
     }
 
