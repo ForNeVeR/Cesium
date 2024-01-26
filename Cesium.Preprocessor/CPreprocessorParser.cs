@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 
@@ -122,8 +121,6 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        throw new WipException(WipException.ToDo,
-            "the group that's a part of the if group should stop being parsed when encountering either an else-block or endif-block.");
         var group = ParseGroup();
         return transaction.End(
             Ok(
@@ -485,6 +482,9 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     {
         using var transaction = lexer.BeginTransaction();
 
+        if (PeekKeyword() is { } token)
+            return transaction.End(ParseResult.Error("not a keyword", token, token.Range.Start, "non-directive"));
+
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
 
@@ -600,6 +600,31 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         } while (token is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
 
         return token;
+    }
+
+    private ICPreprocessorToken? PeekKeyword()
+    {
+        var token = Peek();
+        return token is
+        {
+            Kind: CPreprocessorTokenType.PreprocessingToken,
+            Text: "if"
+            or "ifdef"
+            or "ifndef"
+            or "elif"
+            or "elifdef"
+            or "elifndef"
+            or "else"
+            or "endif"
+            or "include"
+            or "embed"
+            or "define"
+            or "undef"
+            or "line"
+            or "error"
+            or "warning"
+            or "pragma"
+        } ? token : null;
     }
 
     private ICPreprocessorToken NextWithNonSignificant() => lexer.Next();
