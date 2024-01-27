@@ -41,8 +41,8 @@ internal class BinaryExpression(
 
         int Parse(string macrosValue)
         {
-            if (int.TryParse(macrosValue, out var parsedMacroValue))
-                return parsedMacroValue;
+            if (Regex.IsMatch(macrosValue, $"^(0|[1-9][0-9]*)$"))
+                return int.Parse(macrosValue);
 
             if (Regex.IsMatch(macrosValue, "^0b[01]+$"))
                 return Convert.ToInt32(macrosValue[2..], 2);
@@ -51,9 +51,9 @@ internal class BinaryExpression(
                 return Convert.ToInt32(macrosValue[2..], 16);
 
             if (Regex.IsMatch(macrosValue, "^0[0-7]+$"))
-                return Convert.ToInt32(macrosValue[2..], 8);
+                return Convert.ToInt32(macrosValue[1..], 8);
 
-            throw new NotSupportedException("Invalid macros format");
+            throw new PreprocessorException("Invalid macros format");
         }
     }
 }
