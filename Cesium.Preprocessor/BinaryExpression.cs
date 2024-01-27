@@ -10,19 +10,15 @@ internal class BinaryExpression(
     IPreprocessorExpression second)
     : IPreprocessorExpression
 {
-    private IPreprocessorExpression First { get; } = first;
-    private CPreprocessorOperator Operator { get; } = @operator;
-    private IPreprocessorExpression Second { get; } = second;
-
     public string EvaluateExpression(IMacroContext context)
     {
-        var firstValue = First.EvaluateExpression(context);
-        var secondValue = Second.EvaluateExpression(context);
+        var firstValue = first.EvaluateExpression(context);
+        var secondValue = second.EvaluateExpression(context);
 
         var parsedFirstValue = firstValue is null ? 0 : Parse(firstValue);
         var parsedSecondValue = secondValue is null ? 0 : Parse(secondValue);
 
-        var result = Operator switch
+        var result = @operator switch
         {
             CPreprocessorOperator.Equals => parsedFirstValue == parsedSecondValue,
             CPreprocessorOperator.NotEquals => parsedFirstValue != parsedSecondValue,
@@ -32,7 +28,7 @@ internal class BinaryExpression(
             CPreprocessorOperator.GreaterThan => parsedFirstValue > parsedSecondValue,
             CPreprocessorOperator.LogicalAnd => parsedFirstValue.AsBoolean() && parsedSecondValue.AsBoolean(),
             CPreprocessorOperator.LogicalOr => parsedFirstValue.AsBoolean() || parsedSecondValue.AsBoolean(),
-            _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives"),
+            _ => throw new CompilationException($"Operator {@operator} cannot be used in the preprocessor directives"),
         };
 
         return BooleanToString(result);
