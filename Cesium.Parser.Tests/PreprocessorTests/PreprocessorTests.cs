@@ -741,47 +741,52 @@ char* x = __FILE__;
 ");
 
     [Theory, NoVerify]
-    [InlineData("9", "==", "10", false)]
-    [InlineData("10", "==", "10", true)]
+    [InlineData("9 == 10", false)]
+    [InlineData("10 == 10", true)]
 
-    [InlineData("9", "!=", "10", true)]
-    [InlineData("10", "!=", "10", false)]
+    [InlineData("9 != 10", true)]
+    [InlineData("10 != 10", false)]
 
-    [InlineData("9", "<=", "9", true)]
-    [InlineData("9", "<=", "10", true)]
-    [InlineData("10", "<=", "9", false)]
+    [InlineData("9 <= 9", true)]
+    [InlineData("9 <= 10", true)]
+    [InlineData("10 <= 9", false)]
 
-    [InlineData("9", ">=", "9", true)]
-    [InlineData("10", ">=", "9", true)]
-    [InlineData("9", ">=", "10", false)]
+    [InlineData("9 >= 9", true)]
+    [InlineData("10 >= 9", true)]
+    [InlineData("9 >= 10", false)]
 
-    [InlineData("10", "<", "9", false)]
-    [InlineData("9", "<", "10", true)]
-    [InlineData("10", "<", "10", false)]
+    [InlineData("10 < 9", false)]
+    [InlineData("9 < 10", true)]
+    [InlineData("10 < 10", false)]
 
-    [InlineData("10", ">", "9", true)]
-    [InlineData("9", ">", "10", false)]
-    [InlineData("10", ">", "10", false)]
+    [InlineData("10 > 9", true)]
+    [InlineData("9 > 10", false)]
+    [InlineData("10 > 10", false)]
 
-    [InlineData("0", "&&", "0", false)]
-    [InlineData("0", "&&", "1", false)]
-    [InlineData("1", "&&", "0", false)]
-    [InlineData("1", "&&", "1", true)]
+    [InlineData("0 && 0", false)]
+    [InlineData("0 && 1", false)]
+    [InlineData("1 && 0", false)]
+    [InlineData("1 && 1", true)]
 
-    [InlineData("0", "||", "0", false)]
-    [InlineData("0", "||", "1", true)]
-    [InlineData("1", "||", "0", true)]
-    [InlineData("1", "||", "1", true)]
-    public async Task EvaluateExpressionAllIntegerVariants(
-        string firstValue,
-        string oper,
-        string secondValue,
+    [InlineData("0 || 0", false)]
+    [InlineData("0 || 1", true)]
+    [InlineData("1 || 0", true)]
+    [InlineData("1 || 1", true)]
+
+    // TODO: Need to add support for parsing negative numbers, now "-" is recognized as a separator
+    // [InlineData("-10 < 9", true)]
+    // [InlineData("-10 > 9", false)]
+
+    [InlineData("0b11 == 3", true)]
+    [InlineData("021 == 17", true)]
+    [InlineData("0xF == 15", true)]
+    public async Task EvaluateExpressionAllVariants(
+        string expression,
         bool expectedResult)
     {
         const string funcText = "int foo() { return 0; }";
-        var actualResult = await DoPreprocess($@"#if {firstValue} {oper} {secondValue}{Environment.NewLine}"
-                                        + funcText
-                                        + $"{Environment.NewLine}#endif");
+        var actualResult = await DoPreprocess($@"#if {expression}{Environment.NewLine}"
+                                              + $"{funcText}{Environment.NewLine}#endif");
         Assert.Equal(expectedResult ? funcText : "", actualResult.Trim());
     }
 }
