@@ -347,30 +347,37 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         var identifiers = new List<ICPreprocessorToken>();
         var hasEllipsis = false;
+
+        ParseError NoParametersAfterEllipsis(ICPreprocessorToken token) =>
+            transaction.End(ParseResult.Error(")", token, token.Range.Start, "identifier-list"));
+
         while (true)
         {
-            if (identifiers.Count > 0)
-            {
-                var comma = Next();
-                if (comma is not { Text: "," })
-                    return transaction.End(ParseResult.Error(",", comma, comma.Range.Start, "identifier-list"));
-            }
-
             var token = Next();
             switch (token)
             {
                 case { Text: "..." }:
+                    if (hasEllipsis) return NoParametersAfterEllipsis(token);
                     hasEllipsis = true;
                     break;
-                case {Kind: CPreprocessorTokenType.RightParen}:
-                    return transaction.End(
-                        Ok(
-                        new MacroParameters(identifiers.ToImmutableArray(), hasEllipsis)));
                 case {Kind: CPreprocessorTokenType.PreprocessingToken}:
-                    if (hasEllipsis) return transaction.End(
-                        ParseResult.Error(")", token, token.Range.Start, "identifier-list"));
+                    if (hasEllipsis) return NoParametersAfterEllipsis(token);
                     identifiers.Add(token);
                     break;
+            }
+
+            var nextToken = Peek();
+            switch (nextToken)
+            {
+                case { Kind: CPreprocessorTokenType.RightParen }:
+                    _ = Next();
+                    return transaction.End(
+                        Ok(new MacroParameters(identifiers.ToImmutableArray(), hasEllipsis)));
+                case { Text: "," }:
+                    _ = Next();
+                    continue;
+                default:
+                    return transaction.End(ParseResult.Error(", or )", token, token.Range.Start, "identifier-list"));
             }
         }
     }

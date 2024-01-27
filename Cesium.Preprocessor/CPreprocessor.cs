@@ -427,7 +427,7 @@ public record CPreprocessor(
                     }
                 }
 
-                if (elseGroup == null) yield break;
+                if (elseGroup == null) break;
 
                 await foreach (var token in ProcessGroup(elseGroup.Tokens))
                 {
@@ -450,6 +450,8 @@ public record CPreprocessor(
                 {
                     yield return token;
                 }
+                var newLine = new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+                yield return newLine;
                 break;
             default:
                 throw new WipException(
