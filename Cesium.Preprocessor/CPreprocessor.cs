@@ -48,7 +48,6 @@ public record CPreprocessor(
         return file.Ok;
     }
 
-    // TODO: Figure out how's it used, and if it's needed at all
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
         IToken<CPreprocessorTokenType> macroNameToken,
         IStream<IToken<CPreprocessorTokenType>> stream)
@@ -324,6 +323,27 @@ public record CPreprocessor(
         }
     }
 
+    private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacrosInLine(TextLine line)
+    {
+        var tokens = line.Tokens ?? [];
+        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokens);
+        while (!stream.IsEnd)
+        {
+            var token = stream.Consume();
+            if (token.Kind == PreprocessingToken)
+            {
+                foreach (var subToken in ReplaceMacro(token, stream))
+                {
+                    yield return subToken;
+                }
+            }
+            else
+            {
+                yield return token;
+            }
+        }
+    }
+
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroup(IEnumerable<IGroupPart> group)
     {
         foreach (var part in group)
@@ -446,7 +466,7 @@ public record CPreprocessor(
                 break;
             }
             case TextLine textLine:
-                foreach (var token in textLine.Tokens ?? [])
+                foreach (var token in ReplaceMacrosInLine(textLine))
                 {
                     yield return token;
                 }

@@ -18,6 +18,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         if (!lexer.IsEnd)
         {
+            // TODO: Error reporting based on group.FarthestError
             var nextToken = lexer.Next();
             return ParseResult.Error(
                 "end of stream",
@@ -33,7 +34,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     {
         var parts = new List<IGroupPart>();
         ParseResult<IGroupPart> groupPart;
-        while ((groupPart = ParseGroupPart()).IsOk)
+        while (!lexer.IsEnd && (groupPart = ParseGroupPart()).IsOk)
         {
             parts.Add(groupPart.Ok.Value);
         }
@@ -351,12 +352,15 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         ParseError NoParametersAfterEllipsis(ICPreprocessorToken token) =>
             transaction.End(ParseResult.Error(")", token, token.Range.Start, "identifier-list"));
 
+        ParseResult<MacroParameters> SuccessParsing() =>
+            transaction.End(Ok(new MacroParameters(identifiers.ToImmutableArray(), hasEllipsis)));
+
         while (true)
         {
             var token = Next();
             switch (token)
             {
-                case { Text: "..." }:
+                case { Kind: CPreprocessorTokenType.Ellipsis }:
                     if (hasEllipsis) return NoParametersAfterEllipsis(token);
                     hasEllipsis = true;
                     break;
@@ -364,6 +368,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
                     if (hasEllipsis) return NoParametersAfterEllipsis(token);
                     identifiers.Add(token);
                     break;
+                case { Kind: CPreprocessorTokenType.RightParen }:
+                    return SuccessParsing();
             }
 
             var nextToken = Peek();
@@ -371,8 +377,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
             {
                 case { Kind: CPreprocessorTokenType.RightParen }:
                     _ = Next();
-                    return transaction.End(
-                        Ok(new MacroParameters(identifiers.ToImmutableArray(), hasEllipsis)));
+                    return SuccessParsing();
                 case { Text: "," }:
                     _ = Next();
                     continue;
@@ -533,6 +538,10 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
     private ParseResult<List<ICPreprocessorToken>> ParseReplacementList()
     {
+        // Skip the whitespace after the macro name:
+        while (PeekWithNonSignificant() is { Kind: CPreprocessorTokenType.WhiteSpace })
+            _ = NextWithNonSignificant();
+
         var tokens = GetAllUntilNewLine();
         return tokens.IsOk ? Ok(tokens.Ok.Value) : Ok<List<ICPreprocessorToken>>([]);
     }
@@ -557,8 +566,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
     private ParseResult<ICPreprocessorToken> ParseNewLine()
     {
-        if (Peek() is var token and not { Kind: CPreprocessorTokenType.NewLine })
-            return ParseResult.Error("new-line character", token, token.Range.Start, "new-line");
+        if (Peek() is var token and not { Kind: CPreprocessorTokenType.NewLine or CPreprocessorTokenType.End })
+            return ParseResult.Error("new-line character or end of stream", token, token.Range.Start, "new-line");
 
         var newLine = Next();
         return Ok(newLine);

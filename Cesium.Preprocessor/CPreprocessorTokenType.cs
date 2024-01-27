@@ -22,10 +22,13 @@ public enum CPreprocessorTokenType
     [Regex("\"[^\r\n\"]+\"")]
     HeaderName,
 
-    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",.|&]+")]
+    [Token("...")]
+    Ellipsis,
+
+    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",|&]+")]
     PreprocessingToken,
 
-    [Regex("([;+\\-*/=!,.|&]+|<=|>=|>|<)")]
+    [Regex(@"([.]|[;+\\-*/=!,|&]+|<=|>=|>|<)")]
     Separator,
 
     [Token("(")]

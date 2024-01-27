@@ -12,7 +12,7 @@ internal class TransactionalLexer(ILexer<IToken<CPreprocessorTokenType>> lexer) 
 
     public IToken<CPreprocessorTokenType> Next() => _allTokens[_nextTokenToReturn++];
     public IToken<CPreprocessorTokenType> Peek(int idx = 0) => _allTokens[_nextTokenToReturn + idx];
-    public bool IsEnd => Peek() is { Kind: CPreprocessorTokenType.End };
+    public bool IsEnd => _nextTokenToReturn >= _allTokens.Count || Peek() is { Kind: CPreprocessorTokenType.End };
 
     public LexerTransaction BeginTransaction()
     {
