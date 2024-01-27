@@ -471,7 +471,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (Peek() is { Kind: CPreprocessorTokenType.Hash } token)
             return transaction.End(ParseResult.Error("not #", token, token.Range.Start, "text-line"));
 
-        var tokens = ParsePpTokens();
+        var tokens = GetAllUntilNewLine();
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
@@ -526,8 +526,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
     private ParseResult<List<ICPreprocessorToken>> ParseReplacementList()
     {
-        var ppTokens = ParsePpTokens();
-        return ppTokens.IsOk ? Ok(ppTokens.Ok.Value) : Ok<List<ICPreprocessorToken>>([]);
+        var tokens = GetAllUntilNewLine();
+        return tokens.IsOk ? Ok(tokens.Ok.Value) : Ok<List<ICPreprocessorToken>>([]);
     }
 
     private ParseResult<List<ICPreprocessorToken>> ParsePpTokens()
@@ -535,6 +535,15 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var result = new List<ICPreprocessorToken>();
         while (Peek() is not { Kind: CPreprocessorTokenType.NewLine or CPreprocessorTokenType.End })
             result.Add(Next());
+
+        return Ok(result);
+    }
+
+    private ParseResult<List<ICPreprocessorToken>> GetAllUntilNewLine()
+    {
+        var result = new List<ICPreprocessorToken>();
+        while (PeekWithNonSignificant() is not { Kind: CPreprocessorTokenType.NewLine or CPreprocessorTokenType.End })
+            result.Add(NextWithNonSignificant());
 
         return Ok(result);
     }
@@ -628,6 +637,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     }
 
     private ICPreprocessorToken NextWithNonSignificant() => lexer.Next();
+    private ICPreprocessorToken PeekWithNonSignificant() => lexer.Peek();
 
     /// <remarks>
     /// Offset is set to 0 since we never use the combining operator <c>|</c> here and thus offset is not required.

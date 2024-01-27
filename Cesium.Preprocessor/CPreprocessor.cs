@@ -48,6 +48,7 @@ public record CPreprocessor(
         return file.Ok;
     }
 
+    // TODO: Figure out how's it used, and if it's needed at all
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
         IToken<CPreprocessorTokenType> macroNameToken,
         IStream<IToken<CPreprocessorTokenType>> stream)
@@ -323,53 +324,6 @@ public record CPreprocessor(
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReadDirectiveLine(
-        IToken<CPreprocessorTokenType> firstToken,
-        IStream<IToken<CPreprocessorTokenType>> stream)
-    {
-        yield return firstToken;
-        foreach (var token in ReadTillEnd(stream))
-        {
-            yield return token;
-        }
-    }
-
-    private static IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
-        IStream<IToken<CPreprocessorTokenType>> stream)
-    {
-        while (!stream.IsEnd)
-        {
-            var token = stream.Consume();
-            switch (token.Kind)
-            {
-                case NewLine:
-                case End:
-                    yield break;
-                case NextLine:
-                    token = stream.Consume();
-                    var nextLineReached = false;
-                    while (token.Kind is NewLine or WhiteSpace)
-                    {
-                        if (token.Kind == NewLine)
-                        {
-                            nextLineReached = true;
-                        }
-
-                        token = stream.Consume();
-                    }
-
-                    if (!nextLineReached)
-                        throw new PreprocessorException($"Illegal token {token.Kind} {token.Text} after \\.");
-
-                    yield return token;
-                    break;
-                default:
-                    yield return token;
-                    break;
-            }
-        }
-    }
-
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroup(IEnumerable<IGroupPart> group)
     {
         foreach (var part in group)
@@ -384,70 +338,6 @@ public record CPreprocessor(
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroupPart(IGroupPart groupPart)
     {
-        IToken<CPreprocessorTokenType> GetSingleToken(
-            IEnumerable<IToken<CPreprocessorTokenType>> tokens,
-            CPreprocessorTokenType type)
-        {
-            var token = tokens.Single();
-            if (token.Kind != type)
-            {
-                throw new PreprocessorException(
-                    $"Cannot process preprocessor directive: expected {type}, " +
-                    $"but got {token.Kind} {token.Text} at {token.Location}.");
-            }
-
-            return token;
-        }
-
-        // TODO: Clean this up / remove
-        //
-        // IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLine()
-        // {
-        //     while (enumerator.MoveNext())
-        //     {
-        //         if (enumerator.Current is { Kind: WhiteSpace })
-        //         {
-        //             continue;
-        //         }
-        //
-        //         yield return enumerator.Current;
-        //     }
-        // }
-        //
-        // IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
-        // {
-        //     while (enumerator.MoveNext())
-        //     {
-        //         yield return enumerator.Current;
-        //     }
-        // }
-        //
-        // ConditionalElementResult GetIfInBlockForElif()
-        // {
-        //     var ifConditionInBlock = _includeTokensStack
-        //         .FirstOrDefault(i => _conditionalBlockInitialWords.Contains(i.KeyWord));
-        //     if (ifConditionInBlock is null)
-        //         throw new PreprocessorException($"Directive such as an elif cannot exist" +
-        //                                         $" without a directive such as if");
-        //     if (_includeTokensStack.Count > 0 && ifConditionInBlock.UpperFlag is null)
-        //         throw new PreprocessorException($"Not the first {string.Join(',', _conditionalBlockInitialWords)}" +
-        //                                         $" blocks can't be without" +
-        //                                         $"{nameof(ConditionalElementResult.UpperFlag)}");
-        //     return ifConditionInBlock;
-        // }
-        //
-        // bool ArePreviousConditionalsFalse()
-        // {
-        //     return _includeTokensStack
-        //         .TakeWhileWithLastInclude(i =>
-        //             !_conditionalBlockInitialWords.Contains(i.KeyWord))
-        //         .All(i => !i.Flag);
-        // }
-        //
-        // var hash = ConsumeNext(Hash);
-        // line = hash.Range.Start.Line;
-        // var preprocessorToken = ConsumeNext(PreprocessingToken);
-
         switch (groupPart)
         {
             case IncludeDirective include:
@@ -516,8 +406,12 @@ public record CPreprocessor(
                 {
                     var condition = group.Clause ??
                                     throw new PreprocessorException($"Empty condition in group {group}");
-                    var evaluationResult = EvaluateExpression(condition);
+                    var expression = ParseExpression(condition);
                     var keyword = group.Keyword.Text;
+                    var shouldWrapInDefined = keyword is "ifdef" or "ifndef" or "elifdef" or "elifndef";
+                    if (shouldWrapInDefined)
+                        expression = WrapIntoDefined(expression);
+                    var evaluationResult = EvaluateExpression(expression);
                     var isPositive = keyword is "if" or "ifdef" or "elif" or "elifdef";
                     var isNegative = keyword is "ifndef" or "elifndef";
                     if (!isPositive && !isNegative)
@@ -563,12 +457,29 @@ public record CPreprocessor(
                     $"Preprocessor directive not supported: {groupPart}.");
             // TODO: Include the group part name token into each the group name, for ease of identification, and include the name in this error message, together with the source information.
         }
+
+        yield break;
+
+        IToken<CPreprocessorTokenType> GetSingleToken(
+            IEnumerable<IToken<CPreprocessorTokenType>> tokens,
+            CPreprocessorTokenType type)
+        {
+            var token = tokens.Single();
+            if (token.Kind != type)
+            {
+                throw new PreprocessorException(
+                    $"Cannot process preprocessor directive: expected {type}, " +
+                    $"but got {token.Kind} {token.Text} at {token.Location}.");
+            }
+
+            return token;
+        }
     }
 
-    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+    private IPreprocessorExpression ParseExpression(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-            expressionTokens.Union(new[]
+            tokens.Union(new[]
             {
                 new Token<CPreprocessorTokenType>(
                     new Range(),
@@ -583,12 +494,27 @@ public record CPreprocessor(
             RaisePreprocessorParseError(expression.Error);
         }
 
-        var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
-
         if (!(stream.IsEnd || stream.Peek().Kind == End))
             throw new AssertException("(stream.IsEnd || stream.Peek().Kind == End) is not true.");
 
-        bool includeTokens = macroExpression.AsBoolean();
+        return expression.Ok.Value;
+    }
+
+    /// <summary>Performs wrapping, e.g. <code>FOO</code> -&gt; <code></code>.</summary>
+    private static DefinedExpression WrapIntoDefined(IPreprocessorExpression expression)
+    {
+        if (expression is IdentifierExpression identifier)
+        {
+            return new(identifier.Identifer);
+        }
+
+        throw new PreprocessorException($"Definition check expects an identifier, but a complex expression found: {expression}.");
+    }
+
+    private bool EvaluateExpression(IPreprocessorExpression expression)
+    {
+        var macroExpression = expression.EvaluateExpression(MacroContext);
+        var includeTokens = macroExpression.AsBoolean();
         return includeTokens;
     }
 
@@ -615,7 +541,7 @@ public record CPreprocessor(
 
     private void RaisePreprocessorParseError(ParseError error)
     {
-        var errorMessage = new StringBuilder($"Error during preprocessing file \"{CompilationUnitPath}\", {error.Position}.");
+        var errorMessage = new StringBuilder($"Error during preprocessing file \"{CompilationUnitPath}\", {error.Position}. Found {error.Got}.");
         foreach (var item in error.Elements.Values)
         {
             errorMessage.AppendLine($"\n- {item.Context}: expected {string.Join(", ", item.Expected)}");
