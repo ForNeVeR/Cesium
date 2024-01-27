@@ -89,14 +89,14 @@ public static class TokenExtensions
                             char current = result.ElementAt(i + counter);
                             do
                             {
-                                int digit = current >= '0' && current <= '9' ? current - '0' : (char.ToUpperInvariant(current) - 'A') + 10;
+                                int digit = Char.IsDigit(current) ? current - '0' : (char.ToUpperInvariant(current) - 'A') + 10;
                                 octalNumber = octalNumber * 16 + digit;
                                 counter++;
                                 if (result.Length <= i + counter)
                                     break;
                                 current = result.ElementAt(i + counter);
                             }
-                            while ((current >= '0' && current <= '9') || (current >= 'A' && current <= 'F') || (current >= 'a' && current <= 'f'));
+                            while (Char.IsDigit(current) || (current >= 'A' && current <= 'F') || (current >= 'a' && current <= 'f'));
                             i += counter - 1;
                             builder.Append((char)octalNumber);
                             break;
@@ -116,14 +116,14 @@ public static class TokenExtensions
                             char current = result.ElementAt(i + counter);
                             do
                             {
-                                int digit = current >= '0' && current <= '9' ? current - '0' : (char.ToUpperInvariant(current) - 'A') + 10;
+                                int digit = Char.IsDigit(current) ? current - '0' : (char.ToUpperInvariant(current) - 'A') + 10;
                                 octalNumber = octalNumber * 16 + digit;
                                 counter++;
                                 if (result.Length <= i + counter)
                                     break;
                                 current = result.ElementAt(i + counter);
                             }
-                            while ((current >= '0' && current <= '9') || (current >= 'A' && current <= 'F') || (current >= 'a' && current <= 'f'));
+                            while (Char.IsDigit(current) || (current >= 'A' && current <= 'F') || (current >= 'a' && current <= 'f'));
                             i += counter - 1;
                             builder.Append(char.ConvertFromUtf32(octalNumber));
                             break;
