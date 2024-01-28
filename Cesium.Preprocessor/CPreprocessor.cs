@@ -493,6 +493,10 @@ public record CPreprocessor(
                 var newLine = new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
                 yield return newLine;
                 break;
+            case NonDirective nonDirective:
+                throw new PreprocessorException(
+                    nonDirective.Location,
+                    "Preprocessor execution of a non-directive was requested.");
             default:
                 ErrorLocationInfo location = groupPart.Location;
                 var groupName = groupPart.Keyword?.Text + " " ?? "";

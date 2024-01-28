@@ -505,7 +505,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new NonDirective(location, tokens.Ok.Value.ToImmutableArray())));
+        return transaction.End(Ok<IGroupPart>(new NonDirective(location)));
     }
 
     // TODO: Check that it is not immediately preceded by whitespace, according to the standard

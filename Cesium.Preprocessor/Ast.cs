@@ -16,8 +16,7 @@ internal interface IGroupPart
     ICPreprocessorToken? Keyword { get; }
 }
 
-// TODO: Tests
-internal record NonDirective(Location Location, Tokens Tokens) : IGroupPart
+internal record NonDirective(Location Location) : IGroupPart
 {
     public ICPreprocessorToken? Keyword => null;
 }

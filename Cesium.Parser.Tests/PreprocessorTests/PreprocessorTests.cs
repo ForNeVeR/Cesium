@@ -891,4 +891,13 @@ x_dot_y(foo, bar);
 """));
         Assert.Equal("Error message", ex.RawMessage);
     }
+
+    [Fact, NoVerify]
+    public async Task NonDirectiveError()
+    {
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("""
+# This is not a directive
+"""));
+        Assert.Equal("Preprocessor execution of a non-directive was requested.", ex.RawMessage);
+    }
 }
