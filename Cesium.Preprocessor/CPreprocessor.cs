@@ -443,7 +443,7 @@ public record CPreprocessor(
                         {
                             yield return token;
                         }
-                        break;
+                        yield break;
                     }
                 }
 

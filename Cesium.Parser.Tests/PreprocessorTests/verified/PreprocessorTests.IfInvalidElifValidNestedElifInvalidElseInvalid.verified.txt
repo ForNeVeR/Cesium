@@ -1,3 +1,1 @@
-inf elifFunc() { return 0; }
-
-
+﻿inf elifFunc() { return 0; }
