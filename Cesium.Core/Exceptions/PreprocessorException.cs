@@ -4,4 +4,5 @@ public sealed class PreprocessorException(ErrorLocationInfo location, string mes
     : CesiumException($"{location}: {message}")
 {
     public ErrorLocationInfo? Location { get; } = location;
+    public string RawMessage { get; } = message;
 }

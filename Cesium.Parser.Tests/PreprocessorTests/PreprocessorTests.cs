@@ -21,7 +21,10 @@ public class PreprocessorTests : VerifyTestBase
         await Verify(result, GetSettings());
     }
 
-    private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+    private static async Task<string> DoPreprocess(
+        [StringSyntax("cpp")] string source,
+        Dictionary<string, string>? standardHeaders = null,
+        Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
         var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
@@ -862,14 +865,14 @@ char* x = __FILE__;
 x_dot_y(foo, bar);
 """);
 
-    [Fact]
+    [Fact, NoVerify]
     public async Task IncludeUnknownFileThrowsError()
     {
         var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("#include <foo.h>"));
         Assert.Contains("Cannot find file <foo.h> for include directive.", ex.Message);
     }
 
-    [Fact]
+    [Fact, NoVerify]
     public async Task ErrorReportsLocation()
     {
         var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("""
@@ -878,5 +881,14 @@ x_dot_y(foo, bar);
 #error Error message
 """));
         Assert.Equal(new ErrorLocationInfo(_mainMockedFilePath, Line: 3, Column: 1), ex.Location);
+    }
+
+    [Fact, NoVerify]
+    public async Task ErrorMessageWithSeveralTokens()
+    {
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("""
+#error Error message
+"""));
+        Assert.Equal("Error message", ex.RawMessage);
     }
 }

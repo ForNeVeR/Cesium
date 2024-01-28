@@ -415,7 +415,6 @@ public record CPreprocessor(
                     var errorBuilder = new StringBuilder();
                     foreach (var token in error.Tokens ?? [])
                     {
-                        // TODO: Test for error with spaces and embedded comments
                         errorBuilder.Append(token.Text);
                     }
 
