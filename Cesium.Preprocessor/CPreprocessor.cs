@@ -421,7 +421,7 @@ public record CPreprocessor(
                     errorText = errorBuilder.ToString();
                 }
 
-                throw new PreprocessorException(error.DirectiveStart, errorText.Trim());
+                throw new PreprocessorException(error.Location, errorText.Trim());
             }
             case DefineDirective define:
             {
@@ -494,10 +494,11 @@ public record CPreprocessor(
                 yield return newLine;
                 break;
             default:
+                ErrorLocationInfo location = groupPart.Location;
+                var groupName = groupPart.Keyword?.Text + " " ?? "";
                 throw new WipException(
                     77,
-                    $"Preprocessor directive not supported: {groupPart}.");
-            // TODO: Include the group part name token into each the group name, for ease of identification, and include the name in this error message, together with the source information.
+                    $"{location}: Preprocessor directive {groupName}is not supported, yet.");
         }
 
         yield break;

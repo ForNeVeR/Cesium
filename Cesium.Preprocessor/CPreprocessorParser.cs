@@ -54,9 +54,9 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         if (Peek() is var token and not { Kind: CPreprocessorTokenType.Hash })
             return transaction.End(Error("#", token, "group-part"));
-        _ = Next();
+        var hash = Next();
 
-        return transaction.End(ParseNonDirective());
+        return transaction.End(ParseNonDirective(hash.Location));
     }
 
     private ParseResult<IGroupPart> ParseIfSection()
@@ -231,45 +231,46 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
             return transaction.End(Error("#", shouldBeHash, "control-line"));
         var hash = Next();
+        var location = hash.Location;
 
-        var include = ParseInclude();
+        var include = ParseInclude(location);
         if (include.IsOk) return transaction.End(include);
 
-        var embed = ParseEmbed();
+        var embed = ParseEmbed(location);
         if (embed.IsOk) return transaction.End(embed);
 
-        var define = ParseDefine();
+        var define = ParseDefine(location);
         if (define.IsOk) return transaction.End(define);
 
-        var undef = ParseUndef();
+        var undef = ParseUndef(location);
         if (undef.IsOk) return transaction.End(undef);
 
-        var line = ParseLine();
+        var line = ParseLine(location);
         if (line.IsOk) return transaction.End(line);
 
         var error = ParseError(hash.Location);
         if (error.IsOk) return transaction.End(error);
 
-        var warning = ParseWarning();
+        var warning = ParseWarning(location);
         if (warning.IsOk) return transaction.End(warning);
 
-        var pragma = ParsePragma();
+        var pragma = ParsePragma(location);
         if (pragma.IsOk) return transaction.End(pragma);
 
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new EmptyDirective()));
+        return transaction.End(Ok<IGroupPart>(new EmptyDirective(hash.Location)));
     }
 
-    private ParseResult<IGroupPart> ParseInclude()
+    private ParseResult<IGroupPart> ParseInclude(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeInclude and not { Text: "include" })
             return transaction.End(
                 Error("include", shouldBeInclude, "include"));
-        _ = Next();
+        var include = Next();
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -277,16 +278,17 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new IncludeDirective(tokens.Ok.Value.ToImmutableArray())));
+        return transaction.End(
+            Ok<IGroupPart>(new IncludeDirective(location, include, tokens.Ok.Value.ToImmutableArray())));
     }
 
-    private ParseResult<IGroupPart> ParseEmbed()
+    private ParseResult<IGroupPart> ParseEmbed(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeEmbed and not { Text: "embed" })
             return transaction.End(Error("embed", shouldBeEmbed, "embed"));
-        _ = Next();
+        var embed = Next();
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -294,16 +296,16 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new EmbedDirective(tokens.Ok.Value.ToImmutableArray())));
+        return transaction.End(Ok<IGroupPart>(new EmbedDirective(location, embed, tokens.Ok.Value.ToImmutableArray())));
     }
 
-    private ParseResult<IGroupPart> ParseDefine()
+    private ParseResult<IGroupPart> ParseDefine(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeDefine and not { Text: "define" })
             return transaction.End(Error("define", shouldBeDefine, "define"));
-        _ = Next();
+        var define = Next();
 
         var identifier = ParseIdentifier();
         if (!identifier.IsOk) return transaction.End(identifier.Error);
@@ -330,7 +332,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         return transaction.End(
             Ok<IGroupPart>(
-                new DefineDirective(identifier.Ok.Value, parameters, replacementList.Ok.Value.ToImmutableArray())));
+                new DefineDirective(
+                    location,
+                    define,
+                    identifier.Ok.Value,
+                    parameters,
+                    replacementList.Ok.Value.ToImmutableArray())));
     }
 
     private ParseResult<MacroParameters> ParseMacroParameters()
@@ -378,13 +385,13 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         }
     }
 
-    private ParseResult<IGroupPart> ParseUndef()
+    private ParseResult<IGroupPart> ParseUndef(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeUnDef and not { Text: "undef" })
             return transaction.End(Error("undef", shouldBeUnDef, "undef"));
-        _ = Next();
+        var undef = Next();
 
         var identifier = ParseIdentifier();
         if (!identifier.IsOk) return transaction.End(identifier.Error);
@@ -392,16 +399,16 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new UnDefDirective(identifier.Ok.Value)));
+        return transaction.End(Ok<IGroupPart>(new UnDefDirective(location, undef, identifier.Ok.Value)));
     }
 
-    private ParseResult<IGroupPart> ParseLine()
+    private ParseResult<IGroupPart> ParseLine(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeLine and not { Text: "line" })
             return transaction.End(Error("line", shouldBeLine, "line"));
-        _ = Next();
+        var line = Next();
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -409,33 +416,34 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new LineDirective(tokens.Ok.Value.ToImmutableArray())));
+        return transaction.End(Ok<IGroupPart>(new LineDirective(location, line, tokens.Ok.Value.ToImmutableArray())));
     }
 
-    private ParseResult<IGroupPart> ParseError(Location hashLocation)
+    private ParseResult<IGroupPart> ParseError(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeError and not { Text: "error" })
             return transaction.End(Error("error", shouldBeError, "error"));
-        _ = Next();
+        var error = Next();
 
         var tokens = GetAllUntilNewLine();
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
         return transaction.End(
-            Ok<IGroupPart>(new ErrorDirective(hashLocation, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
+            Ok<IGroupPart>(
+                new ErrorDirective(location, error, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
-    private ParseResult<IGroupPart> ParseWarning()
+    private ParseResult<IGroupPart> ParseWarning(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeWarning and not { Text: "warning" })
             return transaction.End(
                 Error("warning", shouldBeWarning, "warning"));
-        _ = Next();
+        var warning = Next();
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -444,16 +452,16 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
         return transaction.End(
-            Ok<IGroupPart>(new WarningDirective(tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
+            Ok<IGroupPart>(new WarningDirective(location, warning, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
-    private ParseResult<IGroupPart> ParsePragma()
+    private ParseResult<IGroupPart> ParsePragma(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBePragma and not { Text: "pragma" })
             return transaction.End(Error("pragma", shouldBePragma, "pragma"));
-        _ = Next();
+        var pragma = Next();
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -462,11 +470,11 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
         return transaction.End(
-            Ok<IGroupPart>(new PragmaDirective(tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
+            Ok<IGroupPart>(
+                new PragmaDirective(location, pragma, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
-    // TODO: Add test about comment preservation in such lines. According to the current implementation, they should
-    // not be preserved, even though that's incorrect.
+    // TODO: Add test about comment preservation in such lines.
     private ParseResult<IGroupPart> ParseTextLine()
     {
         using var transaction = lexer.BeginTransaction();
@@ -478,10 +486,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new TextLine(tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
+        ImmutableArray<ICPreprocessorToken>? allTokens = tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null;
+        var location = allTokens?.FirstOrDefault()?.Location ?? newLine.Ok.Value.Location;
+        return transaction.End(Ok<IGroupPart>(new TextLine(location, allTokens)));
     }
 
-    private ParseResult<IGroupPart> ParseNonDirective()
+    private ParseResult<IGroupPart> ParseNonDirective(Location location)
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -495,7 +505,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        return transaction.End(Ok<IGroupPart>(new NonDirective(tokens.Ok.Value.ToImmutableArray())));
+        return transaction.End(Ok<IGroupPart>(new NonDirective(location, tokens.Ok.Value.ToImmutableArray())));
     }
 
     // TODO: Check that it is not immediately preceded by whitespace, according to the standard

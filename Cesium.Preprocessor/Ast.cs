@@ -10,10 +10,25 @@ using Tokens = ImmutableArray<IToken<CPreprocessorTokenType>>;
 
 internal record PreprocessingFile(ImmutableArray<IGroupPart> Group);
 
-internal interface IGroupPart;
-internal record NonDirective(Tokens Tokens) : IGroupPart;
+internal interface IGroupPart
+{
+    Location Location { get; }
+    ICPreprocessorToken? Keyword { get; }
+}
 
-internal record IfSection(GuardedGroup IfGroup, ImmutableArray<GuardedGroup> ElIfGroups, GuardedGroup? ElseGroup) : IGroupPart;
+// TODO: Tests
+internal record NonDirective(Location Location, Tokens Tokens) : IGroupPart
+{
+    public ICPreprocessorToken? Keyword => null;
+}
+
+internal record IfSection(GuardedGroup IfGroup, ImmutableArray<GuardedGroup> ElIfGroups, GuardedGroup? ElseGroup)
+    : IGroupPart
+{
+    public ICPreprocessorToken Keyword => IfGroup.Keyword;
+    public Location Location => Keyword.Location;
+}
+
 /// <param name="Clause">If <c>null</c> then this is an <c>else</c> clause.</param>
 internal record GuardedGroup(
     ICPreprocessorToken Keyword,
@@ -21,8 +36,8 @@ internal record GuardedGroup(
     ImmutableArray<IGroupPart> Tokens
 );
 
-internal record IncludeDirective(Tokens Tokens) : IGroupPart;
-internal record EmbedDirective(Tokens Tokens) : IGroupPart;
+internal record IncludeDirective(Location Location, ICPreprocessorToken Keyword, Tokens Tokens) : IGroupPart;
+internal record EmbedDirective(Location Location, ICPreprocessorToken Keyword, Tokens Tokens) : IGroupPart;
 
 /// <remarks>
 /// In most cases, this may be <c>null</c> which means the macro is defined without parameters, an object-like macro.
@@ -47,20 +62,34 @@ public record MacroParameters(
 /// called.
 /// </param>
 internal record DefineDirective(
+    Location Location,
+    ICPreprocessorToken Keyword,
     ICPreprocessorToken Identifier,
     MacroParameters? Parameters,
     Tokens Replacement
 ) : IGroupPart;
 
-internal record UnDefDirective(ICPreprocessorToken Identifier) : IGroupPart;
+internal record UnDefDirective(
+    Location Location,
+    ICPreprocessorToken Keyword,
+    ICPreprocessorToken Identifier
+) : IGroupPart;
 
-internal record LineDirective(Tokens LineNumber) : IGroupPart;
+// TODO[#77]: Support this directive
+internal record LineDirective(Location Location, ICPreprocessorToken Keyword, Tokens LineNumber) : IGroupPart;
 
-internal record ErrorDirective(Location DirectiveStart, Tokens? Tokens) : IGroupPart;
-internal record WarningDirective(Tokens? Tokens) : IGroupPart;
+internal record ErrorDirective(Location Location, ICPreprocessorToken Keyword, Tokens? Tokens) : IGroupPart;
+internal record WarningDirective(Location Location, ICPreprocessorToken Keyword, Tokens? Tokens) : IGroupPart;
 
-internal record PragmaDirective(Tokens? Tokens) : IGroupPart;
+internal record PragmaDirective(Location Location, ICPreprocessorToken Keyword, Tokens? Tokens) : IGroupPart;
 
-internal record EmptyDirective : IGroupPart;
+// TODO: Tests
+internal record EmptyDirective(Location Location) : IGroupPart
+{
+    public ICPreprocessorToken? Keyword => null;
+}
 
-internal record TextLine(Tokens? Tokens) : IGroupPart;
+internal record TextLine(Location Location, Tokens? Tokens) : IGroupPart
+{
+    public ICPreprocessorToken? Keyword => null;
+}
