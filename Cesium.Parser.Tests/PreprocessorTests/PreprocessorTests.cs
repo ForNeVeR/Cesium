@@ -909,4 +909,11 @@ x_dot_y(foo, bar);
 check();
 # endif
 """);
+
+    [Fact]
+    public Task PreprocessorDoesNotDeleteComments() => DoTest("""
+int main() { /* comment block */
+  // inline comment
+}
+""");
 }

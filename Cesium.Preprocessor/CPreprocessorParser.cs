@@ -9,7 +9,6 @@ namespace Cesium.Preprocessor;
 using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 
 /// <remarks>C23 Standard, section 6.10 Preprocessing directives.</remarks>
-/// TODO: Figure out the final newline treatment. Currently if it is absent then some directives won't be parsed properly.
 internal class CPreprocessorParser(TransactionalLexer lexer)
 {
     public ParseResult<PreprocessingFile> ParsePreprocessingFile()
@@ -474,7 +473,6 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
                 new PragmaDirective(location, pragma, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
-    // TODO: Add test about comment preservation in such lines.
     private ParseResult<IGroupPart> ParseTextLine()
     {
         using var transaction = lexer.BeginTransaction();
