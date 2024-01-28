@@ -485,6 +485,8 @@ public record CPreprocessor(
 
                 break;
             }
+            case EmptyDirective:
+                break;
             case TextLine textLine:
                 foreach (var token in ReplaceMacrosInLine(textLine))
                 {
@@ -499,7 +501,11 @@ public record CPreprocessor(
                     "Preprocessor execution of a non-directive was requested.");
             default:
                 ErrorLocationInfo location = groupPart.Location;
-                var groupName = groupPart.Keyword?.Text + " " ?? "";
+                var groupName = groupPart.Keyword switch
+                {
+                    {} kw => kw.Text + " ",
+                    null => ""
+                };
                 throw new WipException(
                     77,
                     $"{location}: Preprocessor directive {groupName}is not supported, yet.");

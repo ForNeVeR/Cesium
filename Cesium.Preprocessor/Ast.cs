@@ -82,7 +82,6 @@ internal record WarningDirective(Location Location, ICPreprocessorToken Keyword,
 
 internal record PragmaDirective(Location Location, ICPreprocessorToken Keyword, Tokens? Tokens) : IGroupPart;
 
-// TODO: Tests
 internal record EmptyDirective(Location Location) : IGroupPart
 {
     public ICPreprocessorToken? Keyword => null;

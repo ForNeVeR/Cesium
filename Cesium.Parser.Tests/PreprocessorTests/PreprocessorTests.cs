@@ -900,4 +900,13 @@ x_dot_y(foo, bar);
 """));
         Assert.Equal("Preprocessor execution of a non-directive was requested.", ex.RawMessage);
     }
+
+    [Fact]
+    public Task EmptyDirectiveIgnored() => DoTest("""
+# define FOO
+#
+# ifdef FOO
+check();
+# endif
+""");
 }
