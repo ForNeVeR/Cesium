@@ -506,20 +506,6 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         return transaction.End(Ok<IGroupPart>(new NonDirective(location)));
     }
 
-    // TODO: Check that it is not immediately preceded by whitespace, according to the standard
-    // TODO:  - Implemented, add test
-    // TODO: What if it's not a whitespace but a comment?
-    // TODO:  - The answer is that whitespace counts as whitespace as well (implemented ✓); add a test for it!
-    // TODO: Test example below
-    // #define BRACES/**/()
-    // #define BRACES2 ()
-    // #define BRACES3()
-    //
-    // foo BRACES
-    // foo BRACES2
-    // foo BRACES3()
-    //
-    // This yields to "foo ()\nfoo ()\nfoo" in gcc -E
     private ParseResult<ICPreprocessorToken> ParseLParen()
     {
         using var transaction = lexer.BeginTransaction();

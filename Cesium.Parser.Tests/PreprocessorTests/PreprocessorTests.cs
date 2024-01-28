@@ -916,4 +916,31 @@ int main() { /* comment block */
   // inline comment
 }
 """);
+
+    [Fact]
+    public Task SpacesInMacroDefinitionAndInvocation() => DoTest("""
+#define BRACES1/**/() x
+#define BRACES2 () y
+#define BRACES3() z
+
+foo BRACES1
+foo BRACES2
+foo BRACES3
+
+foo BRACES1()
+foo BRACES2()
+foo BRACES3()
+
+foo BRACES1 ()
+foo BRACES2 ()
+foo BRACES3 ()
+
+foo BRACES1 a ()
+foo BRACES2 a ()
+foo BRACES3 a ()
+""");
+
+    // TODO: Test for empty line preservation?
+
+    // TODO: A test for multiline macro expansion, with arguments spawning over several lines
 }

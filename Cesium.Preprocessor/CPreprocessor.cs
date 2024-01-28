@@ -50,7 +50,7 @@ public record CPreprocessor(
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
         IToken<CPreprocessorTokenType> macroNameToken,
-        IStream<IToken<CPreprocessorTokenType>> stream)
+        IPeekableStream<IToken<CPreprocessorTokenType>> stream)
     {
         if (MacroContext.TryResolveMacro(macroNameToken.Text, out var parameters, out var tokenReplacement))
         {
@@ -163,23 +163,78 @@ public record CPreprocessor(
                         }
                     }
                 }
-                else
+                else // a macro with an empty parameter list: we expect the empty argument list
                 {
-                    var openParensCount = 0;
-
-                    do
+                    var tokenBuffer = new List<IToken<CPreprocessorTokenType>>();
+                    var openParenEncountered = false;
+                    var closeParenEncountered = false;
+                    while (!openParenEncountered && !closeParenEncountered)
                     {
-                        var parametersParsingToken = stream.Consume();
-                        switch (parametersParsingToken)
+                        if (!stream.TryConsume(out var token))
+                        {
+                            if (openParenEncountered)
+                                throw new PreprocessorException(
+                                    macroNameToken.Location,
+                                    $"Cannot find the brace pair for expansion of macro {macroNameToken.Text}.");
+
+                            // No braces: this is not a macro call after all.
+                            yield return macroNameToken;
+                            foreach (var tokenToReturn in tokenBuffer)
+                            {
+                                yield return tokenToReturn;
+                            }
+                            while (!stream.IsEnd)
+                            {
+                                yield return stream.Consume();
+                            }
+                            yield break;
+                        }
+                        tokenBuffer.Add(token);
+
+                        switch (token)
                         {
                             case { Kind: LeftParen }:
-                                openParensCount++;
+                                if (openParenEncountered || closeParenEncountered)
+                                {
+                                    throw new PreprocessorException(
+                                        token.Location,
+                                        "Unbalanced parentheses in macro expansion.");
+                                }
+                                openParenEncountered = true;
                                 break;
                             case { Kind: RightParen }:
-                                openParensCount--;
+                                if (!openParenEncountered || closeParenEncountered)
+                                {
+                                    throw new PreprocessorException(
+                                        token.Location,
+                                        "Unbalanced parentheses in macro expansion.");
+                                }
+                                closeParenEncountered = true;
                                 break;
+                            case { Kind: WhiteSpace }:
+                                break;
+                            default:
+                                if (!openParenEncountered) // this is not a macro call
+                                {
+                                    yield return macroNameToken;
+                                    foreach (var tokenToReturn in tokenBuffer)
+                                    {
+                                        yield return tokenToReturn;
+                                    }
+                                    while (!stream.IsEnd)
+                                    {
+                                        yield return stream.Consume();
+                                    }
+                                    yield break;
+                                }
+                                else
+                                {
+                                    throw new PreprocessorException(
+                                        token.Location,
+                                        $"Unexpected token encountered: {token.Text}.");
+                                }
                         }
-                    } while (openParensCount > 0);
+                    }
                 }
             }
             else // an object-like macro
@@ -215,7 +270,7 @@ public record CPreprocessor(
 
             var performStringReplace = false;
             var includeNextVerbatim = false;
-            var nestedStream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokenReplacement);
+            var nestedStream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokenReplacement).ToBuffered();
             var pendingWhitespaces = new List<Token<CPreprocessorTokenType>>();
             while (!nestedStream.IsEnd)
             {
@@ -344,8 +399,23 @@ public record CPreprocessor(
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacrosInLine(TextLine line)
     {
+        throw new WipException(WipException.ToDo, "This should be rewritten.");
+        // TODO: Iterate each token in the input.
+        // TODO: For each token:
+            // TODO: Find the corresponding macro.
+                // TODO: If that's an object-like macro, emit it immediately.
+                // TODO: If that's an function-like macro, examine the next token to see if it's an opening paren.
+                    // TODO: If it is, then enter the argument passing mode until either the corresponding closing brace is found or we are out of tokens.
+                        // TODO: This should, of course, consider nested parentheses.
+                        // TODO: For each argument, perform another macro expansion round.
+                    // TODO: If it isn't then this is not a macro call whatsoever, yield the name as-is and proceed.
+            // TODO: No macro: emit the token.
+
+
+        // TODO: Test for passing a macro name into another macro.
+
         var tokens = line.Tokens ?? [];
-        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokens);
+        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokens).ToBuffered();
         while (!stream.IsEnd)
         {
             var token = stream.Consume();
