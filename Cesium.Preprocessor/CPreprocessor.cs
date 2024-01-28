@@ -369,13 +369,13 @@ public record CPreprocessor(
                     yield break;
                 }
 
-                if (!File.Exists(includeFilePath))
+                using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                if (reader == null)
                 {
+                    // TODO: Test for this warning.
                     EmitWarning($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
                     yield break;
                 }
-
-                using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {
                     yield return token;

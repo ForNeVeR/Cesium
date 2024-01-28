@@ -45,7 +45,7 @@ public sealed class FileSystemIncludeContext : IIncludeContext
         return Path.GetFullPath(path);
     }
 
-    public TextReader OpenFileStream(string filePath) => new StreamReader(filePath);
+    public TextReader? OpenFileStream(string filePath) => File.Exists(filePath) ? new StreamReader(filePath) : null;
 
     public bool ShouldIncludeFile(string filePath)
     {

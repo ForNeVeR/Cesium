@@ -16,7 +16,10 @@ public class IncludeContextMock : IIncludeContext
 
     public string LookUpQuotedIncludeFile(string filePath) => filePath;
 
-    public TextReader OpenFileStream(string filePath) => new StringReader(_angleBracedFiles[filePath]);
+    public TextReader? OpenFileStream(string filePath) =>
+        _angleBracedFiles.TryGetValue(filePath, out var content)
+            ? new StringReader(content)
+            : null;
 
     public bool ShouldIncludeFile(string filePath)
     {
