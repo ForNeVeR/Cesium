@@ -860,4 +860,11 @@ char* x = __FILE__;
 #define x_dot_y(x, y) x.y
 x_dot_y(foo, bar);
 """);
+
+    [Fact]
+    public async Task IncludeUnknownFileThrowsError()
+    {
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("#include <foo.h>"));
+        Assert.Contains("Cannot find file <foo.h> for include directive.", ex.Message);
+    }
 }

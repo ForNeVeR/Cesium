@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
@@ -379,7 +380,8 @@ public record CPreprocessor(
         {
             case IncludeDirective include:
             {
-                var filePath = include.Tokens.Single().Text;
+                var filePathToken = include.Tokens.Single();
+                var filePath = filePathToken.Text;
                 var includeFilePath = LookUpIncludeFile(filePath);
                 if (!IncludeContext.ShouldIncludeFile(includeFilePath))
                 {
@@ -389,9 +391,7 @@ public record CPreprocessor(
                 using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 if (reader == null)
                 {
-                    // TODO: Test for this warning.
-                    EmitWarning($"Cannot find path to {filePath} during parsing {CompilationUnitPath}");
-                    yield break;
+                    ThrowError(filePathToken.Location, $"Cannot find file {filePath} for include directive.");
                 }
                 await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {
@@ -605,7 +605,15 @@ public record CPreprocessor(
 
         static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
             string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
+    }
 
+    [DoesNotReturn]
+    private static void ThrowError(Location location, string errorText)
+    {
+        var filePath = location.File?.Path ?? "<unknown file>";
+        var position = location.Range.Start;
+        var positionDescription = $"{position.Line + 1}:{position.Column + 1}";
+        throw new PreprocessorException($"{filePath}:{positionDescription}: {errorText}");
     }
 
     internal static void EmitWarning(string text)
