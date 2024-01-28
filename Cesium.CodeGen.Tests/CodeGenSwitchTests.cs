@@ -57,6 +57,17 @@ public class CodeGenSwitchTests : CodeGenTestBase
 }");
 
     [Fact]
+    public Task NestedCases() => DoTest(@"int main()
+{
+    int x = 0;
+    switch(x) {
+        case 0: case 1: break;
+        case 2: case 3: case 4: break;
+        case 5: break;
+    };
+}");
+
+    [Fact]
     public Task MultiCasesWithDefault() => DoTest(@"int main()
 {
     int x = 0;

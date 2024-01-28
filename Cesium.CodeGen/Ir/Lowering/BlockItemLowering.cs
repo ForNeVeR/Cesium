@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
@@ -97,23 +98,35 @@ internal static class BlockItemLowering
                 }
             case CaseStatement c:
                 {
-                    // TODO[#408]: optimize multiple cases at once
-
                     if (scope is not BlockScope sws || sws.SwitchCases == null)
                         throw new AssertException("Cannot use case statement outside of switch");
 
-                    if (c.Expression != null)
+                    void ProcessCaseStatement(CaseStatement caseStatement, BlockScope switchBlock, string label)
                     {
-                        var constValue = ConstantEvaluator.GetConstantValue(c.Expression);
-
-                        sws.SwitchCases.Add(new SwitchCase(new ConstantLiteralExpression(constValue), c.Label));
+                        if (switchBlock.SwitchCases is not null)
+                        {
+                            if (caseStatement.Expression != null)
+                            {
+                                var constValue = ConstantEvaluator.GetConstantValue(caseStatement.Expression);
+                                switchBlock.SwitchCases.Add(new SwitchCase(new ConstantLiteralExpression(constValue), label));
+                            }
+                            else
+                            {
+                                switchBlock.SwitchCases.Add(new SwitchCase(null, label));
+                            }
+                        }
                     }
-                    else
+
+                    string label = c.Label;
+                    IBlockItem currentStatement = c;
+
+                    while (currentStatement is CaseStatement nestedCaseStatement)
                     {
-                        sws.SwitchCases.Add(new SwitchCase(null, c.Label));
+                        ProcessCaseStatement(nestedCaseStatement, sws, label);
+                        currentStatement = nestedCaseStatement.Statement;
                     }
 
-                    return Lower(scope, new LabelStatement(c.Label, c.Statement));
+                    return Lower(scope, new LabelStatement(label, currentStatement));
                 }
             case CompoundStatement c:
                 {
