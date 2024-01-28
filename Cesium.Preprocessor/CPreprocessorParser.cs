@@ -30,7 +30,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     private ParseResult<List<IGroupPart>> ParseGroup()
     {
         var parts = new List<IGroupPart>();
-        ParseResult<IGroupPart> groupPart;
+        ParseResult<IGroupPart> groupPart = default;
         while (!lexer.IsEnd && (groupPart = ParseGroupPart()).IsOk)
         {
             parts.Add(groupPart.Ok.Value);
