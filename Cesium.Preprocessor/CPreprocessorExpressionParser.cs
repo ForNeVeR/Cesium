@@ -10,15 +10,19 @@ using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 internal partial class CPreprocessorExpressionParser
 {
     [Rule("identifier: PreprocessingToken")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken token) => new IdentifierExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken token) => new IdentifierExpression(token.Location, token.Text);
 
     [Rule("identifier_defined: 'defined' PreprocessingToken")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken token)
-        => new DefinedExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(
+        ICPreprocessorToken definedToken,
+        ICPreprocessorToken token) => new DefinedExpression(definedToken.Location, token.Text);
 
     [Rule("identifier_defined: 'defined' '(' PreprocessingToken ')' ")]
-    private static IPreprocessorExpression MakeIdentifier(ICPreprocessorToken definedToken, ICPreprocessorToken openToken, ICPreprocessorToken token, ICPreprocessorToken closedToken)
-        => new DefinedExpression(token.Text);
+    private static IPreprocessorExpression MakeIdentifier(
+        ICPreprocessorToken definedToken,
+        ICPreprocessorToken openToken,
+        ICPreprocessorToken token,
+        ICPreprocessorToken closedToken) => new DefinedExpression(definedToken.Location, token.Text);
 
     [Rule("simple_expression: identifier")]
     private static IPreprocessorExpression MakeSimpleExpression(IPreprocessorExpression expression) => expression;
@@ -36,7 +40,7 @@ internal partial class CPreprocessorExpressionParser
 
     [Rule("prefix_expression: '!' expression")]
     private static UnaryExpression MakePrefixExpression(ICPreprocessorToken token, IPreprocessorExpression expression)
-        => new(GetOperator(token), expression);
+        => new(token.Location, GetOperator(token), expression);
 
     [Rule("expression: identifier")]
     [Rule("expression: binary_expression")]

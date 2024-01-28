@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Cesium.Core;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Text;
 
 namespace Cesium.Preprocessor;
 
@@ -10,13 +11,15 @@ internal class BinaryExpression(
     IPreprocessorExpression second)
     : IPreprocessorExpression
 {
+    public Location Location => first.Location;
+
     public string EvaluateExpression(IMacroContext context)
     {
         var firstValue = first.EvaluateExpression(context);
         var secondValue = second.EvaluateExpression(context);
 
-        var parsedFirstValue = firstValue is null ? 0 : Parse(firstValue);
-        var parsedSecondValue = secondValue is null ? 0 : Parse(secondValue);
+        var parsedFirstValue = firstValue is null ? 0 : Parse(first.Location, firstValue);
+        var parsedSecondValue = secondValue is null ? 0 : Parse(second.Location, secondValue);
 
         var result = @operator switch
         {
@@ -35,7 +38,7 @@ internal class BinaryExpression(
 
         string BooleanToString(bool expressionResult) => expressionResult ? "1" : "0";
 
-        int Parse(string macrosValue)
+        int Parse(Location location, string macrosValue)
         {
             if (Regex.IsMatch(macrosValue, $"^(0|[1-9][0-9]*)$"))
                 return int.Parse(macrosValue);
@@ -49,7 +52,7 @@ internal class BinaryExpression(
             if (Regex.IsMatch(macrosValue, "^0[0-7]+$"))
                 return Convert.ToInt32(macrosValue[1..], 8);
 
-            throw new PreprocessorException("Invalid macros format");
+            throw new PreprocessorException(location, $"Cannot parse integer: {macrosValue}.");
         }
     }
 }

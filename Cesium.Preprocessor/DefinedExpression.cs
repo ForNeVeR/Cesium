@@ -1,21 +1,11 @@
+using Yoakke.SynKit.Text;
+
 namespace Cesium.Preprocessor;
 
-internal sealed class DefinedExpression : IPreprocessorExpression
+internal sealed record DefinedExpression(Location Location, string Identifier) : IPreprocessorExpression
 {
-    public DefinedExpression(string identifer)
+    public string EvaluateExpression(IMacroContext context)
     {
-        this.Identifer = identifer;
-    }
-
-    public string Identifer { get; }
-
-    public string? EvaluateExpression(IMacroContext context)
-    {
-        if (context.TryResolveMacro(this.Identifer, out var parameters, out var macroReplacement))
-        {
-            return "1";
-        }
-
-        return "0";
+        return context.TryResolveMacro(Identifier, out _, out _) ? "1" : "0";
     }
 }

@@ -1,8 +1,7 @@
 namespace Cesium.Core;
 
-public sealed class PreprocessorException : CesiumException
+public sealed class PreprocessorException(ErrorLocationInfo location, string message)
+    : CesiumException($"{location}: {message}")
 {
-    public PreprocessorException(string message) : base(message)
-    {
-    }
+    public ErrorLocationInfo? Location { get; } = location;
 }

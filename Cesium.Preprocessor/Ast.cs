@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Cesium.Core;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Text;
 
 namespace Cesium.Preprocessor;
 
@@ -35,7 +36,7 @@ public record MacroParameters(
     {
         var token = Parameters[index];
         if (token.Kind != CPreprocessorTokenType.PreprocessingToken)
-            throw new PreprocessorException($"Parameter {token} is not an identifier.");
+            throw new PreprocessorException(token.Location, $"Parameter {token.Text} is not an identifier, but an {token.Kind}.");
 
         return token.Text;
     }
@@ -55,7 +56,7 @@ internal record UnDefDirective(ICPreprocessorToken Identifier) : IGroupPart;
 
 internal record LineDirective(Tokens LineNumber) : IGroupPart;
 
-internal record ErrorDirective(Tokens? Tokens) : IGroupPart;
+internal record ErrorDirective(Location DirectiveStart, Tokens? Tokens) : IGroupPart;
 internal record WarningDirective(Tokens? Tokens) : IGroupPart;
 
 internal record PragmaDirective(Tokens? Tokens) : IGroupPart;

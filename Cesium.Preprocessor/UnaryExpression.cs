@@ -1,25 +1,21 @@
 using Cesium.Core;
+using Yoakke.SynKit.Text;
 
 namespace Cesium.Preprocessor;
 
-internal sealed class UnaryExpression : IPreprocessorExpression
+internal sealed record UnaryExpression(
+    Location Location,
+    CPreprocessorOperator Operator,
+    IPreprocessorExpression Expression
+) : IPreprocessorExpression
 {
-    public UnaryExpression(CPreprocessorOperator @operator, IPreprocessorExpression expression)
+    public string EvaluateExpression(IMacroContext context)
     {
-        Operator = @operator;
-        Expression = expression;
-    }
-
-    public CPreprocessorOperator Operator { get; }
-    public IPreprocessorExpression Expression { get; }
-
-    public string? EvaluateExpression(IMacroContext context)
-    {
-        string? expressionValue = Expression.EvaluateExpression(context);
+        var expressionValue = Expression.EvaluateExpression(context);
         return Operator switch
         {
-            CPreprocessorOperator.Negation => !expressionValue.AsBoolean() ? "1" : "0",
-            _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives"),
+            CPreprocessorOperator.Negation => !expressionValue.AsBoolean(Location) ? "1" : "0",
+            _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives")
         };
     }
 }

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Cesium.Core;
 using Yoakke.Streams;
@@ -99,6 +98,7 @@ public record CPreprocessor(
                                 if (parameterIndex == -1)
                                 {
                                     throw new PreprocessorException(
+                                        parametersParsingToken.Location,
                                         $"Expected '(' but got {parametersParsingToken.Kind} " +
                                         $"{parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
                                 }
@@ -125,6 +125,7 @@ public record CPreprocessor(
                                     else
                                     {
                                         throw new PreprocessorException(
+                                            parametersParsingToken.Location,
                                             $"The function {macroNameToken.Text} defined" +
                                             $" at {parametersParsingToken.Range} has more" +
                                             " parameters than the macro allows.");
@@ -391,7 +392,9 @@ public record CPreprocessor(
                 using var reader = IncludeContext.OpenFileStream(includeFilePath);
                 if (reader == null)
                 {
-                    ThrowError(filePathToken.Location, $"Cannot find file {filePath} for include directive.");
+                    throw new PreprocessorException(
+                        filePathToken.Location,
+                        $"Cannot find file {filePath} for include directive.");
                 }
                 await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {
@@ -405,8 +408,7 @@ public record CPreprocessor(
                 string errorText;
                 if (error.Tokens is null)
                 {
-                    // TODO: Add error location.
-                    errorText = $"[error at {CompilationUnitPath}]";
+                    errorText = "#error";
                 }
                 else
                 {
@@ -420,7 +422,7 @@ public record CPreprocessor(
                     errorText = errorBuilder.ToString();
                 }
 
-                throw new PreprocessorException($"Error: {errorText.Trim()}");
+                throw new PreprocessorException(error.DirectiveStart, errorText.Trim());
             }
             case DefineDirective define:
             {
@@ -442,7 +444,7 @@ public record CPreprocessor(
                 foreach (var group in conditionalGroups)
                 {
                     var condition = group.Clause ??
-                                    throw new PreprocessorException($"Empty condition in group {group}");
+                        throw new PreprocessorException(group.Keyword.Location, $"Empty condition in group {group}");
                     var expression = ParseExpression(condition);
                     var keyword = group.Keyword.Text;
                     var shouldWrapInDefined = keyword is "ifdef" or "ifndef" or "elifdef" or "elifndef";
@@ -452,7 +454,9 @@ public record CPreprocessor(
                     var isPositive = keyword is "if" or "ifdef" or "elif" or "elifdef";
                     var isNegative = keyword is "ifndef" or "elifndef";
                     if (!isPositive && !isNegative)
-                        throw new PreprocessorException($"Unknown conditional directive {keyword}.");
+                        throw new PreprocessorException(
+                            group.Keyword.Location,
+                            $"Unknown conditional directive {keyword}.");
 
                     if ((evaluationResult && isPositive) || (!evaluationResult && isNegative)) // the first one wins
                     {
@@ -507,8 +511,9 @@ public record CPreprocessor(
             if (token.Kind != type)
             {
                 throw new PreprocessorException(
+                    token.Location,
                     $"Cannot process preprocessor directive: expected {type}, " +
-                    $"but got {token.Kind} {token.Text} at {token.Location}.");
+                    $"but got {token.Kind} {token.Text}.");
             }
 
             return token;
@@ -544,16 +549,18 @@ public record CPreprocessor(
     {
         if (expression is IdentifierExpression identifier)
         {
-            return new(identifier.Identifer);
+            return new(expression.Location, identifier.Identifier);
         }
 
-        throw new PreprocessorException($"Definition check expects an identifier, but a complex expression found: {expression}.");
+        throw new PreprocessorException(
+            expression.Location,
+            $"Definition check expects an identifier, but a complex expression found: {expression}.");
     }
 
     private bool EvaluateExpression(IPreprocessorExpression expression)
     {
         var macroExpression = expression.EvaluateExpression(MacroContext);
-        var includeTokens = macroExpression.AsBoolean();
+        var includeTokens = macroExpression.AsBoolean(expression.Location);
         return includeTokens;
     }
 
@@ -601,19 +608,11 @@ public record CPreprocessor(
             }
         }
 
-        throw new PreprocessorException(errorMessage.ToString());
+        var location = error.Position as ErrorLocationInfo ?? new ErrorLocationInfo(CompilationUnitPath, null, null);
+        throw new PreprocessorException(location, errorMessage.ToString());
 
         static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
             string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
-    }
-
-    [DoesNotReturn]
-    private static void ThrowError(Location location, string errorText)
-    {
-        var filePath = location.File?.Path ?? "<unknown file>";
-        var position = location.Range.Start;
-        var positionDescription = $"{position.Line + 1}:{position.Column + 1}";
-        throw new PreprocessorException($"{filePath}:{positionDescription}: {errorText}");
     }
 
     internal static void EmitWarning(string text)

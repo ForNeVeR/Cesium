@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
+using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
+using Yoakke.SynKit.Text;
 
 namespace Cesium.Preprocessor;
 
@@ -21,11 +23,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
             return group.FurthestError;
 
         var nextToken = lexer.Next();
-        return ParseResult.Error(
-            "end of stream",
-            nextToken,
-            nextToken.Range.Start,
-            "preprocessing-file");
+        return Error("end of stream", nextToken, "preprocessing-file");
 
     }
 
@@ -55,7 +53,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (textLine.IsOk) return transaction.End(textLine);
 
         if (Peek() is var token and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", token, token.Kind, "group-part"));
+            return transaction.End(Error("#", token, "group-part"));
         _ = Next();
 
         return transaction.End(ParseNonDirective());
@@ -93,12 +91,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", shouldBeHash, shouldBeHash.Range.Start, "if-group"));
+            return transaction.End(Error("#", shouldBeHash, "if-group"));
         _ = Next();
 
         if (Peek() is var token and not { Text: "if" or "ifdef" or "ifndef" })
         {
-            return transaction.End(ParseResult.Error("if or ifdef or ifndef", token, token.Range.Start, "if-group"));
+            return transaction.End(Error("if or ifdef or ifndef", token, "if-group"));
         }
 
         IList<ICPreprocessorToken> expressionTokens;
@@ -135,8 +133,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
         if (Peek() is var shouldBeIdentifier and not { Kind: CPreprocessorTokenType.PreprocessingToken })
         {
-            return transaction.End(
-                ParseResult.Error("identifier", shouldBeIdentifier, shouldBeIdentifier.Range.Start, "identifier"));
+            return transaction.End(Error("an identifier", shouldBeIdentifier, "identifier"));
         }
 
         return transaction.End(Ok(Next()));
@@ -147,17 +144,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", shouldBeHash, shouldBeHash.Range.Start, "elif-group"));
+            return transaction.End(Error("#", shouldBeHash, "elif-group"));
         _ = Next();
 
         if (Peek() is var shouldBeKeyword and not { Text: "elif" or "elifdef" or "elifndef" })
         {
-            return transaction.End(
-                ParseResult.Error(
-                    "elif or elifdef or elifndef",
-                    shouldBeKeyword,
-                    shouldBeKeyword.Range.Start,
-                    "elif-group"));
+            return transaction.End(Error(["elif", "elifdef", "elifndef"], shouldBeKeyword, "elif-group"));
         }
 
         IList<ICPreprocessorToken> expressionTokens;
@@ -194,12 +186,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", shouldBeHash, shouldBeHash.Range.Start, "else-group"));
+            return transaction.End(Error("#", shouldBeHash, "else-group"));
         _ = Next();
 
         if (Peek() is var shouldBeElse and not { Text: "else" })
         {
-            return transaction.End(ParseResult.Error("else", shouldBeElse, shouldBeElse.Range.Start, "elif-group"));
+            return transaction.End(Error("else", shouldBeElse, "elif-group"));
         }
 
         var keyword = Next();
@@ -217,12 +209,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", shouldBeHash, shouldBeHash.Range.Start, "endif-line"));
+            return transaction.End(Error("#", shouldBeHash, "endif-line"));
         _ = Next();
 
         if (Peek() is var shouldBeEndIf and not { Text: "endif" })
         {
-            return transaction.End(ParseResult.Error("endif", shouldBeEndIf, shouldBeEndIf.Range.Start, "endif-line"));
+            return transaction.End(Error("endif", shouldBeEndIf, "endif-line"));
         }
         _ = Next();
 
@@ -237,8 +229,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeHash and not { Kind: CPreprocessorTokenType.Hash })
-            return transaction.End(ParseResult.Error("#", shouldBeHash, shouldBeHash.Range.Start, "control-line"));
-        _ = Next();
+            return transaction.End(Error("#", shouldBeHash, "control-line"));
+        var hash = Next();
 
         var include = ParseInclude();
         if (include.IsOk) return transaction.End(include);
@@ -255,7 +247,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var line = ParseLine();
         if (line.IsOk) return transaction.End(line);
 
-        var error = ParseError();
+        var error = ParseError(hash.Location);
         if (error.IsOk) return transaction.End(error);
 
         var warning = ParseWarning();
@@ -276,7 +268,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         if (Peek() is var shouldBeInclude and not { Text: "include" })
             return transaction.End(
-                ParseResult.Error("include", shouldBeInclude, shouldBeInclude.Range.Start, "include"));
+                Error("include", shouldBeInclude, "include"));
         _ = Next();
 
         var tokens = ParsePpTokens();
@@ -293,7 +285,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeEmbed and not { Text: "embed" })
-            return transaction.End(ParseResult.Error("embed", shouldBeEmbed, shouldBeEmbed.Range.Start, "embed"));
+            return transaction.End(Error("embed", shouldBeEmbed, "embed"));
         _ = Next();
 
         var tokens = ParsePpTokens();
@@ -310,7 +302,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeDefine and not { Text: "define" })
-            return transaction.End(ParseResult.Error("define", shouldBeDefine, shouldBeDefine.Range.Start, "define"));
+            return transaction.End(Error("define", shouldBeDefine, "define"));
         _ = Next();
 
         var identifier = ParseIdentifier();
@@ -349,7 +341,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var hasEllipsis = false;
 
         ParseError NoParametersAfterEllipsis(ICPreprocessorToken token) =>
-            transaction.End(ParseResult.Error(")", token, token.Range.Start, "identifier-list"));
+            transaction.End(Error(")", token, "identifier-list"));
 
         ParseResult<MacroParameters> SuccessParsing() =>
             transaction.End(Ok(new MacroParameters(identifiers.ToImmutableArray(), hasEllipsis)));
@@ -381,7 +373,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
                     _ = Next();
                     continue;
                 default:
-                    return transaction.End(ParseResult.Error(", or )", token, token.Range.Start, "identifier-list"));
+                    return transaction.End(Error([",", ")"], token, "identifier-list"));
             }
         }
     }
@@ -391,7 +383,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeUnDef and not { Text: "undef" })
-            return transaction.End(ParseResult.Error("undef", shouldBeUnDef, shouldBeUnDef.Range.Start, "undef"));
+            return transaction.End(Error("undef", shouldBeUnDef, "undef"));
         _ = Next();
 
         var identifier = ParseIdentifier();
@@ -408,7 +400,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeLine and not { Text: "line" })
-            return transaction.End(ParseResult.Error("line", shouldBeLine, shouldBeLine.Range.Start, "line"));
+            return transaction.End(Error("line", shouldBeLine, "line"));
         _ = Next();
 
         var tokens = ParsePpTokens();
@@ -420,12 +412,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         return transaction.End(Ok<IGroupPart>(new LineDirective(tokens.Ok.Value.ToImmutableArray())));
     }
 
-    private ParseResult<IGroupPart> ParseError()
+    private ParseResult<IGroupPart> ParseError(Location hashLocation)
     {
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBeError and not { Text: "error" })
-            return transaction.End(ParseResult.Error("error", shouldBeError, shouldBeError.Range.Start, "error"));
+            return transaction.End(Error("error", shouldBeError, "error"));
         _ = Next();
 
         var tokens = GetAllUntilNewLine();
@@ -433,7 +425,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
         return transaction.End(
-            Ok<IGroupPart>(new ErrorDirective(tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
+            Ok<IGroupPart>(new ErrorDirective(hashLocation, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
     private ParseResult<IGroupPart> ParseWarning()
@@ -442,7 +434,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         if (Peek() is var shouldBeWarning and not { Text: "warning" })
             return transaction.End(
-                ParseResult.Error("warning", shouldBeWarning, shouldBeWarning.Range.Start, "warning"));
+                Error("warning", shouldBeWarning, "warning"));
         _ = Next();
 
         var tokens = ParsePpTokens();
@@ -460,7 +452,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is var shouldBePragma and not { Text: "pragma" })
-            return transaction.End(ParseResult.Error("pragma", shouldBePragma, shouldBePragma.Range.Start, "pragma"));
+            return transaction.End(Error("pragma", shouldBePragma, "pragma"));
         _ = Next();
 
         var tokens = ParsePpTokens();
@@ -480,7 +472,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (Peek() is { Kind: CPreprocessorTokenType.Hash } token)
-            return transaction.End(ParseResult.Error("not #", token, token.Range.Start, "text-line"));
+            return transaction.End(Error("anything but #", token, "text-line"));
 
         var tokens = GetAllUntilNewLine();
         var newLine = ParseNewLine();
@@ -495,7 +487,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         if (PeekKeyword() is { } token)
             return transaction.End(
-                ParseResult.Error("anything but a preprocessor directive keyword", token, token.Range.Start, "non-directive"));
+                Error("anything but a preprocessor directive keyword", token, "non-directive"));
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -526,14 +518,13 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
         var lParen = Peek();
         if (lParen is not { Kind: CPreprocessorTokenType.LeftParen })
-            return transaction.End(ParseResult.Error("(", lParen, lParen.Range.Start, "lparen"));
+            return transaction.End(Error("(", lParen, "lparen"));
 
         var lastPrecedingToken = NextWithNonSignificant();
         if (lastPrecedingToken.Equals(lParen)) // not preceded by anything
             return transaction.End(Ok(lParen));
 
-        return transaction.End(
-            ParseResult.Error(lParen, lastPrecedingToken, lastPrecedingToken.Range.Start, "lparen"));
+        return transaction.End(Error(lParen.Text, lastPrecedingToken, "lparen"));
     }
 
     private ParseResult<List<ICPreprocessorToken>> ParseReplacementList()
@@ -567,7 +558,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     private ParseResult<ICPreprocessorToken> ParseNewLine()
     {
         if (Peek() is var token and not { Kind: CPreprocessorTokenType.NewLine or CPreprocessorTokenType.End })
-            return ParseResult.Error("new-line character or end of stream", token, token.Range.Start, "new-line");
+            return Error("new-line character or end of stream", token, "new-line");
 
         var newLine = Next();
         return Ok(newLine);
@@ -654,6 +645,12 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
     private ICPreprocessorToken NextWithNonSignificant() => lexer.Next();
     private ICPreprocessorToken PeekWithNonSignificant() => lexer.Peek();
+
+    ParseError Error(string expected, ICPreprocessorToken got, string rule) =>
+        ParseResult.Error(expected, got, (ErrorLocationInfo)got.Location, rule);
+
+    ParseError Error(string[] expected, ICPreprocessorToken got, string rule) =>
+        Error(string.Join(" or ", expected), got, rule);
 
     /// <remarks>
     /// Offset is set to 0 since we never use the combining operator <c>|</c> here and thus offset is not required.

@@ -8,6 +8,8 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
+    private const string _mainMockedFilePath = @"c:\a\b\c.c";
+
     private static async Task DoTest(
         [StringSyntax("cpp")] string source,
         Dictionary<string, string>? standardHeaders = null,
@@ -21,11 +23,10 @@ public class PreprocessorTests : VerifyTestBase
 
     private static async Task<string> DoPreprocess(string source, Dictionary<string, string>? standardHeaders = null, Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
-        var filePath = "c:\\a\\b\\c.c";
-        var lexer = new CPreprocessorLexer(filePath, source);
+        var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
         var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
-        var preprocessor = new CPreprocessor(filePath, lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(_mainMockedFilePath, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         return result;
     }
@@ -866,5 +867,16 @@ x_dot_y(foo, bar);
     {
         var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("#include <foo.h>"));
         Assert.Contains("Cannot find file <foo.h> for include directive.", ex.Message);
+    }
+
+    [Fact]
+    public async Task ErrorReportsLocation()
+    {
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("""
+// 1
+// 2
+#error Error message
+"""));
+        Assert.Equal(new ErrorLocationInfo(_mainMockedFilePath, Line: 3, Column: 1), ex.Location);
     }
 }
