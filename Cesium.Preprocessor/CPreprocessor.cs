@@ -572,7 +572,7 @@ public record CPreprocessor(
         throw new PreprocessorException(errorMessage.ToString());
     }
 
-    private static void EmitWarning(string text)
+    internal static void EmitWarning(string text)
     {
         Console.Error.WriteLine(text);
     }

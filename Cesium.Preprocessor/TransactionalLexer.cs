@@ -81,12 +81,58 @@ internal class TransactionalLexer(ILexer<IToken<CPreprocessorTokenType>> lexer) 
     private static List<IToken<CPreprocessorTokenType>> ToList(ILexer<IToken<CPreprocessorTokenType>> lexer)
     {
         var result = new List<IToken<CPreprocessorTokenType>>();
+
+        // TODO: Test for \ and then whitespace on same line.
+        var spaceEater = false;
+        var wasWarningIssued = false;
+        var spaceEaterBuffer = new List<IToken<CPreprocessorTokenType>>();
+
         while (!lexer.IsEnd)
         {
-            result.Add(lexer.Next());
+            var nextToken = lexer.Next();
+            switch (spaceEater)
+            {
+                case true when nextToken is { Kind: CPreprocessorTokenType.WhiteSpace }:
+                    if (!wasWarningIssued)
+                    {
+                        EmitSpaceEaterWarning(nextToken);
+                        wasWarningIssued = true;
+                    }
+                    spaceEaterBuffer.Add(nextToken);
+                    continue;
+                case true when nextToken is { Kind: CPreprocessorTokenType.NewLine }:
+                    // Skip all the allocated buffer.
+                    ClearSpaceEaterState();
+                    continue;
+                default:
+                    result.AddRange(spaceEaterBuffer);
+                    ClearSpaceEaterState();
+
+                    if (nextToken is { Kind: CPreprocessorTokenType.NextLine })
+                    {
+                        spaceEaterBuffer.Add(nextToken);
+                        spaceEater = true;
+                        continue;
+                    }
+
+                    result.Add(nextToken);
+                    break;
+            }
         }
 
         return result;
+
+        void ClearSpaceEaterState()
+        {
+            spaceEater = false;
+            wasWarningIssued = false;
+            spaceEaterBuffer.Clear();
+        }
+
+        static void EmitSpaceEaterWarning(IToken<CPreprocessorTokenType> token)
+        {
+            CPreprocessor.EmitWarning($"Whitespace after backslash but before newline at {token.Location}.");
+        }
     }
 }
 

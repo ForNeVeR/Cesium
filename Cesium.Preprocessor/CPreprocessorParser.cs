@@ -8,7 +8,6 @@ using ICPreprocessorToken = IToken<CPreprocessorTokenType>;
 
 /// <remarks>C23 Standard, section 6.10 Preprocessing directives.</remarks>
 /// TODO: Figure out the final newline treatment. Currently if it is absent then some directives won't be parsed properly.
-/// TODO: Figure out the line concatenation using the `\` character.
 internal class CPreprocessorParser(TransactionalLexer lexer)
 {
     public ParseResult<PreprocessingFile> ParsePreprocessingFile()
