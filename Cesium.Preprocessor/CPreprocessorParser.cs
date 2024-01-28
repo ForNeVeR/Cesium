@@ -15,18 +15,18 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var group = ParseGroup();
         if (!group.IsOk) return group.Error;
 
-        if (!lexer.IsEnd)
-        {
-            // TODO: Error reporting based on group.FarthestError
-            var nextToken = lexer.Next();
-            return ParseResult.Error(
-                "end of stream",
-                nextToken,
-                nextToken.Range.Start,
-                "preprocessing-file");
-        }
+        if (lexer.IsEnd) return Ok(new PreprocessingFile(group.Ok.Value.ToImmutableArray()));
 
-        return Ok(new PreprocessingFile(group.Ok.Value.ToImmutableArray()));
+        if (group.FurthestError != null)
+            return group.FurthestError;
+
+        var nextToken = lexer.Next();
+        return ParseResult.Error(
+            "end of stream",
+            nextToken,
+            nextToken.Range.Start,
+            "preprocessing-file");
+
     }
 
     private ParseResult<List<IGroupPart>> ParseGroup()
@@ -38,7 +38,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
             parts.Add(groupPart.Ok.Value);
         }
 
-        return Ok(parts);
+        return Ok(parts, groupPart.IsError ? groupPart.Error : null);
     }
 
     private ParseResult<IGroupPart> ParseGroupPart()
@@ -494,7 +494,8 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         using var transaction = lexer.BeginTransaction();
 
         if (PeekKeyword() is { } token)
-            return transaction.End(ParseResult.Error("not a keyword", token, token.Range.Start, "non-directive"));
+            return transaction.End(
+                ParseResult.Error("anything but a preprocessor directive keyword", token, token.Range.Start, "non-directive"));
 
         var tokens = ParsePpTokens();
         if (!tokens.IsOk) return transaction.End(tokens.Error);
@@ -657,6 +658,6 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     /// <remarks>
     /// Offset is set to 0 since we never use the combining operator <c>|</c> here and thus offset is not required.
     /// </remarks>
-    private ParseResult<T> Ok<T>(T value) =>
-        ParseResult.Ok(value, 0);
+    private ParseResult<T> Ok<T>(T value, ParseError? furthestError = null) =>
+        ParseResult.Ok(value, 0, furthestError);
 }

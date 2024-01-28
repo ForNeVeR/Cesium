@@ -376,12 +376,12 @@ int main() { return 0; }
     [Fact, NoVerify]
     public async Task ElifWithoutStartConditionBlockKeyWord()
     {
-        await Assert.ThrowsAsync<PreprocessorException>(async () => await DoPreprocess(
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(async () => await DoPreprocess(
             @"#elif TEST == 1
 int foo() { return 0; }
 #endif
 "));
-        // TODO: Better exception handling for this case
+        Assert.Contains("Found elif, but expected anything but a preprocessor directive keyword (rule non-directive)", ex.Message);
     }
 
     [Fact]

@@ -580,13 +580,32 @@ public record CPreprocessor(
 
     private void RaisePreprocessorParseError(ParseError error)
     {
-        var errorMessage = new StringBuilder($"Error during preprocessing file \"{CompilationUnitPath}\", {error.Position}. Found {error.Got}.");
-        foreach (var item in error.Elements.Values)
+        var got = error.Got switch
         {
-            errorMessage.AppendLine($"\n- {item.Context}: expected {string.Join(", ", item.Expected)}");
+            IToken token => token.Text,
+            { } item => item.ToString(),
+            null => "<no token>"
+        };
+
+        var errorMessage = new StringBuilder($"Error during preprocessing file \"{CompilationUnitPath}\", {error.Position}. Found {got}, ");
+        if (error.Elements.Count == 1)
+        {
+            errorMessage.Append($"but expected {ExpectedString(error.Elements.Single())}");
+        }
+        else
+        {
+            errorMessage.Append("but expected one of:");
+            foreach (var item in error.Elements)
+            {
+                errorMessage.AppendLine($"\n- {ExpectedString(item)}");
+            }
         }
 
         throw new PreprocessorException(errorMessage.ToString());
+
+        static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
+            string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
+
     }
 
     internal static void EmitWarning(string text)
