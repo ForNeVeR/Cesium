@@ -429,7 +429,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
             return transaction.End(ParseResult.Error("error", shouldBeError, shouldBeError.Range.Start, "error"));
         _ = Next();
 
-        var tokens = ParsePpTokens();
+        var tokens = GetAllUntilNewLine();
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
