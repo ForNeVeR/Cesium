@@ -63,7 +63,6 @@ public record CPreprocessor(
                     var openParensCount = 0;
                     var hitOpenToken = false;
                     List<IToken<CPreprocessorTokenType>> currentParameter = new();
-                    IToken<CPreprocessorTokenType> parametersParsingToken;
 
                     if (parameters.HasEllipsis)
                     {
@@ -72,7 +71,7 @@ public record CPreprocessor(
 
                     do
                     {
-                        parametersParsingToken = stream.Consume();
+                        var parametersParsingToken = stream.Consume();
                         switch (parametersParsingToken)
                         {
                             case { Kind: LeftParen }:
@@ -112,10 +111,10 @@ public record CPreprocessor(
                                     }
                                     else if (parameters.HasEllipsis)
                                     {
-                                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args))
+                                        if (replacement.TryGetValue("__VA_ARGS__", out var vaArgs))
                                         {
-                                            va_args.AddRange(currentParameter);
-                                            va_args.Add(new Token<CPreprocessorTokenType>(
+                                            vaArgs.AddRange(currentParameter);
+                                            vaArgs.Add(new Token<CPreprocessorTokenType>(
                                                 macroNameToken.Range,
                                                 macroNameToken.Location,
                                                 ",",
@@ -156,20 +155,19 @@ public record CPreprocessor(
                     }
                     else
                     {
-                        if (replacement.TryGetValue("__VA_ARGS__", out var va_args_))
+                        if (replacement.TryGetValue("__VA_ARGS__", out var vaArgs))
                         {
-                            va_args_.AddRange(currentParameter);
+                            vaArgs.AddRange(currentParameter);
                         }
                     }
                 }
                 else
                 {
-                    IToken<CPreprocessorTokenType> parametersParsingToken;
                     var openParensCount = 0;
 
                     do
                     {
-                        parametersParsingToken = stream.Consume();
+                        var parametersParsingToken = stream.Consume();
                         switch (parametersParsingToken)
                         {
                             case { Kind: LeftParen }:
@@ -326,7 +324,9 @@ public record CPreprocessor(
             yield return macroNameToken;
         }
 
-        void TrimMacroArgument(List<IToken<CPreprocessorTokenType>> parameter)
+        yield break;
+
+        void TrimMacroArgument(IList<IToken<CPreprocessorTokenType>> parameter)
         {
             while (parameter.FirstOrDefault() is { Kind: WhiteSpace or NewLine })
             {
