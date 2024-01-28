@@ -125,7 +125,7 @@ int test()
 int test()
 {}"
         ));
-        Assert.Equal(@"Error: ""Error message"" test", err.Message);
+        Assert.Equal(@"""Error message"" test", err.RawMessage);
     }
 
     [Fact, NoVerify]
@@ -139,7 +139,7 @@ int test()
 #endif
 {}"
         ));
-        Assert.Equal(@"Error: ""Error message""", err.Message);
+        Assert.Equal(@"""Error message""", err.RawMessage);
     }
 
     [Fact]
