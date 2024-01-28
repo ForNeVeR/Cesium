@@ -182,7 +182,7 @@ public record CPreprocessor(
                     } while (openParensCount > 0);
                 }
             }
-            if (parameters is null) // an object-like macro
+            else // an object-like macro
             {
                 if (macroNameToken.Text == "__FILE__")
                 {
@@ -209,6 +209,10 @@ public record CPreprocessor(
                     yield break;
                 }
             }
+
+            foreach (var parameter in replacement.Values)
+                TrimMacroArgument(parameter);
+
             var performStringReplace = false;
             var includeNextVerbatim = false;
             var nestedStream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokenReplacement);
@@ -320,6 +324,19 @@ public record CPreprocessor(
         else
         {
             yield return macroNameToken;
+        }
+
+        void TrimMacroArgument(List<IToken<CPreprocessorTokenType>> parameter)
+        {
+            while (parameter.FirstOrDefault() is { Kind: WhiteSpace or NewLine })
+            {
+                parameter.RemoveAt(0);
+            }
+
+            while (parameter.LastOrDefault() is { Kind: WhiteSpace or NewLine })
+            {
+                parameter.RemoveAt(parameter.Count - 1);
+            }
         }
     }
 

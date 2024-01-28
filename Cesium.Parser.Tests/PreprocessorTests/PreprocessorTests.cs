@@ -854,4 +854,10 @@ char* x = __FILE__;
                                               + $"{funcText}{Environment.NewLine}#endif");
         Assert.Equal(expectedResult ? funcText : "", actualResult.Trim());
     }
+
+    [Fact]
+    public Task ExpansionAfterDot() => DoTest("""
+#define x_dot_y(x, y) x.y
+x_dot_y(foo, bar);
+""");
 }
