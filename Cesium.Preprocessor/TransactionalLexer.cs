@@ -1,12 +1,15 @@
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 
 namespace Cesium.Preprocessor;
 
-internal class TransactionalLexer(ILexer<IToken<CPreprocessorTokenType>> lexer) : IDisposable
+internal class TransactionalLexer(
+    ILexer<IToken<CPreprocessorTokenType>> lexer,
+    IWarningProcessor? warningProcessor) : IDisposable
 {
-    private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(lexer);
+    private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(lexer, warningProcessor);
     private int _nextTokenToReturn;
     private int _openTransactions;
 
@@ -78,11 +81,12 @@ internal class TransactionalLexer(ILexer<IToken<CPreprocessorTokenType>> lexer) 
         }
     }
 
-    private static List<IToken<CPreprocessorTokenType>> ToList(ILexer<IToken<CPreprocessorTokenType>> lexer)
+    private static List<IToken<CPreprocessorTokenType>> ToList(
+        ILexer<IToken<CPreprocessorTokenType>> lexer,
+        IWarningProcessor? warningProcessor)
     {
         var result = new List<IToken<CPreprocessorTokenType>>();
 
-        // TODO: Test for \ and then whitespace on same line.
         var spaceEater = false;
         var wasWarningIssued = false;
         var spaceEaterBuffer = new List<IToken<CPreprocessorTokenType>>();
@@ -129,9 +133,11 @@ internal class TransactionalLexer(ILexer<IToken<CPreprocessorTokenType>> lexer) 
             spaceEaterBuffer.Clear();
         }
 
-        static void EmitSpaceEaterWarning(IToken<CPreprocessorTokenType> token)
+        void EmitSpaceEaterWarning(IToken<CPreprocessorTokenType> token)
         {
-            CPreprocessor.EmitWarning($"Whitespace after backslash but before newline at {token.Location}.");
+            warningProcessor?.EmitWarning(new PreprocessorWarning(
+                token.Location,
+                "Whitespace after a backslash but before a new-line."));
         }
     }
 }

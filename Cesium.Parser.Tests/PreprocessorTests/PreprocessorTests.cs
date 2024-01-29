@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Cesium.Preprocessor;
 using Cesium.TestFramework;
 using Yoakke.SynKit.Lexer;
@@ -24,7 +25,8 @@ public class PreprocessorTests : VerifyTestBase
     private static async Task<string> DoPreprocess(
         [StringSyntax("cpp")] string source,
         Dictionary<string, string>? standardHeaders = null,
-        Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+        Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
+        Action<PreprocessorWarning>? warningProcessor = null)
     {
         var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
@@ -37,7 +39,12 @@ public class PreprocessorTests : VerifyTestBase
             }
         }
 
-        var preprocessor = new CPreprocessor(_mainMockedFilePath, lexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(
+            _mainMockedFilePath,
+            lexer,
+            includeContext,
+            definesContext,
+            new LambdaWarningProcessor(warningProcessor));
         var result = await preprocessor.ProcessSource();
         return result;
     }
@@ -888,7 +895,7 @@ x_dot_y(foo, bar);
 // 2
 #error Error message
 """));
-        Assert.Equal(new ErrorLocationInfo(_mainMockedFilePath, Line: 3, Column: 1), ex.Location);
+        Assert.Equal(new SourceLocationInfo(_mainMockedFilePath, Line: 3, Column: 1), ex.Location);
     }
 
     [Fact, NoVerify]
@@ -962,4 +969,20 @@ MACRO(1
 2
 3)
 """);
+
+    [Fact, NoVerify]
+    public async Task SpaceBetweenBackslashAndNewLine()
+    {
+        var warnings = new List<PreprocessorWarning>();
+        var result = await DoPreprocess("#define MACRO(x) x\\ \ny", warningProcessor: warnings.Add);
+        Assert.Empty(result);
+        var warning = Assert.Single(warnings);
+        Assert.Equal(1, warning.Location.Line);
+        Assert.Equal("Whitespace after a backslash but before a new-line.", warning.Message);
+    }
+
+    private class LambdaWarningProcessor(Action<PreprocessorWarning>? onWarning) : IWarningProcessor
+    {
+        public void EmitWarning(PreprocessorWarning warning) => onWarning?.Invoke(warning);
+    }
 }

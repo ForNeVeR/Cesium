@@ -641,7 +641,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     private ICPreprocessorToken PeekWithNonSignificant() => lexer.Peek();
 
     ParseError Error(string expected, ICPreprocessorToken got, string rule) =>
-        ParseResult.Error(expected, got, (ErrorLocationInfo)got.Location, rule);
+        ParseResult.Error(expected, got, (SourceLocationInfo)got.Location, rule);
 
     ParseError Error(string[] expected, ICPreprocessorToken got, string rule) =>
         Error(string.Join(" or ", expected), got, rule);

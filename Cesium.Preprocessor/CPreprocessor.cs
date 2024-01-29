@@ -1,5 +1,6 @@
 using System.Text;
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
@@ -13,7 +14,8 @@ public record CPreprocessor(
     string CompilationUnitPath,
     ILexer<IToken<CPreprocessorTokenType>> Lexer,
     IIncludeContext IncludeContext,
-    IMacroContext MacroContext)
+    IMacroContext MacroContext,
+    IWarningProcessor? WarningProcessor)
 {
     public async Task<string> ProcessSource()
     {
@@ -37,7 +39,7 @@ public record CPreprocessor(
 
     private PreprocessingFile ParsePreprocessingFile()
     {
-        using var transactionalLexer = new TransactionalLexer(Lexer);
+        using var transactionalLexer = new TransactionalLexer(Lexer, WarningProcessor);
         var parser = new CPreprocessorParser(transactionalLexer);
         var file = parser.ParsePreprocessingFile();
         if (file.IsError)
@@ -515,7 +517,7 @@ public record CPreprocessor(
                     nonDirective.Location,
                     "Preprocessor execution of a non-directive was requested.");
             default:
-                ErrorLocationInfo location = groupPart.Location;
+                SourceLocationInfo location = groupPart.Location;
                 var groupName = groupPart.Keyword switch
                 {
                     {} kw => kw.Text + " ",
@@ -601,7 +603,7 @@ public record CPreprocessor(
         TextReader fileReader)
     {
         var lexer = new CPreprocessorLexer(new SourceFile(compilationUnitPath, fileReader));
-        var subProcessor = new CPreprocessor(compilationUnitPath, lexer, IncludeContext, MacroContext);
+        var subProcessor = this with { CompilationUnitPath = compilationUnitPath, Lexer = lexer };
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;
@@ -633,15 +635,10 @@ public record CPreprocessor(
             }
         }
 
-        var location = error.Position as ErrorLocationInfo ?? new ErrorLocationInfo(CompilationUnitPath, null, null);
+        var location = error.Position as SourceLocationInfo ?? new SourceLocationInfo(CompilationUnitPath, null, null);
         throw new PreprocessorException(location, errorMessage.ToString());
 
         static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
             string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
-    }
-
-    internal static void EmitWarning(string text)
-    {
-        Console.Error.WriteLine(text);
     }
 }

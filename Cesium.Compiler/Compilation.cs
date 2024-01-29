@@ -77,7 +77,12 @@ internal static class Compilation
                 });
         }
 
-        var preprocessor = new CPreprocessor(compilationSourcePath, preprocessorLexer, includeContext, definesContext);
+        var preprocessor = new CPreprocessor(
+            compilationSourcePath,
+            preprocessorLexer,
+            includeContext,
+            definesContext,
+            new WarningProcessor());
         return preprocessor.ProcessSource();
     }
 

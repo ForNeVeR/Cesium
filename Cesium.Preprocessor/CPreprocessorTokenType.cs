@@ -16,7 +16,7 @@ public enum CPreprocessorTokenType
 
     [Token("#")] Hash,
     [Token("##")] DoubleHash,
-    [Regex(@"[\\]")] NextLine,
+    [Regex(@"\\")] NextLine,
 
     [Regex("<[^\r\n>]+>")]
     [Regex("\"[^\r\n\"]+\"")]
@@ -25,7 +25,7 @@ public enum CPreprocessorTokenType
     [Token("...")]
     Ellipsis,
 
-    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",.|&]+")]
+    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",.|&\\\\]+")]
     PreprocessingToken,
 
     [Regex(@"([.]|[;+\\-*/=!,|&]+|<=|>=|>|<)")]
