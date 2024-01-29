@@ -932,7 +932,7 @@ int main() { /* comment block */
 }
 """);
 
-    [Fact(Skip = "TODO: Open a new task on this.")]
+    [Fact(Skip = "TODO[#537]")]
     public Task SpacesInMacroDefinitionAndInvocation() => DoTest("""
 #define BRACES1/**/() x
 #define BRACES2 () y
@@ -962,7 +962,7 @@ foo();
 bar();
 """);
 
-    [Fact(Skip = "TODO: Open a new task on this bug."), NoVerify]
+    [Fact(Skip = "TODO[#538]: Open a new task on this bug."), NoVerify]
     public Task TestMultilineArgs() => DoTest("""
 #define MACRO(x) x
 MACRO(1

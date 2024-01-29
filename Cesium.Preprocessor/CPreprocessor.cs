@@ -346,20 +346,19 @@ public record CPreprocessor(
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacrosInLine(TextLine line)
     {
-        // TODO: Open a new task for this block.
-        // TODO: Iterate each token in the input.
-        // TODO: For each token:
-            // TODO: Find the corresponding macro.
-                // TODO: If that's an object-like macro, emit it immediately.
-                // TODO: If that's an function-like macro, examine the next token to see if it's an opening paren.
-                    // TODO: If it is, then enter the argument passing mode until either the corresponding closing brace is found or we are out of tokens.
-                        // TODO: This should, of course, consider nested parentheses.
-                        // TODO: For each argument, perform another macro expansion round.
-                    // TODO: If it isn't then this is not a macro call whatsoever, yield the name as-is and proceed.
-            // TODO: No macro: emit the token.
+        // TODO[#537]: Open a new task for this block.
+        // TODO[#537]: Iterate each token in the input.
+        // TODO[#537]: For each token:
+            // TODO[#537]: Find the corresponding macro.
+                // TODO[#537]: If that's an object-like macro, emit it immediately.
+                // TODO[#537]: If that's an function-like macro, examine the next token to see if it's an opening paren.
+                    // TODO[#537]: If it is, then enter the argument passing mode until either the corresponding closing brace is found or we are out of tokens.
+                        // TODO[#537]: This should, of course, consider nested parentheses.
+                        // TODO[#537]: For each argument, perform another macro expansion round.
+                    // TODO[#537]: If it isn't then this is not a macro call whatsoever, yield the name as-is and proceed.
+            // TODO[#537]: No macro: emit the token.
 
-
-        // TODO: Test for passing a macro name into another macro.
+        // TODO[#537]: Test for passing a macro name into another macro.
 
         var tokens = line.Tokens ?? [];
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokens).ToBuffered();
