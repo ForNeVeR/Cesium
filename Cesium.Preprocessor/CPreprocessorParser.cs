@@ -558,7 +558,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         return Ok(newLine);
     }
 
-    // TODO: The following rules are only used in #embed:
+    // TODO[#174]: The following rules are only used in #embed:
     // pp-parameter:
     //  pp-parameter-name pp-parameter-clauseₒₚₜ
     // pp-parameter-name:
