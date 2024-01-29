@@ -582,7 +582,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
     //  pp-parameter
     //  embed-parameter-sequence pp-parameter
 
-    // TODO: 6.10.1 Conditional inclusion
+    // TODO[#77]: 6.10.1 Conditional inclusion
     // - __has_include
     // - __has_embed
     // - __has_c_attribute
