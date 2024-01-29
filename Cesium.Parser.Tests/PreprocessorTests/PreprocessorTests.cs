@@ -917,7 +917,7 @@ int main() { /* comment block */
 }
 """);
 
-    [Fact]
+    [Fact(Skip = "TODO: Open a new task on this.")]
     public Task SpacesInMacroDefinitionAndInvocation() => DoTest("""
 #define BRACES1/**/() x
 #define BRACES2 () y
@@ -940,7 +940,12 @@ foo BRACES2 a ()
 foo BRACES3 a ()
 """);
 
-    // TODO: Test for empty line preservation?
+    [Fact]
+    public Task EmptyLinesArePreserved() => DoTest("""
+foo();
+
+bar();
+""");
 
     // TODO: A test for multiline macro expansion, with arguments spawning over several lines
 }

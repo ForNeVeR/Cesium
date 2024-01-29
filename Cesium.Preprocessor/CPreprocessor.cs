@@ -165,76 +165,21 @@ public record CPreprocessor(
                 }
                 else // a macro with an empty parameter list: we expect the empty argument list
                 {
-                    var tokenBuffer = new List<IToken<CPreprocessorTokenType>>();
-                    var openParenEncountered = false;
-                    var closeParenEncountered = false;
-                    while (!openParenEncountered && !closeParenEncountered)
+                    var openParensCount = 0;
+
+                    do
                     {
-                        if (!stream.TryConsume(out var token))
-                        {
-                            if (openParenEncountered)
-                                throw new PreprocessorException(
-                                    macroNameToken.Location,
-                                    $"Cannot find the brace pair for expansion of macro {macroNameToken.Text}.");
-
-                            // No braces: this is not a macro call after all.
-                            yield return macroNameToken;
-                            foreach (var tokenToReturn in tokenBuffer)
-                            {
-                                yield return tokenToReturn;
-                            }
-                            while (!stream.IsEnd)
-                            {
-                                yield return stream.Consume();
-                            }
-                            yield break;
-                        }
-                        tokenBuffer.Add(token);
-
-                        switch (token)
+                        var parametersParsingToken = stream.Consume();
+                        switch (parametersParsingToken)
                         {
                             case { Kind: LeftParen }:
-                                if (openParenEncountered || closeParenEncountered)
-                                {
-                                    throw new PreprocessorException(
-                                        token.Location,
-                                        "Unbalanced parentheses in macro expansion.");
-                                }
-                                openParenEncountered = true;
+                                openParensCount++;
                                 break;
                             case { Kind: RightParen }:
-                                if (!openParenEncountered || closeParenEncountered)
-                                {
-                                    throw new PreprocessorException(
-                                        token.Location,
-                                        "Unbalanced parentheses in macro expansion.");
-                                }
-                                closeParenEncountered = true;
+                                openParensCount--;
                                 break;
-                            case { Kind: WhiteSpace }:
-                                break;
-                            default:
-                                if (!openParenEncountered) // this is not a macro call
-                                {
-                                    yield return macroNameToken;
-                                    foreach (var tokenToReturn in tokenBuffer)
-                                    {
-                                        yield return tokenToReturn;
-                                    }
-                                    while (!stream.IsEnd)
-                                    {
-                                        yield return stream.Consume();
-                                    }
-                                    yield break;
-                                }
-                                else
-                                {
-                                    throw new PreprocessorException(
-                                        token.Location,
-                                        $"Unexpected token encountered: {token.Text}.");
-                                }
                         }
-                    }
+                    } while (openParensCount > 0);
                 }
             }
             else // an object-like macro
@@ -399,7 +344,7 @@ public record CPreprocessor(
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacrosInLine(TextLine line)
     {
-        throw new WipException(WipException.ToDo, "This should be rewritten.");
+        // TODO: Open a new task for this block.
         // TODO: Iterate each token in the input.
         // TODO: For each token:
             // TODO: Find the corresponding macro.
