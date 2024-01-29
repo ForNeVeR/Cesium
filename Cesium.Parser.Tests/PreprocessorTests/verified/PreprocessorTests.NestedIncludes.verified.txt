@@ -1,6 +1,7 @@
 ﻿int bar = 0;
 
 
+
 int test()
 {
 }

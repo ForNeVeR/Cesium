@@ -947,5 +947,11 @@ foo();
 bar();
 """);
 
-    // TODO: A test for multiline macro expansion, with arguments spawning over several lines
+    [Fact(Skip = "TODO: Open a new task on this bug."), NoVerify]
+    public Task TestMultilineArgs() => DoTest("""
+#define MACRO(x) x
+MACRO(1
+2
+3)
+""");
 }
