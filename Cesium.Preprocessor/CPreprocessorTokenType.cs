@@ -12,7 +12,7 @@ public enum CPreprocessorTokenType
     [Regex(Regexes.LineComment)]
     [Regex(Regexes.MultilineComment)]
     Comment,
-    [Regex("[\r\n]")] NewLine,
+    [Regex("\r|\n|\r\n")] NewLine,
 
     [Token("#")] Hash,
     [Token("##")] DoubleHash,
