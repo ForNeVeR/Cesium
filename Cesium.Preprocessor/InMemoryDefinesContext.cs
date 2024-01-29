@@ -5,17 +5,15 @@ namespace Cesium.Preprocessor;
 
 public class InMemoryDefinesContext : IMacroContext
 {
-    private readonly Dictionary<string, IList<IToken<CPreprocessorTokenType>>> _defines;
-    private readonly Dictionary<string, MacroParameters?> _defineMacros;
+    private record struct Macro(
+        MacroParameters? Parameters,
+        IList<IToken<CPreprocessorTokenType>> Replacement
+    );
 
-    public InMemoryDefinesContext(
-        IReadOnlyDictionary<string, IList<IToken<CPreprocessorTokenType>>>? initialDefines = null)
+    private readonly Dictionary<string, Macro> _macros = new();
+
+    public InMemoryDefinesContext()
     {
-        _defines = initialDefines == null
-            ? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>()
-            : new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>(initialDefines);
-        _defineMacros = new();
-
         DefineMacro(
             "__LINE__",
             parameters: null,
@@ -29,21 +27,22 @@ public class InMemoryDefinesContext : IMacroContext
 
     public void DefineMacro(string macro, MacroParameters? parameters, IList<IToken<CPreprocessorTokenType>> replacement)
     {
-        _defines[macro] = replacement;
-        _defineMacros[macro] = parameters;
+        _macros[macro] = new Macro(parameters, replacement);
     }
 
     public void UndefineMacro(string macro)
     {
-        _defines.Remove(macro);
-        _defineMacros.Remove(macro);
+        _macros.Remove(macro);
     }
 
-    public bool TryResolveMacro(string macro, out MacroParameters? parameters, [NotNullWhen(true)]out IList<IToken<CPreprocessorTokenType>>? macroReplacement)
+    public bool TryResolveMacro(
+        string name,
+        out MacroParameters? parameters,
+        [NotNullWhen(true)] out IList<IToken<CPreprocessorTokenType>>? replacement)
     {
-        // TODO: Either add an assertion that the dictionaries are synchronized, or merge them into one dictionary with
-        // a struct as the value.
-        _defineMacros.TryGetValue(macro, out parameters);
-        return _defines.TryGetValue(macro, out macroReplacement);
+        var exists = _macros.TryGetValue(name, out var macro);
+        parameters = macro.Parameters;
+        replacement = macro.Replacement;
+        return exists;
     }
 }

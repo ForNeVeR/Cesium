@@ -28,7 +28,15 @@ public class PreprocessorTests : VerifyTestBase
     {
         var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
-        var definesContext = new InMemoryDefinesContext(defines ?? new Dictionary<string, IList<IToken<CPreprocessorTokenType>>>());
+        var definesContext = new InMemoryDefinesContext();
+        if (defines != null)
+        {
+            foreach (var (name, value) in defines)
+            {
+                definesContext.DefineMacro(name, null, value);
+            }
+        }
+
         var preprocessor = new CPreprocessor(_mainMockedFilePath, lexer, includeContext, definesContext);
         var result = await preprocessor.ProcessSource();
         return result;
