@@ -13,7 +13,7 @@ internal class TransactionalLexer(
     private int _nextTokenToReturn;
     private int _openTransactions;
 
-    public IToken<CPreprocessorTokenType> Next() => _allTokens[_nextTokenToReturn++];
+    public IToken<CPreprocessorTokenType> Consume() => _allTokens[_nextTokenToReturn++];
     public IToken<CPreprocessorTokenType> Peek(int idx = 0) => _allTokens[_nextTokenToReturn + idx];
     public bool IsEnd => _nextTokenToReturn >= _allTokens.Count || Peek() is { Kind: CPreprocessorTokenType.End };
 
