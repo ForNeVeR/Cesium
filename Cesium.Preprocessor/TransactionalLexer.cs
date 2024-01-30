@@ -6,10 +6,10 @@ using Yoakke.SynKit.Parser;
 namespace Cesium.Preprocessor;
 
 internal class TransactionalLexer(
-    ILexer<IToken<CPreprocessorTokenType>> lexer,
+    IEnumerable<IToken<CPreprocessorTokenType>> tokens,
     IWarningProcessor? warningProcessor) : IDisposable
 {
-    private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(lexer, warningProcessor);
+    private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(tokens, warningProcessor);
     private int _nextTokenToReturn;
     private int _openTransactions;
 
@@ -82,7 +82,7 @@ internal class TransactionalLexer(
     }
 
     private static List<IToken<CPreprocessorTokenType>> ToList(
-        ILexer<IToken<CPreprocessorTokenType>> lexer,
+        IEnumerable<IToken<CPreprocessorTokenType>> tokens,
         IWarningProcessor? warningProcessor)
     {
         var result = new List<IToken<CPreprocessorTokenType>>();
@@ -91,9 +91,8 @@ internal class TransactionalLexer(
         var wasWarningIssued = false;
         var spaceEaterBuffer = new List<IToken<CPreprocessorTokenType>>();
 
-        while (!lexer.IsEnd)
+        foreach (var nextToken in tokens)
         {
-            var nextToken = lexer.Next();
             switch (spaceEater)
             {
                 case true when nextToken is { Kind: CPreprocessorTokenType.WhiteSpace }:

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using Cesium.Core;
 using Cesium.Core.Warnings;
@@ -39,7 +40,7 @@ public record CPreprocessor(
 
     private PreprocessingFile ParsePreprocessingFile()
     {
-        using var transactionalLexer = new TransactionalLexer(Lexer, WarningProcessor);
+        using var transactionalLexer = new TransactionalLexer(Lexer.ToEnumerableUntilEnd(), WarningProcessor);
         var parser = new CPreprocessorParser(transactionalLexer);
         var file = parser.ParsePreprocessingFile();
         if (file.IsError)
@@ -50,326 +51,212 @@ public record CPreprocessor(
         return file.Ok;
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
-        IToken<CPreprocessorTokenType> macroNameToken,
-        IPeekableStream<IToken<CPreprocessorTokenType>> stream)
+    private IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(
+        IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {
-        if (MacroContext.TryResolveMacro(macroNameToken.Text, out var parameters, out var tokenReplacement))
+        // TODO[#537]: Test for passing a macro name into another macro.
+
+        using var lexer = new TransactionalLexer(tokens, WarningProcessor);
+        while (!lexer.IsEnd)
         {
-            Dictionary<string, List<IToken<CPreprocessorTokenType>>> replacement = new();
-            if (parameters is not null)
+            var token = lexer.Consume();
+            if (token.Kind == PreprocessingToken)
             {
-                if (parameters.Parameters.Length > 0 || parameters.HasEllipsis)
+                var macroName = token.Text;
+                if (!MacroContext.TryResolveMacro(macroName, out var parameters, out var replacement))
                 {
-                    var parameterIndex = -1;
-                    var openParensCount = 0;
-                    var hitOpenToken = false;
-                    List<IToken<CPreprocessorTokenType>> currentParameter = new();
-
-                    if (parameters.HasEllipsis)
-                    {
-                        replacement.Add("__VA_ARGS__", new());
-                    }
-
-                    do
-                    {
-                        var parametersParsingToken = stream.Consume();
-                        switch (parametersParsingToken)
-                        {
-                            case { Kind: LeftParen }:
-                                if (openParensCount != 0)
-                                {
-                                    currentParameter.Add(parametersParsingToken);
-                                }
-
-                                hitOpenToken = true;
-                                openParensCount++;
-                                if (parameterIndex == -1)
-                                {
-                                    parameterIndex = 0;
-                                }
-                                break;
-                            case { Kind: RightParen }:
-                                openParensCount--;
-                                if (openParensCount != 0)
-                                {
-                                    currentParameter.Add(parametersParsingToken);
-                                }
-                                break;
-                            case { Kind: Separator, Text: "," }:
-                                if (parameterIndex == -1)
-                                {
-                                    throw new PreprocessorException(
-                                        parametersParsingToken.Location,
-                                        $"Expected '(' but got {parametersParsingToken.Kind} " +
-                                        $"{parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
-                                }
-
-                                if (openParensCount == 1)
-                                {
-                                    if (parameters.Parameters.Length > parameterIndex)
-                                    {
-                                        replacement.Add(parameters.GetName(parameterIndex), currentParameter);
-                                        parameterIndex++;
-                                    }
-                                    else if (parameters.HasEllipsis)
-                                    {
-                                        if (replacement.TryGetValue("__VA_ARGS__", out var vaArgs))
-                                        {
-                                            vaArgs.AddRange(currentParameter);
-                                            vaArgs.Add(new Token<CPreprocessorTokenType>(
-                                                macroNameToken.Range,
-                                                macroNameToken.Location,
-                                                ",",
-                                                Separator));
-                                        }
-                                    }
-                                    else
-                                    {
-                                        throw new PreprocessorException(
-                                            parametersParsingToken.Location,
-                                            $"The function {macroNameToken.Text} defined" +
-                                            $" at {parametersParsingToken.Range} has more" +
-                                            " parameters than the macro allows.");
-                                    }
-
-                                    currentParameter = new();
-                                }
-                                else
-                                {
-                                    currentParameter.Add(parametersParsingToken);
-                                }
-                                break;
-                            default:
-                                if (openParensCount == 0 && parametersParsingToken.Kind == WhiteSpace)
-                                {
-                                    continue;
-                                }
-
-                                currentParameter.Add(parametersParsingToken);
-                                break;
-                        }
-                    }
-                    while (openParensCount > 0 || !hitOpenToken);
-
-
-                    if (parameters.Parameters.Length > parameterIndex)
-                    {
-                        replacement.Add(parameters.GetName(parameterIndex), currentParameter);
-                    }
-                    else
-                    {
-                        if (replacement.TryGetValue("__VA_ARGS__", out var vaArgs))
-                        {
-                            vaArgs.AddRange(currentParameter);
-                        }
-                    }
-                }
-                else // a macro with an empty parameter list: we expect the empty argument list
-                {
-                    var openParensCount = 0;
-
-                    do
-                    {
-                        var parametersParsingToken = stream.Consume();
-                        switch (parametersParsingToken)
-                        {
-                            case { Kind: LeftParen }:
-                                openParensCount++;
-                                break;
-                            case { Kind: RightParen }:
-                                openParensCount--;
-                                break;
-                        }
-                    } while (openParensCount > 0);
-                }
-            }
-            else // an object-like macro
-            {
-                if (macroNameToken.Text == "__FILE__")
-                {
-                    yield return new Token<CPreprocessorTokenType>(
-                        macroNameToken.Range,
-                        macroNameToken.Location,
-                        "\"" + macroNameToken
-                            .Location
-                            .File?
-                            .Path
-                            .Replace("\\", "\\\\") + "\"",
-                        PreprocessingToken);
-                    yield break;
-                }
-
-                if (macroNameToken.Text == "__LINE__")
-                {
-                    var line = macroNameToken.Location.Range.Start.Line + 1;
-                    yield return new Token<CPreprocessorTokenType>(
-                        macroNameToken.Range,
-                        macroNameToken.Location,
-                        line.ToString(),
-                        PreprocessingToken);
-                    yield break;
-                }
-            }
-
-            foreach (var parameter in replacement.Values)
-                TrimMacroArgument(parameter);
-
-            var performStringReplace = false;
-            var includeNextVerbatim = false;
-            var nestedStream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokenReplacement).ToBuffered();
-            var pendingWhitespaces = new List<Token<CPreprocessorTokenType>>();
-            while (!nestedStream.IsEnd)
-            {
-                var subToken = nestedStream.Consume();
-                if (subToken is { Kind: Hash })
-                {
-                    performStringReplace = true;
+                    yield return token;
                     continue;
                 }
 
-                if (subToken is { Kind: DoubleHash })
+                var maybeArguments = ParseArguments(parameters, lexer);
+                if (maybeArguments is not {} arguments)
                 {
-                    includeNextVerbatim = true;
+                    // Not a macro call, just emit the token.
+                    yield return token;
                     continue;
                 }
 
-                if (subToken is { Kind: PreprocessingToken })
-                {
-                    if (!includeNextVerbatim)
-                    {
-                        foreach (var whitespaceToken in pendingWhitespaces)
-                        {
-                            yield return whitespaceToken;
-                        }
+                if (arguments.IsError)
+                    RaisePreprocessorParseError(arguments.Error);
 
-                        pendingWhitespaces.Clear();
-                    }
-
-                    if (replacement.TryGetValue(subToken.Text, out var parameterTokens))
-                    {
-                        if (includeNextVerbatim)
-                        {
-                            foreach (var parameterToken in parameterTokens)
-                            {
-                                yield return new Token<CPreprocessorTokenType>(
-                                    macroNameToken.Range,
-                                    macroNameToken.Location,
-                                    parameterToken.Text,
-                                    parameterToken.Kind);
-                            }
-                        }
-                        else if (performStringReplace)
-                        {
-                            var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
-                            var escapedStringValue = stringValue
-                                .Replace("\\", "\\\\")
-                                .Replace("\"", "\\\"");
-                            escapedStringValue = $"\"{escapedStringValue}\"";
-                            yield return new Token<CPreprocessorTokenType>(
-                                macroNameToken.Range,
-                                macroNameToken.Location,
-                                escapedStringValue,
-                                macroNameToken.Kind);
-                            performStringReplace = false;
-                        }
-                        else
-                        {
-                            foreach (var parameterToken in parameterTokens)
-                            {
-                                yield return new Token<CPreprocessorTokenType>(
-                                    macroNameToken.Range,
-                                    macroNameToken.Location,
-                                    parameterToken.Text,
-                                    parameterToken.Kind);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (includeNextVerbatim)
-                        {
-                            yield return subToken;
-                        }
-                        else
-                        {
-                            foreach (var nestedT in ReplaceMacro(subToken, nestedStream))
-                            {
-                                yield return nestedT;
-                            }
-                        }
-                    }
-
-                    includeNextVerbatim = false;
-                }
-                else if (subToken is { Kind: WhiteSpace })
+                foreach (var replaced in ReplaceMacro(token, arguments.Ok, replacement))
                 {
-                    if (!includeNextVerbatim)
-                    {
-                        pendingWhitespaces.Add(new Token<CPreprocessorTokenType>(
-                            macroNameToken.Range,
-                            macroNameToken.Location,
-                            subToken.Text,
-                            subToken.Kind));
-                    }
-                }
-                else
-                {
-                    yield return new Token<CPreprocessorTokenType>(
-                        macroNameToken.Range,
-                        macroNameToken.Location,
-                        subToken.Text,
-                        subToken.Kind);
+                    yield return replaced;
                 }
             }
-        }
-        else
-        {
-            yield return macroNameToken;
-        }
-
-        yield break;
-
-        void TrimMacroArgument(IList<IToken<CPreprocessorTokenType>> parameter)
-        {
-            while (parameter.FirstOrDefault() is { Kind: WhiteSpace or NewLine })
+            else
             {
-                parameter.RemoveAt(0);
-            }
-
-            while (parameter.LastOrDefault() is { Kind: WhiteSpace or NewLine })
-            {
-                parameter.RemoveAt(parameter.Count - 1);
+                yield return token;
             }
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacrosInLine(TextLine line)
+    /// <returns><c>null</c> ⇒ do not expand, non-<c>null</c> ⇒ expand if ok, throw error if not ok.</returns>
+    private static ParseResult<MacroArguments>? ParseArguments(MacroParameters? parameters, TransactionalLexer lexer)
     {
-        // TODO[#537]: Open a new task for this block.
-        // TODO[#537]: Iterate each token in the input.
-        // TODO[#537]: For each token:
-            // TODO[#537]: Find the corresponding macro.
-                // TODO[#537]: If that's an object-like macro, emit it immediately.
-                // TODO[#537]: If that's an function-like macro, examine the next token to see if it's an opening paren.
-                    // TODO[#537]: If it is, then enter the argument passing mode until either the corresponding closing brace is found or we are out of tokens.
-                        // TODO[#537]: This should, of course, consider nested parentheses.
-                        // TODO[#537]: For each argument, perform another macro expansion round.
-                    // TODO[#537]: If it isn't then this is not a macro call whatsoever, yield the name as-is and proceed.
-            // TODO[#537]: No macro: emit the token.
+        using var transaction = lexer.BeginTransaction();
 
-        // TODO[#537]: Test for passing a macro name into another macro.
-
-        var tokens = line.Tokens ?? [];
-        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(tokens).ToBuffered();
-        while (!stream.IsEnd)
+        if (parameters == null)
         {
-            var token = stream.Consume();
-            if (token.Kind == PreprocessingToken)
+            MacroArguments emptyResult = new(new(), new());
+            return transaction.End<MacroArguments>(ParseResult.Ok(emptyResult, 0));
+        }
+
+        if (Consume() is var leftBrace and not { Kind: LeftParen })
+        {
+            SourceLocationInfo location = leftBrace.Location;
+            transaction.End(ParseResult.Error(",", leftBrace, location, "macro arguments"));
+            return null; // no braces at all means we should just skip expanding this macro
+        }
+
+        var namedArguments = new Dictionary<string, List<IToken<CPreprocessorTokenType>>>();
+        var isFirstArgument = true;
+        foreach (var parameterToken in parameters.Parameters)
+        {
+            if (isFirstArgument)
             {
-                foreach (var subToken in ReplaceMacro(token, stream))
+                isFirstArgument = false;
+            }
+            else if (Consume() is var comma and not { Text: "," })
+            {
+                SourceLocationInfo location = comma.Location;
+                return transaction.End(ParseResult.Error(",", comma, location, "macro arguments"));
+            }
+
+            var name = parameterToken.Text;
+            var argument = ParseArgument(lexer);
+            if (argument.IsError)
+                return transaction.End(argument.Error);
+
+            namedArguments[name] = argument.Ok;
+        }
+
+        var varArgs = new List<List<IToken<CPreprocessorTokenType>>>();
+        if (parameters.HasEllipsis)
+        {
+            while (Peek() is not { Kind: RightParen })
+            {
+                if (isFirstArgument)
                 {
-                    yield return subToken;
+                    isFirstArgument = false;
+                }
+                else if (Consume() is var comma and not { Text: "," })
+                {
+                    SourceLocationInfo location = comma.Location;
+                    return transaction.End(ParseResult.Error(",", comma, location, "macro arguments"));
+                }
+
+                var varArg = ParseArgument(lexer);
+                if (varArg.IsError)
+                    return transaction.End(varArg.Error);
+
+                varArgs.Add(varArg.Ok);
+            }
+        }
+
+        if (Consume() is var token and not { Kind: RightParen })
+        {
+            SourceLocationInfo location = token.Location;
+            return transaction.End(ParseResult.Error(")", token, location, "macro arguments"));
+        }
+
+        var result = new MacroArguments(namedArguments, varArgs);
+        return transaction.End<MacroArguments>(ParseResult.Ok(result, 0));
+
+        IToken<CPreprocessorTokenType> Consume()
+        {
+            IToken<CPreprocessorTokenType> currentToken;
+            do
+            {
+                currentToken = lexer.Consume();
+            } while (currentToken is { Kind: WhiteSpace or Comment });
+
+            return currentToken;
+        }
+
+        IToken<CPreprocessorTokenType> Peek()
+        {
+            IToken<CPreprocessorTokenType> currentToken;
+            var index = 0;
+            do
+            {
+                currentToken = lexer.Peek(index++);
+            } while (currentToken is { Kind: WhiteSpace or Comment });
+
+            return currentToken;
+        }
+    }
+
+    private static ParseResult<List<IToken<CPreprocessorTokenType>>> ParseArgument(TransactionalLexer lexer)
+    {
+        // TODO[#537]: This should, of course, consider nested parentheses.
+        // TODO[#537]: For each argument, perform another macro expansion round.
+        throw new WipException(537);
+    }
+
+    private static IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
+        IToken macroNameToken,
+        MacroArguments arguments,
+        IEnumerable<IToken<CPreprocessorTokenType>> replacement)
+    {
+        switch (macroNameToken.Text)
+        {
+            case "__FILE__":
+                yield return new Token<CPreprocessorTokenType>(
+                    macroNameToken.Range,
+                    macroNameToken.Location,
+                    "\"" + macroNameToken
+                        .Location
+                        .File?
+                        .Path
+                        .Replace("\\", "\\\\") + "\"",
+                    PreprocessingToken);
+                yield break;
+            case "__LINE__":
+            {
+                var line = macroNameToken.Location.Range.Start.Line + 1;
+                yield return new Token<CPreprocessorTokenType>(
+                    macroNameToken.Range,
+                    macroNameToken.Location,
+                    line.ToString(CultureInfo.InvariantCulture),
+                    PreprocessingToken);
+                yield break;
+            }
+        }
+
+        foreach (var token in replacement)
+        {
+            if (token is { Kind: PreprocessingToken, Text: var text })
+            {
+                if (arguments.Named.TryGetValue(text, out var argument))
+                {
+                    foreach (var argumentToken in argument)
+                    {
+                        yield return argumentToken;
+                    }
+                }
+                else switch (text)
+                {
+                    case "__VA_ARGS__":
+                    {
+                        foreach (var varArg in arguments.VarArg)
+                        {
+                            foreach (var argToken in varArg)
+                                yield return argToken;
+
+                            yield return new Token<CPreprocessorTokenType>(
+                                new Range(),
+                                new Location(),
+                                ",",
+                                Separator);
+                        }
+
+                        break;
+                    }
+                    default:
+                        yield return token;
+                        break;
                 }
             }
             else
@@ -504,7 +391,7 @@ public record CPreprocessor(
             case EmptyDirective:
                 break;
             case TextLine textLine:
-                foreach (var token in ReplaceMacrosInLine(textLine))
+                foreach (var token in ExpandMacros(textLine.Tokens ?? []))
                 {
                     yield return token;
                 }
@@ -640,4 +527,9 @@ public record CPreprocessor(
         static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
             string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
     }
+
+    private record MacroArguments(
+        Dictionary<string, List<IToken<CPreprocessorTokenType>>> Named,
+        List<List<IToken<CPreprocessorTokenType>>> VarArg
+    );
 }

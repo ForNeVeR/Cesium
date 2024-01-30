@@ -932,7 +932,7 @@ int main() { /* comment block */
 }
 """);
 
-    [Fact(Skip = "TODO[#537]")]
+    [Fact]
     public Task SpacesInMacroDefinitionAndInvocation() => DoTest("""
 #define BRACES1/**/() x
 #define BRACES2 () y
