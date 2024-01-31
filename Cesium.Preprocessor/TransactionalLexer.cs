@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cesium.Core;
 using Cesium.Core.Warnings;
 using Yoakke.SynKit.Lexer;
@@ -25,10 +26,9 @@ internal class TransactionalLexer(
 
     public void Dispose()
     {
-        if (_openTransactions != 0)
-        {
-            throw new AssertException($"Lexer was disposed while there were {_openTransactions} open transactions.");
-        }
+        Debug.Assert(
+            _openTransactions == 0,
+            $"Lexer was disposed while there were {_openTransactions} open transactions.");
     }
 
     public class LexerTransaction(TransactionalLexer lexer, int startPos) : IDisposable
