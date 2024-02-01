@@ -26,6 +26,8 @@ internal class TransactionalLexer(
 
     public void Dispose()
     {
+        // TODO: Make this a warning, to report in a side channel (otherwise, this reporting will mess with normal preprocessor diagnostics).
+        // TODO: Also, check for zero warnings in the preprocessor tests.
         Debug.Assert(
             _openTransactions == 0,
             $"Lexer was disposed while there were {_openTransactions} open transactions.");

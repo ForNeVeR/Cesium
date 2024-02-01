@@ -85,6 +85,28 @@ public record CPreprocessor(
                     yield return replaced;
                 }
             }
+            else if (token is { Kind: Hash or DoubleHash })
+            {
+                if (lexer.IsEnd)
+                {
+                    throw new PreprocessorException(
+                        token.Location,
+                        $"Unexpected end of stream after a preprocessor token {token.Text}.");
+                }
+
+                var argument = ConsumeNextNonWhitespace();
+                yield return token.Kind switch
+                {
+                    // TODO: Figure out what to do with complex arguments, say if the next token is replaced by something?
+                    Hash => new Token<CPreprocessorTokenType>(
+                        token.Range,
+                        token.Location,
+                        argument.Text,
+                        PreprocessingToken),
+                    DoubleHash => throw new WipException(WipException.ToDo, "Process double hash"),
+                    _ => throw new AssertException($"Impossible token kind: {token.Kind}.")
+                };
+            }
             else
             {
                 yield return token;
@@ -93,7 +115,7 @@ public record CPreprocessor(
     }
 
     /// <returns><c>null</c> ⇒ do not expand, non-<c>null</c> ⇒ expand if ok, throw error if not ok.</returns>
-    private static ParseResult<MacroArguments>? ParseArguments(MacroParameters? parameters, TransactionalLexer lexer)
+    private ParseResult<MacroArguments>? ParseArguments(MacroParameters? parameters, TransactionalLexer lexer)
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -118,7 +140,7 @@ public record CPreprocessor(
             {
                 isFirstArgument = false;
             }
-            else if (Consume() is var comma and not { Text: "," })
+            else if (Consume() is var comma and not { Text: "," or ")" })
             {
                 SourceLocationInfo location = comma.Location;
                 return transaction.End(ParseResult.Error(",", comma, location, "macro arguments"));
@@ -188,11 +210,53 @@ public record CPreprocessor(
         }
     }
 
-    private static ParseResult<List<IToken<CPreprocessorTokenType>>> ParseArgument(TransactionalLexer lexer)
+    private ParseResult<List<IToken<CPreprocessorTokenType>>> ParseArgument(TransactionalLexer lexer)
     {
-        // TODO[#537]: This should, of course, consider nested parentheses.
-        // TODO[#537]: For each argument, perform another macro expansion round.
-        throw new WipException(537);
+        using var transaction = lexer.BeginTransaction();
+
+        if (lexer.IsEnd)
+            return ParseResult.Error("argument", "end of stream", 0, "macro argument");
+
+        SourceLocationInfo argumentStartLocation = lexer.Peek().Location;
+        var argument = new List<IToken<CPreprocessorTokenType>>();
+        while (!lexer.IsEnd && lexer.Peek() is not { Kind: RightParen } or { Text: "," })
+        {
+            var token = lexer.Consume();
+            argument.Add(token);
+            if (token is { Kind: LeftParen })
+            {
+                var tail = ParseNestedParenthesesBlock(token.Location);
+                if (!tail.IsOk)
+                    return transaction.End(tail.Error);
+            }
+        }
+
+        if (lexer.IsEnd)
+            return transaction.End(ParseResult.Error(") or ,", null, argumentStartLocation, "macro argument"));
+
+        var processedArgument = ExpandMacros(argument).ToList();
+        return transaction.End<List<IToken<CPreprocessorTokenType>>>(ParseResult.Ok(processedArgument, 0));
+
+        ParseResult<object?> ParseNestedParenthesesBlock(SourceLocationInfo start)
+        {
+            while (!lexer.IsEnd && lexer.Peek() is not { Kind: RightParen })
+            {
+                var token = lexer.Consume();
+                argument.Add(token);
+                if (token is { Kind: LeftParen })
+                {
+                    var tail = ParseNestedParenthesesBlock(token.Location);
+                    if (!tail.IsOk)
+                        return tail;
+                }
+            }
+
+            if (lexer.IsEnd)
+                return ParseResult.Error("terminated macro argument", null, start, "macro argument nested parentheses block");
+
+            _ = lexer.Consume(); // the right paren
+            return ParseResult.Ok<object?>(null, 0);
+        }
     }
 
     private static IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
