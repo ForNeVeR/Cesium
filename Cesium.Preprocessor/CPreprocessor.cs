@@ -354,16 +354,22 @@ public record CPreprocessor(
                 }
                 case { Kind: PreprocessingToken, Text: "__VA_ARGS__" }:
                 {
+                    var isFirst = true;
                     foreach (var varArg in arguments.VarArg)
                     {
+                        // Comma before each but the first.
+                        if (isFirst) isFirst = false;
+                        else
+                        {
+                            yield return new Token<CPreprocessorTokenType>(
+                                new Range(),
+                                new Location(),
+                                ",",
+                                Separator);
+                        }
+
                         foreach (var argToken in varArg)
                             yield return argToken;
-
-                        yield return new Token<CPreprocessorTokenType>(
-                            new Range(),
-                            new Location(),
-                            ",",
-                            Separator);
                     }
 
                     break;
