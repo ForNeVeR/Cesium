@@ -232,7 +232,8 @@ public record CPreprocessor(
             if (lexer.IsEnd)
                 return ParseResult.Error("terminated macro argument", null, start, "macro argument nested parentheses block");
 
-            _ = lexer.Consume(); // the right paren
+            var rightParen = lexer.Consume();
+            argument.Add(rightParen);
             return ParseResult.Ok<object?>(null, 0);
         }
     }
