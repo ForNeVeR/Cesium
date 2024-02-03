@@ -85,28 +85,6 @@ public record CPreprocessor(
                     yield return replaced;
                 }
             }
-            else if (token is { Kind: Hash or DoubleHash })
-            {
-                if (lexer.IsEnd)
-                {
-                    throw new PreprocessorException(
-                        token.Location,
-                        $"Unexpected end of stream after a preprocessor token {token.Text}.");
-                }
-
-                var argument = ConsumeNextNonWhitespace();
-                yield return token.Kind switch
-                {
-                    // TODO: Figure out what to do with complex arguments, say if the next token is replaced by something?
-                    Hash => new Token<CPreprocessorTokenType>(
-                        token.Range,
-                        token.Location,
-                        argument.Text,
-                        PreprocessingToken),
-                    DoubleHash => throw new WipException(WipException.ToDo, "Process double hash"),
-                    _ => throw new AssertException($"Impossible token kind: {token.Kind}.")
-                };
-            }
             else
             {
                 yield return token;
@@ -219,7 +197,7 @@ public record CPreprocessor(
 
         SourceLocationInfo argumentStartLocation = lexer.Peek().Location;
         var argument = new List<IToken<CPreprocessorTokenType>>();
-        while (!lexer.IsEnd && lexer.Peek() is not { Kind: RightParen } or { Text: "," })
+        while (!lexer.IsEnd && lexer.Peek() is not ({ Kind: RightParen } or { Text: "," }))
         {
             var token = lexer.Consume();
             argument.Add(token);
@@ -259,7 +237,7 @@ public record CPreprocessor(
         }
     }
 
-    private static IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
+    private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
         IToken macroNameToken,
         MacroArguments arguments,
         IEnumerable<IToken<CPreprocessorTokenType>> replacement)
@@ -289,43 +267,155 @@ public record CPreprocessor(
             }
         }
 
-        foreach (var token in replacement)
+        using var lexer = new TransactionalLexer(replacement, WarningProcessor);
+        while (!lexer.IsEnd)
         {
-            if (token is { Kind: PreprocessingToken, Text: var text })
+            var token = lexer.Consume();
+            switch (token)
             {
-                if (arguments.Named.TryGetValue(text, out var argument))
+                case { Text: "#" or "##" } when PeekSignificant() is { Kind: PreprocessingToken }:
                 {
+                    var next = ConsumeSignificant();
+                    var sequence = ProcessTokenNoHash(next);
+                    switch (token.Text)
+                    {
+                        case "#":
+                            yield return new Token<CPreprocessorTokenType>(
+                                next.Range,
+                                next.Location,
+                                Stringify(sequence),
+                                PreprocessingToken);
+                            break;
+                        case "##":
+                            // TODO: Figure out what to do if the sequence is more than one item.
+                            // TODO: Preceding whitespace before ## should be buffered and ignored here?
+                            yield return new Token<CPreprocessorTokenType>(
+                                next.Range,
+                                next.Location,
+                                sequence.Single().Text,
+                                PreprocessingToken);
+                            break;
+                        default:
+                            throw new PreprocessorException(token.Location, $"Unexpected token \"{token.Text}.");
+                    }
+                    break;
+                }
+                default:
+                {
+                    var sequence = ProcessTokenNoHash(token);
+                    foreach (var item in sequence)
+                    {
+                        yield return item;
+                    }
+                    break;
+                }
+            }
+        }
+
+        yield break;
+
+        IToken<CPreprocessorTokenType>? PeekSignificant()
+        {
+            for (var i = 0; !lexer.IsEnd; ++i)
+            {
+                var currentToken = lexer.Peek(i);
+                if (currentToken is not { Kind: WhiteSpace or Comment or NewLine })
+                    return currentToken;
+            }
+
+            return null;
+        }
+
+        IToken<CPreprocessorTokenType> ConsumeSignificant()
+        {
+            IToken<CPreprocessorTokenType> currentToken;
+            do
+            {
+                currentToken = lexer.Consume();
+            } while (currentToken is { Kind: WhiteSpace or Comment or NewLine });
+
+            return currentToken;
+        }
+
+        IEnumerable<IToken<CPreprocessorTokenType>> ProcessTokenNoHash(IToken<CPreprocessorTokenType> token)
+        {
+            switch (token)
+            {
+                case { Kind: PreprocessingToken, Text: var text }
+                    when arguments.Named.TryGetValue(text, out var argument):
+                {
+                    // macro argument substitution
                     foreach (var argumentToken in argument)
                     {
                         yield return argumentToken;
                     }
+
+                    break;
                 }
-                else switch (text)
+                case { Kind: PreprocessingToken, Text: "__VA_ARGS__" }:
                 {
-                    case "__VA_ARGS__":
+                    foreach (var varArg in arguments.VarArg)
                     {
-                        foreach (var varArg in arguments.VarArg)
-                        {
-                            foreach (var argToken in varArg)
-                                yield return argToken;
+                        foreach (var argToken in varArg)
+                            yield return argToken;
 
-                            yield return new Token<CPreprocessorTokenType>(
-                                new Range(),
-                                new Location(),
-                                ",",
-                                Separator);
-                        }
-
-                        break;
+                        yield return new Token<CPreprocessorTokenType>(
+                            new Range(),
+                            new Location(),
+                            ",",
+                            Separator);
                     }
-                    default:
-                        yield return token;
-                        break;
+
+                    break;
+                }
+                default:
+                    yield return token;
+                    break;
+            }
+        }
+
+        string Stringify(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
+        {
+            // According to the standard, and whitespace sequence gets replaced with a single space.
+            var replaced = ReplaceWhitespace();
+            var builder = new StringBuilder("\"");
+            foreach (var token in replaced)
+            {
+                foreach (var c in token.Text)
+                {
+                    builder.Append(c switch
+                    {
+                        '\\' or '\"' => "\\" + c,
+                        _ => c.ToString()
+                    });
                 }
             }
-            else
+            builder.Append('"');
+            return builder.ToString();
+
+            IEnumerable<IToken<CPreprocessorTokenType>> ReplaceWhitespace()
             {
-                yield return token;
+                var spaceEater = false;
+                foreach (var token in tokens)
+                {
+                    if (token is { Kind: WhiteSpace or Comment or NewLine })
+                    {
+                        if (spaceEater) continue;
+
+                        spaceEater = true;
+                        var spaceToken = token.Text == " " ? token : new Token<CPreprocessorTokenType>(
+                            token.Range,
+                            token.Location,
+                            " ",
+                            WhiteSpace);
+                        yield return spaceToken;
+                    }
+                    else
+                    {
+                        spaceEater = false;
+                        yield return token;
+                    }
+                }
             }
         }
     }
