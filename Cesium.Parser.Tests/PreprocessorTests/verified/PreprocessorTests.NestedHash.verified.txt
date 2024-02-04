@@ -1,0 +1,12 @@
+﻿
+
+int main(void)
+{
+   printf("__TEST_DEFINE %i", __TEST_DEFINE);
+   printf("This does exists");
+
+   printf("x");
+   printf("line: %d file: %s ", 18, "c:\\a\\b\\c.c");
+
+   return 42;
+}

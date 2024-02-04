@@ -78,7 +78,7 @@ public record CPreprocessor(
                 if (arguments.IsError)
                     RaisePreprocessorParseError(arguments.Error);
 
-                foreach (var replaced in SubstituteMacroArguments(token, arguments.Ok, replacement))
+                foreach (var replaced in ExpandMacros(SubstituteMacroArguments(token, arguments.Ok, replacement)))
                 {
                     yield return replaced;
                 }
