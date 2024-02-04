@@ -1015,4 +1015,11 @@ HASH_HASH
  A
  B
  """);
+
+    [Fact]
+    public Task MacroNamePassed() => DoTest("""
+#define RECEIVER(FOO) Received: FOO
+#define ARGUMENT a
+RECEIVER(ARGUMENT);
+""");
 }

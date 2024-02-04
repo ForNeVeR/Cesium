@@ -54,8 +54,6 @@ public record CPreprocessor(
     private IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(
         IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {
-        // TODO[#537]: Test for passing a macro name into another macro.
-
         using var lexer = new TransactionalLexer(tokens, WarningProcessor);
         while (!lexer.IsEnd)
         {
