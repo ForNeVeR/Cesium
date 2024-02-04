@@ -251,7 +251,7 @@ public record CPreprocessor(
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
         IToken macroNameToken,
         MacroArguments arguments,
-        IEnumerable<IToken<CPreprocessorTokenType>> replacement)
+        IList<IToken<CPreprocessorTokenType>> replacement)
     {
         switch (macroNameToken.Text)
         {
@@ -277,6 +277,9 @@ public record CPreprocessor(
                 yield break;
             }
         }
+
+        if (replacement.Count > 0)
+            replacement = ExpandMacros(replacement).ToList();
 
         using var lexer = new TransactionalLexer(replacement, WarningProcessor);
         while (!lexer.IsEnd)
