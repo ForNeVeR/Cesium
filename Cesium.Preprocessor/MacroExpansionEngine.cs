@@ -237,7 +237,7 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
                     var next = ConsumeSignificant();
                     var sequence = ExpandMacros(ProcessTokenNoHash(next));
 
-                    // TODO: Figure out what to do if the sequence is more than one item.
+                    // TODO[#542]: Figure out what to do if the sequence is more than one item.
                     yield return new Token<CPreprocessorTokenType>(
                         next.Range,
                         next.Location,
@@ -316,7 +316,7 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
 
                     break;
                 }
-                // TODO: __VA_OPT__, see also rules for __VA_ARGS__ regarding the nested expansion.
+                // TODO[#541]: __VA_OPT__, see also rules for __VA_ARGS__ regarding the nested expansion.
                 case { Kind: CPreprocessorTokenType.PreprocessingToken, Text: "__VA_ARGS__" }:
                 {
                     var isFirst = true;
