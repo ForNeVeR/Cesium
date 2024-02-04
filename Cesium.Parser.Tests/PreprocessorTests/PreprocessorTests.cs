@@ -26,7 +26,7 @@ public class PreprocessorTests : VerifyTestBase
         [StringSyntax("cpp")] string source,
         Dictionary<string, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
-        Action<PreprocessorWarning>? warningProcessor = null)
+        Action<PreprocessorWarning>? onWarning = null)
     {
         var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
         var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
@@ -39,14 +39,20 @@ public class PreprocessorTests : VerifyTestBase
             }
         }
 
-        var preprocessor = new CPreprocessor(
-            _mainMockedFilePath,
-            lexer,
-            includeContext,
-            definesContext,
-            new LambdaWarningProcessor(warningProcessor));
-        var result = await preprocessor.ProcessSource();
-        return result;
+        IWarningProcessor warningProcessor = onWarning == null
+            ? new ListWarningProcessor()
+            : new LambdaWarningProcessor(onWarning);
+        using (warningProcessor as IDisposable)
+        {
+            var preprocessor = new CPreprocessor(
+                _mainMockedFilePath,
+                lexer,
+                includeContext,
+                definesContext,
+                warningProcessor);
+            var result = await preprocessor.ProcessSource();
+            return result;
+        }
     }
 
     [Fact]
@@ -974,15 +980,10 @@ MACRO(1
     public async Task SpaceBetweenBackslashAndNewLine()
     {
         var warnings = new List<PreprocessorWarning>();
-        var result = await DoPreprocess("#define MACRO(x) x\\ \ny", warningProcessor: warnings.Add);
+        var result = await DoPreprocess("#define MACRO(x) x\\ \ny", onWarning: warnings.Add);
         Assert.Empty(result);
         var warning = Assert.Single(warnings);
         Assert.Equal(1, warning.Location.Line);
         Assert.Equal("Whitespace after a backslash but before a new-line.", warning.Message);
-    }
-
-    private class LambdaWarningProcessor(Action<PreprocessorWarning>? onWarning) : IWarningProcessor
-    {
-        public void EmitWarning(PreprocessorWarning warning) => onWarning?.Invoke(warning);
     }
 }

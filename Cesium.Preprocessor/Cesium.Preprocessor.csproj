@@ -16,4 +16,7 @@
       <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cesium.Parser.Tests" />
+    </ItemGroup>
 </Project>

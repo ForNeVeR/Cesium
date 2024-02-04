@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Cesium.Core;
 using Cesium.Core.Warnings;
 using Yoakke.SynKit.Lexer;
@@ -8,7 +7,7 @@ namespace Cesium.Preprocessor;
 
 internal class TransactionalLexer(
     IEnumerable<IToken<CPreprocessorTokenType>> tokens,
-    IWarningProcessor? warningProcessor) : IDisposable
+    IWarningProcessor warningProcessor) : IDisposable
 {
     private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(tokens, warningProcessor);
     private int _nextTokenToReturn;
@@ -26,11 +25,14 @@ internal class TransactionalLexer(
 
     public void Dispose()
     {
-        // TODO: Make this a warning, to report in a side channel (otherwise, this reporting will mess with normal preprocessor diagnostics).
-        // TODO: Also, check for zero warnings in the preprocessor tests.
-        Debug.Assert(
-            _openTransactions == 0,
-            $"Lexer was disposed while there were {_openTransactions} open transactions.");
+        if (_openTransactions != 0)
+        {
+            var currentToken = IsEnd ? null : Peek();
+            warningProcessor.EmitWarning(
+                new PreprocessorWarning(
+                    currentToken?.Location ?? new SourceLocationInfo("<unknown>", null, null),
+                    $"Lexer was disposed while there were {_openTransactions} open transactions."));
+        }
     }
 
     public class LexerTransaction(TransactionalLexer lexer, int startPos) : IDisposable

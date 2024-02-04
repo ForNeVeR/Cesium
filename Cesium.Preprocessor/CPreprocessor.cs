@@ -16,7 +16,7 @@ public record CPreprocessor(
     ILexer<IToken<CPreprocessorTokenType>> Lexer,
     IIncludeContext IncludeContext,
     IMacroContext MacroContext,
-    IWarningProcessor? WarningProcessor)
+    IWarningProcessor WarningProcessor)
 {
     public async Task<string> ProcessSource()
     {
