@@ -322,10 +322,8 @@ public record CPreprocessor(
                 }
                 case { Text: "##" }:
                 {
-                    foreach (var space in ClearSpaceBuffer())
-                    {
-                        yield return space;
-                    }
+                    // Drop buffered spaces.
+                    spaceBuffer.Clear();
 
                     if (PeekSignificant() is null)
                     {
