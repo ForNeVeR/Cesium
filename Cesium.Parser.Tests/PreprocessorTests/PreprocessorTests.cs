@@ -986,4 +986,33 @@ MACRO(1
         Assert.Equal(1, warning.Location.Line);
         Assert.Equal("Whitespace after a backslash but before a new-line.", warning.Message);
     }
+
+    [Fact]
+    public Task HashAsMacroContent() => DoTest("""
+#define HASH #
+#define MY_MACRO HASH foo HASH
+MY_MACRO
+""");
+
+    [Fact, NoVerify]
+    public async Task HashHashAsMacroContent()
+    {
+        var exception = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess("""
+#define HASH_HASH ##
+HASH_HASH
+"""));
+        Assert.Contains("## cannot appear at the end of a macro replacement list.", exception.Message);
+    }
+
+    [Fact]
+    public Task CalculationOrder() => DoTest("""
+ #define VARIABLE "foo"
+ #define DELAYED "expanded: " VARIABLE
+ #define A DELAYED
+ A
+ #undef VARIABLE
+ #define B DELAYED
+ A
+ B
+ """);
 }

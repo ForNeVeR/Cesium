@@ -80,7 +80,7 @@ public record CPreprocessor(
                 if (arguments.IsError)
                     RaisePreprocessorParseError(arguments.Error);
 
-                foreach (var replaced in ReplaceMacro(token, arguments.Ok, replacement))
+                foreach (var replaced in SubstituteMacroArguments(token, arguments.Ok, replacement))
                 {
                     yield return replaced;
                 }
@@ -252,10 +252,11 @@ public record CPreprocessor(
             tokens.SkipWhile(t => t is { Kind: WhiteSpace or Comment or NewLine });
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
+    /// <remarks>ISO C Standard, section 6.10.4.1 Argument substitution.</remarks>
+    private IEnumerable<IToken<CPreprocessorTokenType>> SubstituteMacroArguments(
         IToken macroNameToken,
         MacroArguments arguments,
-        IList<IToken<CPreprocessorTokenType>> replacement)
+        IEnumerable<IToken<CPreprocessorTokenType>> replacement)
     {
         switch (macroNameToken.Text)
         {
@@ -282,11 +283,18 @@ public record CPreprocessor(
             }
         }
 
-        if (replacement.Count > 0)
-            replacement = ExpandMacros(replacement).ToList();
-
         using var lexer = new TransactionalLexer(replacement, WarningProcessor);
         var spaceBuffer = new List<IToken<CPreprocessorTokenType>>();
+        IEnumerable<IToken<CPreprocessorTokenType>> ClearSpaceBuffer()
+        {
+            foreach (var space in spaceBuffer)
+            {
+                yield return space;
+            }
+
+            spaceBuffer.Clear();
+        }
+
         while (!lexer.IsEnd)
         {
             var token = lexer.Consume();
@@ -295,47 +303,56 @@ public record CPreprocessor(
                 case { Kind: WhiteSpace }:
                     spaceBuffer.Add(token);
                     break;
-                case { Text: "#" or "##" } when PeekSignificant() is { Kind: PreprocessingToken }:
+                case { Text: "#" } when PeekSignificant() is { Kind: PreprocessingToken }:
                 {
                     var next = ConsumeSignificant();
-                    var sequence = ProcessTokenNoHash(next);
-                    switch (token.Text)
+                    var sequence = ExpandMacros(ProcessTokenNoHash(next));
+
+                    foreach (var space in ClearSpaceBuffer())
                     {
-                        case "#":
-                            foreach (var space in spaceBuffer)
-                            {
-                                yield return space;
-                            }
-                            spaceBuffer.Clear();
-                            yield return new Token<CPreprocessorTokenType>(
-                                next.Range,
-                                next.Location,
-                                Stringify(sequence),
-                                PreprocessingToken);
-                            break;
-                        case "##":
-                            // TODO: Figure out what to do if the sequence is more than one item.
-                            spaceBuffer.Clear();
-                            yield return new Token<CPreprocessorTokenType>(
-                                next.Range,
-                                next.Location,
-                                sequence.Single().Text,
-                                PreprocessingToken);
-                            break;
-                        default:
-                            throw new PreprocessorException(token.Location, $"Unexpected token \"{token.Text}.");
+                        yield return space;
                     }
+
+                    yield return new Token<CPreprocessorTokenType>(
+                        next.Range,
+                        next.Location,
+                        Stringify(sequence),
+                        PreprocessingToken);
+                    break;
+                }
+                case { Text: "##" }:
+                {
+                    foreach (var space in ClearSpaceBuffer())
+                    {
+                        yield return space;
+                    }
+
+                    if (PeekSignificant() is null)
+                    {
+                        throw new PreprocessorException(
+                            token.Location,
+                            "## cannot appear at the end of a macro replacement list.");
+                    }
+
+                    var next = ConsumeSignificant();
+                    var sequence = ExpandMacros(ProcessTokenNoHash(next));
+
+                    // TODO: Figure out what to do if the sequence is more than one item.
+                    yield return new Token<CPreprocessorTokenType>(
+                        next.Range,
+                        next.Location,
+                        sequence.Single().Text,
+                        PreprocessingToken);
                     break;
                 }
                 default:
                 {
-                    foreach (var space in spaceBuffer)
+                    foreach (var space in ClearSpaceBuffer())
                     {
                         yield return space;
                     }
-                    spaceBuffer.Clear();
 
-                    var sequence = ProcessTokenNoHash(token);
+                    var sequence = ExpandMacros(ProcessTokenNoHash(token));
                     foreach (var item in sequence)
                     {
                         yield return item;
@@ -389,6 +406,7 @@ public record CPreprocessor(
 
                     break;
                 }
+                // TODO: __VA_OPT__, see also rules for __VA_ARGS__ regarding the nested expansion.
                 case { Kind: PreprocessingToken, Text: "__VA_ARGS__" }:
                 {
                     var isFirst = true;
