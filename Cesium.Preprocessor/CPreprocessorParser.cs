@@ -523,9 +523,14 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
 
     private ParseResult<List<ICPreprocessorToken>> ParseReplacementList()
     {
-        // Skip the whitespace after the macro name:
-        while (PeekWithNonSignificant() is { Kind: CPreprocessorTokenType.WhiteSpace })
+        // Skip the non-significant tokens after the macro name:
+        while (PeekWithNonSignificant() is
+               {
+                   Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment
+               })
+        {
             _ = ConsumeWithNonSignificant();
+        }
 
         var tokens = GetAllUntilNewLine();
         return tokens.IsOk ? Ok(tokens.Ok.Value) : Ok<List<ICPreprocessorToken>>([]);

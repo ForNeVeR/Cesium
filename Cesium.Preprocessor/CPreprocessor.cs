@@ -103,6 +103,16 @@ public record CPreprocessor(
             return transaction.End<MacroArguments>(ParseResult.Ok(emptyResult, 0));
         }
 
+        if (lexer.IsEnd)
+        {
+            // A macro has some parameters, but we are at the end of the token stream, so no arguments is available. We
+            // should just skip expanding this macro.
+            var location = lexer.LastToken?.Location
+                           ?? new SourceLocationInfo(CompilationUnitPath, null, null);
+            transaction.End(ParseResult.Error(",", null, location, "macro arguments"));
+            return null;
+        }
+
         if (Consume() is var leftBrace and not { Kind: LeftParen })
         {
             SourceLocationInfo location = leftBrace.Location;

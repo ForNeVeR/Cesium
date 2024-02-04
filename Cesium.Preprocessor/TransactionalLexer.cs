@@ -17,6 +17,9 @@ internal class TransactionalLexer(
     public IToken<CPreprocessorTokenType> Peek(int idx = 0) => _allTokens[_nextTokenToReturn + idx];
     public bool IsEnd => _nextTokenToReturn >= _allTokens.Count || Peek() is { Kind: CPreprocessorTokenType.End };
 
+    /// <remarks>For error reporting purposes only.</remarks>
+    public IToken<CPreprocessorTokenType>? LastToken => _allTokens.LastOrDefault();
+
     public LexerTransaction BeginTransaction()
     {
         ++_openTransactions;
