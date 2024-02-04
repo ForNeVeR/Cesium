@@ -222,7 +222,7 @@ public record CPreprocessor(
         if (lexer.IsEnd)
             return transaction.End(ParseResult.Error(") or ,", null, argumentStartLocation, "macro argument"));
 
-        var processedArgument = ExpandMacros(argument).ToList();
+        var processedArgument = TrimStartingWhitespace(ExpandMacros(argument)).ToList();
         return transaction.End<List<IToken<CPreprocessorTokenType>>>(ParseResult.Ok(processedArgument, 0));
 
         ParseResult<object?> ParseNestedParenthesesBlock(SourceLocationInfo start)
@@ -246,6 +246,10 @@ public record CPreprocessor(
             argument.Add(rightParen);
             return ParseResult.Ok<object?>(null, 0);
         }
+
+        IEnumerable<IToken<CPreprocessorTokenType>> TrimStartingWhitespace(
+            IEnumerable<IToken<CPreprocessorTokenType>> tokens) =>
+            tokens.SkipWhile(t => t is { Kind: WhiteSpace or Comment or NewLine });
     }
 
     private IEnumerable<IToken<CPreprocessorTokenType>> ReplaceMacro(
@@ -282,11 +286,15 @@ public record CPreprocessor(
             replacement = ExpandMacros(replacement).ToList();
 
         using var lexer = new TransactionalLexer(replacement, WarningProcessor);
+        var spaceBuffer = new List<IToken<CPreprocessorTokenType>>();
         while (!lexer.IsEnd)
         {
             var token = lexer.Consume();
             switch (token)
             {
+                case { Kind: WhiteSpace }:
+                    spaceBuffer.Add(token);
+                    break;
                 case { Text: "#" or "##" } when PeekSignificant() is { Kind: PreprocessingToken }:
                 {
                     var next = ConsumeSignificant();
@@ -294,6 +302,11 @@ public record CPreprocessor(
                     switch (token.Text)
                     {
                         case "#":
+                            foreach (var space in spaceBuffer)
+                            {
+                                yield return space;
+                            }
+                            spaceBuffer.Clear();
                             yield return new Token<CPreprocessorTokenType>(
                                 next.Range,
                                 next.Location,
@@ -302,7 +315,7 @@ public record CPreprocessor(
                             break;
                         case "##":
                             // TODO: Figure out what to do if the sequence is more than one item.
-                            // TODO: Preceding whitespace before ## should be buffered and ignored here?
+                            spaceBuffer.Clear();
                             yield return new Token<CPreprocessorTokenType>(
                                 next.Range,
                                 next.Location,
@@ -316,6 +329,12 @@ public record CPreprocessor(
                 }
                 default:
                 {
+                    foreach (var space in spaceBuffer)
+                    {
+                        yield return space;
+                    }
+                    spaceBuffer.Clear();
+
                     var sequence = ProcessTokenNoHash(token);
                     foreach (var item in sequence)
                     {
@@ -326,6 +345,10 @@ public record CPreprocessor(
             }
         }
 
+        foreach (var space in spaceBuffer)
+        {
+            yield return space;
+        }
         yield break;
 
         IToken<CPreprocessorTokenType>? PeekSignificant()
