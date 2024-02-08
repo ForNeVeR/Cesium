@@ -374,13 +374,14 @@ internal static class BlockItemLowering
                         return Lower(switchScope, new ExpressionStatement(s.Expression));
                     }
 
+                    var testExpression = s.Expression.Lower(scope);
                     var dbi = new DeclarationBlockItem(
                         new ScopedIdentifierDeclaration(
                             StorageClass.Auto,
                             new List<InitializableDeclarationInfo>
                             {
-                            new(new LocalDeclarationInfo(s.Expression.GetExpressionType(scope), "$switch_tmp", null),
-                                s.Expression)
+                                new(new LocalDeclarationInfo(testExpression.GetExpressionType(scope), "$switch_tmp", null),
+                                testExpression)
                             }));
 
                     targetStmts.Add(Lower(switchScope, dbi));

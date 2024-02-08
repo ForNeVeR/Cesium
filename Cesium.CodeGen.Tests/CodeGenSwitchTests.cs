@@ -102,4 +102,17 @@ public class CodeGenSwitchTests : CodeGenTestBase
     int x = 0;
     switch(x) while (0) { default: break; }
 }");
+
+    [Fact]
+    public Task LowerExpression() => DoTest(@"
+int my_condition() { return 0; }
+int main()
+{
+    switch(my_condition()) { 
+        case 0: break;
+        case 1:
+        default: break;
+    };
+    return 1;
+}");
 }
