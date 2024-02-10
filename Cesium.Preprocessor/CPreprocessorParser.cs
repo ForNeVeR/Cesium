@@ -48,7 +48,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var controlLine = ParseControlLine();
         if (controlLine.IsOk) return transaction.End(controlLine);
 
-        var textLine = ParseTextLine();
+        var textLine = ParseTextLineBlock();
         if (textLine.IsOk) return transaction.End(textLine);
 
         if (Peek() is var token and not { Kind: CPreprocessorTokenType.Hash })
@@ -473,7 +473,47 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
                 new PragmaDirective(location, pragma, tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null)));
     }
 
-    private ParseResult<IGroupPart> ParseTextLine()
+    private ParseResult<IGroupPart> ParseTextLineBlock()
+    {
+        using var transaction = lexer.BeginTransaction();
+
+        var lines = new List<TextLineBlock>();
+        while (!lexer.IsEnd)
+        {
+            var nextLine = ParseTextLine();
+            if (nextLine.IsOk)
+            {
+                lines.Add(nextLine.Ok.Value);
+            }
+            else
+            {
+                return transaction.End(GetResultBlock(nextLine.Error));
+            }
+        }
+
+        return transaction.End(GetResultBlock(null));
+
+        ParseResult<IGroupPart> GetResultBlock(ParseError? error)
+        {
+            // No lines: error.
+            if (lines.Count == 0)
+            {
+                if (error == null) throw new AssertException("Error should not be null at this point.");
+                return error;
+            }
+
+            // Strip the terminating new-line (will be added back by the preprocessing engine):
+            var allTokens = lines.SelectMany(l => l.Tokens).ToList();
+            var tokenBlock = allTokens[^1] is { Kind: CPreprocessorTokenType.NewLine }
+                ? allTokens.Take(allTokens.Count - 1)
+                : allTokens;
+
+            var block = new TextLineBlock(lines[0].Location, tokenBlock.ToImmutableArray());
+            return Ok<IGroupPart>(block);
+        }
+    }
+
+    private ParseResult<TextLineBlock> ParseTextLine()
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -484,9 +524,9 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
         var newLine = ParseNewLine();
         if (!newLine.IsOk) return transaction.End(newLine.Error);
 
-        ImmutableArray<ICPreprocessorToken>? allTokens = tokens.IsOk ? tokens.Ok.Value.ToImmutableArray() : null;
-        var location = allTokens?.FirstOrDefault()?.Location ?? newLine.Ok.Value.Location;
-        return transaction.End(Ok<IGroupPart>(new TextLine(location, allTokens)));
+        var allTokens = tokens.IsOk ? tokens.Ok.Value.ToImmutableArray().Add(newLine.Ok.Value) : [];
+        var location = allTokens.FirstOrDefault()?.Location ?? newLine.Ok.Value.Location;
+        return transaction.End(Ok(new TextLineBlock(location, allTokens)));
     }
 
     private ParseResult<IGroupPart> ParseNonDirective(Location location)

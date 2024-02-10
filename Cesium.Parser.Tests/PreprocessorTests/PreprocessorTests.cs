@@ -1047,4 +1047,12 @@ int main(void)
    return 42;
 }
 """);
+
+    [Fact]
+    public Task MultiLineMacro() => DoTest("""
+#define MACRO(x) x
+MACRO(1
+2
+3)
+""");
 }

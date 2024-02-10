@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Cesium.Core;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Text;
 
@@ -44,17 +43,7 @@ internal record EmbedDirective(Location Location, ICPreprocessorToken Keyword, T
 public record MacroParameters(
     Tokens Parameters,
     bool HasEllipsis
-)
-{
-    internal string GetName(int index)
-    {
-        var token = Parameters[index];
-        if (token.Kind != CPreprocessorTokenType.PreprocessingToken)
-            throw new PreprocessorException(token.Location, $"Parameter {token.Text} is not an identifier, but an {token.Kind}.");
-
-        return token.Text;
-    }
-}
+);
 
 /// <param name="Parameters">
 /// If <c>null</c> then the macro is not a function-like. If empty then it is function-like and requires parens to be
@@ -87,7 +76,7 @@ internal record EmptyDirective(Location Location) : IGroupPart
     public ICPreprocessorToken? Keyword => null;
 }
 
-internal record TextLine(Location Location, Tokens? Tokens) : IGroupPart
+internal record TextLineBlock(Location Location, Tokens Tokens) : IGroupPart
 {
     public ICPreprocessorToken? Keyword => null;
 }
