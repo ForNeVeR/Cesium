@@ -1,0 +1,16 @@
+﻿
+foo () x
+foo () y
+foo BRACES3
+
+foo () x()
+foo () y()
+foo z
+
+foo () x ()
+foo () y ()
+foo z
+
+foo () x a ()
+foo () y a ()
+foo BRACES3 a ()

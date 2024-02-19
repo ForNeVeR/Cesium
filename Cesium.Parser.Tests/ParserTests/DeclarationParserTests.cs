@@ -1,4 +1,4 @@
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Parser.Tests.ParserTests;
@@ -36,6 +36,9 @@ public class DeclarationParserTests : ParserTestBase
     public Task ArrayDeclarationWithInitializerWithTrailingComma() => DoDeclarationParserTest("int x[4] = { 1, 2, 3, 4, };");
 
     [Fact]
+    public Task EmptyStructDeclarationWithInitializer() => DoDeclarationParserTest("Token head = {};");
+
+    [Fact]
     public Task StructTypeVariableDeclaration() => DoDeclarationParserTest("struct Foo x;");
 
     [Fact]
@@ -44,6 +47,23 @@ void *malloc(size_t);");
 
     [Fact]
     public Task FunctionTypeDef() => DoDeclarationParserTest("typedef void foo(int);");
+
+    [Fact]
+    public Task EnumTypeDef() => DoDeclarationParserTest(@"typedef enum {
+  TK_PUNCT,
+  TK_NUM,
+  TK_EOF
+} TokenKind;");
+
+    [Fact]
+    public Task EnumTypeDefTrailingComma() => DoDeclarationParserTest(@"typedef enum {
+  TK_PUNCT,
+  TK_NUM,
+  TK_EOF,
+} TokenKind;");
+
+    [Fact]
+    public Task StructShortTypeDeclaration() => DoDeclarationParserTest("typedef struct Foo Foo;");
 
     [Fact]
     public Task FunctionPointerTypeDef() => DoDeclarationParserTest("typedef void (*foo)(int);");
@@ -58,4 +78,10 @@ void *malloc(size_t);");
 
     [Fact]
     public Task StructTypeDeclaration() => DoDeclarationParserTest(@"struct Foo { int A; };");
+
+    [Fact]
+    public Task EnumDeclaration() => DoDeclarationParserTest(@"enum Colour { Red, Green, Blue };");
+
+    [Fact]
+    public Task EnumVariableDeclaration() => DoDeclarationParserTest(@"enum Colour x;");
 }

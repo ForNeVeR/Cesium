@@ -6,7 +6,7 @@ using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IndirectionExpression : IExpression, IValueExpression
+internal sealed class IndirectionExpression : IExpression, IValueExpression
 {
     private readonly IExpression _target;
 
@@ -34,9 +34,11 @@ internal class IndirectionExpression : IExpression, IValueExpression
     public IValue Resolve(IDeclarationScope scope)
     {
         var targetType = _target.GetExpressionType(scope);
-        if (targetType is not PointerType pointerType)
-            throw new CompilationException($"Required a pointer, got {targetType} instead.");
-
-        return new LValueIndirection(_target, pointerType);
+        return targetType switch
+        {
+            InPlaceArrayType arrayType => new LValueIndirection(_target, new PointerType(arrayType.Base)),
+            PointerType pointerType => new LValueIndirection(_target, pointerType),
+            _ => throw new CompilationException($"Required a pointer or an array type, got {targetType} instead.")
+        };
     }
 }

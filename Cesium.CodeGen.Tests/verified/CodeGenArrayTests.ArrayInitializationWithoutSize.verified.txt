@@ -1,0 +1,48 @@
+﻿System.Int32 <Module>::main()
+  Locals:
+    System.Int32* V_0
+    System.Int32* V_1
+  IL_0000: ldc.i4.s 12
+  IL_0002: conv.u
+  IL_0003: localloc
+  IL_0005: stloc.0
+  IL_0006: ldsflda <ConstantPool>/<ConstantPoolItemType12> <ConstantPool>::ConstDataBuffer0
+  IL_000b: ldloc V_0
+  IL_000f: ldc.i4.s 12
+  IL_0011: conv.u
+  IL_0012: call System.Void Cesium.Runtime.RuntimeHelpers::InitializeCompound(System.Void*,System.Void*,System.UInt32)
+  IL_0017: ldc.i4.s 12
+  IL_0019: conv.u
+  IL_001a: localloc
+  IL_001c: stloc.1
+  IL_001d: ldsflda <ConstantPool>/<ConstantPoolItemType12> <ConstantPool>::ConstDataBuffer1
+  IL_0022: ldloc V_1
+  IL_0026: ldc.i4.s 12
+  IL_0028: conv.u
+  IL_0029: call System.Void Cesium.Runtime.RuntimeHelpers::InitializeCompound(System.Void*,System.Void*,System.UInt32)
+  IL_002e: ldloc.0
+  IL_002f: ldc.i4.0
+  IL_0030: conv.i
+  IL_0031: ldc.i4 4
+  IL_0036: mul
+  IL_0037: add
+  IL_0038: ldind.i4
+  IL_0039: ldloc.1
+  IL_003a: ldc.i4.2
+  IL_003b: conv.i
+  IL_003c: ldc.i4 4
+  IL_0041: mul
+  IL_0042: add
+  IL_0043: ldind.i4
+  IL_0044: add
+  IL_0045: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>()
+  Locals:
+    System.Int32 V_0
+  IL_0000: call System.Int32 <Module>::main()
+  IL_0005: stloc.s V_0
+  IL_0007: ldloc.s V_0
+  IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_000e: ldloc.s V_0
+  IL_0010: ret

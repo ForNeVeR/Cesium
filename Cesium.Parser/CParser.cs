@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Ast;
 using Yoakke.SynKit.C.Syntax;
@@ -21,8 +20,9 @@ using SpecifierQualifierList = ImmutableArray<ISpecifierQualifierListItem>;
 using StructDeclarationList = ImmutableArray<StructDeclaration>;
 using StructDeclaratorList = ImmutableArray<StructDeclarator>;
 using TypeQualifierList = ImmutableArray<TypeQualifier>;
+using LiteralExpressionList = ImmutableArray<IToken<CTokenType>>;
 
-/// <remarks>See the section 6 of the C17 standard.</remarks>
+/// <remarks>See the section 6 of the C23 standard.</remarks>
 [Parser(typeof(CTokenType))]
 [SuppressMessage("ReSharper", "UnusedParameter.Local")] // parser parameters are mandatory even if unused
 public partial class CParser
@@ -33,6 +33,20 @@ public partial class CParser
     [Rule("constant: enumeration_constant")]
     [Rule("constant: CharLiteral")]
     private static ICToken MakeConstant(ICToken constant) => constant;
+
+    // 6.4.5 String literals
+
+    // TODO[#78]:
+    // string_literal:
+    //      encoding-prefix? " s-char-sequence? "
+    [Rule("string_literal: StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(ICToken stringLiteral) => ImmutableArray.Create(stringLiteral);
+
+
+    [Rule("string_literal: string_literal StringLiteral")]
+    private static LiteralExpressionList MakeStringLiteral(
+        LiteralExpressionList prev,
+        ICToken stringLiteral) => prev.Add(stringLiteral);
 
     // 6.4.4.3 Enumeration constants
     [Rule("enumeration_constant: Identifier")]
@@ -72,6 +86,10 @@ public partial class CParser
     [Rule("primary_expression: StringLiteral")]
     private static Expression MakeStringLiteralExpression(ICToken stringLiteral) =>
         new ConstantLiteralExpression(stringLiteral);
+
+    [Rule("primary_expression: string_literal")]
+    private static Expression MakeStringLiteralListExpression(LiteralExpressionList literalExpressionList) =>
+        new StringLiteralListExpression(literalExpressionList);
 
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
@@ -169,6 +187,18 @@ public partial class CParser
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
+
+    [Rule("unary_expression: KeywordSizeof unary_expression")]
+    private static Expression MakeExpressionSizeOfOperator(ICToken _, Expression expression) =>
+        new UnaryExpressionSizeOfOperatorExpression(expression);
+
+    [Rule("unary_expression: KeywordSizeof '(' Identifier ')'")]
+    private static Expression MakeTypeNameSizeOfOperator(ICToken _, ICToken __, IToken identifier, ICToken ___) =>
+        new UnaryExpressionSizeOfOperatorExpression(new IdentifierExpression(identifier.Text));
+
+    [Rule("unary_expression: KeywordSizeof '(' type_name ')'")]
+    private static Expression MakeTypeSpecifierSizeOfOperator(ICToken _, ICToken __, TypeName typeName, ICToken ___) =>
+        new TypeNameSizeOfOperatorExpression(typeName);
 
     // 6.5.4 Cast operators
     [Rule("cast_expression: '(' type_name ')' cast_expression")]
@@ -364,16 +394,14 @@ public partial class CParser
 
     // 6.7.1 Storage-class specifiers
     [Rule("storage_class_specifier: 'typedef'")]
-    // TODO[#211]:
-    // storage-class-specifier:
-    //     extern
+    [Rule("storage_class_specifier: 'extern'")]
     [Rule("storage_class_specifier: 'static'")]
-    private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
     // TODO[#211]:
     // storage-class-specifier:
     //     _Thread_local
     //     auto
     //     register
+    private static StorageClassSpecifier MakeStorageClassSpecifier(IToken keyword) => new(keyword.Text);
 
     // 6.7.2 Type specifiers
     [Rule("type_specifier: 'void'")]
@@ -397,7 +425,9 @@ public partial class CParser
     private static ITypeSpecifier MakeComplexTypeSpecifier(StructOrUnionSpecifier structOrUnionSpecifier) =>
         structOrUnionSpecifier;
 
-    // TODO[#211]: [Rule("type_specifier: enum_specifier")]
+    [Rule("type_specifier: enum_specifier")]
+    private static ITypeSpecifier MakeTypeSpecifier(EnumSpecifier enumDeclaration) =>
+        enumDeclaration;
 
     [Rule("type_specifier: typedef_name")]
     private static ITypeSpecifier MakeNamedTypeSpecifier(IToken typeDefName) =>
@@ -478,6 +508,26 @@ public partial class CParser
         StructDeclaratorList? structDeclarators,
         IToken _) => new(specifiersQualifiers, structDeclarators);
 
+    [Rule("enum_specifier: 'enum' Identifier")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken identifier) =>
+        new(identifier.Text, null);
+
+    [Rule("enum_specifier: 'enum' Identifier? '{' enumerator_list '}'")]
+    private static EnumSpecifier MakeEnumSpecifier(IToken _, IToken? identifier, IToken openBracket, ImmutableArray<EnumDeclaration> enumeratorList, IToken closeBracket) =>
+        new(identifier?.Text, enumeratorList);
+
+    [Rule("enumerator_list: (enumerator (',' enumerator)*) ','?")]
+    private static ImmutableArray<EnumDeclaration> MakeEnumeratorList(Punctuated<EnumDeclaration, ICToken> declarations, ICToken _) =>
+        declarations.Values.ToImmutableArray();
+
+    [Rule("enumerator: Identifier")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier) =>
+        new(identifier.Text, null);
+
+    [Rule("enumerator: Identifier '=' constant_expression")]
+    private static EnumDeclaration MakeEnumerator(IToken identifier, IToken _, Expression expression) =>
+        new(identifier.Text, expression);
+
     // TODO[#211]: struct-declaration: static_assert-declaration
 
     // TODO[#107]: This is a synthetic set of rules which is absent from the C standard, but required to simplify the
@@ -508,7 +558,7 @@ public partial class CParser
         StructDeclarator next) => prev.Add(next);
 
     [Rule("struct_declarator: declarator")]
-    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new StructDeclarator(declarator);
+    private static StructDeclarator MakeStructDeclarator(Declarator declarator) => new(declarator);
 
     // TODO[#211]: struct-declarator: declarator? : constant-expression
 
@@ -685,6 +735,10 @@ public partial class CParser
     [Rule("initializer: assignment_expression")]
     private static Initializer MakeInitializer(Expression assignmentExpression) =>
         new AssignmentInitializer(assignmentExpression);
+
+    [Rule("initializer: '{' '}' ")]
+    private static Initializer MakeInitializer(IToken _, IToken __) =>
+        new ArrayInitializer(ImmutableArray<Initializer>.Empty);
 
     [Rule("initializer: '{' initializer_list '}' ")]
     private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>
@@ -922,69 +976,6 @@ public partial class CParser
 
     // TODO[#78]: 6.9.2 External object definitions
 
-    // 6.10 Preprocessing directives
-
-    // TODO[#77]:
-    // preprocessing-file:
-    //     group?
-    // group:
-    //     group-part
-    //     group group-part
-    // group-part:
-    //     if-section
-    //     control-line
-    //     text-line
-    //     # non-directive
-    // if-section:
-    //     if-group elif-groups? else-group? endif-line
-    // if-group:
-    //     # if constant-expression new-line group?
-    //     # ifdef identifier new-line group?
-    //     # ifndef identifier new-line group?
-    // elif-groups:
-    //     elif-group
-    //     elif-groups elif-group
-    // elif-group:
-    //     # elif constant-expression new-line group?
-    // else-group:
-    //     # else new-line group?
-    // endif-line:
-    //     # endif new-line
-    // control-line:
-    //     # include pp-tokens new-line
-    //     # define identifier replacement-list new-line
-    //     # define identifier lparen identifier-list? ) replacement-list new-line
-    //     # define identifier lparen ... ) replacement-list new-line
-    //     # define identifier lparen identifier-list , ... ) replacement-list new-line
-    //     # undef identifier new-line
-    //     # line pp-tokens new-line
-    //     # error pp-tokens? new-line
-    //     # pragma pp-tokens? new-line
-    //     # new-line
-    // text-line:
-    //     pp-tokens? new-line
-    // non-directive:
-    //     pp-tokens new-line
-    // lparen:
-    //     a ( character not immediately preceded by white space
-    // replacement-list:
-    //     pp-tokens?
-    // pp-tokens:
-    //     preprocessing-token
-    //     pp-tokens preprocessing-token
-    // new-line:
-    //     the new-line character
-
-    // TODO[#77]: 6.10.1 Conditional inclusion
-    // TODO[#77]: 6.10.2 Source file inclusion
-    // TODO[#77]: 6.10.3 Macro replacement
-    // TODO[#77]: 6.10.4 Line control
-    // TODO[#77]: 6.10.5 Error directive
-    // TODO[#77]: 6.10.6 Pragma directive
-    // TODO[#77]: 6.10.7 Null directive
-    // TODO[#77]: 6.10.8 Predefined macro names
-    // TODO[#77]: 6.10.9 Pragma operator
-
     private ParseResult<(DeclarationSpecifiers, Declarator)> CustomParseSpecifiersAndDeclarator(int offset)
     {
         var declarationSpecifiersResult = CustomParseOneOrMore(parseDeclarationSpecifier, offset);
@@ -1040,5 +1031,5 @@ public partial class CParser
     }
 
     private static ICToken MergeTokens(ICToken token1, ICToken token2) =>
-        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Text + token2.Text, token2.Kind);
+        new Token<CTokenType>(new Range(token1.Range, token2.Range), token1.Location, token1.Text + token2.Text, token2.Kind);
 }

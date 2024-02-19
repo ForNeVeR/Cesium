@@ -9,7 +9,7 @@ using Yoakke.SynKit.Lexer;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class PostfixIncrementDecrementExpression : IExpression
+internal sealed class PostfixIncrementDecrementExpression : IExpression
 {
     private readonly IExpression _target;
     private readonly BinaryOperator _operator;

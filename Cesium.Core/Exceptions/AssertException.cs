@@ -1,6 +1,6 @@
 namespace Cesium.Core;
 
-public class AssertException : CesiumException
+public sealed class AssertException : CesiumException
 {
     public AssertException(string message) : base(message)
     {

@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class StringConstant : IConstant
+internal sealed class StringConstant : IConstant
 {
     private readonly string _value;
     public StringConstant(string value)

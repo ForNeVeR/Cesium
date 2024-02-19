@@ -1,0 +1,6 @@
+﻿System.Void <Module>::test()
+  Locals:
+    System.Int32 V_0
+  IL_0000: ldc.i4.s 42
+  IL_0002: stloc.0
+  IL_0003: ret

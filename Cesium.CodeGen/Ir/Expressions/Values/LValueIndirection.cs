@@ -5,7 +5,8 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueIndirection : ILValue
+/// <summary>Indirect store or load: will assign a value by pointer of some kind.</summary>
+internal sealed class LValueIndirection : ILValue
 {
     private readonly IExpression _pointerExpression;
     private readonly PointerType _pointerType;
@@ -29,16 +30,26 @@ internal class LValueIndirection : ILValue
     {
         _pointerExpression.EmitTo(scope);
         value.EmitTo(scope);
-        var (_, store) = GetOpcodes(_pointerType);
+        var (_, maybeStore) = GetOpcodes(_pointerType);
+        if (maybeStore is not {} store)
+            throw new CompilationException($"Type {_pointerType} doesn't support the store operation.");
+
         scope.Method.Body.Instructions.Add(Instruction.Create(store));
     }
 
     public IType GetValueType() => _pointerType.Base;
 
-    private static (OpCode load, OpCode store) GetOpcodes(PointerType pointerType) => pointerType.Base switch
+    internal static (OpCode load, OpCode? store) GetOpcodes(PointerType pointerType) => SimplifyBaseType(pointerType.Base) switch
     {
         PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
         PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
+        InPlaceArrayType => (OpCodes.Ldind_I, null),
         _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
+    };
+
+    private static IType SimplifyBaseType(IType type) => type switch
+    {
+        ConstType constType => constType.Base,
+        _ => type
     };
 }

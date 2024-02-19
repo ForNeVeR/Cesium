@@ -11,4 +11,6 @@ public record CompilationOptions(
     IList<string> ImportAssemblies,
     string Namespace,
     string GlobalClassFqn,
-    IList<string> DefineConstants);
+    IList<string> DefineConstants,
+    IList<string> AdditionalIncludeDirectories,
+    bool ProducePreprocessedFile);

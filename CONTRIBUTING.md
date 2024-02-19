@@ -6,7 +6,7 @@ Building
 
 ### Prerequisites
 
-To build Cesium, install [.NET 7 SDK][dotnet.download] or later.
+To build Cesium, install [.NET 8 SDK][dotnet.download] or later.
 
 Testing
 -------
@@ -15,32 +15,16 @@ Testing
 
 There are two kinds of tests in Cesium: unit tests and integration tests.
 
-Run the unit tests using this shell command:
+Run the unit and integration tests using this shell command:
 
 ```console
 $ dotnet test
 ```
 
-Run the integration tests using this shell command ([PowerShell][powershell] is required):
-
-```console
-$ pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -NoBuild
-```
-
-(don't pass `-NoBuild` if you want to automatically rebuild the compiler before running the integration tests)
-
-If you debug integration tests and want to run just a single test, use this shell command:
-
-```console
-pwsh -c ./Cesium.IntegrationTests/Run-Tests.ps1 -TestCaseName quoted_include_fallback.c
-```
-
-where `quoted_include_fallback.c` is path within `Cesium.IntegrationTests` folder.
-
 Publishing
 ----------
 
-For producing standalone compiler executable run
+To produce a standalone compiler executable, run the following shell command:
 
 ```shell
 dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-contained

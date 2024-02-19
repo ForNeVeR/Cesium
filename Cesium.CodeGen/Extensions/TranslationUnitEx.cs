@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -46,10 +47,21 @@ internal static class TranslationUnitEx
                         throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                     }
 
-                    if (type is PrimitiveType or PointerType or InPlaceArrayType)
+                    if (type is PrimitiveType or PointerType or InPlaceArrayType
+                        || (type is StructType varStructType && varStructType.Identifier != identifier))
                     {
                         var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
                         yield return variable;
+                        continue;
+                    }
+
+                    if (type is EnumType enumType)
+                    {
+                        yield return new TagBlockItem(new[] { declaration });
+                        foreach(var d in FindEnumConstants(enumType))
+                        {
+                            yield return d;
+                        }
                         continue;
                     }
 
@@ -63,11 +75,53 @@ internal static class TranslationUnitEx
                 }
                 break;
             case TypeDefDeclaration typeDefDeclaration:
-                var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
-                yield return typeDefBlockItem;
+                {
+                    var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
+                    yield return typeDefBlockItem;
+                    foreach (var declaration in typeDefDeclaration.Types)
+                    {
+                        var (type, identifier, cliImportMemberName) = declaration;
+                        if (type is EnumType enumType)
+                        {
+                            foreach (var d in FindEnumConstants(enumType))
+                            {
+                                yield return d;
+                            }
+                            continue;
+                        }
+                    }
+                }
                 break;
             default:
                 throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
+        }
+    }
+
+    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType)
+    {
+        long currentValue = -1;
+        foreach (var enumeratorDeclaration in enumType.Members)
+        {
+            var enumeratorName = enumeratorDeclaration.Declaration.Identifier ?? throw new CompilationException(
+                    $"Enum type {enumType.Identifier} has enumerator without name");
+            if (enumeratorDeclaration.Initializer is null)
+            {
+                currentValue++;
+            }
+            else
+            {
+                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                if (constantValue is not IntegerConstant intConstant)
+                {
+                    throw new CompilationException(
+                        $"Enumerator {enumeratorName} has non-integer initializer");
+                }
+
+                currentValue = intConstant.Value;
+            }
+
+            var variable = new EnumConstantDefinition(enumeratorName, enumType, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+            yield return variable;
         }
     }
 }

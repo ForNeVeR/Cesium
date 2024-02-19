@@ -3,7 +3,7 @@ using Cesium.CodeGen.Ir.Expressions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class SwitchStatement : IBlockItem
+internal sealed class SwitchStatement : IBlockItem
 {
     public IExpression Expression { get; }
     public IBlockItem Body { get; }

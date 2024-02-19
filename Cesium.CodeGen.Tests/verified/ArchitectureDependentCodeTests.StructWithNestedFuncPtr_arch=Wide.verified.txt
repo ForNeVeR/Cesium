@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Fields:
+    Cesium.Runtime.FuncPtr`1<System.Func`2<method System.Int32 *(),System.Int32>> <typedef>foo::foo

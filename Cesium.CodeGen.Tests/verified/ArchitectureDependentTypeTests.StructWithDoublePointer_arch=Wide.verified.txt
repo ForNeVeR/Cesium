@@ -1,0 +1,6 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Fields:
+    Cesium.Runtime.CPtr`1<Cesium.Runtime.CPtr`1<System.Int32>> <typedef>foo::x

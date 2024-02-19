@@ -1,16 +1,15 @@
-using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Contexts;
 
-internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
+internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : IEmitScope, IDeclarationScope
 {
     private MethodDefinition? _method;
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
@@ -22,15 +21,21 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
 
     public void DeclareFunction(string identifier, FunctionInfo functionInfo)
         => Context.DeclareFunction(identifier, functionInfo);
-    public IReadOnlyDictionary<string, IType> GlobalFields => AssemblyContext.GlobalFields;
+    public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
 
-    public void AddVariable(StorageClass storageClass, string identifier, IType variableType)
+    public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
+        if (constant is not null)
+        {
+            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+            return;
+        }
+
         if (storageClass == StorageClass.Static)
         {
-            _variables.Add(identifier, new(identifier, storageClass, variableType));
+            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
         }
 
         Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);
@@ -44,7 +49,7 @@ internal record GlobalConstructorScope(TranslationUnitContext Context) : IEmitSc
         throw new AssertException("Cannot add a variable into a global constructor scope");
 
     public ParameterInfo? GetParameterInfo(string name) => null;
-    public ParameterDefinition ResolveParameter(string name) =>
+    public ParameterDefinition ResolveParameter(int index) =>
         throw new AssertException("Cannot resolve parameter from the global constructor scope");
 
     /// <inheritdoc />

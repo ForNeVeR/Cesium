@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -67,5 +66,30 @@ public static unsafe class RuntimeHelpers
     public static void InitializeCompound(void* source, void* target, uint size)
     {
         Buffer.MemoryCopy(source, target, size, size);
+    }
+
+    internal static string? Unmarshal(byte* str)
+    {
+#if NETSTANDARD
+        Encoding encoding = Encoding.UTF8;
+        int byteLength = 0;
+        byte* search = str;
+        while (*search != '\0')
+        {
+            byteLength++;
+            search++;
+        }
+
+        int stringLength = encoding.GetCharCount(str, byteLength);
+        string s = new string('\0', stringLength);
+        fixed (char* pTempChars = s)
+        {
+            encoding.GetChars(str, byteLength, pTempChars, stringLength);
+        }
+
+        return s;
+#else
+        return Marshal.PtrToStringUTF8((nint)str);
+#endif
     }
 }

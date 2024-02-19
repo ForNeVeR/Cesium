@@ -1,0 +1,16 @@
+﻿{
+  "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
+  "Expression": {
+    "$type": "Cesium.Ast.TypeNameSizeOfOperatorExpression, Cesium.Ast",
+    "TypeName": {
+      "$type": "Cesium.Ast.TypeName, Cesium.Ast",
+      "SpecifierQualifierList": [
+        {
+          "$type": "Cesium.Ast.SimpleTypeSpecifier, Cesium.Ast",
+          "TypeName": "int"
+        }
+      ],
+      "AbstractDeclarator": null
+    }
+  }
+}

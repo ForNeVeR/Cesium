@@ -1,8 +1,3 @@
-using System.Collections.Immutable;
-using Cesium.Ast;
-using Yoakke.SynKit.C.Syntax;
-using Range = Yoakke.SynKit.Text.Range;
-
 namespace Cesium.CodeGen.Ir.BlockItems;
 
 /// <summary>
@@ -12,7 +7,7 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 /// It defines an AST of form <code>item1(item2);</code>, where item1 is either a function name or a type, and item2 is
 /// either a variable name or an argument name.
 /// </summary>
-internal class AmbiguousBlockItem : IBlockItem
+internal sealed class AmbiguousBlockItem : IBlockItem
 {
     public string Item1 { get; }
     public string Item2 { get; }

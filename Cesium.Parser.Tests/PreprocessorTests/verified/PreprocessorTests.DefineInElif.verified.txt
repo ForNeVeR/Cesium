@@ -1,0 +1,1 @@
+﻿int fake_foo() { return 0; }

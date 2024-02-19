@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal class StructType : IGeneratedType
+internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 {
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
     {
@@ -15,10 +15,13 @@ internal class StructType : IGeneratedType
         Identifier = identifier;
     }
 
-    internal IReadOnlyList<LocalDeclarationInfo> Members { get; }
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.Struct;
+
+    internal IReadOnlyList<LocalDeclarationInfo> Members { get; set; }
     public string? Identifier { get; }
 
-    public TypeDefinition Emit(string name, TranslationUnitContext context)
+    public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
         var structType = new TypeDefinition(
             "",
@@ -35,6 +38,7 @@ internal class StructType : IGeneratedType
                 // TODO[#355]: enable explicit layout.
                 break;
             case TargetArchitectureSet.Bit64:
+            case TargetArchitectureSet.Wide:
                 structType.PackingSize = 8;
                 // TODO[#355]: enable explicit layout.
                 break;
@@ -42,7 +46,11 @@ internal class StructType : IGeneratedType
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
         }
         context.Module.Types.Add(structType);
+        return structType;
+    }
 
+    public void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context)
+    {
         foreach (var member in Members)
         {
             var (type, identifier, cliImportMemberName) = member;
@@ -55,12 +63,10 @@ internal class StructType : IGeneratedType
                 throw new CompilationException(
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
-            var field = type.CreateFieldOfType(context, structType, identifier);
+            var field = type.CreateFieldOfType(context, definition, identifier);
             // TODO[#355]: for every field, calculate the explicit layout position.
-            structType.Fields.Add(field);
+            definition.Fields.Add(field);
         }
-
-        return structType;
     }
 
     public TypeReference Resolve(TranslationUnitContext context) =>
@@ -72,12 +78,12 @@ internal class StructType : IGeneratedType
         if (constSize != null)
             return ConstantLiteralExpression.OfInt32(constSize.Value);
 
-        return new SizeOfExpression(this);
+        return new SizeOfOperatorExpression(this);
     }
 
     public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch
     {
-        0 => throw new AssertException("Invalid struct with no members: {this}."),
+        0 => throw new AssertException($"Invalid struct with no members: {this}."),
         1 => Members.Single().Type.GetSizeInBytes(arch),
         _ => arch switch
             {
@@ -85,4 +91,40 @@ internal class StructType : IGeneratedType
                 _ => throw new WipException(355, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
             }
     };
+
+    public bool Equals(StructType? other)
+    {
+        if (other is null) return false;
+
+        if (Identifier != other.Identifier) return false;
+
+        if (Members.Count != other.Members.Count) return false;
+        for (var i =0;i< Members.Count;i++)
+        {
+            if (!Members[i].Equals(other.Members[i])) return false;
+        }
+
+        return true;
+    }
+
+    public override bool Equals(object? other)
+    {
+        if (other is StructType)
+        {
+            return Equals((StructType)other);
+        }
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = (Identifier?.GetHashCode() ?? 0) ^ 0;
+        foreach (var m in Members)
+        {
+            hash ^= m.GetHashCode();
+        }
+
+        return hash;
+    }
 }

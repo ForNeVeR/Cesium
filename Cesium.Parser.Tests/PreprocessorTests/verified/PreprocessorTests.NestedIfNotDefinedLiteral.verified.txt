@@ -1,0 +1,2 @@
+﻿int foo_included1() { return 0; }
+int foo_included2() { return 0; }

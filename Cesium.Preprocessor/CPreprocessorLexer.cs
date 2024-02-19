@@ -3,4 +3,4 @@
 namespace Cesium.Preprocessor;
 
 [Lexer(typeof(CPreprocessorTokenType))]
-public partial class CPreprocessorLexer {}
+public partial class CPreprocessorLexer;

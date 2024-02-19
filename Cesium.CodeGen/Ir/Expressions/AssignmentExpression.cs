@@ -21,7 +21,7 @@ public enum AssignmentOperator
     BitwiseXorAndAssign, // ^=
 }
 
-internal class AssignmentExpression : IExpression
+internal sealed class AssignmentExpression : IExpression
 {
     public IValueExpression Left { get; }
     public IExpression Right{ get; }

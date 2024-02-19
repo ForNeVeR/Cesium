@@ -50,6 +50,9 @@ internal enum PrimitiveTypeKind
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
 {
+    /// <inheritdoc />
+    public TypeKind TypeKind => TypeKind.PrimitiveType;
+
     public TypeReference Resolve(TranslationUnitContext context)
     {
         var typeSystem = context.TypeSystem;
@@ -149,6 +152,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
                 TargetArchitectureSet.Bit64 => 8,
                 _ => throw new AssertException($"Architecture set not supported: {arch}.")
             },
+            PrimitiveTypeKind.Void => 1,
 
             _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };
@@ -177,6 +181,7 @@ internal static class PrimitiveTypeInfo
     {
         { PrimitiveTypeKind.Char, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.SignedChar, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
+        { PrimitiveTypeKind.UnsignedChar, (OpCodes.Ldind_U1, OpCodes.Stind_I1) },
         { PrimitiveTypeKind.Short, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.UnsignedShort, (OpCodes.Ldind_I2, OpCodes.Stind_I2) },
         { PrimitiveTypeKind.Int, (OpCodes.Ldind_I4, OpCodes.Stind_I4) },

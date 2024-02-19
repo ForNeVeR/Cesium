@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -5,7 +6,7 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenArrayTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source)
+    private static Task DoTest([StringSyntax("cpp")] string source)
     {
         var assembly = GenerateAssembly(default, source);
 
@@ -17,6 +18,13 @@ public class CodeGenArrayTests : CodeGenTestBase
     public Task ArrayAssignment() => DoTest(@"int main() {
     int a[10];
     a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
+    public Task SymmetricArrayAssignment() => DoTest(@"int main() {
+    int a[10];
+    1[a] = 2;
     return a[1];
  }");
 
@@ -52,6 +60,15 @@ int main() {
  }");
 
     [Fact]
+    public Task MultidimensionalArrayComplexExpr() => DoTest("""
+int main(void)
+{
+    int a[10][2];
+    a[2 - 1][1] = 13;
+}
+""");
+
+    [Fact]
     public Task ComplexTypeAssignment() => DoTest(@"typedef struct { int x; } foo;
 
 int main() {
@@ -85,6 +102,13 @@ int main() {
  }");
 
     [Fact]
+    public Task ArrayInitializationChar() => DoTest(@"int main() {
+    int a[4] = { '1', '2', '3', '4', };
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
     public Task GlobalArrayInitialization() => DoTest(@"
 int a[4] = { 1, 2, 3, 4, };
 
@@ -92,4 +116,67 @@ int main() {
     a[1] = 2;
     return a[1];
  }");
+
+    [Fact]
+    public Task GlobalArrayInitializationWithoutSize() => DoTest(@"
+    int ints1[3] = { 1, 2, 3 };
+    int ints2[] = { 1, 2, 1 };
+
+    int main() {
+    return ints1[0] + ints2[2];
+}");
+
+    [Fact]
+    public Task ArrayInitializationWithoutSize() => DoTest(@"int main() {
+    int ints1[3] = { 1, 2, 3 };
+    int ints2[] = { 1, 2, 1 };
+    return ints1[0] + ints2[2];
+}");
+
+    [Fact]
+    public Task EmptyArrayInitialization() => DoTest(@"int main() {
+    int a[4] = { };
+    a[1] = 2;
+    return a[1];
+ }");
+
+    [Fact]
+    public Task ArrayParameterPassing() => DoTest(@"
+int foo(int ints[]) { return ints[0]; }");
+
+    [Fact]
+    public Task ArrayOverPointer() => DoTest(@"int main(int argc, char** argv) {
+    char c = argv[0][0];
+    return argv[1];
+ }");
+
+    [Fact]
+    public Task PointerArrayIndexing() => DoTest(@"
+int f(char*** t) {
+    char* c = t[2][3];
+    return c[1];
+}
+
+int main() {
+    return 42;
+ }");
+
+    [Fact]
+    public Task ArrayArithmetic() => DoTest("""
+int main() {
+    int arr[2] = {0, 0};
+    int *p = arr + 1;
+    return *p;
+}
+""");
+
+    [Fact]
+    public Task PointerAsArray() => DoTest("""
+int main(void)
+{
+   int x[30];
+   int *y = &x[5];
+   (y + 5)[0] = 0;
+}
+""");
 }

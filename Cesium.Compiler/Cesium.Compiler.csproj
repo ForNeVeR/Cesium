@@ -2,16 +2,16 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <PublishAot Condition="$(TargetFramework) == 'net7.0'">true</PublishAot>
+        <PublishAot Condition="$(NETCoreSdkRuntimeIdentifier) != 'osx-x64'">true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.8.0" />
-        <PackageReference Include="Yoakke.SynKit.C.Syntax" Version="2022.6.17-3.21.43-nightly" />
+        <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="Yoakke.SynKit.C.Syntax" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,6 +25,7 @@
         </ProjectReference>
         <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
         <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+        <InternalsVisibleTo Include="Cesium.CodeGen.Tests" />
     </ItemGroup>
 
     <ItemGroup>

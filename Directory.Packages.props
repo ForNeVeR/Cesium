@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AsyncKeyedLock" Version="6.3.4" />
+    <PackageVersion Include="CommandLineParser" Version="2.9.1" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
+    <PackageVersion Include="JetBrains.Annotations" Version="2023.3.0" />
+    <PackageVersion Include="MedallionShell" Version="1.6.2" />
+    <PackageVersion Include="Meziantou.Xunit.ParallelTestFramework" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
+    <PackageVersion Include="QuikGraph" Version="2.5.0" />
+    <PackageVersion Include="Verify.Xunit" Version="16.3.5" />
+    <PackageVersion Include="xunit" Version="2.4.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageVersion Include="Yoakke.SynKit.C.Syntax" Version="2024.1.6-15.18.30-nightly" />
+    <PackageVersion Include="Yoakke.SynKit.Lexer" Version="2024.1.6-15.18.30-nightly" />
+    <PackageVersion Include="Yoakke.SynKit.Lexer.Generator" Version="2024.1.6-15.18.30-nightly" />
+    <PackageVersion Include="Yoakke.SynKit.Parser" Version="2024.1.6-15.18.30-nightly" />
+    <PackageVersion Include="Yoakke.SynKit.Parser.Generator" Version="2024.1.6-15.18.30-nightly" />
+    <PackageVersion Include="Yoakke.SynKit.Text" Version="2024.1.6-15.18.30-nightly" />
+  </ItemGroup>
+</Project>

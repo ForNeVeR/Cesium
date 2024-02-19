@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -6,59 +7,103 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueField : ILValue
+/// <remarks>
+/// In contrary to how <see cref="AddressableValue"/> behaves, an LValueField's <see cref="EmitGetValue"/> should be
+/// directed to <see cref="EmitGetAddress"/> for case of an inline array, because such a variable should behave as a pointer in most contexts.
+/// </remarks>
+internal abstract class LValueField : ILValue
 {
-    private readonly IExpression _expression;
-    private readonly StructType _structType;
-    private readonly string _name;
-    private FieldReference? _field;
-
-    public LValueField(IExpression expression, Types.PointerType structPointerType, string name)
-    {
-        _expression = expression;
-        _structType = (StructType)structPointerType.Base;
-        _name = name;
-    }
+    public abstract IType GetValueType();
 
     public void EmitGetValue(IEmitScope scope)
     {
+        if (GetValueType() is InPlaceArrayType)
+        {
+            EmitGetAddress(scope);
+            return;
+        }
+
+        EmitGetValueUnchecked(scope);
+    }
+
+    /// <remarks>This method doesn't have to check for in-place arrays.</remarks>
+    private void EmitGetValueUnchecked(IEmitScope scope)
+    {
         var field = GetField(scope);
-        _expression.EmitTo(scope);
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldfld, field));
+        if (field.Resolve().IsStatic)
+        {
+            scope.LdSFld(field);
+        }
+        else
+        {
+            EmitGetFieldOwner(scope);
+            scope.LdFld(field);
+        }
     }
 
     public void EmitGetAddress(IEmitScope scope)
     {
         var field = GetField(scope);
-        _expression.EmitTo(scope);
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldflda, field));
+        if (field.Resolve().IsStatic)
+        {
+            if (GetValueType() is InPlaceArrayType)
+            {
+                // Special treatment of global in-place arrays: they are not fields of special type but mere pointers to
+                // memory. As the field itself points to memory, we should just load it here, no need for lsflda.
+                scope.LdSFld(field);
+            }
+            else
+            {
+                scope.LdSFldA(field);
+            }
+        }
+        else
+        {
+            EmitGetFieldOwner(scope);
+            scope.LdFldA(field);
+        }
     }
 
     public void EmitSetValue(IEmitScope scope, IExpression value)
     {
-        var field = GetField(scope);
-        _expression.EmitTo(scope);
+        EmitGetFieldOwner(scope);
         value.EmitTo(scope);
-        scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Stfld, field));
-    }
-
-    public IType GetValueType() => _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type
-        ?? throw new CompilationException($"Member named \"{_name}\" not found");
-
-    private FieldReference GetField(IEmitScope scope)
-    {
-        if (_field != null)
+        if (value is CompoundInitializationExpression)
         {
-            return _field;
+            if (GetValueType() is not InPlaceArrayType type)
+            {
+                throw new CompilationException("Compound initialization is only supported for in-place arrays.");
+            }
+
+            scope.AddInstruction(OpCodes.Ldflda, GetField(scope));
+            var expression = type.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
+            expression.EmitTo(scope);
+            scope.AddInstruction(OpCodes.Conv_U);
+
+            var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
+            scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
         }
-
-        var valueTypeReference = _structType.Resolve(scope.Context);
-        var valueTypeDef = valueTypeReference.Resolve();
-
-        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == _name)
-                ?? throw new CompilationException(
-                    $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{_name}\"");
-        _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);
-        return _field;
+        else
+        {
+            EmitSetValueInstructionUnchecked(scope);
+        }
     }
+
+    /// <remarks>This method doesn't have to check for in-place arrays.</remarks>
+    private void EmitSetValueInstructionUnchecked(IEmitScope scope)
+    {
+        var field = GetField(scope);
+        if (field.Resolve().IsStatic)
+        {
+            scope.StSFld(field);
+        }
+        else
+        {
+            scope.StFld(field);
+        }
+    }
+
+    protected abstract void EmitGetFieldOwner(IEmitScope scope);
+
+    protected abstract FieldReference GetField(IEmitScope scope);
 }

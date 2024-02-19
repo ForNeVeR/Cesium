@@ -1,9 +1,9 @@
+using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using System.Collections.Immutable;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -25,20 +25,21 @@ internal interface IScopedDeclarationInfo
             return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
         }
 
-        if (specifiers.Length > 0 && specifiers[0] is StructOrUnionSpecifier structOrUnionSpecifier)
+        var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
+        if (declarationSpecifiers.Count > 0 && (declarationSpecifiers[0] is StructOrUnionSpecifier || declarationSpecifiers[0] is EnumSpecifier))
         {
             if (initDeclarators == null)
             {
                 Declarator? declarator = null;
-                return new ScopedIdentifierDeclaration(StorageClass.Auto,
-                    specifiers.Select(_ =>
+                return new ScopedIdentifierDeclaration(storageClass,
+                    declarationSpecifiers.Select(_ =>
                     {
                         var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
                         return new InitializableDeclarationInfo(ld, null);
                     }).ToImmutableArray());
             }
 
-            var initializationDeclarators = initDeclarators.Value.SelectMany(id => specifiers.Select(_ =>
+            var initializationDeclarators = initDeclarators.Value.SelectMany(id => declarationSpecifiers.Select(_ =>
             {
                 var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
                 if (id.Initializer is AssignmentInitializer assignmentInitializer)
@@ -49,7 +50,7 @@ internal interface IScopedDeclarationInfo
 
                 throw new CompilationException($"Struct initializers are not supported.");
             })).ToImmutableArray();
-            return new ScopedIdentifierDeclaration(StorageClass.Auto, initializationDeclarators);
+            return new ScopedIdentifierDeclaration(storageClass, initializationDeclarators);
         }
 
         if (initDeclarators == null)
@@ -92,7 +93,7 @@ internal interface IScopedDeclarationInfo
         InitDeclarator initDeclarator)
     {
         var (declarator, initializer) = initDeclarator;
-        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator);
+        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator, initializer);
         var (type, _, _) = declarationInfo;
         var expression = ConvertInitializer(type, initializer);
         return new InitializableDeclarationInfo(declarationInfo, expression);
@@ -115,6 +116,11 @@ internal interface IScopedDeclarationInfo
             if (type is null)
             {
                 throw new CompilationException($"Type for array initializer unknown.");
+            }
+
+            if (arrayInitializer.Initializers.Length == 0)
+            {
+                return null;
             }
 
             if (type is not InPlaceArrayType inPlaceArrayType)
@@ -150,6 +156,7 @@ internal interface IScopedDeclarationInfo
             storageClass = scs.Name switch
             {
                 "static" => StorageClass.Static,
+                "extern" => StorageClass.Extern,
                 _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
             };
         }
@@ -168,5 +175,6 @@ internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, I
 internal enum StorageClass
 {
     Static,
-    Auto
+    Auto,
+    Extern,
 }

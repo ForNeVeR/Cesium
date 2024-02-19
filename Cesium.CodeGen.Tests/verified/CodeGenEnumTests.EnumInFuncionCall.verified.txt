@@ -1,0 +1,8 @@
+﻿System.Void <Module>::work(System.Int32 Colour)
+  IL_0000: ret
+
+System.Void <Module>::test()
+  IL_0000: ldc.i4.1
+  IL_0001: conv.i4
+  IL_0002: call System.Void <Module>::work(System.Int32)
+  IL_0007: ret

@@ -1,0 +1,3 @@
+﻿int main() { /* comment block */
+  // inline comment
+}

@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 
-internal class BinaryOperatorExpression : IExpression
+internal sealed class BinaryOperatorExpression : IExpression
 {
     public IExpression Left { get; }
     public BinaryOperator Operator { get; }
@@ -43,6 +43,16 @@ internal class BinaryOperatorExpression : IExpression
 
         if (Operator.IsComparison())
         {
+            if (leftType is ConstType leftTypeConst)
+            {
+                leftType = leftTypeConst.Base;
+            }
+
+            if (rightType is ConstType rightTypeConst)
+            {
+                rightType = rightTypeConst.Base;
+            }
+
             if ((!leftType.IsNumeric() && leftType is not PointerType)
                 || (!rightType.IsNumeric() && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
@@ -52,7 +62,7 @@ internal class BinaryOperatorExpression : IExpression
 
         // rest of the operators are arithmetic
 
-        if (leftType is PointerType || rightType is PointerType)
+        if (MayDecayToPointer(leftType) || MayDecayToPointer(rightType))
         {
             return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
@@ -73,8 +83,21 @@ internal class BinaryOperatorExpression : IExpression
         return new BinaryOperatorExpression(left, Operator, right);
     }
 
+    private static bool MayDecayToPointer(IType type) => type is PointerType or InPlaceArrayType;
+    private static PointerType? DecayToPointer(IType type) => type switch
+    {
+        PointerType p => p,
+        InPlaceArrayType inPlaceArrayType => new PointerType(inPlaceArrayType.Base),
+        _ => null
+    };
+
     private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
     {
+        // TODO[#516]: This whole business is problematic. It tries to convert pointer-based arithmetics to byte-based arithmetics while keeping the type of the resulting pointer, which is wrong. For example, `someStructPtr + 10`.Lower().Lower() would return incorrect result.
+
+        leftType = DecayToPointer(leftType) ?? leftType;
+        rightType = DecayToPointer(rightType) ?? rightType;
+
         if (leftType is PointerType leftPointerType)
         {
             if (rightType is PointerType rightPointerType)
@@ -84,10 +107,22 @@ internal class BinaryOperatorExpression : IExpression
                     throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
                 }
 
-                if (!leftPointerType.Base.IsEqualTo(rightPointerType.Base))
+                var leftBasePart = leftPointerType.Base;
+                if (leftBasePart is ConstType leftBaseConstType)
+                {
+                    leftBasePart = leftBaseConstType.Base;
+                }
+
+                var rightBasePart = rightPointerType.Base;
+                if (rightBasePart is ConstType rightBaseConstType)
+                {
+                    rightBasePart = rightBaseConstType.Base;
+                }
+
+                if (!leftBasePart.IsEqualTo(rightBasePart))
                     throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
 
-                var baseSize = leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet);
+                var baseSize = leftBasePart.GetSizeInBytesExpression(scope.ArchitectureSet);
 
                 return new BinaryOperatorExpression(
                     new BinaryOperatorExpression(left, Operator, right),
@@ -96,7 +131,7 @@ internal class BinaryOperatorExpression : IExpression
                 );
             }
 
-            if (Operator != BinaryOperator.Add)
+            if (Operator != BinaryOperator.Add && Operator != BinaryOperator.Subtract)
             {
                 throw new CompilationException($"Operator {Operator} is not supported for pointer/value operands");
             }
@@ -138,6 +173,8 @@ internal class BinaryOperatorExpression : IExpression
 
         if (Operator.IsArithmetic())
         {
+            leftType = DecayToPointer(leftType) ?? leftType;
+            rightType = DecayToPointer(rightType) ?? rightType;
             switch (leftType, rightType)
             {
                 case (PointerType, not PointerType): return leftType;

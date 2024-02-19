@@ -1,19 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.SynKit.Lexer" Version="2022.6.17-3.21.43-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Lexer.Generator" Version="2022.6.17-3.21.43-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Parser" Version="2022.6.17-3.21.43-nightly" />
-      <PackageReference Include="Yoakke.SynKit.Parser.Generator" Version="2022.6.17-3.21.43-nightly" />
+      <PackageReference Include="Yoakke.SynKit.Lexer" />
+      <PackageReference Include="Yoakke.SynKit.Lexer.Generator" />
+      <PackageReference Include="Yoakke.SynKit.Parser" />
+      <PackageReference Include="Yoakke.SynKit.Parser.Generator" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cesium.Parser.Tests" />
+    </ItemGroup>
 </Project>

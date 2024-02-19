@@ -1,8 +1,8 @@
 namespace Cesium.Core;
 
-public class PreprocessorException : CesiumException
+public sealed class PreprocessorException(SourceLocationInfo location, string message)
+    : CesiumException($"{location}: {message}")
 {
-    public PreprocessorException(string message) : base(message)
-    {
-    }
+    public SourceLocationInfo? Location { get; } = location;
+    public string RawMessage { get; } = message;
 }

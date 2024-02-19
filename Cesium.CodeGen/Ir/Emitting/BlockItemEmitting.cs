@@ -76,13 +76,13 @@ internal static class BlockItemEmitting
                 var field = scope.ResolveGlobalField(d.Identifier);
                 if (d.Initializer != null)
                 {
-                    if (d.Type is InPlaceArrayType arrayType && d.Initializer is CompoundInitializationExpression)
+                    if (d is { Type: InPlaceArrayType arrayType, Initializer: CompoundInitializationExpression })
                     {
                         arrayType.EmitInitializer(scope);
                         scope.StSFld(field);
                         d.Initializer.EmitTo(scope);
-                        // for compound initialization copy memory.s
-                        scope.AddInstruction(OpCodes.Ldsflda, field);
+                        // for compound initialization copy memory.
+                        scope.LdSFld(field);
                         var expression = arrayType.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
                         expression.EmitTo(scope);
                         scope.AddInstruction(OpCodes.Conv_U);
@@ -104,6 +104,9 @@ internal static class BlockItemEmitting
 
                 return;
             }
+            case EnumConstantDefinition:
+                // This is fake declaration
+                break;
             case GoToStatement s:
             {
                 var instruction = scope.ResolveLabel(s.Identifier);

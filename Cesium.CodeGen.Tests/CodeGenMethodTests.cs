@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Cesium.Core;
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -6,9 +8,20 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenMethodTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source)
+    private static Task DoTest([StringSyntax("cpp")] string source)
     {
         var assembly = GenerateAssembly(default, source);
+
+        var module = assembly.Modules.Single();
+        var moduleType = module.GetType("<Module>");
+        var staticType = module.GetType("testInput<Statics>");
+        return VerifyMethods(new[] { moduleType, staticType });
+    }
+
+    [MustUseReturnValue]
+    private static Task DoTest(string source1, string source2)
+    {
+        var assembly = GenerateAssembly(default, source1, source2);
 
         var module = assembly.Modules.Single();
         var moduleType = module.GetType("<Module>");
@@ -64,9 +77,9 @@ int main()
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
-    [Fact] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
-    [Fact] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
-    [Fact]
+    [Fact, NoVerify] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
+    [Fact, NoVerify] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
+    [Fact, NoVerify]
     public void VarArgMainDoesNotCompile2() => DoesNotCompile<WipException>(
         "int main(int argc, char *argv[], ...){}",
         "Variable arguments for the main function aren't supported.");
@@ -103,24 +116,24 @@ int main() { foo x,x2; x2.x=0; }");
     return;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void IncorrectReturnTypeDoesNotCompile() => DoesNotCompile(@"int foo(void);
 void foo(void) {}", "Incorrect return type");
 
-    [Fact]
+    [Fact, NoVerify]
     public void IncorrectParameterTypeDoesNotCompile() => DoesNotCompile(@"int foo(int bar);
 int foo(char *x) {}", "Incorrect type for parameter x");
 
-    [Fact]
+    [Fact, NoVerify]
     public void IncorrectParameterCountDoesNotCompile() => DoesNotCompile(@"int foo(int bar, int baz);
 int foo(int bar) {}", "Incorrect parameter count");
 
-    [Fact]
+    [Fact, NoVerify]
     public void IncorrectOverrideCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Read"")
 int console_read(void);
 int console_read(void) { return 0; }", "Function console_read already defined as immutable.");
 
-    [Fact]
+    [Fact, NoVerify]
     public void DifferentCliImport() => DoesNotCompile(@"__cli_import(""System.Console::Beep"")
 void console_beep(void);
 __cli_import(""System.Console::Clear"")
@@ -169,14 +182,14 @@ void console_read()
 {
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void ExplicitVarargDeclarationShouldHaveExplicitDefinition() => DoesNotCompile(@"void console_read(int x, ...);
 
 void console_read(int x)
 {
 }", "Function console_read declared with varargs but defined without varargs.");
 
-    [Fact]
+    [Fact, NoVerify]
     public void ExplicitVarargDefinitionShouldHaveExplicitDeclaration() => DoesNotCompile(@"void console_read(int x);
 
 void console_read(int x, ...)
@@ -192,10 +205,16 @@ int console_read(void);
 int console_read(void) { return 0; }");
 
     [Fact]
+    public Task CanHaveTwoFunctionDeclarationsWithDifferentParameterNames() => DoTest(@"
+int console_read(int argc);
+
+int console_read(int __argc) { return 0; }");
+
+    [Fact, NoVerify]
     public void DoubleDefinition() => DoesNotCompile(@"int console_read() { return 1; }
 int console_read() { return 2; }", "Double definition of function console_read.");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NoDefinition() => DoesNotCompile(@"int foo(void);
 int main() { return foo(); }", "Function foo not defined.");
 
@@ -310,7 +329,7 @@ int main()
     int unused = 0;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void ImplicitReturnDisallowedNonMain() => DoesNotCompile(@"int foo()
 {
     int unused;
@@ -355,12 +374,13 @@ int main()
 }");
 
     [Fact]
-    public void InvalidPointerWithIntSubtractionTest() => DoesNotCompile(@"int main() {
+    public Task ValidPointerWithIntSubtractionTest() => DoTest(@"int main() {
     int foo[10];
-    return &foo[10] - 123;
-}", "Operator Subtract is not supported for pointer/value operands");
+    int* diff = &foo[10] - 1;
+    return 1;
+}");
 
-    [Fact]
+    [Fact, NoVerify]
     public void PointerSubtractionWithTypeMismatchTest() => DoesNotCompile(@"typedef struct {
     int a;
 } bar;
@@ -400,6 +420,44 @@ static int main()
 }");
 
     [Fact]
+    public Task StructParametersFromDifferentModules() => DoTest(@"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);  ", @"
+
+struct struct1 {
+    int x;
+};
+
+extern int console_read(const struct struct1* _s);
+
+int console_read(const struct struct1* s) {
+    return s->x;
+}");
+
+    [Fact]
+    public Task EnumParametersFromDifferentModules() => DoTest(@"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);  ", @"
+
+enum enum1 {
+    VAL1, VAL2
+};
+
+extern int console_read(enum enum1 _s);
+
+int console_read(enum enum1 s) {
+    return 111;
+}");
+
+    [Fact]
     public Task FunctionPointerCallTest() => DoTest(@"int foo(int a) { return a; }
 
 int main()
@@ -409,7 +467,7 @@ int main()
     return fooptr(123);
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NonFunctionPointerCallTest() => DoesNotCompile(@"int foo(int a) { return a; }
 
 int main()
@@ -418,6 +476,18 @@ int main()
 
     return fooptr(123);
 }", "Attempted to call non-function pointer");
+
+    [Fact]
+    public Task StructParameters() => DoTest(@"
+struct struct1 {
+    int x;
+};
+
+int console_read(struct struct1* __s);
+
+int console_read(struct struct1* s) {
+    return s->x;
+}");
 
     // TODO [#196]
     /* [Fact]

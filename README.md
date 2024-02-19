@@ -16,7 +16,7 @@ Unfortunately, not yet. You won't be able to use Cesium for anything useful toda
 
 ### Sneak Peek
 
-Currently, Cesium is able to compile a "Hello, world" C17 example to a .NET assembly:
+Currently, Cesium is able to compile a "Hello, world" C23 example to a .NET assembly:
 
 ```c
 #include <stdio.h>
@@ -33,7 +33,7 @@ The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which
 Documentation
 -------------
 
-- [C17 Language Standard Draft][c17-draft]
+- [C23 Language Standard Draft][c23-draft]
 
 - [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
@@ -42,6 +42,7 @@ Documentation
 - [CLI-Related Language Extensions][docs.language-extensions]
 - [Built-in Functions][docs.builtins]
 - [Exceptions in the Compiler Code][docs.exceptions]
+- [Design Notes][docs.design-notes]
 
 - [License (MIT)][docs.license]
 
@@ -68,9 +69,10 @@ $ mono ./out.exe # run with Mono
   - `NetStandard` for .NET Standard
   - `Net` for .NET 5+
 - `--arch <architecture-set>`: specifies the [target architecture set][docs.architecture-sets], defaults to `Dynamic`. Possible values are:
-  - `Dynamic` (machine-independent),
-  - `Bit32` (for 32-bit CPUs),
-  - `Bit64` (for 64-bit CPUs).
+  - `Dynamic` (machine-independent, calculates pointer size and structure layout in runtime),
+  - `Bit32` (for 32-bit architectures),
+  - `Bit64` (for 64-bit architectures),
+  - `Wide` (machine-independent, uses 64-bit pointers even on 32-bit architectures).
 - `--modulekind <moduleKind>`: specifies the output module kind; by default, it is autodetected from the output file extension
   - `Dll`: gets detected from a `.dll` extension
   - `Console`: gets detected from an `.exe` extension
@@ -80,8 +82,8 @@ $ mono ./out.exe # run with Mono
 Implementation Dashboard
 ------------------------
 
-- [ ] [C17 standard compatibility][issue.c17-standard]: poor
-    - [ ] [Preprocessor][issue.preprocessor]: about **10%** of all features are supported
+- [ ] [C23 standard compatibility][issue.c23-standard]: poor
+    - [ ] [Preprocessor][issue.preprocessor]: about **30%** ready
     - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
     - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
 - [ ] **Compiler**
@@ -103,21 +105,22 @@ If you're interested in certain project areas, check the per-area issue labels:
 - [`area:compiler`][issues.compiler]: issues related to the Cesium compiler, type checker, and code analyzer
 - [`area:parser`][issues.parser]: issues related to C parsing
 - [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
-- [`area:standard-support`][issues.standard-support]: issues related to C17 standard support
+- [`area:standard-support`][issues.standard-support]: issues related to C23 standard support
 - [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
-[c17-draft]: http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf
+[c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.architecture-sets]: docs/architecture-sets.md
+[docs.builtins]: docs/builtins.md
 [docs.contributing]: CONTRIBUTING.md
+[docs.design-notes]: docs/design-notes.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
-[docs.builtins]: docs/builtins.md
-[issue.c17-standard]: https://github.com/ForNeVeR/Cesium/issues/62
+[issue.c23-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61
 [issue.parser]: https://github.com/ForNeVeR/Cesium/issues/78

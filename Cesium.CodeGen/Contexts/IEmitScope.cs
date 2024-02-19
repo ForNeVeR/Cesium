@@ -12,7 +12,7 @@ internal interface IEmitScope
     ModuleDefinition Module { get; }
     TranslationUnitContext Context { get; }
     VariableDefinition ResolveVariable(string identifier);
-    ParameterDefinition ResolveParameter(string name);
+    ParameterDefinition ResolveParameter(int index);
 
     /// <summary>
     /// Resolves instruction to which label pointed.

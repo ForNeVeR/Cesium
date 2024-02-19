@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
@@ -14,7 +15,7 @@ using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class FunctionDefinition : IBlockItem
+internal sealed class FunctionDefinition : IBlockItem
 {
     private const string MainFunctionName = "main";
 
@@ -65,6 +66,7 @@ internal class FunctionDefinition : IBlockItem
         var (parameters, returnType) = FunctionType;
 
         var declaration = context.GetFunctionInfo(Name);
+        Debug.Assert(declaration != null, $"Function {Name} does not declared.");
 
         var method = declaration switch
         {
@@ -139,7 +141,7 @@ internal class FunctionDefinition : IBlockItem
         return GenerateSyntheticEntryPointStrArray(context, userEntrypoint);
     }
 
-    private MethodDefinition GenerateSyntheticEntryPointStrArray(
+    private static MethodDefinition GenerateSyntheticEntryPointStrArray(
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {
@@ -185,6 +187,9 @@ internal class FunctionDefinition : IBlockItem
         // argC = args.Length;
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
         instructions.Add(Instruction.Create(OpCodes.Ldlen));
+        // argC = 1 + argC;
+        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+        instructions.Add(Instruction.Create(OpCodes.Add));
         instructions.Add(Instruction.Create(OpCodes.Stloc_0)); // 0 = argC.Index
         // argV = Cesium.Runtime.RuntimeHelpers.ArgsToArgv(args);
         instructions.Add(Instruction.Create(OpCodes.Ldarg_0)); // args
@@ -232,7 +237,7 @@ internal class FunctionDefinition : IBlockItem
         return syntheticEntrypoint;
     }
 
-    private MethodDefinition GenerateSyntheticEntryPointSimple(
+    private static MethodDefinition GenerateSyntheticEntryPointSimple(
         TranslationUnitContext context,
         MethodReference userEntrypoint)
     {

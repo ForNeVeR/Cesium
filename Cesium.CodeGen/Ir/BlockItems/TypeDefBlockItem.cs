@@ -2,7 +2,7 @@ using Cesium.CodeGen.Ir.Declarations;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class TypeDefBlockItem : IBlockItem
+internal sealed class TypeDefBlockItem : IBlockItem
 {
     public ICollection<LocalDeclarationInfo> Types { get; }
 

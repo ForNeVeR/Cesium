@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class FloatingPointConstant : IConstant
+internal sealed class FloatingPointConstant : IConstant
 {
     private readonly double _value;
     private readonly bool _isFloat;

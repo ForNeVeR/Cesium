@@ -1,0 +1,5 @@
+﻿
+System.Int32 testInput<Statics>::console_read(struct1* _s)
+  IL_0000: ldarg.0
+  IL_0001: ldfld System.Int32 struct1::x
+  IL_0006: ret

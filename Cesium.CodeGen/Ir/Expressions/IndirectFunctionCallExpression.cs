@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class IndirectFunctionCallExpression : FunctionCallExpressionBase
+internal sealed class IndirectFunctionCallExpression : FunctionCallExpressionBase
 {
     private readonly IReadOnlyList<IExpression> _arguments;
     private readonly IExpression _callee;

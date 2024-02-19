@@ -12,20 +12,23 @@ public enum CPreprocessorTokenType
     [Regex(Regexes.LineComment)]
     [Regex(Regexes.MultilineComment)]
     Comment,
-    [Regex("[\r\n]+")] NewLine,
+    [Regex("\r|\n|\r\n")] NewLine,
 
     [Token("#")] Hash,
     [Token("##")] DoubleHash,
-    [Regex(@"[\\]")] NextLine,
+    [Regex(@"\\")] NextLine,
 
     [Regex("<[^\r\n>]+>")]
     [Regex("\"[^\r\n\"]+\"")]
     HeaderName,
 
-    [Regex("[^ \t\v\f\r\n#;+-*/()=!<\",.|&]+")]
+    [Token("...")]
+    Ellipsis,
+
+    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<\",.|&\\\\]+")]
     PreprocessingToken,
 
-    [Regex("[;+-*/=!,.|&]+")]
+    [Regex(@"([.]|[;+\\-*/=!,|&]+|<=|>=|>|<)")]
     Separator,
 
     [Token("(")]

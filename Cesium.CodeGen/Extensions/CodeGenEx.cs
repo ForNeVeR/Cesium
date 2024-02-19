@@ -49,6 +49,15 @@ internal static class CodeGenEx
         scope.AddInstruction(Instruction.Create(OpCodes.Stsfld, field));
     }
 
+    public static void LdFld(this IEmitScope scope, FieldReference field) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Ldfld, field));
+
+    public static void LdFldA(this IEmitScope scope, FieldReference field) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Ldflda, field));
+
+    public static void StFld(this IEmitScope scope, FieldReference field) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Stfld, field));
+
     public static void LdFtn(this IEmitScope scope, MethodReference method)
     {
         scope.AddInstruction(Instruction.Create(OpCodes.Ldftn, method));

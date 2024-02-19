@@ -14,4 +14,17 @@ internal static class RuntimeConfig
       }
     }
     """.ReplaceLineEndings("\n");
+
+    public static string EmitNet8() => """
+    {
+      "runtimeOptions": {
+        "tfm": "net8.0",
+        "rollForward": "Major",
+        "framework": {
+          "name": "Microsoft.NETCore.App",
+          "version": "8.0.0"
+        }
+      }
+    }
+    """.ReplaceLineEndings("\n");
 }

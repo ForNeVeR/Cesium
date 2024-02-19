@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MedallionShell"  />
+      <PackageReference Include="Verify.Xunit" />
+      <PackageReference Include="Yoakke.SynKit.C.Syntax" />
+      <PackageReference Include="Yoakke.SynKit.Lexer" />
+      <PackageReference Include="Yoakke.SynKit.Parser" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
+      <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+    </ItemGroup>
+
+</Project>

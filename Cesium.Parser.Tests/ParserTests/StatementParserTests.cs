@@ -1,4 +1,4 @@
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.Parser.Tests.ParserTests;
@@ -136,4 +136,13 @@ if (1)
     case 1:
     default: break;
 }");
+
+    [Fact]
+    public Task SizeOfVariable() => DoTest("{int size; return sizeof size;}");
+
+    [Fact]
+    public Task SizeOfIdentifier() => DoTest("{int size; return sizeof(size);}");
+
+    [Fact]
+    public Task SizeOfTypeName() => DoTest("return sizeof(int);");
 }

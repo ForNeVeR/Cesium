@@ -1,17 +1,24 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Parser;
+using Yoakke.SynKit.Text;
 using static Cesium.Preprocessor.CPreprocessorTokenType;
 using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreprocessorTokenType>> Lexer, IIncludeContext IncludeContext, IMacroContext MacroContext)
+public record CPreprocessor(
+    string CompilationUnitPath,
+    ILexer<IToken<CPreprocessorTokenType>> Lexer,
+    IIncludeContext IncludeContext,
+    IMacroContext MacroContext,
+    IWarningProcessor WarningProcessor)
 {
-    private bool IncludeTokens = true;
+    private readonly MacroExpansionEngine _macroExpansion = new(WarningProcessor, MacroContext);
+
     public async Task<string> ProcessSource()
     {
         var buffer = new StringBuilder();
@@ -25,417 +32,235 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> GetPreprocessingResults()
     {
-        var newLine = true;
-
-        var stream = Lexer.ToStream();
-        while (!stream.IsEnd)
-        {
-            var token = stream.Consume();
-            switch (token.Kind)
-            {
-                case End:
-                    yield break;
-
-                case WhiteSpace:
-                case Comment:
-                    if (IncludeTokens)
-                    {
-                        yield return token;
-                    }
-                    break;
-
-                case NewLine:
-                    newLine = true;
-                    if (IncludeTokens)
-                    {
-                        yield return token;
-                    }
-                    break;
-
-                case Hash:
-                    if (newLine)
-                    {
-                        foreach (var t in await ProcessDirective(ReadDirectiveLine(token, stream)))
-                            yield return t;
-
-                        // Leave newLine as true, since we've processed the directive at the previous line, so now we're
-                        // necessarily at the start of a new one.
-                    }
-                    else
-                    {
-                        yield return token;
-                    }
-                    break;
-
-                case Error:
-                case DoubleHash:
-                case HeaderName:
-                case Separator:
-                case LeftParen:
-                case RightParen:
-                    newLine = false;
-                    if (IncludeTokens)
-                    {
-                        yield return token;
-                    }
-                    break;
-                case PreprocessingToken:
-                    newLine = false;
-                    if (IncludeTokens)
-                    {
-                        if (MacroContext.TryResolveMacro(token.Text, out var parameters, out var tokenReplacement))
-                        {
-                            Dictionary<string, List<IToken<CPreprocessorTokenType>>> replacement = new();
-                            if (parameters is not null)
-                            {
-                                int parameterIndex = -1;
-                                int openParensCount = 0;
-                                List<IToken<CPreprocessorTokenType>> currentParameter = new();
-                                IToken<CPreprocessorTokenType> parametersParsingToken;
-                                do
-                                {
-                                    parametersParsingToken = stream.Consume();
-                                    switch (parametersParsingToken)
-                                    {
-                                        case { Kind: LeftParen }:
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-
-                                            openParensCount++;
-                                            if (parameterIndex == -1)
-                                            {
-                                                parameterIndex = 0;
-                                            }
-                                            break;
-                                        case { Kind: RightParen }:
-                                            openParensCount--;
-                                            if (openParensCount != 0)
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        case { Kind: Separator, Text: "," }:
-                                            if (parameterIndex == -1)
-                                            {
-                                                throw new PreprocessorException($"Expected '(' but got {parametersParsingToken.Kind} {parametersParsingToken.Text} at range {parametersParsingToken.Range}.");
-                                            }
-
-                                            if (openParensCount == 1)
-                                            {
-                                                replacement.Add(parameters[parameterIndex], currentParameter);
-                                                currentParameter = new();
-                                                parameterIndex++;
-                                            }
-                                            else
-                                            {
-                                                currentParameter.Add(parametersParsingToken);
-                                            }
-                                            break;
-                                        default:
-                                            currentParameter.Add(parametersParsingToken);
-                                            break;
-                                    }
-                                }
-                                while (openParensCount > 0);
-                                replacement.Add(parameters[parameterIndex], currentParameter);
-                            }
-
-                            bool performStringReplace = false;
-                            foreach (var subToken in tokenReplacement)
-                            {
-                                if (subToken is { Kind: Hash })
-                                {
-                                    performStringReplace = true;
-                                    continue;
-                                }
-
-                                if (subToken is { Kind: PreprocessingToken } && replacement.TryGetValue(subToken.Text, out var parameterTokens))
-                                {
-                                    if (performStringReplace)
-                                    {
-                                        var stringValue = string.Join(string.Empty, parameterTokens.Select(t => t.Text));
-                                        var escapedStringValue = stringValue.Replace("\\", "\\\\")
-                                            .Replace("\"", "\\\"")
-                                            ;
-                                        escapedStringValue = $"\"{escapedStringValue}\"";
-                                        yield return new Token<CPreprocessorTokenType>(token.Range, escapedStringValue, token.Kind);
-                                        performStringReplace = false;
-                                    }
-                                    else
-                                    {
-                                        foreach (var parameterToken in parameterTokens)
-                                        {
-                                            yield return new Token<CPreprocessorTokenType>(token.Range, parameterToken.Text, parameterToken.Kind);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    yield return new Token<CPreprocessorTokenType>(token.Range, subToken.Text, subToken.Kind);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            yield return token;
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new PreprocessorException($"Illegal token {token.Kind} {token.Text}.");
-            }
-        }
-    }
-
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReadDirectiveLine(
-        IToken<CPreprocessorTokenType> firstToken,
-        IStream<IToken<CPreprocessorTokenType>> stream)
-    {
-        yield return firstToken;
-        foreach (var token in ReadTillEnd(stream))
+        var file = ParsePreprocessingFile();
+        await foreach (var token in ProcessGroup(file.Group))
         {
             yield return token;
         }
     }
 
-    private IEnumerable<IToken<CPreprocessorTokenType>> ReadTillEnd(
-        IStream<IToken<CPreprocessorTokenType>> stream)
+    private PreprocessingFile ParsePreprocessingFile()
     {
-        while (!stream.IsEnd)
+        using var transactionalLexer = new TransactionalLexer(Lexer.ToEnumerableUntilEnd(), WarningProcessor);
+        var parser = new CPreprocessorParser(transactionalLexer);
+        var file = parser.ParsePreprocessingFile();
+        if (file.IsError)
         {
-            var token = stream.Consume();
-            switch (token.Kind)
+            RaisePreprocessorParseError(file.Error);
+        }
+
+        return file.Ok;
+    }
+
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroup(IEnumerable<IGroupPart> group)
+    {
+        foreach (var part in group)
+        {
+            var tokens = ProcessGroupPart(part);
+            await foreach (var token in tokens)
             {
-                case NewLine:
-                case End:
-                    yield break;
-                case NextLine:
-                    token = stream.Consume();
-                    bool nextLineReached = false;
-                    while (token.Kind == CPreprocessorTokenType.NewLine || token.Kind == CPreprocessorTokenType.WhiteSpace)
-                    {
-                        if (token.Kind == CPreprocessorTokenType.NewLine)
-                        {
-                            nextLineReached = true;
-                        }
-
-                        token = stream.Consume();
-                    }
-
-                    if (!nextLineReached)
-                        throw new PreprocessorException($"Illegal token {token.Kind} {token.Text} after \\.");
-
-                    yield return token;
-                    break;
-                default:
-                    yield return token;
-                    break;
+                yield return token;
             }
         }
     }
 
-    private async ValueTask<IEnumerable<IToken<CPreprocessorTokenType>>> ProcessDirective(
-        IEnumerable<IToken<CPreprocessorTokenType>> directiveTokens)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessGroupPart(IGroupPart groupPart)
     {
-        using var enumerator = directiveTokens.GetEnumerator();
-
-        int? line = null;
-        IToken<CPreprocessorTokenType> ConsumeNext(params CPreprocessorTokenType[] allowedTypes)
+        switch (groupPart)
         {
-            bool moved;
-            while ((moved = enumerator.MoveNext()) && enumerator.Current is { Kind: WhiteSpace })
+            case IncludeDirective include:
             {
-                // Skip any whitespace in between tokens.
-            }
-
-            if (!moved)
-                throw new PreprocessorException(
-                    "Preprocessing directive too short at line " +
-                    $"{line?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
-
-            var token = enumerator.Current;
-            if (allowedTypes.Contains(token.Kind)) return enumerator.Current;
-
-            var expectedTypeString = string.Join(" or ", allowedTypes);
-            throw new PreprocessorException(
-                $"Cannot process preprocessor directive: expected {expectedTypeString}, " +
-                $"but got {token.Kind} {token.Text} at {token.Range.Start}.");
-        }
-
-        IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLine()
-        {
-            while (enumerator.MoveNext())
-            {
-                if (enumerator.Current is { Kind: WhiteSpace })
+                var filePathToken = include.Tokens.Single();
+                var filePath = filePathToken.Text;
+                var includeFilePath = LookUpIncludeFile(filePath);
+                if (!IncludeContext.ShouldIncludeFile(includeFilePath))
                 {
-                    continue;
+                    yield break;
                 }
 
-                yield return enumerator.Current;
-            }
-        }
-
-        IEnumerable<IToken<CPreprocessorTokenType>> ConsumeLineAll()
-        {
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-        }
-
-        var hash = ConsumeNext(Hash);
-        line = hash.Range.Start.Line;
-
-        var keyword = ConsumeNext(PreprocessingToken);
-        switch (keyword.Text)
-        {
-            case "include":
-            {
-                // If in disabled block, do not attempt to include files.
-                var filePath = ConsumeNext(HeaderName).Text;
-                var tokensList = new List<IToken<CPreprocessorTokenType>>();
-                if (IncludeTokens)
+                using var reader = IncludeContext.OpenFileStream(includeFilePath);
+                if (reader == null)
                 {
-                    var includeFilePath = LookUpIncludeFile(filePath);
-                    if (!IncludeContext.ShouldIncludeFile(includeFilePath))
-                    {
-                        return Array.Empty<IToken<CPreprocessorTokenType>>();
-                    }
-
-                    using var reader = IncludeContext.OpenFileStream(includeFilePath);
-                    await foreach (var token in ProcessInclude(includeFilePath, reader))
-                    {
-                        tokensList.Add(token);
-                    }
+                    throw new PreprocessorException(
+                        filePathToken.Location,
+                        $"Cannot find file {filePath} for include directive.");
+                }
+                await foreach (var token in ProcessInclude(includeFilePath, reader))
+                {
+                    yield return token;
                 }
 
-                bool hasRemaining;
-                while ((hasRemaining = enumerator.MoveNext())
-                       && enumerator.Current is { Kind: WhiteSpace })
+                break;
+            }
+            case ErrorDirective error:
+            {
+                string errorText;
+                if (error.Tokens is null)
                 {
-                    // eat remaining whitespace
-                }
-
-                if (hasRemaining && enumerator.Current is var t and not { Kind: WhiteSpace })
-                    throw new PreprocessorException($"Invalid token after include path: {t.Kind} {t.Text}");
-
-                return tokensList;
-            }
-            case "error":
-            {
-                var errorText = new StringBuilder();
-                while (enumerator.MoveNext())
-                {
-                    errorText.Append(enumerator.Current.Text);
-                }
-                throw new PreprocessorException($"Error: {errorText.ToString().Trim()}");
-            }
-            case "define":
-            {
-                var expressionTokens = ConsumeLineAll();
-                var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-                MacroContext.DefineMacro(macroDefinition.Name, macroDefinition.Parameters, replacement);
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "undef":
-            {
-                var expressionTokens = ConsumeLineAll();
-                var (macroDefinition, replacement) = EvaluateMacroDefinition(expressionTokens.ToList());
-                MacroContext.UndefineMacro(macroDefinition.Name);
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "ifdef":
-            {
-                var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool includeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = includeTokens;
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "if":
-            {
-                var expressionTokens = ConsumeLine();
-                bool includeTokens = EvaluateExpression(expressionTokens.ToList());
-                IncludeTokens = includeTokens;
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "ifndef":
-            {
-                var identifier = ConsumeNext(PreprocessingToken).Text;
-                bool donotIncludeTokens = MacroContext.TryResolveMacro(identifier, out _, out var macroReplacement);
-                IncludeTokens = !donotIncludeTokens;
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "endif":
-            {
-                IncludeTokens = true;
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "else":
-            {
-                IncludeTokens = !IncludeTokens;
-                return Array.Empty<IToken<CPreprocessorTokenType>>();
-            }
-            case "pragma":
-            {
-                var identifier = ConsumeNext(PreprocessingToken).Text;
-                if (identifier == "once")
-                {
-                    IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
-                    return Array.Empty<IToken<CPreprocessorTokenType>>();
+                    errorText = "#error";
                 }
                 else
                 {
-                    throw new WipException(
-                        77,
-                        $"Preprocessor #pragma directive not supported: {keyword.Kind} {keyword.Text}.");
+                    var errorBuilder = new StringBuilder();
+                    foreach (var token in error.Tokens ?? [])
+                    {
+                        errorBuilder.Append(token.Text);
+                    }
+
+                    errorText = errorBuilder.ToString();
                 }
+
+                throw new PreprocessorException(error.Location, errorText.Trim());
             }
+            case DefineDirective define:
+            {
+                var macroName = define.Identifier.Text;
+                MacroContext.DefineMacro(macroName, define.Parameters, define.Replacement);
+
+                break;
+            }
+            case UnDefDirective undef:
+            {
+                var identifier = GetSingleToken([undef.Identifier], PreprocessingToken).Text;
+                MacroContext.UndefineMacro(identifier);
+                break;
+            }
+            case IfSection ifSection:
+            {
+                var (ifGroup, elIfGroups, elseGroup) = ifSection;
+                List<GuardedGroup> conditionalGroups = [ifGroup, ..elIfGroups];
+                foreach (var group in conditionalGroups)
+                {
+                    var condition = group.Clause ??
+                        throw new PreprocessorException(group.Keyword.Location, $"Empty condition in group {group}");
+                    var expression = ParseExpression(condition);
+                    var keyword = group.Keyword.Text;
+                    var shouldWrapInDefined = keyword is "ifdef" or "ifndef" or "elifdef" or "elifndef";
+                    if (shouldWrapInDefined)
+                        expression = WrapIntoDefined(expression);
+                    var evaluationResult = EvaluateExpression(expression);
+                    var isPositive = keyword is "if" or "ifdef" or "elif" or "elifdef";
+                    var isNegative = keyword is "ifndef" or "elifndef";
+                    if (!isPositive && !isNegative)
+                        throw new PreprocessorException(
+                            group.Keyword.Location,
+                            $"Unknown conditional directive {keyword}.");
+
+                    if ((evaluationResult && isPositive) || (!evaluationResult && isNegative)) // the first one wins
+                    {
+                        await foreach (var token in ProcessGroup(group.Tokens))
+                        {
+                            yield return token;
+                        }
+                        yield break;
+                    }
+                }
+
+                if (elseGroup == null) break;
+
+                await foreach (var token in ProcessGroup(elseGroup.Tokens))
+                {
+                    yield return token;
+                }
+                break;
+            }
+            case PragmaDirective pragma:
+            {
+                var identifier = pragma.Tokens?.FirstOrDefault()?.Text;
+                if (identifier == "once")
+                {
+                    IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
+                }
+
+                break;
+            }
+            case EmptyDirective:
+                break;
+            case TextLineBlock textLine:
+                foreach (var token in _macroExpansion.ExpandMacros(textLine.Tokens))
+                {
+                    yield return token;
+                }
+                var newLine = new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+                yield return newLine;
+                break;
+            case NonDirective nonDirective:
+                throw new PreprocessorException(
+                    nonDirective.Location,
+                    "Preprocessor execution of a non-directive was requested.");
             default:
+                SourceLocationInfo location = groupPart.Location;
+                var groupName = groupPart.Keyword switch
+                {
+                    {} kw => kw.Text + " ",
+                    null => ""
+                };
                 throw new WipException(
                     77,
-                    $"Preprocessor directive not supported: {keyword.Kind} {keyword.Text}.");
+                    $"{location}: Preprocessor directive {groupName}is not supported, yet.");
+        }
+
+        yield break;
+
+        IToken<CPreprocessorTokenType> GetSingleToken(
+            IEnumerable<IToken<CPreprocessorTokenType>> tokens,
+            CPreprocessorTokenType type)
+        {
+            var token = tokens.Single();
+            if (token.Kind != type)
+            {
+                throw new PreprocessorException(
+                    token.Location,
+                    $"Cannot process preprocessor directive: expected {type}, " +
+                    $"but got {token.Kind} {token.Text}.");
+            }
+
+            return token;
         }
     }
-    private bool EvaluateExpression(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+
+    private IPreprocessorExpression ParseExpression(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {
         var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
+            tokens.Union(new[]
+            {
+                new Token<CPreprocessorTokenType>(
+                    new Range(),
+                    new Location(),
+                    "",
+                    End)
+            })).ToBuffered();
         var p = new CPreprocessorExpressionParser(stream);
         var expression = p.ParseExpression();
         if (expression.IsError)
         {
-            throw new PreprocessorException($"Cannot parse {(expression.Error.Elements.FirstOrDefault().Key)}, got {expression.Error.Got}");
+            RaisePreprocessorParseError(expression.Error);
         }
 
-        var macroExpression = expression.Ok.Value.EvaluateExpression(MacroContext);
-        bool includeTokens = macroExpression.AsBoolean();
-        return includeTokens;
+        if (!(stream.IsEnd || stream.Peek().Kind == End))
+            throw new AssertException("(stream.IsEnd || stream.Peek().Kind == End) is not true.");
+
+        return expression.Ok.Value;
     }
-    private (CPreprocessorMacroDefinitionParser.MacroDefinition, List<IToken<CPreprocessorTokenType>>) EvaluateMacroDefinition(IEnumerable<IToken<CPreprocessorTokenType>> expressionTokens)
+
+    /// <summary>Performs wrapping, e.g. <code>FOO</code> -&gt; <code></code>.</summary>
+    private static DefinedExpression WrapIntoDefined(IPreprocessorExpression expression)
     {
-        var stream = new EnumerableStream<IToken<CPreprocessorTokenType>>(
-            expressionTokens.Union(new[] { new Token<CPreprocessorTokenType>(new Range(), "", End) })).ToBuffered();
-        var p = new CPreprocessorMacroDefinitionParser(stream);
-        var macroDefinition = p.ParseMacro();
-        var macroReplacement = new List<IToken<CPreprocessorTokenType>>();
-        while (!stream.IsEnd)
+        if (expression is IdentifierExpression identifier)
         {
-            var token = stream.Consume();
-            if (token is not { Kind: End })
-            {
-                macroReplacement.Add(token);
-            }
+            return new(expression.Location, identifier.Identifier);
         }
 
-        if (macroDefinition.IsError)
-        {
-            throw new PreprocessorException($"Cannot parse macro definition. Expected: {string.Join(",", macroDefinition.Error.Elements.Values.Select(_ => $"{_.Context},{string.Join(",", _.Expected)}"))} got: {macroDefinition.Error.Got}");
-        }
+        throw new PreprocessorException(
+            expression.Location,
+            $"Definition check expects an identifier, but a complex expression found: {expression}.");
+    }
 
-        return (macroDefinition.Ok.Value, macroReplacement);
+    private bool EvaluateExpression(IPreprocessorExpression expression)
+    {
+        var macroExpression = expression.EvaluateExpression(MacroContext);
+        var includeTokens = macroExpression.AsBoolean(expression.Location);
+        return includeTokens;
     }
 
     private string LookUpIncludeFile(string filePath) => filePath[0] switch
@@ -445,15 +270,47 @@ public record CPreprocessor(string CompilationUnitPath, ILexer<IToken<CPreproces
         _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
     };
 
-    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(string compilationUnitPath, TextReader fileReader)
+    private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(
+        string compilationUnitPath,
+        TextReader fileReader)
     {
-        var lexer = new CPreprocessorLexer(fileReader);
-        var subProcessor = new CPreprocessor(compilationUnitPath, lexer, IncludeContext, MacroContext);
+        var lexer = new CPreprocessorLexer(new SourceFile(compilationUnitPath, fileReader));
+        var subProcessor = this with { CompilationUnitPath = compilationUnitPath, Lexer = lexer };
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {
             yield return item;
         }
 
-        yield return new Token<CPreprocessorTokenType>(new Range(), "\n", NewLine);
+        yield return new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+    }
+
+    internal static void RaisePreprocessorParseError(ParseError error)
+    {
+        var got = error.Got switch
+        {
+            IToken token => token.Text,
+            { } item => item.ToString(),
+            null => "<no token>"
+        };
+
+        var errorMessage = new StringBuilder($"Error during preprocessing. Found {got}, ");
+        if (error.Elements.Count == 1)
+        {
+            errorMessage.Append($"but expected {ExpectedString(error.Elements.Single())}");
+        }
+        else
+        {
+            errorMessage.Append("but expected one of:");
+            foreach (var item in error.Elements)
+            {
+                errorMessage.AppendLine($"\n- {ExpectedString(item)}");
+            }
+        }
+
+        var location = error.Position as SourceLocationInfo ?? new SourceLocationInfo("<unknown>", null, null);
+        throw new PreprocessorException(location, errorMessage.ToString());
+
+        static string ExpectedString(KeyValuePair<string, ParseErrorElement> element) =>
+            string.Join(", ", element.Value.Expected) + $" (rule {element.Key})";
     }
 }

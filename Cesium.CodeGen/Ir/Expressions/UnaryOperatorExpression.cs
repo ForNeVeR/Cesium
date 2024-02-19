@@ -4,11 +4,10 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class UnaryOperatorExpression : IExpression
+internal sealed class UnaryOperatorExpression : IExpression
 {
     public UnaryOperator Operator { get; }
     public IExpression Target { get; }

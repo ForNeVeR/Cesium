@@ -2,14 +2,12 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class GetAddressValueExpression : IExpression
+internal sealed class GetAddressValueExpression : IExpression
 {
     private readonly IAddressableValue _value;
-
     public GetAddressValueExpression(IAddressableValue value)
     {
         _value = value;
@@ -30,11 +28,6 @@ internal class GetAddressValueExpression : IExpression
 
     private static IType GetBasePointer(IType valueType)
     {
-        if (valueType is InPlaceArrayType inPlaceArrayType)
-        {
-            return GetBasePointer(inPlaceArrayType.Base);
-        }
-
         return valueType.MakePointerType();
     }
 }

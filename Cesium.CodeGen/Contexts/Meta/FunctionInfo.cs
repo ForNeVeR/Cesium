@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
@@ -6,13 +7,17 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts.Meta;
 
+// TODO[#489]: This is confusing, make immutable.
 internal record FunctionInfo(
     ParametersInfo? Parameters,
     IType ReturnType,
     StorageClass StorageClass,
-    bool IsDefined)
+    bool IsDefined,
+    MethodReference? MethodReference = null)
 {
-    public MethodReference? MethodReference { get; set; }
+    public ParametersInfo? Parameters { get; set; } = Parameters;
+    public StorageClass StorageClass { get; set; } = StorageClass;
+    public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
@@ -46,7 +51,7 @@ internal record FunctionInfo(
         var declaredParams = Parameters?.Parameters ?? Array.Empty<ParameterInfo>();
         foreach (var (a, b) in actualParams.Zip(declaredParams))
         {
-            if (a != b)
+            if (!a.Type.IsEqualTo(b.Type))
                 throw new CompilationException(
                     $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }

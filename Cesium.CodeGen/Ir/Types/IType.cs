@@ -6,6 +6,19 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
+internal enum TypeKind
+{
+    Unresolved,
+    PrimitiveType,
+    Enum,
+    Struct,
+    FunctionType,
+    InPlaceArray,
+    Pointer,
+    Const,
+    InteropType,
+}
+
 /// <summary>An interface representing a C type.</summary>
 /// <remarks>
 /// Can be of two flavors: an <see cref="IGeneratedType"/> or a plain type that doesn't require any byte code to be
@@ -15,8 +28,19 @@ internal interface IType
 {
     TypeReference Resolve(TranslationUnitContext context);
 
+    /// <summary>
+    /// Gets kind of a type.
+    /// </summary>
+    TypeKind TypeKind { get; }
+
+    /// <remarks>
+    /// For cases when a type gets resolved differently for a type member context. For example, a pointer will
+    /// recursively get resolved as a <c>CPtr</c> on a wide architecture.
+    /// </remarks>
+    TypeReference ResolveForTypeMember(TranslationUnitContext context) => Resolve(context);
+
     FieldDefinition CreateFieldOfType(TranslationUnitContext context, TypeDefinition ownerType, string fieldName) =>
-        new(fieldName, FieldAttributes.Public, Resolve(context));
+        new(fieldName, FieldAttributes.Public, ResolveForTypeMember(context));
 
     /// <summary>Determines the size of an object of this type in bytes, if possible.</summary>
     /// <param name="arch">Target architecture set.</param>
@@ -39,18 +63,17 @@ internal interface IType
     /// <remarks>For simple types, will emit a constant.</remarks>
     IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
     {
-        var size = GetSizeInBytes(arch);
-        if (size == null)
-            throw new AssertException(
+        int size = GetSizeInBytes(arch) ?? throw new AssertException(
                 $"Cannot determine static size of type {this}, " +
                 $"and {nameof(GetSizeInBytesExpression)} method for dynamic calculation is not overridden.");
-
-        return new ConstantLiteralExpression(new IntegerConstant(size.Value));
+        return new ConstantLiteralExpression(new IntegerConstant(size));
     }
 }
 
 /// <summary>A generated type, i.e. a type that has some bytecode to be generated once.</summary>
 internal interface IGeneratedType : IType
 {
-    TypeDefinition Emit(string name, TranslationUnitContext context);
+    public string? Identifier { get; }
+    TypeDefinition StartEmit(string name, TranslationUnitContext context);
+    void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context);
 }

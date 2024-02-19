@@ -1,5 +1,5 @@
 namespace Cesium.CodeGen.Ir.BlockItems;
 
-internal class ContinueStatement : IBlockItem
+internal sealed class ContinueStatement : IBlockItem
 {
 }

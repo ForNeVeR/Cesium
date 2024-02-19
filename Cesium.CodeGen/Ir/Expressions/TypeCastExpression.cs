@@ -30,6 +30,12 @@ internal sealed class TypeCastExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
+        if (TargetType is InteropType iType)
+        {
+            iType.EmitConversion(scope, Expression);
+            return;
+        }
+
         Expression.EmitTo(scope);
 
         if (TargetType.Equals(C.SignedChar))
@@ -41,6 +47,8 @@ internal sealed class TypeCastExpression : IExpression
         else if (TargetType.Equals(C.Long))
             Add(OpCodes.Conv_I8);
         else if (TargetType.Equals(C.Char))
+            Add(OpCodes.Conv_U1);
+        else if (TargetType.Equals(ts.UnsignedChar))
             Add(OpCodes.Conv_U1);
         else if (TargetType.Equals(C.UnsignedShort))
             Add(OpCodes.Conv_U2);
@@ -54,6 +62,8 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_R8);
         else if (TargetType is PointerType || TargetType.Equals(C.NativeInt) || TargetType.Equals(C.NativeUInt))
             Add(OpCodes.Conv_I);
+        else if (TargetType is EnumType)
+            Add(OpCodes.Conv_I4);
         else
             throw new AssertException($"Type {TargetType} is not supported.");
 

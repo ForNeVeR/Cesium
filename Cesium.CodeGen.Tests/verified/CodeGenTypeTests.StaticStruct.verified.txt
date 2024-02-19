@@ -1,0 +1,23 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: _foo
+  Nested types:
+    Type: _foo/<SyntheticBuffer>x
+    Pack: 0
+    Size: 16
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Int32 _foo/<SyntheticBuffer>x::FixedElementField
+  Fields:
+    _foo/<SyntheticBuffer>x _foo::x
+    Custom attributes:
+    - FixedBufferAttribute(System.Int32, 16)
+
+
+  Type: testInput<Statics>
+  Fields:
+    _foo testInput<Statics>::foo

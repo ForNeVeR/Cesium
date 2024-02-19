@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
     // printf("\xF0");
     // printf("\xFF");
 
-    // printf("\u2200");
-    // printf("\U0001f34c");
+    printf("\u2200");
+    printf("\U0001f34c");
 
     return 42;
 }

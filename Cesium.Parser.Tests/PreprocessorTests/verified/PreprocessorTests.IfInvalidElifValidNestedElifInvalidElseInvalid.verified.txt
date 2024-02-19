@@ -1,0 +1,1 @@
+﻿inf elifFunc() { return 0; }

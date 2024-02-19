@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -26,17 +27,38 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task AddToPointerFromLeft() => DoTest("void foo (int *x) { x = 1+x; }");
 
     [Fact]
+    public Task IncrementPrimitivePointer() => DoTest("void foo (int *x) { x++; }");
+
+    [Fact]
+    public Task IncrementStructPointer() => DoTest("struct test { char* x; int y; } ; void foo () { const struct test *x; x++; }");
+
+    [Fact]
     public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
 
     [Fact]
+    public Task PointerToPointer() => DoTest("void foo (int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task ConstPointerToPointer() => DoTest("void foo (const int **x) { int y = *x[1]; }");
+
+    [Fact]
+    public Task PointerToConstPointer() => DoTest("void foo (int *const *x) { int y = *x[1]; }");
+
+    [Fact, NoVerify]
     public void CannotMultiplyPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = 1*x; }",
         "Operator Multiply is not supported for value/pointer operands");
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotAddPointerTypes() => DoesNotCompile(
         "void foo (int *x) { x = x +x; }",
         "Operator Add is not supported for pointer/pointer operands");
+
+    [Fact]
+    public Task CanSubtractPointerTypes() => DoTest("void foo (int *x, int *y) { int d = x - y; }");
+
+    [Fact]
+    public Task CanSubtractPointerWithConstTypes() => DoTest("void foo (int *x, const int *y) { int d = x - y; }");
 
     [Fact]
     public Task CanUseBuiltinOffsetOfOnDeclaredStruct() => DoTest(
@@ -58,31 +80,31 @@ public class CodeGenPointersTests : CodeGenTestBase
         "typedef struct { int x; } a; typedef struct { a a; } b; int m() { return &__builtin_offsetof_instance((b*)0).a.x; }"
     );
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnInvalidMembers() => DoesNotCompile(
         "typedef struct { int x; } a; int m() { return &__builtin_offsetof_instance((a*)0).y; }",
         "\"a\" has no member named \"y\""
     );
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnPlainType() => DoesNotCompile(
         "int m() { return &__builtin_offsetof_instance((int*)0).x; }",
         "__builtin_offsetof_instance: type \"PrimitiveType { Kind = Int }\" is not a struct type."
     );
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnPointerType() => DoesNotCompile(
         "typedef struct { int x; } a; int m() { return &__builtin_offsetof_instance((a**)0).x; }",
-        "__builtin_offsetof_instance: type \"PointerType { Base = Cesium.CodeGen.Ir.Types.StructType }\" is not a struct type."
+        "__builtin_offsetof_instance: type \"PointerType { Base = Cesium.CodeGen.Ir.Types.StructType, TypeKind = Pointer }\" is not a struct type."
     );
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnUndeclaredType() => DoesNotCompile(
         "int m() { return &__builtin_offsetof_instance((undeclared*) 0).x; }",
         "Cannot resolve type undeclared"
     );
 
-    [Fact]
+    [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnUndeclaredTag() => DoesNotCompile(
         "int m() { return &__builtin_offsetof_instance((struct undeclared*) 0).x; }",
         "__builtin_offsetof_instance: struct type \"undeclared\" has no members - is it declared?"

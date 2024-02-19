@@ -5,25 +5,25 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
-internal class CharConstant : IConstant
+internal sealed class CharConstant : IConstant
 {
-    private readonly byte _value;
-
     public CharConstant(string value)
     {
-        _value = checked((byte)UnescapeCharacter(value));
+        Value = checked((byte)UnescapeCharacter(value));
     }
+
+    public byte Value { get; }
 
     public void EmitTo(IEmitScope scope)
     {
         var instructions = scope.Method.Body.Instructions;
-        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) _value));
+        instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)Value));
         instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 
     public IType GetConstantType() => CTypeSystem.Char;
 
-    public override string ToString() => $"char: {_value}";
+    public override string ToString() => $"char: {Value}";
 
     private static char UnescapeCharacter(string text)
     {

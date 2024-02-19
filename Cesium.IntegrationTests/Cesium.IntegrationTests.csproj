@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="**/*.c" />
+        <None Include="**/*.h" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AsyncKeyedLock" />
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="MedallionShell" />
+        <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-using Cesium.Test.Framework;
+using Cesium.TestFramework;
 using Xunit.Sdk;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;

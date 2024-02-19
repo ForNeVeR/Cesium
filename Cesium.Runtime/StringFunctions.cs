@@ -1,6 +1,7 @@
 #if NETSTANDARD
 using System.Text;
 #else
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
 
@@ -9,7 +10,7 @@ namespace Cesium.Runtime;
 /// <summary>
 /// Functions declared in the string.h
 /// </summary>
-public unsafe static class StringFunctions
+public static unsafe class StringFunctions
 {
     public static nuint StrLen(byte* str)
     {
@@ -146,5 +147,110 @@ public unsafe static class StringFunctions
 
         *dest = 0;
         return result;
+    }
+    public static int StrNCmp(byte* lhs, byte* rhs, nuint count)
+    {
+        if (lhs == null || rhs == null)
+        {
+            return -1;
+        }
+
+        var result = lhs;
+        if (count == 0)
+        {
+            return 0;
+        }
+
+        for (nuint i = 0; i < count; i++, lhs++, rhs++)
+        {
+            int diff = *lhs - *rhs;
+            if (diff != 0)
+            {
+                return diff;
+            }
+        }
+
+        return 0;
+    }
+
+    public static void* Memset(void* dest, int ch, nuint count)
+    {
+        byte* val = (byte*)dest;
+        while (count > 0)
+        {
+            *val = (byte)ch;
+            count--;
+        }
+
+        return dest;
+    }
+    public static byte* StrChr(byte* str, int ch)
+    {
+        if (str == null)
+        {
+            return null;
+        }
+
+        while (*str != 0)
+        {
+            if (*str == ch)
+            {
+                return str;
+            }
+
+            str++;
+        }
+
+        return null;
+    }
+
+    public static int StrCmp(byte* lhs, byte* rhs)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        for (; *lhs != 0 && *rhs != 0; lhs++, rhs++)
+        {
+            if (*lhs < *rhs) return -1;
+            if (*lhs > *rhs) return 1;
+        }
+
+
+        if (*lhs < *rhs) return -1;
+        if (*lhs > *rhs) return 1;
+        return 0;
+    }
+
+    public static int StrCmpS(byte* lhs, byte* rhs, nuint count)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        for (; *lhs != 0 && *rhs != 0 && count != 0; lhs++, rhs++, count--)
+        {
+            if (*lhs < *rhs) return -1;
+            if (*lhs > *rhs) return 1;
+        }
+
+        if (*lhs < *rhs) return -1;
+        if (*lhs > *rhs) return 1;
+        return 0;
+    }
+
+    public static int MemCmp(void* lhs, void* rhs, nuint count)
+    {
+        if (lhs is null) return -1;
+        if (rhs is null) return -1;
+
+        byte* lhs_ = (byte*)lhs;
+        byte* rhs_ = (byte*)rhs;
+
+        for (; *lhs_ != 0 && *rhs_ != 0 && count != 0; lhs_++, rhs_++, count--)
+        {
+            if (*lhs_ < *rhs_) return -1;
+            if (*lhs_ > *rhs_) return 1;
+        }
+
+        return 0;
     }
 }

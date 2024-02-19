@@ -8,7 +8,7 @@ using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class ConstantLiteralExpression : IExpression
+internal sealed class ConstantLiteralExpression : IExpression
 {
     public static ConstantLiteralExpression OfInt32(int value) => new(new IntegerConstant(value));
 
@@ -47,7 +47,7 @@ internal class ConstantLiteralExpression : IExpression
 
     private static IConstant ParseFloatingPoint(string value)
     {
-        if (value.EndsWith('f'))
+        if (value.EndsWith('f') || value.EndsWith('F'))
         {
             if (!float.TryParse(value.AsSpan().Slice(0, value.Length - 1), NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var floatValue))
             {

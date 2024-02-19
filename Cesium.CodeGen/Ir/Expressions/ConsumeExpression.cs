@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal class ConsumeExpression : IExpression
+internal sealed class ConsumeExpression : IExpression
 {
     private readonly IExpression _expression;
 

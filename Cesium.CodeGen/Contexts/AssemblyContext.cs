@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
+using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Emitting;
 using Cesium.CodeGen.Ir.Lowering;
@@ -10,6 +11,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -25,8 +27,8 @@ public class AssemblyContext
 
     internal Dictionary<string, FunctionInfo> Functions { get; } = new();
 
-    private readonly Dictionary<string, IType> _globalFields = new();
-    internal IReadOnlyDictionary<string, IType> GlobalFields => _globalFields;
+    private readonly Dictionary<string, VariableInfo> _globalFields = new();
+
     public CompilationOptions CompilationOptions { get; }
 
     public static AssemblyContext Create(
@@ -48,7 +50,7 @@ public class AssemblyContext
         var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
-        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node));
+        nodes = nodes.Select(node => BlockItemLowering.Lower(scope, node)).ToList();
         foreach (var node in nodes)
             BlockItemEmitting.EmitCode(scope, node);
     }
@@ -73,6 +75,20 @@ public class AssemblyContext
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
+
+    private readonly TypeReference _runtimeCPtr;
+    private readonly ConversionMethodCache _cPtrConverterCache;
+    public MethodReference CPtrConverter(TypeReference argument) =>
+        _cPtrConverterCache.GetOrImportMethod(argument);
+
+    public TypeReference RuntimeVoidPtr { get; }
+    private readonly Lazy<MethodReference> _voidPtrConverter;
+    public MethodReference VoidPtrConverter => _voidPtrConverter.Value;
+
+    private readonly TypeReference _runtimeFuncPtr;
+    private readonly ConversionMethodCache _funcPtrConstructorCache;
+    public MethodReference FuncPtrConstructor(TypeReference argument) =>
+        _funcPtrConstructorCache.GetOrImportMethod(argument);
 
     private AssemblyContext(
         AssemblyDefinition assembly,
@@ -115,14 +131,92 @@ public class AssemblyContext
         {
             GlobalType = Module.GetType("<Module>");
         }
+
+        TypeDefinition GetRuntimeType(string typeName) =>
+            CesiumRuntimeAssembly.GetType(typeName) ??
+            throw new AssertException($"Could not find type {typeName} in the runtime assembly.");
+
+        _runtimeCPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.CPtrFullTypeName));
+        _cPtrConverterCache = new ConversionMethodCache(
+            _runtimeCPtr,
+            ReturnType: _runtimeCPtr.MakeGenericInstanceType(_runtimeCPtr.GenericParameters.Single()),
+            "op_Implicit",
+            Module);
+
+        RuntimeVoidPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.VoidPtrFullTypeName));
+        _voidPtrConverter = new(() => GetImplicitCastOperator(TypeSystemEx.VoidPtrFullTypeName));
+
+        _runtimeFuncPtr = Module.ImportReference(GetRuntimeType(TypeSystemEx.FuncPtrFullTypeName));
+        _funcPtrConstructorCache = new ConversionMethodCache(
+            _runtimeFuncPtr,
+            ReturnType: null,
+            ".ctor",
+            Module);
+
+        _importedActionDelegates = new("System", "Action", Module);
+        _importedFuncDelegates = new("System", "Func", Module);
+
+        MethodReference GetImplicitCastOperator(string typeName)
+        {
+            var type = GetRuntimeType(typeName);
+            return Module.ImportReference(type.Methods.Single(m => m.Name == "op_Implicit"));
+        }
     }
 
-    internal void AddAssemblyLevelField(string name, IType type)
+    public TypeReference RuntimeCPtr(TypeReference typeReference)
     {
-        if (_globalFields.ContainsKey(name))
-            throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+        return _runtimeCPtr.MakeGenericInstanceType(typeReference);
+    }
 
-        _globalFields.Add(name, type);
+    public TypeReference RuntimeFuncPtr(TypeReference delegateTypeReference)
+    {
+        return _runtimeFuncPtr.MakeGenericInstanceType(delegateTypeReference);
+    }
+
+    private readonly GenericDelegateTypeCache _importedActionDelegates;
+    private readonly GenericDelegateTypeCache _importedFuncDelegates;
+
+    /// <summary>
+    /// Resolves a standard delegate type (i.e. an <see cref="Action"/> or a <see cref="Func{TResult}"/>), depending on
+    /// the return type.
+    /// </summary>
+    public TypeReference StandardDelegateType(TypeReference returnType, IEnumerable<TypeReference> arguments)
+    {
+        var isAction = returnType == Module.TypeSystem.Void;
+        var typeArguments = (isAction ? arguments : arguments.Append(returnType)).ToArray();
+        var typeArgumentCount = typeArguments.Length;
+        if (typeArgumentCount > 16)
+        {
+            throw new WipException(
+                493,
+                $"Mapping of function for argument count {typeArgumentCount} is not supported.");
+        }
+
+        var delegateCache = isAction ? _importedActionDelegates : _importedFuncDelegates;
+        var delegateType = delegateCache.GetDelegateType(typeArguments.Length);
+        return typeArguments.Length == 0
+            ? delegateType
+            : delegateType.MakeGenericInstanceType(typeArguments);
+    }
+
+    internal VariableInfo? GetGlobalField(string identifier)
+    {
+        if (_globalFields.TryGetValue(identifier, out var value)) return value;
+
+        return null;
+    }
+
+    internal void AddAssemblyLevelField(string name, Ir.Declarations.StorageClass storageClass, IType type)
+    {
+        if (_globalFields.TryGetValue(name, out var globalField))
+        {
+            if (globalField.StorageClass != Ir.Declarations.StorageClass.Extern && storageClass != Ir.Declarations.StorageClass.Extern)
+                throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
+
+            return;
+        }
+
+        _globalFields.Add(name, new (name, storageClass, type, null));
     }
 
     public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)
@@ -132,7 +226,7 @@ public class AssemblyContext
             return null;
         }
 
-        return GlobalType.GetOrAddField(context, type, name);
+        return GlobalType.GetOrAddField(context, type.Type, name);
     }
 
     /// <summary>Returns either a module static constructor or a static constructor of the global type.</summary>

@@ -1,3 +1,4 @@
+using Cesium.TestFramework;
 using JetBrains.Annotations;
 
 namespace Cesium.CodeGen.Tests;
@@ -37,7 +38,7 @@ public class CodeGenSwitchTests : CodeGenTestBase
     return 1;
 }");
 
-    [Fact]
+    [Fact, NoVerify]
     public void NonConstEval() => DoesNotCompile(@"int main()
 {
     int x = 0;
@@ -52,6 +53,17 @@ public class CodeGenSwitchTests : CodeGenTestBase
     switch(x) {
         case 0: break;
         case 1: break;
+    };
+}");
+
+    [Fact]
+    public Task NestedCases() => DoTest(@"int main()
+{
+    int x = 0;
+    switch(x) {
+        case 0: case 1: break;
+        case 2: case 3: case 4: break;
+        case 5: break;
     };
 }");
 
@@ -89,5 +101,18 @@ public class CodeGenSwitchTests : CodeGenTestBase
 {
     int x = 0;
     switch(x) while (0) { default: break; }
+}");
+
+    [Fact]
+    public Task LowerExpression() => DoTest(@"
+int my_condition() { return 0; }
+int main()
+{
+    switch(my_condition()) { 
+        case 0: break;
+        case 1:
+        default: break;
+    };
+    return 1;
 }");
 }

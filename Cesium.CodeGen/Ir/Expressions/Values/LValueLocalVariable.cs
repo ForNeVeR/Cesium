@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal class LValueLocalVariable : ILValue
+internal sealed class LValueLocalVariable : ILValue
 {
     private readonly IType _variableType;
     private readonly string _name;
@@ -34,7 +34,7 @@ internal class LValueLocalVariable : ILValue
     public void EmitGetAddress(IEmitScope scope)
     {
         var variable = GetVariableDefinition(scope);
-        if (variable.VariableType.IsPointer)
+        if (_variableType is InPlaceArrayType)
         {
             EmitGetValue(scope);
         }
