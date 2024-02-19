@@ -1,5 +1,4 @@
 using Cesium.CodeGen.Extensions;
-using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -10,7 +9,7 @@ internal static class CTypeSystem
     public static IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
     public static IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
     public static IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
-    public IType Short { get; } = new PrimitiveType(PrimitiveTypeKind.Short);
+    public static IType Short { get; } = new PrimitiveType(PrimitiveTypeKind.Short);
     public static IType UnsignedShort { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedShort);
     public static IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
     public static IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
