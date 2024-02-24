@@ -1,0 +1,12 @@
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>foo
+  Fields:
+    System.Int64 <typedef>foo::l
+    Union_Int_Float <typedef>foo::Union_Int_Float
+
+  Type: Union_Int_Float
+  Fields:
+    System.Int32 Union_Int_Float::x
+    System.Single Union_Int_Float::f

@@ -118,10 +118,13 @@ internal sealed record LocalDeclarationInfo(
                             $"Cannot update type {type} with a struct specifier {typeSpecifier}.");
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
-                    if (complexTypeKind != ComplexTypeKind.Struct)
-                        throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
+                    if (complexTypeKind == ComplexTypeKind.Struct)
+                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
+                    else if (complexTypeKind == ComplexTypeKind.Union)
+                        type = new UnionType(GetTypeMemberDeclarations(structDeclarations).ToList());
+                    else
+                        throw new NotImplementedException($"Complex type kind not supported, yet: {complexTypeKind}.");
 
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
                     break;
                 }
 
@@ -319,14 +322,20 @@ internal sealed record LocalDeclarationInfo(
         return structDeclarations.SelectMany(memberDeclarator =>
         {
             var (specifiersQualifiers, declarators) = memberDeclarator;
-            if (declarators == null)
-                throw new CompilationException(
-                    "Empty declarator list on a struct member declaration:" +
-                    $"{string.Join(", ", specifiersQualifiers)}.");
-
+            
             var collection = specifiersQualifiers
                 .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
                 .ToList();
+
+            if (declarators == null) // maybe its union?
+            {
+                if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion && structOrUnion.TypeKind == ComplexTypeKind.Union))
+                    return [Of(collection, null, null)];
+                else
+                    throw new CompilationException(
+                       "Empty declarator list on a struct member declaration:" +
+                       $"{string.Join(", ", specifiersQualifiers)}.");
+            }
 
             return declarators.Select<StructDeclarator, LocalDeclarationInfo>(d =>
             {

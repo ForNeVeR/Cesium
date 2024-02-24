@@ -55,15 +55,22 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         {
             var (type, identifier, cliImportMemberName) = member;
             if (identifier == null)
-                throw new WipException(
-                    233,
-                    $"Anonymous struct members for {name} aren't supported, yet: {type}.");
+            {
+                if (type is UnionType union)
+                {
+                    identifier = union.Identifier;
+                }
+                else
+                    throw new WipException(
+                       233,
+                       $"Anonymous struct members for {name} aren't supported, yet: {type}.");
+            }
 
             if (cliImportMemberName != null)
                 throw new CompilationException(
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
-            var field = type.CreateFieldOfType(context, definition, identifier);
+            var field = type.CreateFieldOfType(context, definition, identifier!);
             // TODO[#355]: for every field, calculate the explicit layout position.
             definition.Fields.Add(field);
         }

@@ -32,7 +32,8 @@ public sealed record NamedTypeSpecifier(string TypeDefName) : ITypeSpecifier;
 // 6.7.2.1 Structure and union specifiers
 public enum ComplexTypeKind
 {
-    Struct
+    Struct,
+    Union
 }
 
 public sealed record StructDeclaration(

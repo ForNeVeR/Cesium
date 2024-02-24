@@ -12,6 +12,7 @@ internal enum TypeKind
     PrimitiveType,
     Enum,
     Struct,
+    Union,
     FunctionType,
     InPlaceArray,
     Pointer,

@@ -448,11 +448,11 @@ public partial class CParser
         ComplexTypeKind structOrUnion,
         IToken identifier) => new(structOrUnion, identifier?.Text, ImmutableArray<StructDeclaration>.Empty);
 
-    // TODO[#211]: struct-or-union-specifier: struct-or-union identifier
-
     [Rule("struct_or_union: 'struct'")]
     private static ComplexTypeKind MakeStructComplexTypeKind(IToken _) => ComplexTypeKind.Struct;
-    // TODO[#211]: struct-or-union: union
+
+    [Rule("struct_or_union: 'union'")]
+    private static ComplexTypeKind MakeUnionComplexTypeKind(IToken _) => ComplexTypeKind.Union;
 
     [Rule("struct_declaration_list: struct_declaration")]
     private static StructDeclarationList MakeStructDeclarationList(StructDeclaration structDeclaration) =>

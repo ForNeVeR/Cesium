@@ -191,6 +191,28 @@ int main(void) {
 ");
 
     [Fact]
+    public Task SingleFieldStructWithUnionDefinition() => DoTest(@"typedef struct { union { int x; float f; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f = 5.2f;
+    return bar.x;
+}");
+
+    [Fact]
+    public Task MegaUnionDefinition() => DoTest(@"typedef struct { union { union { int x1; float x2; union { int x2; float f2; union { int x3; float f3; union { int x4; float f4; };};};}; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f4 = 5.2f;
+    return bar.x2;
+}");
+
+
+    [Fact]
+    public Task MultipleFieldStructWithUnionDefinition() => DoTest("typedef struct { long l; union { int x; float f; }; } foo;");
+
+    [Fact]
     public Task ArrayDeclaration() => DoTest(@"int main()
 {
     int i;
