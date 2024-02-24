@@ -16,7 +16,7 @@ internal sealed class UnionType : IGeneratedType, IEquatable<UnionType>
     public UnionType(IReadOnlyList<LocalDeclarationInfo> members)
     {
         Members = members;
-        UnionName = "Union_" + string.Join('_', Members.Select(m => m.Type is IGeneratedType generated ? generated.Identifier
+        UnionName = "_Union_" + string.Join('_', Members.Select(m => m.Type is IGeneratedType generated ? generated.Identifier
             : m.Type is PrimitiveType primitive ? primitive.Kind.ToString() : "Unk")); // very bad, but better than nothing
     }
 
@@ -38,9 +38,10 @@ internal sealed class UnionType : IGeneratedType, IEquatable<UnionType>
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.ExplicitLayout,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
 
-        CachedType.PackingSize = 1;
+        CachedType.PackingSize = -1;
+        CachedType.ClassSize = -1;
 
-        foreach(var member in Members)
+        foreach (var member in Members)
         {
             var (type, identifier, cliImportMemberName) = member;
             if (identifier == null && type is UnionType u) identifier = u.Identifier;
@@ -48,8 +49,6 @@ internal sealed class UnionType : IGeneratedType, IEquatable<UnionType>
             field.Offset = 0;
             CachedType.Fields.Add(field);
         }
-
-        //CachedType.ClassSize = GetSizeInBytes(TargetArchitectureSet.Bit64)!.Value;
 
         context.Module.Types.Add(CachedType);
         return CachedType;

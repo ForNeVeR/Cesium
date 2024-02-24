@@ -36,7 +36,7 @@ internal sealed class LValueInstanceField : LValueField
         // oh, maybe its from union?
         type = _structType.Members.Where(_ => _.Type.TypeKind == TypeKind.Union)
             .SelectMany(_ => ((UnionType)_.Type).Members)
-            .FirstOrDefault(_ => _.Identifier == _name)?.Type;
+            .SingleOrDefault(_ => _.Identifier == _name)?.Type;
 
         var unionFields = _structType.Members.Where(_ => _.Type.TypeKind == TypeKind.Union);
         if (unionFields.FirstOrDefault() != null)
@@ -119,7 +119,7 @@ internal sealed class LValueInstanceField : LValueField
 
                 var resolved = field.FieldType.Resolve();
                 if (resolved == null) return false;
-                if (resolved.Name.StartsWith("Union_") && RecursiveBuildPath(fieldName, field, list))
+                if (resolved.Name.StartsWith("_Union_") && RecursiveBuildPath(fieldName, field, list))
                 {
                     list.Add(new FieldReference(field.Name, field.FieldType, field.DeclaringType));
                     return true;

@@ -200,6 +200,18 @@ int main ()
 }");
 
     [Fact]
+    public void BadStructWithUnionDefinition() => Assert.Throws<InvalidOperationException>(() =>
+    {
+        DoTest(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f = 5.2f;
+    return bar.x;
+}").Wait();
+    });
+
+    [Fact]
     public Task MegaUnionDefinition() => DoTest(@"typedef struct { union { union { int x1; float x2; union { int x2; float f2; union { int x3; float f3; union { int x4; float f4; };};};}; }; } foo;
 int main ()
 {
