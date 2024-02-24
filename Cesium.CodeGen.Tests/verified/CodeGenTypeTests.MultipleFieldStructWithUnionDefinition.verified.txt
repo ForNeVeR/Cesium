@@ -4,9 +4,9 @@
   Type: <typedef>foo
   Fields:
     System.Int64 <typedef>foo::l
-    Union_Int_Float <typedef>foo::Union_Int_Float
+    _Union_Int_Float <typedef>foo::_Union_Int_Float
 
-  Type: Union_Int_Float
+  Type: _Union_Int_Float
   Fields:
-    System.Int32 Union_Int_Float::x
-    System.Single Union_Int_Float::f
+    System.Int32 _Union_Int_Float::x
+    System.Single _Union_Int_Float::f
