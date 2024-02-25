@@ -37,7 +37,7 @@ internal abstract class LValueField : ILValue
         else
         {
             EmitGetFieldOwner(scope);
-            if (field is UnionType.UnionFieldReference unionField)
+            if (field is StructType.AnonStructFieldReference unionField)
                 unionField.EmitPath(scope);
             scope.LdFld(field);
         }
@@ -71,7 +71,7 @@ internal abstract class LValueField : ILValue
         var field = GetField(scope);
 
         EmitGetFieldOwner(scope);
-        if (field is UnionType.UnionFieldReference unionField)
+        if (field is StructType.AnonStructFieldReference unionField)
             unionField.EmitPath(scope);
 
         value.EmitTo(scope);

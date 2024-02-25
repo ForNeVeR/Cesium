@@ -118,10 +118,8 @@ internal sealed record LocalDeclarationInfo(
                             $"Cannot update type {type} with a struct specifier {typeSpecifier}.");
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
-                    if (complexTypeKind == ComplexTypeKind.Struct)
-                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
-                    else if (complexTypeKind == ComplexTypeKind.Union)
-                        type = new UnionType(GetTypeMemberDeclarations(structDeclarations).ToList());
+                    if (complexTypeKind is ComplexTypeKind.Struct or ComplexTypeKind.Union)
+                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
                     else
                         throw new NotImplementedException($"Complex type kind not supported, yet: {complexTypeKind}.");
 
@@ -327,11 +325,11 @@ internal sealed record LocalDeclarationInfo(
                 .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
                 .ToList();
 
-            if (declarators == null) // maybe its union?
+            if (declarators == null) // maybe its anon structure or anon union?
             {
-                if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion && structOrUnion.TypeKind == ComplexTypeKind.Union))
+                if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion)) // yes, its anon structure or union
                     return [Of(collection, null, null)];
-                else
+                else // nope
                     throw new CompilationException(
                        "Empty declarator list on a struct member declaration:" +
                        $"{string.Join(", ", specifiersQualifiers)}.");

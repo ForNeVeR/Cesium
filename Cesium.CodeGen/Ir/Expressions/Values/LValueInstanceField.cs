@@ -33,15 +33,23 @@ internal sealed class LValueInstanceField : LValueField
         var type = _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type;
         if (type != null) return type;
 
-        // oh, maybe its from union?
-        type = _structType.Members.Where(_ => _.Type.TypeKind == TypeKind.Union)
-            .SelectMany(_ => ((UnionType)_.Type).Members)
-            .SingleOrDefault(_ => _.Identifier == _name)?.Type;
+        // oh, maybe its from anon type?
+        type = _structType.Members.Where(_ => _.Identifier == null && _.Type is StructType) // get all struct & union fields in target struct
+            .SelectMany(_ => ((StructType)_.Type).Members) // get all fields from them
+            .SingleOrDefault(_ => _.Identifier == _name)?.Type; // check
 
-        var unionFields = _structType.Members.Where(_ => _.Type.TypeKind == TypeKind.Union);
-        if (unionFields.FirstOrDefault() != null)
-            foreach (var field in unionFields)
+        if (type != null) return type;
+
+        // go deeper
+
+        var anonFields = _structType.Members.Where(_ => _.Identifier == null);
+        if (anonFields.FirstOrDefault() != null)
+            foreach (var field in anonFields)
+            {
                 type = RecursiveSearch(field.Type, _name);
+                if (type != null)
+                    break;
+            }
 
         if (type != null) return type;
 
@@ -51,10 +59,11 @@ internal sealed class LValueInstanceField : LValueField
 
         static IType? RecursiveSearch(IType type, string fieldName)
         {
-            if (type.TypeKind != TypeKind.Union) return null;
-            var union = (UnionType)type;
+            if (type is not StructType structType) return null; // skip primitives and etc
+            if (!structType.IsAnon) return null; // skip non-anon
+            var members = structType.Members;
 
-            foreach (var field in union.Members)
+            foreach (var field in members)
             {
                 if (field.Identifier == fieldName)
                     return field.Type;
@@ -79,7 +88,7 @@ internal sealed class LValueInstanceField : LValueField
             return _field;
         }
 
-        List<FieldReference>? path = null;
+        List<FieldDefinition>? path = null;
 
         var valueTypeReference = _structType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
@@ -93,8 +102,8 @@ internal sealed class LValueInstanceField : LValueField
             foreach (var f in valueTypeDef.Fields)
                 if (RecursiveBuildPath(_name, f, path))
                 {
-                    path.Add(new FieldReference(f.Name, f.FieldType, f.DeclaringType));
-                    return new UnionType.UnionFieldReference(path[0], path);
+                    path.Add(f);
+                    return new StructType.AnonStructFieldReference(path[0], path);
                 }
 
             throw new CompilationException(
@@ -104,24 +113,26 @@ internal sealed class LValueInstanceField : LValueField
         _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);
         return _field;
 
-        static bool RecursiveBuildPath(string fieldName, FieldDefinition type, List<FieldReference> list)
+        static bool RecursiveBuildPath(string fieldName, FieldDefinition type, List<FieldDefinition> list)
         {
             var fieldType = type.FieldType.Resolve();
             if (fieldType == null) return false;
+            if (fieldType.IsPrimitive) return false; // skip primitives (int, long and etc)
 
             foreach(var field in fieldType.Fields)
             {
                 if (field.Name == fieldName)
                 {
-                    list.Add(new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+                    list.Add(field);
                     return true;
                 }
 
                 var resolved = field.FieldType.Resolve();
-                if (resolved == null) return false;
-                if (resolved.Name.StartsWith("_Union_") && RecursiveBuildPath(fieldName, field, list))
+                if (resolved == null) continue;
+                if (resolved.IsPrimitive) continue; // They don't have fields, so skip them
+                if ((resolved.Name.StartsWith("_Union_") || resolved.Name.StartsWith("_Anon_")) && RecursiveBuildPath(fieldName, field, list))
                 {
-                    list.Add(new FieldReference(field.Name, field.FieldType, field.DeclaringType));
+                    list.Add(field);
                     return true;
                 }
             }

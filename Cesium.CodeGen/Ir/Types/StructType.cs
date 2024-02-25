@@ -9,17 +9,32 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 {
-    public StructType(IReadOnlyList<LocalDeclarationInfo> members, string? identifier)
+    internal const string AnonStructPrefix = "_Anon_";
+    internal const string AnonUnionPrefix = "_Union_";
+
+    private TypeReference? AnonType;
+
+    public StructType(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion, string? identifier)
     {
         Members = members;
+        IsUnion = isUnion;
         Identifier = identifier;
+        IsAnon = identifier == null;
+        if (IsAnon) AnonIndentifier = CreateAnonIdentifier(members, isUnion);
     }
 
+    public bool IsAnon { get; private set; }
+
+    public bool IsUnion { get; private set; }
+
     /// <inheritdoc />
-    public TypeKind TypeKind => TypeKind.Struct;
+    public TypeKind TypeKind => IsUnion ? TypeKind.Union : TypeKind.Struct;
 
     internal IReadOnlyList<LocalDeclarationInfo> Members { get; set; }
     public string? Identifier { get; }
+
+    // We need a good name generator...
+    internal string? AnonIndentifier { get; }
 
     public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
@@ -56,14 +71,12 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             var (type, identifier, cliImportMemberName) = member;
             if (identifier == null)
             {
-                if (type is UnionType union)
+                if (type is StructType structType && structType.IsAnon)
                 {
-                    identifier = union.Identifier;
+                    identifier = structType.AnonIndentifier;
                 }
                 else
-                    throw new WipException(
-                       233,
-                       $"Anonymous struct members for {name} aren't supported, yet: {type}.");
+                    throw new NotImplementedException($"Unexpected field with null ident and with type: {type}");
             }
 
             if (cliImportMemberName != null)
@@ -71,13 +84,50 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
                     $"CLI imports inside struct members aren't supported: {cliImportMemberName}.");
 
             var field = type.CreateFieldOfType(context, definition, identifier!);
+
+            if (IsUnion) field.Offset = 0;
+
             // TODO[#355]: for every field, calculate the explicit layout position.
             definition.Fields.Add(field);
         }
     }
 
-    public TypeReference Resolve(TranslationUnitContext context) =>
-        context.GetTypeReference(this) ?? throw new CompilationException($"Type {this} was not found.");
+    private void EmitAsAnonStructure(TranslationUnitContext context)
+    {
+        var type = new TypeDefinition(string.Empty, AnonIndentifier, TypeAttributes.Public | TypeAttributes.Sealed,
+            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
+
+        FinishEmit(type, type.Name, context); // emit fields
+
+        if (IsUnion)
+        {
+            type.ClassSize = -1;
+            type.PackingSize = -1;
+            type.IsExplicitLayout = true;
+        }
+
+        context.Module.Types.Add(type);
+        AnonType = type;
+    }
+
+    public TypeReference Resolve(TranslationUnitContext context)
+    {
+        var resolved = context.GetTypeReference(this);
+
+        if (resolved == null)
+        {
+            if (IsAnon)
+            {
+                if (AnonType == null)
+                    EmitAsAnonStructure(context);
+
+                return AnonType!; // not null
+            }
+            throw new CompilationException($"Type {this} was not found.");
+        }
+
+        return resolved;
+    }
 
     public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
     {
@@ -88,16 +138,36 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         return new SizeOfOperatorExpression(this);
     }
 
-    public int? GetSizeInBytes(TargetArchitectureSet arch) => Members.Count switch
+    public int? GetSizeInBytes(TargetArchitectureSet arch)
     {
-        0 => throw new AssertException($"Invalid struct with no members: {this}."),
-        1 => Members.Single().Type.GetSizeInBytes(arch),
-        _ => arch switch
+        if (IsUnion)
+        {
+            int max = 1;
+
+            foreach (var member in Members)
+            {
+                var maybeSize = member.Type.GetSizeInBytes(arch);
+                if (maybeSize.HasValue)
+                {
+                    var size = maybeSize.Value;
+                    if (max < size)
+                        max = size;
+                }
+            }
+
+            return max;
+        }
+        else return Members.Count switch
+        {
+            0 => throw new AssertException($"Invalid struct with no members: {this}."),
+            1 => Members.Single().Type.GetSizeInBytes(arch),
+            _ => arch switch
             {
                 TargetArchitectureSet.Dynamic => null,
                 _ => throw new WipException(355, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
             }
-    };
+        };
+    }
 
     public bool Equals(StructType? other)
     {
@@ -133,5 +203,34 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         }
 
         return hash;
+    }
+
+    private static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
+    {
+        return (isUnion ? AnonUnionPrefix : AnonStructPrefix) + string.Join('_', members.SelectMany(_ => new string[] { _.Type is StructType st ? st.Identifier ?? string.Empty : _.Type is PrimitiveType pt ? pt.Kind.ToString() : _.Type.TypeKind.ToString(), _.Identifier ?? string.Empty }));
+    }
+
+    internal sealed class AnonStructFieldReference : FieldReference
+    {
+        private List<FieldDefinition> Path;
+        private FieldDefinition Field;
+
+        public AnonStructFieldReference(FieldDefinition field, List<FieldDefinition> path) : base(field.Name, field.FieldType, field.DeclaringType)
+        {
+            Field = field;
+            Path = path;
+        }
+
+        internal void EmitPath(IEmitScope scope)
+        {
+            var start = Path.Count - 1;
+            for (int i = start; i >= 1; i--)
+            {
+                var field = Path[i];
+                scope.LdFldA(field);
+            }
+        }
+
+        public override FieldDefinition Resolve() => Field;
     }
 }

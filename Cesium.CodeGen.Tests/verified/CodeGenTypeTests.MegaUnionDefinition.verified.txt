@@ -5,17 +5,17 @@
       Locals:
         <typedef>foo V_0
       IL_0000: ldloca.s V_0
-      IL_0002: ldflda Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float <typedef>foo::Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
-      IL_0007: ldflda Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
-      IL_000c: ldflda Union_Int_Float_Union_Int_Float_Union_Int_Float Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float_Union_Int_Float
-      IL_0011: ldflda Union_Int_Float_Union_Int_Float Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float
-      IL_0016: ldflda Union_Int_Float Union_Int_Float_Union_Int_Float::Union_Int_Float
+      IL_0002: ldflda _Union__ <typedef>foo::_Union__
+      IL_0007: ldflda _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__
+      IL_000c: ldflda _Union_Int_x2_Float_f2__ _Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
+      IL_0011: ldflda _Union_Int_x3_Float_f3__ _Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
+      IL_0016: ldflda _Union_Int_x4_Float_f4 _Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
       IL_001b: ldc.r4 5.2
-      IL_0020: stfld System.Single Union_Int_Float::f4
+      IL_0020: stfld System.Single _Union_Int_x4_Float_f4::f4
       IL_0025: ldloca.s V_0
-      IL_0027: ldflda Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float <typedef>foo::Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
-      IL_002c: ldflda Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
-      IL_0031: ldfld System.Single Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::x2
+      IL_0027: ldflda _Union__ <typedef>foo::_Union__
+      IL_002c: ldflda _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__
+      IL_0031: ldfld System.Single _Union_Int_x1_Float_x2__::x2
       IL_0036: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
@@ -30,31 +30,31 @@
 
   Type: <typedef>foo
   Fields:
-    Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float <typedef>foo::Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
+    _Union__ <typedef>foo::_Union__
 
-  Type: Union_Int_Float
+  Type: _Union_Int_x4_Float_f4
   Fields:
-    System.Int32 Union_Int_Float::x4
-    System.Single Union_Int_Float::f4
+    System.Int32 _Union_Int_x4_Float_f4::x4
+    System.Single _Union_Int_x4_Float_f4::f4
 
-  Type: Union_Int_Float_Union_Int_Float
+  Type: _Union_Int_x3_Float_f3__
   Fields:
-    System.Int32 Union_Int_Float_Union_Int_Float::x3
-    System.Single Union_Int_Float_Union_Int_Float::f3
-    Union_Int_Float Union_Int_Float_Union_Int_Float::Union_Int_Float
+    System.Int32 _Union_Int_x3_Float_f3__::x3
+    System.Single _Union_Int_x3_Float_f3__::f3
+    _Union_Int_x4_Float_f4 _Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
 
-  Type: Union_Int_Float_Union_Int_Float_Union_Int_Float
+  Type: _Union_Int_x2_Float_f2__
   Fields:
-    System.Int32 Union_Int_Float_Union_Int_Float_Union_Int_Float::x2
-    System.Single Union_Int_Float_Union_Int_Float_Union_Int_Float::f2
-    Union_Int_Float_Union_Int_Float Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float
+    System.Int32 _Union_Int_x2_Float_f2__::x2
+    System.Single _Union_Int_x2_Float_f2__::f2
+    _Union_Int_x3_Float_f3__ _Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
 
-  Type: Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
+  Type: _Union_Int_x1_Float_x2__
   Fields:
-    System.Int32 Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::x1
-    System.Single Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::x2
-    Union_Int_Float_Union_Int_Float_Union_Int_Float Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float_Union_Int_Float
+    System.Int32 _Union_Int_x1_Float_x2__::x1
+    System.Single _Union_Int_x1_Float_x2__::x2
+    _Union_Int_x2_Float_f2__ _Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
 
-  Type: Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
+  Type: _Union__
   Fields:
-    Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float Union_Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float::Union_Int_Float_Union_Int_Float_Union_Int_Float_Union_Int_Float
+    _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__

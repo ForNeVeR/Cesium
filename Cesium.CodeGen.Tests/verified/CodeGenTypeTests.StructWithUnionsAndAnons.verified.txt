@@ -1,0 +1,82 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        <typedef>foo V_0
+      IL_0000: ldloca.s V_0
+      IL_0002: ldc.i4.2
+      IL_0003: stfld System.Int32 <typedef>foo::_1
+      IL_0008: ldloca.s V_0
+      IL_000a: ldflda _Anon_Int__2a <typedef>foo::_Anon_Int__2a
+      IL_000f: ldc.i4.s 10
+      IL_0011: stfld System.Int32 _Anon_Int__2a::_2a
+      IL_0016: ldloca.s V_0
+      IL_0018: ldflda _Union_Long__3u_Int__4u <typedef>foo::_Union_Long__3u_Int__4u
+      IL_001d: ldc.i4.s 10
+      IL_001f: conv.i8
+      IL_0020: stfld System.Int64 _Union_Long__3u_Int__4u::_3u
+      IL_0025: ldloca.s V_0
+      IL_0027: ldflda _Union_Long__5u_Int__6u <typedef>foo::uni
+      IL_002c: ldc.i4.s 10
+      IL_002e: conv.i8
+      IL_002f: stfld System.Int64 _Union_Long__5u_Int__6u::_5u
+      IL_0034: ldloca.s V_0
+      IL_0036: ldflda _Anon_Int__7 <typedef>foo::s
+      IL_003b: ldc.i4.s 10
+      IL_003d: stfld System.Int32 _Anon_Int__7::_7
+      IL_0042: ldloca.s V_0
+      IL_0044: ldfld System.Int32 <typedef>foo::_1
+      IL_0049: ldloca.s V_0
+      IL_004b: ldflda _Anon_Int__2a <typedef>foo::_Anon_Int__2a
+      IL_0050: ldfld System.Int32 _Anon_Int__2a::_2a
+      IL_0055: add
+      IL_0056: ldloca.s V_0
+      IL_0058: ldflda _Union_Long__3u_Int__4u <typedef>foo::_Union_Long__3u_Int__4u
+      IL_005d: ldfld System.Int32 _Union_Long__3u_Int__4u::_4u
+      IL_0062: add
+      IL_0063: ldloca.s V_0
+      IL_0065: ldflda _Union_Long__5u_Int__6u <typedef>foo::uni
+      IL_006a: ldfld System.Int32 _Union_Long__5u_Int__6u::_6u
+      IL_006f: add
+      IL_0070: ldloca.s V_0
+      IL_0072: ldflda _Anon_Int__7 <typedef>foo::s
+      IL_0077: ldfld System.Int32 _Anon_Int__7::_7
+      IL_007c: add
+      IL_007d: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: <typedef>foo
+  Fields:
+    System.Int32 <typedef>foo::_1
+    _Anon_Int__2a <typedef>foo::_Anon_Int__2a
+    _Union_Long__3u_Int__4u <typedef>foo::_Union_Long__3u_Int__4u
+    _Union_Long__5u_Int__6u <typedef>foo::uni
+    _Anon_Int__7 <typedef>foo::s
+
+  Type: _Anon_Int__2a
+  Fields:
+    System.Int32 _Anon_Int__2a::_2a
+
+  Type: _Union_Long__3u_Int__4u
+  Fields:
+    System.Int64 _Union_Long__3u_Int__4u::_3u
+    System.Int32 _Union_Long__3u_Int__4u::_4u
+
+  Type: _Union_Long__5u_Int__6u
+  Fields:
+    System.Int64 _Union_Long__5u_Int__6u::_5u
+    System.Int32 _Union_Long__5u_Int__6u::_6u
+
+  Type: _Anon_Int__7
+  Fields:
+    System.Int32 _Anon_Int__7::_7

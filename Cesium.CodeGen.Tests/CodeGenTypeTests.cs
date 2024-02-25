@@ -200,16 +200,13 @@ int main ()
 }");
 
     [Fact]
-    public void BadStructWithUnionDefinition() => Assert.Throws<InvalidOperationException>(() =>
-    {
-        DoTest(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
+    public void BadStructWithUnionDefinition() => Assert.ThrowsAsync<InvalidOperationException>(() => DoTest(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
 int main ()
 {
     foo bar;
     bar.f = 5.2f;
     return bar.x;
-}").Wait();
-    });
+}"));
 
     [Fact]
     public Task MegaUnionDefinition() => DoTest(@"typedef struct { union { union { int x1; float x2; union { int x2; float f2; union { int x3; float f3; union { int x4; float f4; };};};}; }; } foo;
@@ -220,6 +217,36 @@ int main ()
     return bar.x2;
 }");
 
+    [Fact]
+    public Task StructWithUnionsAndAnons() => DoTest(@"
+typedef struct {
+    int _1;
+    struct {
+        int _2a;
+    };
+    union {
+        long _3u;
+        int _4u;
+    };
+    union {
+        long _5u;
+        int _6u;
+    } uni;
+    struct {
+        int _7;
+    } s;
+} foo;
+
+int main() {
+    foo f;
+    f._1 = 2;
+    f._2a = 10;
+    f._3u = 10;
+    f.uni._5u = 10;
+    f.s._7 = 10;
+    return f._1 + f._2a + f._4u + f.uni._6u + f.s._7;
+}
+");
 
     [Fact]
     public Task MultipleFieldStructWithUnionDefinition() => DoTest("typedef struct { long l; union { int x; float f; }; } foo;");
