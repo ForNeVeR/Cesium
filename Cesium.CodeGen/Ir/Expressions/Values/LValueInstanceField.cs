@@ -2,7 +2,6 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
-using System.Runtime.CompilerServices;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
@@ -33,12 +32,21 @@ internal sealed class LValueInstanceField : LValueField
         var type = _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type;
         if (type != null) return type;
 
-        // oh, maybe its from anon type?
-        type = _structType.Members.Where(_ => _.Identifier == null && _.Type is StructType) // get all struct & union fields in target struct
-            .SelectMany(_ => ((StructType)_.Type).Members) // get all fields from them
-            .SingleOrDefault(_ => _.Identifier == _name)?.Type; // check
+        var structName = _structType.Identifier == null ? "Struct" : $"\"{_structType.Identifier}\"";
 
-        if (type != null) return type;
+        // oh, maybe its from anon type?
+        var members = _structType.Members
+            .Where(x => x.Identifier == null && x.Type is StructType) // get all struct & union fields in target struct
+            .SelectMany(x => ((StructType)x.Type).Members) // get all fields from them
+            .Where(x => x.Identifier == _name)
+            .ToList();
+        switch (members.Count)
+        {
+            case 1: return members.Single().Type;
+            case 0: break;
+            default: throw new CompilationException(
+                $"{structName} has multiple suitable members named \"{_name}\".");
+        }
 
         // go deeper
 
@@ -52,8 +60,6 @@ internal sealed class LValueInstanceField : LValueField
             }
 
         if (type != null) return type;
-
-        var structName = _structType.Identifier == null ? "Struct" : $"\"{_structType.Identifier}\"";
         throw new CompilationException(
             $"{structName} has no member named \"{_name}\".");
 
@@ -109,7 +115,7 @@ internal sealed class LValueInstanceField : LValueField
             throw new CompilationException(
                     $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{_name}\"");
         }
-                
+
         _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);
         return _field;
 

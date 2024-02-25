@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Cesium.TestFramework;
 using JetBrains.Annotations;
 
@@ -6,7 +7,7 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenTypeTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
+    private static Task DoTest([StringSyntax("cpp")] string source, string @namespace = "", string globalTypeFqn = "")
     {
         var assembly = GenerateAssembly(default, @namespace: @namespace, globalTypeFqn: globalTypeFqn, sources: source);
         return VerifyTypes(assembly);
@@ -199,14 +200,14 @@ int main ()
     return bar.x;
 }");
 
-    [Fact]
-    public void BadStructWithUnionDefinition() => Assert.ThrowsAsync<InvalidOperationException>(() => DoTest(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
+    [Fact, NoVerify]
+    public void BadStructWithUnionDefinition() => DoesNotCompile(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
 int main ()
 {
     foo bar;
     bar.f = 5.2f;
     return bar.x;
-}"));
+}", "Struct has multiple suitable members named \"f\".");
 
     [Fact]
     public Task MegaUnionDefinition() => DoTest(@"typedef struct { union { union { int x1; float x2; union { int x2; float f2; union { int x3; float f3; union { int x4; float f4; };};};}; }; } foo;
