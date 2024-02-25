@@ -121,7 +121,7 @@ internal sealed record LocalDeclarationInfo(
                     if (complexTypeKind is ComplexTypeKind.Struct or ComplexTypeKind.Union)
                         type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
                     else
-                        throw new NotImplementedException($"Complex type kind not supported, yet: {complexTypeKind}.");
+                        throw new AssertException($"Unknown complex type kind: {complexTypeKind}.");
 
                     break;
                 }
@@ -320,7 +320,7 @@ internal sealed record LocalDeclarationInfo(
         return structDeclarations.SelectMany(memberDeclarator =>
         {
             var (specifiersQualifiers, declarators) = memberDeclarator;
-            
+
             var collection = specifiersQualifiers
                 .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
                 .ToList();
