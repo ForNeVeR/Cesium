@@ -100,9 +100,15 @@ public sealed record ParameterDeclaration(
     AbstractDeclarator? AbstractDeclarator = null);
 
 // 6.7.9 Initialization
-public abstract record Initializer;
-public sealed record AssignmentInitializer(Expression Expression) : Initializer;
-public sealed record ArrayInitializer(ImmutableArray<Initializer> Initializers) : Initializer;
+public abstract record Initializer(Designation? Designation);
+public sealed record AssignmentInitializer(Expression Expression) : Initializer(Designation: null);
+public sealed record ArrayInitializer(ImmutableArray<Initializer> Initializers) : Initializer(Designation: null);
+
+public sealed record Designation(ImmutableArray<Designator> Designators);
+
+public abstract record Designator;
+public sealed record BracketsDesignator(Expression Expression) : Designator;
+public sealed record IdentifierDesignator(string FieldName) : Designator;
 
 // CLI extensions
 public sealed record CliImportSpecifier(string MemberName) : IDeclarationSpecifier;

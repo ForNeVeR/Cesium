@@ -1,0 +1,179 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        Foo V_0
+        Foo V_1
+        _Anon_Long__1_Long__2 V_2
+        _Anon_Long_he_Long_ha V_3
+      IL_0000: newobj System.Void Foo::.ctor()
+      IL_0005: stloc V_1
+      IL_0009: ldloca V_1
+      IL_000d: ldc.i4.2
+      IL_000e: stfld System.Int32 Foo::a
+      IL_0013: ldloca V_1
+      IL_0017: ldc.i4.2
+      IL_0018: stfld System.Int32 Foo::b
+      IL_001d: ldloca V_1
+      IL_0021: newobj System.Void _Anon_Long__1_Long__2::.ctor()
+      IL_0026: stloc V_2
+      IL_002a: ldloca V_2
+      IL_002e: ldc.i4.2
+      IL_002f: stfld System.Int64 _Anon_Long__1_Long__2::_1
+      IL_0034: ldloca V_2
+      IL_0038: ldc.i4.2
+      IL_0039: stfld System.Int64 _Anon_Long__1_Long__2::_2
+      IL_003e: ldloc V_2
+      IL_0042: stfld _Anon_Long__1_Long__2 Foo::inner
+      IL_0047: ldloca V_1
+      IL_004b: newobj System.Void _Anon_Long_he_Long_ha::.ctor()
+      IL_0050: stloc V_3
+      IL_0054: ldloca V_3
+      IL_0058: ldc.i4.2
+      IL_0059: stfld System.Int64 _Anon_Long_he_Long_ha::he
+      IL_005e: ldloca V_3
+      IL_0062: ldc.i4.2
+      IL_0063: stfld System.Int64 _Anon_Long_he_Long_ha::ha
+      IL_0068: ldloc V_3
+      IL_006c: stfld _Anon_Long_he_Long_ha Foo::other_inner
+      IL_0071: ldloca V_1
+      IL_0075: ldflda _Anon_Int_anon_int Foo::_Anon_Int_anon_int
+      IL_007a: ldc.i4.5
+      IL_007b: stfld System.Int32 _Anon_Int_anon_int::anon_int
+      IL_0080: ldloca V_1
+      IL_0084: ldflda _Union_Int_integer_Float_f Foo::_Union_Int_integer_Float_f
+      IL_0089: ldc.i4.5
+      IL_008a: stfld System.Int32 _Union_Int_integer_Float_f::integer
+      IL_008f: ldloca V_1
+      IL_0093: ldflda _Union_Int_not_anon_Float_its Foo::named_union
+      IL_0098: ldc.i4.s 10
+      IL_009a: stfld System.Int32 _Union_Int_not_anon_Float_its::not_anon
+      IL_009f: ldloca V_1
+      IL_00a3: ldflda _Anon__level_2 Foo::level_1
+      IL_00a8: ldflda _Anon_Int_level_3 _Anon__level_2::level_2
+      IL_00ad: ldc.i4.s 10
+      IL_00af: stfld System.Int32 _Anon_Int_level_3::level_3
+      IL_00b4: ldloc V_1
+      IL_00b8: stloc.0
+      IL_00b9: ldloca.s V_0
+      IL_00bb: ldfld System.Int32 Foo::a
+      IL_00c0: ldloca.s V_0
+      IL_00c2: ldfld System.Int32 Foo::b
+      IL_00c7: add
+      IL_00c8: conv.i8
+      IL_00c9: ldloca.s V_0
+      IL_00cb: ldflda _Anon_Long__1_Long__2 Foo::inner
+      IL_00d0: ldfld System.Int64 _Anon_Long__1_Long__2::_1
+      IL_00d5: add
+      IL_00d6: ldloca.s V_0
+      IL_00d8: ldflda _Anon_Long__1_Long__2 Foo::inner
+      IL_00dd: ldfld System.Int64 _Anon_Long__1_Long__2::_2
+      IL_00e2: add
+      IL_00e3: ldloca.s V_0
+      IL_00e5: ldflda _Anon_Long_he_Long_ha Foo::other_inner
+      IL_00ea: ldfld System.Int64 _Anon_Long_he_Long_ha::ha
+      IL_00ef: add
+      IL_00f0: ldloca.s V_0
+      IL_00f2: ldflda _Anon_Long_he_Long_ha Foo::other_inner
+      IL_00f7: ldfld System.Int64 _Anon_Long_he_Long_ha::he
+      IL_00fc: add
+      IL_00fd: ldloca.s V_0
+      IL_00ff: ldflda _Anon__level_2 Foo::level_1
+      IL_0104: ldflda _Anon_Int_level_3 _Anon__level_2::level_2
+      IL_0109: ldfld System.Int32 _Anon_Int_level_3::level_3
+      IL_010e: conv.i8
+      IL_010f: add
+      IL_0110: ldloca.s V_0
+      IL_0112: ldflda _Union_Int_not_anon_Float_its Foo::named_union
+      IL_0117: ldfld System.Int32 _Union_Int_not_anon_Float_its::not_anon
+      IL_011c: conv.i8
+      IL_011d: add
+      IL_011e: ldloca.s V_0
+      IL_0120: ldflda _Anon_Int_anon_int Foo::_Anon_Int_anon_int
+      IL_0125: ldfld System.Int32 _Anon_Int_anon_int::anon_int
+      IL_012a: conv.i8
+      IL_012b: add
+      IL_012c: ldloca.s V_0
+      IL_012e: ldflda _Union_Int_integer_Float_f Foo::_Union_Int_integer_Float_f
+      IL_0133: ldfld System.Int32 _Union_Int_integer_Float_f::integer
+      IL_0138: conv.i8
+      IL_0139: add
+      IL_013a: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: Foo
+  Fields:
+    System.Int32 Foo::a
+    System.Int32 Foo::b
+    _Anon_Long__1_Long__2 Foo::inner
+    _Anon_Long_he_Long_ha Foo::other_inner
+    _Union_Int_integer_Float_f Foo::_Union_Int_integer_Float_f
+    _Anon_Int_anon_int Foo::_Anon_Int_anon_int
+    _Union_Int_not_anon_Float_its Foo::named_union
+    _Anon__level_2 Foo::level_1
+  Methods:
+    System.Void Foo::.ctor()
+      IL_0000: ret
+
+  Type: _Anon_Long__1_Long__2
+  Fields:
+    System.Int64 _Anon_Long__1_Long__2::_1
+    System.Int64 _Anon_Long__1_Long__2::_2
+  Methods:
+    System.Void _Anon_Long__1_Long__2::.ctor()
+      IL_0000: ret
+
+  Type: _Anon_Long_he_Long_ha
+  Fields:
+    System.Int64 _Anon_Long_he_Long_ha::he
+    System.Int64 _Anon_Long_he_Long_ha::ha
+  Methods:
+    System.Void _Anon_Long_he_Long_ha::.ctor()
+      IL_0000: ret
+
+  Type: _Union_Int_integer_Float_f
+  Fields:
+    System.Int32 _Union_Int_integer_Float_f::integer
+    System.Single _Union_Int_integer_Float_f::f
+  Methods:
+    System.Void _Union_Int_integer_Float_f::.ctor()
+      IL_0000: ret
+
+  Type: _Anon_Int_anon_int
+  Fields:
+    System.Int32 _Anon_Int_anon_int::anon_int
+  Methods:
+    System.Void _Anon_Int_anon_int::.ctor()
+      IL_0000: ret
+
+  Type: _Union_Int_not_anon_Float_its
+  Fields:
+    System.Int32 _Union_Int_not_anon_Float_its::not_anon
+    System.Single _Union_Int_not_anon_Float_its::its
+  Methods:
+    System.Void _Union_Int_not_anon_Float_its::.ctor()
+      IL_0000: ret
+
+  Type: _Anon_Int_level_3
+  Fields:
+    System.Int32 _Anon_Int_level_3::level_3
+  Methods:
+    System.Void _Anon_Int_level_3::.ctor()
+      IL_0000: ret
+
+  Type: _Anon__level_2
+  Fields:
+    _Anon_Int_level_3 _Anon__level_2::level_2
+  Methods:
+    System.Void _Anon__level_2::.ctor()
+      IL_0000: ret

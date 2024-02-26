@@ -4,6 +4,7 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -13,6 +14,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
     internal const string AnonUnionPrefix = "_Union_";
 
     private TypeReference? AnonType;
+    internal MethodDefinition? Constructor;
 
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion, string? identifier)
     {
@@ -90,6 +92,14 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             // TODO[#355]: for every field, calculate the explicit layout position.
             definition.Fields.Add(field);
         }
+
+        // emit ctor
+        Constructor = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.HideBySig
+            | MethodAttributes.RTSpecialName | MethodAttributes.SpecialName, context.TypeSystem.Void);
+        var body = new MethodBody(Constructor);
+        Constructor.Body = body;
+        body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        definition.Methods.Add(Constructor);
     }
 
     private void EmitAsAnonStructure(TranslationUnitContext context)
