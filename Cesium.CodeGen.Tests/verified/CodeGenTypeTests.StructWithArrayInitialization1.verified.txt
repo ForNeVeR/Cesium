@@ -1,0 +1,82 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        Foo V_0
+        Foo V_1
+      IL_0000: newobj System.Void Foo::.ctor()
+      IL_0005: stloc V_1
+      IL_0009: ldloca V_1
+      IL_000d: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0012: ldc.i4.1
+      IL_0013: sizeof System.Int32
+      IL_0019: mul
+      IL_001a: add
+      IL_001b: ldc.i4.1
+      IL_001c: stind.i4
+      IL_001d: ldloca V_1
+      IL_0021: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0026: ldc.i4.0
+      IL_0027: sizeof System.Int32
+      IL_002d: mul
+      IL_002e: add
+      IL_002f: ldc.i4.2
+      IL_0030: stind.i4
+      IL_0031: ldloca V_1
+      IL_0035: ldc.i4.s 32
+      IL_0037: stfld System.Int32 Foo::a
+      IL_003c: ldloc V_1
+      IL_0040: stloc.0
+      IL_0041: ldloca.s V_0
+      IL_0043: ldfld System.Int32 Foo::a
+      IL_0048: ldloca.s V_0
+      IL_004a: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_004f: ldc.i4.0
+      IL_0050: conv.i
+      IL_0051: ldc.i4 4
+      IL_0056: mul
+      IL_0057: add
+      IL_0058: ldind.i4
+      IL_0059: add
+      IL_005a: ldloca.s V_0
+      IL_005c: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0061: ldc.i4.1
+      IL_0062: conv.i
+      IL_0063: ldc.i4 4
+      IL_0068: mul
+      IL_0069: add
+      IL_006a: ldind.i4
+      IL_006b: add
+      IL_006c: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: Foo
+  Nested types:
+    Type: Foo/<SyntheticBuffer>b
+    Pack: 0
+    Size: 8
+    Custom attributes:
+    - CompilerGeneratedAttribute()
+    - UnsafeValueTypeAttribute()
+
+    Fields:
+      System.Int32 Foo/<SyntheticBuffer>b::FixedElementField
+  Fields:
+    System.Int32 Foo::a
+    Foo/<SyntheticBuffer>b Foo::b
+    Custom attributes:
+    - FixedBufferAttribute(System.Int32, 8)
+
+  Methods:
+    System.Void Foo::.ctor()
+      IL_0000: ret

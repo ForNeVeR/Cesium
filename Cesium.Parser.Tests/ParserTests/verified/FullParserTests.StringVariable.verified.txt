@@ -62,7 +62,8 @@
                       "Kind": "StringLiteral",
                       "Text": "\"hello world\""
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]

@@ -8,6 +8,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using System.Collections.Immutable;
+using System.Xml.Linq;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 internal sealed class CompoundObjectInitializationExpression : IExpression
@@ -40,6 +41,28 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         var fieldsDefs = typeDef.Fields;
         var initializers = _initializers;
 
+        if (typeDef.Name.Contains("<SyntheticBuffer>"))
+        {
+            var element = typeDef.Fields[0].FieldType;
+            for (int i = 0; i < initializers.Length; i++)
+            {
+                IExpression? expr = initializers[i];
+
+                if (expr == null)
+                    throw new CompilationException($"Retrieved null initializer!");
+
+                if (i != 0)
+                {
+                    instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
+                    instructions.Add(Instruction.Create(OpCodes.Sizeof, element)); // size = sizeof(array element)
+                    instructions.Add(Instruction.Create(OpCodes.Mul)); // offset = id * size
+                }
+                expr.EmitTo(scope);
+                instructions.Add(GetWriteInstruction(element.MetadataType));
+            }
+            return;
+        }
+
         // it is better to use { ldflda variable; initobj<T>; }, but we need to change the order of processing Expressions
         // because right now it's being processed like this { newobj; (dup, ldnum, stfld)*; stfld variable }
         var constructor = _type != null ? ((StructType)_type).Constructor : _typeDef!.Methods.First(_ => _.Name == ".ctor");
@@ -69,7 +92,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             else if (init is CompoundObjectFieldInitializer f)
             {
                 instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
-                EmitPathToField(scope, typeDef, f.Designation.Designators, f.Inner);
+                EmitPathToField(scope, typeDef, f);
             }
             else if (init is CompoundObjectInitializationExpression objInit)
             {
@@ -90,14 +113,15 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         instructions.Add(Instruction.Create(OpCodes.Ldloc, newobj)); // push new object
     }
 
-    private static void EmitPathToField(IEmitScope scope, TypeDefinition type, ImmutableArray<Designator> path, IExpression value)
+    private static void EmitPathToField(IEmitScope scope, TypeDefinition type, CompoundObjectFieldInitializer initializer)
     {
-        // in: [struct pointer]
+        FieldDefinition? field = null;
+
+        var path = initializer.Designation.Designators;
         var last = path.Length - 1;
         for (int i = 0; i < path.Length; i++)
         {
             var p = path[i];
-            FieldDefinition field;
             if (p is IdentifierDesignator id)
             {
                 field = type.Fields.FirstOrDefault(_ => _.Name == id.FieldName)!;
@@ -121,6 +145,28 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                     }
                 }
             }
+            else if (p is BracketsDesignator b)
+            {
+                var instructions = scope.Method.Body.Instructions;
+                var arrayType = field!.FieldType.Resolve();
+                var element = arrayType.Fields[0].FieldType;
+
+
+                b.Expression.ToIntermediate().EmitTo(scope); // element id
+                instructions.Add(Instruction.Create(OpCodes.Sizeof, element)); // size = sizeof(array element)
+                instructions.Add(Instruction.Create(OpCodes.Mul)); // offset = id * size
+
+                instructions.Add(Instruction.Create(OpCodes.Add)); // ref result = ref previousField[offset]; or ref result = ref Unsafe.AddByteOffset(ref previoutsField, offset)
+
+                if (i == last)
+                {
+                    initializer.Inner.EmitTo(scope); // push data
+                    instructions.Add(GetWriteInstruction(element.MetadataType));
+                    return;
+                }
+
+                continue;
+            }
             else
                 throw new NotImplementedException();
 
@@ -134,7 +180,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             }
             else
             {
-                value.EmitTo(scope);
+                initializer.Inner.EmitTo(scope);
                 scope.StFld(field);
             }
         }
@@ -164,6 +210,37 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             }
         }
         return false;
+    }
+
+    static Instruction GetWriteInstruction(MetadataType type)
+    {
+        switch (type)
+        {
+            case MetadataType.Boolean:
+            case MetadataType.Byte:
+            case MetadataType.SByte:
+                return Instruction.Create(OpCodes.Stind_I1);
+            case MetadataType.UInt16:
+            case MetadataType.Int16:
+                return Instruction.Create(OpCodes.Stind_I2);
+            case MetadataType.Int32:
+            case MetadataType.UInt32:
+                return Instruction.Create(OpCodes.Stind_I4);
+            case MetadataType.Int64:
+            case MetadataType.UInt64:
+                return Instruction.Create(OpCodes.Stind_I8);
+            case MetadataType.Single:
+                return Instruction.Create(OpCodes.Stind_R4);
+            case MetadataType.Double:
+                return Instruction.Create(OpCodes.Stind_R8);
+            case MetadataType.Pointer:
+            case MetadataType.IntPtr:
+            case MetadataType.UIntPtr:
+            case MetadataType.ByReference:
+                return Instruction.Create(OpCodes.Stind_I);
+            default:
+                throw new CompilationException($"This array type isnt supported: {type}");
+        }
     }
 
     public IType GetExpressionType(IDeclarationScope scope) => _type!;

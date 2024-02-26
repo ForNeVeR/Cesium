@@ -35,7 +35,8 @@
                   "Kind": "IntLiteral",
                   "Text": "123"
                 }
-              }
+              },
+              "Designation": null
             }
           }
         ]

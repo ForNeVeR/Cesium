@@ -377,21 +377,21 @@ int main() {
 }
 ");
 
-    [Fact, NoVerify] // hard to implement ATM
-    public void StructWithArrayInitialization1() => DoesNotCompile<Cesium.Core.ParseException>(@"typedef struct Foo { int a; int[2] b; } Foo;
+    [Fact]
+    public Task StructWithArrayInitialization1() => DoTest(@"typedef struct Foo { int a; int b[2]; } Foo;
 int main() {
     Foo f = { .b[1] = 1, .b[0] = 2, .a = 32 };
-    return f.a + f.b;
+    return f.a + f.b[0] + f.b[1];
 }
-", "expected ; while parsing ;");
+");
 
-    [Fact, NoVerify] // hard to implement ATM
-    public void StructWithArrayInitialization2() => DoesNotCompile<Cesium.Core.ParseException>(@"typedef struct Foo { int a; int[2] b; } Foo;
+    [Fact]
+    public Task StructWithArrayInitialization2() => DoTest(@"typedef struct Foo { int b[2]; int a; } Foo;
 int main() {
-    Foo f = { { 1, 2 }, .a = 32 };
-    return f.a + f.b;
+    Foo f = { { 1, 2 }, 32 };
+    return f.a + f.b[0] + f.b[1];
 }
-", "expected ; while parsing ;");
+");
 
     [Fact]
     public Task SuperHardStructInitialization() => DoTest(@"

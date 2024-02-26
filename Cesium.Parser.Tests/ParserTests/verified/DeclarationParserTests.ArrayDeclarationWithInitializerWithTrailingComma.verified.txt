@@ -40,7 +40,8 @@
                 "Kind": "IntLiteral",
                 "Text": "1"
               }
-            }
+            },
+            "Designation": null
           },
           {
             "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
@@ -50,7 +51,8 @@
                 "Kind": "IntLiteral",
                 "Text": "2"
               }
-            }
+            },
+            "Designation": null
           },
           {
             "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
@@ -60,7 +62,8 @@
                 "Kind": "IntLiteral",
                 "Text": "3"
               }
-            }
+            },
+            "Designation": null
           },
           {
             "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
@@ -70,9 +73,11 @@
                 "Kind": "IntLiteral",
                 "Text": "4"
               }
-            }
+            },
+            "Designation": null
           }
-        ]
+        ],
+        "Designation": null
       }
     }
   ]
