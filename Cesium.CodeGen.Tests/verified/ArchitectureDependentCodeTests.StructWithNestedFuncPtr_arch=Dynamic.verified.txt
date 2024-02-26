@@ -4,3 +4,6 @@
   Type: <typedef>foo
   Fields:
     method System.Int32 *(method System.Int32 *()) <typedef>foo::foo
+  Methods:
+    System.Void <typedef>foo::.ctor()
+      IL_0000: ret

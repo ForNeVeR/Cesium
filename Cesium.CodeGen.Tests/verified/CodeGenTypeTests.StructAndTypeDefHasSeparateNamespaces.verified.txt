@@ -27,7 +27,13 @@
   Type: tagFoo
   Fields:
     System.Int32 tagFoo::A
+  Methods:
+    System.Void tagFoo::.ctor()
+      IL_0000: ret
 
   Type: <typedef>Foo
   Fields:
     System.Int32 <typedef>Foo::B
+  Methods:
+    System.Void <typedef>Foo::.ctor()
+      IL_0000: ret

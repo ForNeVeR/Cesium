@@ -18,3 +18,6 @@
   Type: <typedef>foo
   Fields:
     method System.Void *(System.Int32) <typedef>foo::bar
+  Methods:
+    System.Void <typedef>foo::.ctor()
+      IL_0000: ret

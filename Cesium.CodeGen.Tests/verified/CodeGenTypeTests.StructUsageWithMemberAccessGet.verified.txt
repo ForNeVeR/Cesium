@@ -21,3 +21,6 @@
   Type: <typedef>foo
   Fields:
     System.Int32 <typedef>foo::x
+  Methods:
+    System.Void <typedef>foo::.ctor()
+      IL_0000: ret

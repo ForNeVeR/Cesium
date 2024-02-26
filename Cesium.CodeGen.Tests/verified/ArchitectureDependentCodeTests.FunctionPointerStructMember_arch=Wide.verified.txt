@@ -4,3 +4,6 @@
   Type: Foo
   Fields:
     Cesium.Runtime.FuncPtr`1<System.Action`1<System.Int32>> Foo::x
+  Methods:
+    System.Void Foo::.ctor()
+      IL_0000: ret

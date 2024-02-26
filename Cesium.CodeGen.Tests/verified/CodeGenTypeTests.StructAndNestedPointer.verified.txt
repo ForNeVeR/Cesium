@@ -4,3 +4,6 @@
   Type: Token
   Fields:
     Token* Token::x
+  Methods:
+    System.Void Token::.ctor()
+      IL_0000: ret

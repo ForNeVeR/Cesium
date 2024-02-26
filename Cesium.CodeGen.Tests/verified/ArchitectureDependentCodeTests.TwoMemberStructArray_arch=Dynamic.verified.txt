@@ -27,3 +27,6 @@
   Fields:
     System.Byte* <typedef>foo::ptr
     System.Int32 <typedef>foo::len
+  Methods:
+    System.Void <typedef>foo::.ctor()
+      IL_0000: ret

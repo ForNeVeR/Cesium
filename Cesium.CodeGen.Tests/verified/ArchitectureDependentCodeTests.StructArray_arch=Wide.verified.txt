@@ -24,3 +24,6 @@
   Type: <typedef>foo
   Fields:
     Cesium.Runtime.CPtr`1<System.Byte> <typedef>foo::ptr
+  Methods:
+    System.Void <typedef>foo::.ctor()
+      IL_0000: ret
