@@ -17,6 +17,3 @@
     Custom attributes:
     - FixedBufferAttribute(System.Byte*, 4)
 
-  Methods:
-    System.Void <typedef>foo::.ctor()
-      IL_0000: ret

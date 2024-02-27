@@ -31,48 +31,30 @@
   Type: <typedef>foo
   Fields:
     _Union__ <typedef>foo::_Union__
-  Methods:
-    System.Void <typedef>foo::.ctor()
-      IL_0000: ret
 
   Type: _Union_Int_x4_Float_f4
   Fields:
     System.Int32 _Union_Int_x4_Float_f4::x4
     System.Single _Union_Int_x4_Float_f4::f4
-  Methods:
-    System.Void _Union_Int_x4_Float_f4::.ctor()
-      IL_0000: ret
 
   Type: _Union_Int_x3_Float_f3__
   Fields:
     System.Int32 _Union_Int_x3_Float_f3__::x3
     System.Single _Union_Int_x3_Float_f3__::f3
     _Union_Int_x4_Float_f4 _Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
-  Methods:
-    System.Void _Union_Int_x3_Float_f3__::.ctor()
-      IL_0000: ret
 
   Type: _Union_Int_x2_Float_f2__
   Fields:
     System.Int32 _Union_Int_x2_Float_f2__::x2
     System.Single _Union_Int_x2_Float_f2__::f2
     _Union_Int_x3_Float_f3__ _Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
-  Methods:
-    System.Void _Union_Int_x2_Float_f2__::.ctor()
-      IL_0000: ret
 
   Type: _Union_Int_x1_Float_x2__
   Fields:
     System.Int32 _Union_Int_x1_Float_x2__::x1
     System.Single _Union_Int_x1_Float_x2__::x2
     _Union_Int_x2_Float_f2__ _Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
-  Methods:
-    System.Void _Union_Int_x1_Float_x2__::.ctor()
-      IL_0000: ret
 
   Type: _Union__
   Fields:
     _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__
-  Methods:
-    System.Void _Union__::.ctor()
-      IL_0000: ret

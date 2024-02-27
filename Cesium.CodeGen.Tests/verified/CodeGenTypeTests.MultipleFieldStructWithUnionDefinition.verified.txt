@@ -5,14 +5,8 @@
   Fields:
     System.Int64 <typedef>foo::l
     _Union_Int_x_Float_f <typedef>foo::_Union_Int_x_Float_f
-  Methods:
-    System.Void <typedef>foo::.ctor()
-      IL_0000: ret
 
   Type: _Union_Int_x_Float_f
   Fields:
     System.Int32 _Union_Int_x_Float_f::x
     System.Single _Union_Int_x_Float_f::f
-  Methods:
-    System.Void _Union_Int_x_Float_f::.ctor()
-      IL_0000: ret

@@ -26,6 +26,3 @@
   Type: <typedef>foo
   Fields:
     System.Byte* <typedef>foo::ptr
-  Methods:
-    System.Void <typedef>foo::.ctor()
-      IL_0000: ret

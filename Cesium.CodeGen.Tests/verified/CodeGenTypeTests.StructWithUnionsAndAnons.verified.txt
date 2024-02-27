@@ -62,36 +62,21 @@
     _Union_Long__3u_Int__4u <typedef>foo::_Union_Long__3u_Int__4u
     _Union_Long__5u_Int__6u <typedef>foo::uni
     _Anon_Int__7 <typedef>foo::s
-  Methods:
-    System.Void <typedef>foo::.ctor()
-      IL_0000: ret
 
   Type: _Anon_Int__2a
   Fields:
     System.Int32 _Anon_Int__2a::_2a
-  Methods:
-    System.Void _Anon_Int__2a::.ctor()
-      IL_0000: ret
 
   Type: _Union_Long__3u_Int__4u
   Fields:
     System.Int64 _Union_Long__3u_Int__4u::_3u
     System.Int32 _Union_Long__3u_Int__4u::_4u
-  Methods:
-    System.Void _Union_Long__3u_Int__4u::.ctor()
-      IL_0000: ret
 
   Type: _Union_Long__5u_Int__6u
   Fields:
     System.Int64 _Union_Long__5u_Int__6u::_5u
     System.Int32 _Union_Long__5u_Int__6u::_6u
-  Methods:
-    System.Void _Union_Long__5u_Int__6u::.ctor()
-      IL_0000: ret
 
   Type: _Anon_Int__7
   Fields:
     System.Int32 _Anon_Int__7::_7
-  Methods:
-    System.Void _Anon_Int__7::.ctor()
-      IL_0000: ret

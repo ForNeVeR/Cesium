@@ -41,7 +41,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         var fieldsDefs = typeDef.Fields;
         var initializers = _initializers;
 
-        if (typeDef.Name.Contains("<SyntheticBuffer>"))
+        if (typeDef.IsCArray())
         {
             var element = typeDef.Fields[0].FieldType;
             for (int i = 0; i < initializers.Length; i++)
@@ -63,15 +63,11 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             return;
         }
 
-        // it is better to use { ldflda variable; initobj<T>; }, but we need to change the order of processing Expressions
-        // because right now it's being processed like this { newobj; (dup, ldnum, stfld)*; stfld variable }
-        var constructor = _type != null ? ((StructType)_type).Constructor : _typeDef!.Methods.First(_ => _.Name == ".ctor");
-        instructions.Add(Instruction.Create(OpCodes.Newobj, constructor));
-
         var newobj = new VariableDefinition(typeDef);
         scope.Method.Body.Variables.Add(newobj);
 
-        instructions.Add(Instruction.Create(OpCodes.Stloc, newobj));
+        instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
+        instructions.Add(Instruction.Create(OpCodes.Initobj, typeDef));
 
         if (initializers.Length == 0) // zero init like SomeType name = { };
             return;

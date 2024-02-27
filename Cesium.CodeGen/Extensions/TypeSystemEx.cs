@@ -201,6 +201,8 @@ internal static class TypeSystemEx
                ));
     }
 
+    public static bool IsCArray(this TypeReference tr) => tr.Name.StartsWith("<SyntheticBuffer>");
+
     public static bool IsEqualTo(this TypeReference a, TypeReference b) => a.FullName == b.FullName;
     public static bool IsEqualTo(this IType a, IType b) => a.Equals(b);
 

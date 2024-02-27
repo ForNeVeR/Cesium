@@ -5,50 +5,50 @@
       Locals:
         Foo V_0
         Foo V_1
-      IL_0000: newobj System.Void Foo::.ctor()
-      IL_0005: stloc V_1
-      IL_0009: ldloca V_1
-      IL_000d: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_0012: ldc.i4.1
-      IL_0013: sizeof System.Int32
-      IL_0019: mul
-      IL_001a: add
-      IL_001b: ldc.i4.1
-      IL_001c: stind.i4
-      IL_001d: ldloca V_1
-      IL_0021: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_0026: ldc.i4.0
-      IL_0027: sizeof System.Int32
-      IL_002d: mul
-      IL_002e: add
-      IL_002f: ldc.i4.2
-      IL_0030: stind.i4
-      IL_0031: ldloca V_1
-      IL_0035: ldc.i4.s 32
-      IL_0037: stfld System.Int32 Foo::a
-      IL_003c: ldloc V_1
-      IL_0040: stloc.0
-      IL_0041: ldloca.s V_0
-      IL_0043: ldfld System.Int32 Foo::a
-      IL_0048: ldloca.s V_0
-      IL_004a: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_004f: ldc.i4.0
-      IL_0050: conv.i
-      IL_0051: ldc.i4 4
-      IL_0056: mul
-      IL_0057: add
-      IL_0058: ldind.i4
-      IL_0059: add
-      IL_005a: ldloca.s V_0
-      IL_005c: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_0061: ldc.i4.1
-      IL_0062: conv.i
-      IL_0063: ldc.i4 4
-      IL_0068: mul
-      IL_0069: add
-      IL_006a: ldind.i4
-      IL_006b: add
-      IL_006c: ret
+      IL_0000: ldloca V_1
+      IL_0004: initobj Foo
+      IL_000a: ldloca V_1
+      IL_000e: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0013: ldc.i4.1
+      IL_0014: sizeof System.Int32
+      IL_001a: mul
+      IL_001b: add
+      IL_001c: ldc.i4.1
+      IL_001d: stind.i4
+      IL_001e: ldloca V_1
+      IL_0022: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0027: ldc.i4.0
+      IL_0028: sizeof System.Int32
+      IL_002e: mul
+      IL_002f: add
+      IL_0030: ldc.i4.2
+      IL_0031: stind.i4
+      IL_0032: ldloca V_1
+      IL_0036: ldc.i4.s 32
+      IL_0038: stfld System.Int32 Foo::a
+      IL_003d: ldloc V_1
+      IL_0041: stloc.0
+      IL_0042: ldloca.s V_0
+      IL_0044: ldfld System.Int32 Foo::a
+      IL_0049: ldloca.s V_0
+      IL_004b: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0050: ldc.i4.0
+      IL_0051: conv.i
+      IL_0052: ldc.i4 4
+      IL_0057: mul
+      IL_0058: add
+      IL_0059: ldind.i4
+      IL_005a: add
+      IL_005b: ldloca.s V_0
+      IL_005d: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0062: ldc.i4.1
+      IL_0063: conv.i
+      IL_0064: ldc.i4 4
+      IL_0069: mul
+      IL_006a: add
+      IL_006b: ldind.i4
+      IL_006c: add
+      IL_006d: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
@@ -77,6 +77,3 @@
     Custom attributes:
     - FixedBufferAttribute(System.Int32, 8)
 
-  Methods:
-    System.Void Foo::.ctor()
-      IL_0000: ret
