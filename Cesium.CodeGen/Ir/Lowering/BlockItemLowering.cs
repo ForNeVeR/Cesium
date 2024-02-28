@@ -274,7 +274,8 @@ internal static class BlockItemLowering
                     var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, d.StorageClass, IsDefined: d.CliImportMemberName is not null)
                     {
                         CliImportMember = d.CliImportMemberName,
-                        DllLibraryName = dllLibrary
+                        DllLibraryName = dllLibrary,
+                        DllImportNameStrip = pinvoke?.Prefix
                     };
                     scope.DeclareFunction(d.Identifier, cliImportFunctionInfo);
 

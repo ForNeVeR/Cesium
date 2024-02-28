@@ -72,7 +72,8 @@ public class AssemblyContext
                     dll = new ModuleReference(function.DllLibraryName);
                     Module.ModuleReferences.Add(dll);
                 }
-                funcDef.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.NoMangle | PInvokeAttributes.SupportsLastError, name, dll);
+                string entryPoint = function.DllImportNameStrip != null ? name.Replace(function.DllImportNameStrip, null) : name;
+                funcDef.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.NoMangle | PInvokeAttributes.SupportsLastError, entryPoint, dll);
                 function.IsDefined = true;
             }
         }

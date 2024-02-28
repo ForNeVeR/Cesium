@@ -936,6 +936,10 @@ public partial class CParser
     private static ExternalDeclaration MakePinvokeDeclaration(IToken _, IToken __, IToken dll, IToken ____) =>
         new PinvokeDeclaration(dll.Text.Replace("\"", null));
 
+    [Rule("external_declaration: '__pinvoke' '!' StringLiteral '|' Identifier '!'")]
+    private static ExternalDeclaration MakePinvokeWithPrefixDeclaration(IToken _, IToken __, IToken dll, IToken ___, IToken prefix, IToken ____) =>
+       new PinvokeDeclaration(dll.Text.Replace("\"", null), prefix.Text);
+
     // 6.9.1 Function definitions
 
     // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.

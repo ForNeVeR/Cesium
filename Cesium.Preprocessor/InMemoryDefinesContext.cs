@@ -23,6 +23,11 @@ public class InMemoryDefinesContext : IMacroContext
             "__FILE__",
             parameters: null,
             replacement: []);
+
+        DefineMacro(
+            "__CESIUM__",
+            parameters: null,
+            replacement: []);
     }
 
     public void DefineMacro(string macro, MacroParameters? parameters, IList<IToken<CPreprocessorTokenType>> replacement)

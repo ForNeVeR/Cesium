@@ -58,13 +58,19 @@ public class CodeGenPinvokeTests : CodeGenTestBase
     [Fact]
     public Task SinglePinvokePragma() => DoTest(@"
 #pragma pinvoke(""mydll.dll"")
-int not_pinvoke();
+int not_pinvoke(void);
 int foo_bar(int*);
 
 int main() {
     return foo_bar(0);
 }
 
-int not_pinvoke() { return 1; }
+int not_pinvoke(void) { return 1; }
+");
+
+    [Fact] // win_puts -> pinvokeimpl(msvcrt, puts) int win_puts();
+    public Task PinvokePrefixPragma() => DoTest(@"
+#pragma pinvoke(""msvcrt"", win_)
+int win_puts(const char*);
 ");
 }

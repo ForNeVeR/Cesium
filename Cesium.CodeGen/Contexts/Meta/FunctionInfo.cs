@@ -21,6 +21,7 @@ internal record FunctionInfo(
     public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
     public string? DllLibraryName { get; set; }
+    public string? DllImportNameStrip { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {

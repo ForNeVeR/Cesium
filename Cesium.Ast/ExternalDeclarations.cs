@@ -13,4 +13,4 @@ public sealed record FunctionDefinition(
     CompoundStatement Statement) : ExternalDeclaration;
 public sealed record SymbolDeclaration(Declaration Declaration) : ExternalDeclaration;
 
-public sealed record PinvokeDeclaration(string Declaration) : ExternalDeclaration;
+public sealed record PinvokeDeclaration(string Declaration, string? Prefix = null) : ExternalDeclaration;

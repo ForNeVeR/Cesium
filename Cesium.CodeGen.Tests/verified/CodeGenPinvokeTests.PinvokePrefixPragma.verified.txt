@@ -1,0 +1,1 @@
+﻿pinvokeimpl(msvcrt, puts) System.Int32 <Module>::win_puts(System.Byte*)

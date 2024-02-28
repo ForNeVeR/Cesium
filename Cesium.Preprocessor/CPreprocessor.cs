@@ -175,13 +175,15 @@ public record CPreprocessor(
                 {
                     if (pragma.Tokens == null)
                         throw new PreprocessorException(pragma.Location, $"Bad pragma: {pragma}");
-                    var type = pragma.Tokens?.Where(_ => _.Kind != WhiteSpace).ElementAt(2);
+                    var tokens = pragma.Tokens?.Where(_ => _.Kind != WhiteSpace)!;
+                    var type = tokens.ElementAt(2);
                     // start: pinvoke [0] ( [1] "lib name" [2] ) [3]
                     // end:   pinvoke [0] ( [1] end        [2] ) [3]
+                    // with prefix: pinvoke [0] ( [1] "lib name" [2] , [3] prefix [4] ) [5]
 
                     // why '!'?
                     // To prevent CParser from defining this as a method call.
-                    foreach(var tok in TokenizeString($"__pinvoke!{type!.Text}!"))
+                    foreach(var tok in TokenizeString($"__pinvoke!{type!.Text}{(tokens.Count() > 5 ? $"|{tokens.ElementAt(4).Text}" : null)}!"))
                         yield return tok;
                 }
                 break;

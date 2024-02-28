@@ -255,7 +255,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
 
             var isPinvoke = method.HasPInvokeInfo;
 
-            result.Append($"{(isPinvoke ? $"pinvokeimpl({method.PInvokeInfo.Module.Name}) " : null)}{Indent(indent)}{method.ReturnType} {method.DeclaringType}::{method.Name}(");
+            result.Append($"{(isPinvoke ? $"pinvokeimpl({method.PInvokeInfo.Module.Name}, {method.PInvokeInfo.EntryPoint}) " : null)}{Indent(indent)}{method.ReturnType} {method.DeclaringType}::{method.Name}(");
             var firstParam = true;
             foreach (var param in method.Parameters)
             {
