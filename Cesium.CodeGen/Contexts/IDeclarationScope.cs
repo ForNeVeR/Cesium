@@ -1,3 +1,4 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
@@ -45,6 +46,10 @@ internal interface IDeclarationScope
     /// </summary>
     /// <returns>Name of the virtual label which can be used by continue statement</returns>
     string? GetContinueLabel();
+    
+    void PushSpecialEffect(object declaration);
+    T? GetSpecialEffect<T>();
+    void RemoveSpecialEffect<T>(Predicate<T> predicate);
 
     List<SwitchCase>? SwitchCases { get; }
 }

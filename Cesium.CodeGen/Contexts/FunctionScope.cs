@@ -107,4 +107,10 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public string? GetContinueLabel() => null;
 
     public List<SwitchCase>? SwitchCases => null;
+
+    public void PushSpecialEffect(object blockItem) { }
+
+    public T? GetSpecialEffect<T>() => default;
+
+    public void RemoveSpecialEffect<T>(Predicate<T> predicate) { }
 }

@@ -11,8 +11,9 @@ internal static class TranslationUnitEx
     public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
-            Ast.FunctionDefinition func => new IBlockItem[] { new FunctionDefinition(func) },
+            Ast.FunctionDefinition func => [new FunctionDefinition(func)],
             Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym),
+            Ast.PinvokeDeclaration pinvoke => [new PinvokeDefinition(pinvoke.Declaration)],
             _ => throw new WipException(212, $"Declaration not supported: {x}.")
         }));
 

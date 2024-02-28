@@ -12,7 +12,8 @@ internal static class MacroExtensions
             return false;
 
         if (macroValue is null)
-            throw new PreprocessorException(location, "No value provided where an integer was expected.");
+            return false;
+            //throw new PreprocessorException(location, "No value provided where an integer was expected.");
 
         if (int.TryParse(macroValue, CultureInfo.InvariantCulture, out _))
             return true;

@@ -253,7 +253,9 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine();
             first = false;
 
-            result.Append($"{Indent(indent)}{method.ReturnType} {method.DeclaringType}::{method.Name}(");
+            var isPinvoke = method.HasPInvokeInfo;
+
+            result.Append($"{(isPinvoke ? $"pinvokeimpl({method.PInvokeInfo.Module.Name}) " : null)}{Indent(indent)}{method.ReturnType} {method.DeclaringType}::{method.Name}(");
             var firstParam = true;
             foreach (var param in method.Parameters)
             {
@@ -264,8 +266,10 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 if (param.Name != null)
                     result.Append($" {param.Name}");
             }
-
             result.AppendLine(")");
+
+            if (isPinvoke) continue;
+
             var variables = method.Body.Variables;
             if (variables.Count > 0)
             {

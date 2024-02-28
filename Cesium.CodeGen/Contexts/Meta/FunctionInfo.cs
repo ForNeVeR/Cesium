@@ -3,6 +3,7 @@ using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using JetBrains.Annotations;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts.Meta;
@@ -19,6 +20,7 @@ internal record FunctionInfo(
     public StorageClass StorageClass { get; set; } = StorageClass;
     public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
+    public string? DllLibraryName { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {

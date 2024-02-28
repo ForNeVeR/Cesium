@@ -928,6 +928,14 @@ public partial class CParser
         // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
         new SymbolDeclaration((Declaration)declaration);
 
+    [Rule("external_declaration: '__pinvoke' '!' 'end' '!'")]
+    private static ExternalDeclaration MakePivnokeEndDeclaration(IToken _, IToken __, IToken ___, IToken ____) =>
+        new PinvokeDeclaration("end");
+
+    [Rule("external_declaration: '__pinvoke' '!' StringLiteral '!'")]
+    private static ExternalDeclaration MakePinvokeDeclaration(IToken _, IToken __, IToken dll, IToken ____) =>
+        new PinvokeDeclaration(dll.Text.Replace("\"", null));
+
     // 6.9.1 Function definitions
 
     // TODO[#107]: Custom parsing is required here due to the reasons outlined in the issue.

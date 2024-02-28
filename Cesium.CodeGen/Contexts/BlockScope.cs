@@ -101,4 +101,10 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public string? GetContinueLabel() => ContinueLabel ?? (Parent as IDeclarationScope)?.GetContinueLabel();
 
     public List<SwitchCase>? SwitchCases => OwnSwitchCases ?? (Parent as IDeclarationScope)?.SwitchCases;
+
+    public void PushSpecialEffect(object blockItem) { }
+
+    public T? GetSpecialEffect<T>() => default;
+
+    public void RemoveSpecialEffect<T>(Predicate<T> predicate) { }
 }

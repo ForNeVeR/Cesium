@@ -12,3 +12,5 @@ public sealed record FunctionDefinition(
     ImmutableArray<Declaration>? Declarations,
     CompoundStatement Statement) : ExternalDeclaration;
 public sealed record SymbolDeclaration(Declaration Declaration) : ExternalDeclaration;
+
+public sealed record PinvokeDeclaration(string Declaration) : ExternalDeclaration;

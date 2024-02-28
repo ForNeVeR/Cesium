@@ -1,3 +1,4 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
@@ -24,6 +25,8 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
+
+    private readonly List<object> _specialEffects = new();
 
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
@@ -77,4 +80,30 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     public string? GetContinueLabel() => null;
 
     public List<SwitchCase>? SwitchCases => null;
+
+    public void PushSpecialEffect(object declaration) => _specialEffects.Add(declaration);
+
+    public T? GetSpecialEffect<T>()
+    {
+        for(int i = _specialEffects.Count - 1; i >= 0; i--)
+        {
+            var effect = _specialEffects[i];
+            if (effect is T t)
+                return t;
+        }
+        return default;
+    }
+
+    public void RemoveSpecialEffect<T>(Predicate<T> predicate)
+    {
+        for (int i = _specialEffects.Count - 1; i >= 0; i--)
+        {
+            var effect = _specialEffects[i];
+            if (effect is T t && predicate(t))
+            {
+                _specialEffects.RemoveAt(i);
+                return;
+            }
+        }
+    }
 }
