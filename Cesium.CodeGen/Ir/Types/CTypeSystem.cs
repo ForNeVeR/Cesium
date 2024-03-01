@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Extensions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Types;
 
@@ -62,7 +63,7 @@ internal static class CTypeSystem
         if (type.IsEqualTo(targetType))
             return false;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsNumeric())
             throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
 
         if (targetType.Equals(SignedChar))
