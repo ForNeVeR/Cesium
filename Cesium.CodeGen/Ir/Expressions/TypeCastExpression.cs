@@ -38,6 +38,11 @@ internal sealed class TypeCastExpression : IExpression
         Expression.EmitTo(scope);
 
         var ts = scope.CTypeSystem;
+        if (TargetType.Equals(ts.Bool))
+        {
+            return;
+        }
+
         if (TargetType.Equals(ts.SignedChar))
             Add(OpCodes.Conv_I1);
         else if (TargetType.Equals(ts.Short))

@@ -45,7 +45,8 @@ internal enum PrimitiveTypeKind
 
     // This is band-aid type until we would be able perform lowering in controlled fashion.
     NativeInt,
-    NativeUInt
+    NativeUInt,
+    Bool,
 }
 
 internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
@@ -95,6 +96,8 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
             PrimitiveTypeKind.LongDouble => typeSystem.Double,
 
             PrimitiveTypeKind.NativeUInt => typeSystem.UIntPtr,
+
+            PrimitiveTypeKind.Bool => typeSystem.Boolean,
 
             _ => throw new AssertException($"Primitive type not supported: {Kind}.")
         };
@@ -153,6 +156,7 @@ internal record PrimitiveType(PrimitiveTypeKind Kind) : IType
                 _ => throw new AssertException($"Architecture set not supported: {arch}.")
             },
             PrimitiveTypeKind.Void => 1,
+            PrimitiveTypeKind.Bool => 1,
 
             _ => throw new AssertException($"Could not calculate size for {Kind}."),
         };
@@ -175,6 +179,7 @@ internal static class PrimitiveTypeInfo
         { PrimitiveTypeKind.Long, 8 },
         { PrimitiveTypeKind.UnsignedLong, 8 },
         { PrimitiveTypeKind.Double, 8 },
+        { PrimitiveTypeKind.Bool, 1 },
     };
 
     internal static readonly Dictionary<PrimitiveTypeKind, (OpCode load, OpCode store)> Opcodes = new()
@@ -189,6 +194,7 @@ internal static class PrimitiveTypeInfo
         { PrimitiveTypeKind.Float, (OpCodes.Ldind_R4, OpCodes.Stind_R4) },
         { PrimitiveTypeKind.Long, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
         { PrimitiveTypeKind.UnsignedLong, (OpCodes.Ldind_I8, OpCodes.Stind_I8) },
-        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) }
+        { PrimitiveTypeKind.Double, (OpCodes.Ldind_R8, OpCodes.Stind_R8) },
+        { PrimitiveTypeKind.Bool, (OpCodes.Ldind_I1, OpCodes.Stind_I1) },
     };
 }

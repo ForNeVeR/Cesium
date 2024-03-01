@@ -6,7 +6,7 @@ namespace Cesium.CodeGen.Ir.Types;
 internal sealed class CTypeSystem
 {
     public IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
-    public IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Int); // TODO[#179]: Figure out the right type.
+    public IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Bool);
     public IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
     public IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
     public IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
@@ -33,6 +33,8 @@ internal sealed class CTypeSystem
             return false;
 
         if (targetType.Equals(SignedChar))
+            return true;
+        if (targetType.Equals(UnsignedChar))
             return true;
         else if (targetType.Equals(Short))
             return true;
@@ -66,10 +68,12 @@ internal sealed class CTypeSystem
 
         if (targetType.Equals(SignedChar))
             return true;
+        if (targetType.Equals(UnsignedChar))
+            return true;
         else if (targetType.Equals(Short))
             return true;
         else if (targetType.Equals(Int))
-            return true;
+            return !type.Equals(Bool);
         else if (targetType.Equals(Long))
             return true;
         else if (targetType.Equals(Char))
@@ -86,6 +90,8 @@ internal sealed class CTypeSystem
             return true;
         else if (targetType.Equals(NativeInt) || targetType is PointerType)
             return true;
+        else if (targetType.Equals(Bool))
+            return false;
         else
             throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
     }

@@ -171,7 +171,7 @@ internal static class BlockItemLowering
                         {
                             var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
                             if (scope.CTypeSystem.IsConversionAvailable(initializerType, type)
-                                && !initializerType.Equals(type))
+                                && scope.CTypeSystem.IsConversionRequired(initializerType, type))
                             {
                                 initializerExpression = new TypeCastExpression(type, initializerExpression);
                             }
