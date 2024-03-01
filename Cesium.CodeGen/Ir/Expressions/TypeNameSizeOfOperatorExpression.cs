@@ -22,7 +22,10 @@ internal sealed class TypeNameSizeOfOperatorExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var sizeOfExpression = new SizeOfOperatorExpression(_type);
+        var type = scope.ResolveType(_type);
+        if (type is StructType st && st.Members.Count == 0) // check for local types
+            type = scope.GetVariable(st.Identifier ?? string.Empty)?.Type ?? _type; // idk how, but its works +_+
+        var sizeOfExpression = new SizeOfOperatorExpression(type);
         return sizeOfExpression.Lower(scope);
     }
 

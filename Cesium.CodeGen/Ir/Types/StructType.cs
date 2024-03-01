@@ -24,6 +24,8 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         if (IsAnon) AnonIndentifier = CreateAnonIdentifier(members, isUnion);
     }
 
+    private bool IsLocal { get; set; }
+
     public bool IsAnon { get; private set; }
 
     public bool IsUnion { get; private set; }
@@ -95,7 +97,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     private void EmitAsAnonStructure(TranslationUnitContext context)
     {
-        var type = new TypeDefinition(string.Empty, AnonIndentifier, TypeAttributes.Public | TypeAttributes.Sealed,
+        var type = new TypeDefinition(string.Empty, IsAnon ? AnonIndentifier : Identifier, TypeAttributes.Public | TypeAttributes.Sealed,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
 
         FinishEmit(type, type.Name, context); // emit fields
@@ -117,14 +119,21 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
         if (resolved == null)
         {
-            if (IsAnon)
+            try_again:
+            if (IsAnon || IsLocal)
             {
                 if (AnonType == null)
                     EmitAsAnonStructure(context);
 
                 return AnonType!; // not null
             }
-            throw new CompilationException($"Type {this} was not found.");
+
+            if (Members.Count == 0)
+                throw new CompilationException($"Can't find the type with name: {Identifier}");
+
+            // maybe its Local type?
+            IsLocal = true;
+            goto try_again;
         }
 
         return resolved;

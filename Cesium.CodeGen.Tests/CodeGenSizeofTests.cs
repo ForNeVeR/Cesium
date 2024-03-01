@@ -65,4 +65,31 @@ int main() {
     int main() {
         return sizeof(foo);
     }");
+
+    [Fact]
+    public Task GlobalNotTypedefedStructSizeof() => DoTest(@"
+    struct foo {
+        int x;
+        int y;
+    };
+    int main() {
+        return sizeof(struct foo);
+    }");
+
+    [Fact]
+    public Task ArrayDADSizeof() => DoTest(@"
+    int main() {
+        return sizeof(int[5]);
+    }");
+
+    [Fact]
+    public Task LocalStructSizeof() => DoTest(@"
+int main() {
+    struct bar {
+        int x;
+        int y;
+    };
+
+    return sizeof(struct bar);
+}");
 }

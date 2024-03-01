@@ -2,6 +2,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using System.Security;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
@@ -292,13 +293,24 @@ internal sealed record LocalDeclarationInfo(
         var current = directAbstractDeclarator;
         while (current != null)
         {
-            throw current switch
+            switch(current)
             {
-                _ => new WipException(
-                                        332,
-                                        $"Direct abstract declarator is not supported, yet: {current}."),
-            };
-            current = current.Base;
+                case ArrayDirectAbstractDeclarator arr:
+                    current = arr.Base;
+
+                    if (arr.Size is not ConstantLiteralExpression constantExpression ||
+                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
+                            !int.TryParse(constantExpression.Constant.Text, out var size))
+                        throw new CompilationException($"Array size specifier is not integer {arr.Size}.");
+
+                    type = CreateArrayType(type, size);
+                    break;
+                case SimpleDirectAbstractDeclarator simple: // does it exist?
+                    current = simple.Base;
+                    break;
+                default:
+                    throw new CompilationException($"Direct abstract declarator is not supported, yet: {current}.");
+            }
         }
 
         return type;
