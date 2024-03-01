@@ -1,0 +1,60 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        <typedef>foo V_0
+      IL_0000: ldloca.s V_0
+      IL_0002: ldflda _Union__ <typedef>foo::_Union__
+      IL_0007: ldflda _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__
+      IL_000c: ldflda _Union_Int_x2_Float_f2__ _Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
+      IL_0011: ldflda _Union_Int_x3_Float_f3__ _Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
+      IL_0016: ldflda _Union_Int_x4_Float_f4 _Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
+      IL_001b: ldc.r4 5.2
+      IL_0020: stfld System.Single _Union_Int_x4_Float_f4::f4
+      IL_0025: ldloca.s V_0
+      IL_0027: ldflda _Union__ <typedef>foo::_Union__
+      IL_002c: ldflda _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__
+      IL_0031: ldfld System.Single _Union_Int_x1_Float_x2__::x2
+      IL_0036: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: <typedef>foo
+  Fields:
+    _Union__ <typedef>foo::_Union__
+
+  Type: _Union_Int_x4_Float_f4
+  Fields:
+    System.Int32 _Union_Int_x4_Float_f4::x4
+    System.Single _Union_Int_x4_Float_f4::f4
+
+  Type: _Union_Int_x3_Float_f3__
+  Fields:
+    System.Int32 _Union_Int_x3_Float_f3__::x3
+    System.Single _Union_Int_x3_Float_f3__::f3
+    _Union_Int_x4_Float_f4 _Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
+
+  Type: _Union_Int_x2_Float_f2__
+  Fields:
+    System.Int32 _Union_Int_x2_Float_f2__::x2
+    System.Single _Union_Int_x2_Float_f2__::f2
+    _Union_Int_x3_Float_f3__ _Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
+
+  Type: _Union_Int_x1_Float_x2__
+  Fields:
+    System.Int32 _Union_Int_x1_Float_x2__::x1
+    System.Single _Union_Int_x1_Float_x2__::x2
+    _Union_Int_x2_Float_f2__ _Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
+
+  Type: _Union__
+  Fields:
+    _Union_Int_x1_Float_x2__ _Union__::_Union_Int_x1_Float_x2__

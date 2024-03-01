@@ -170,8 +170,8 @@ internal static class BlockItemLowering
                         if (initializerExpression != null)
                         {
                             var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
-                            if (scope.CTypeSystem.IsConversionAvailable(initializerType, type)
-                                && scope.CTypeSystem.IsConversionRequired(initializerType, type))
+                            if (CTypeSystem.IsConversionAvailable(initializerType, type)
+                                && CTypeSystem.IsConversionRequired(initializerType, type))
                             {
                                 initializerExpression = new TypeCastExpression(type, initializerExpression);
                             }
@@ -232,7 +232,7 @@ internal static class BlockItemLowering
                         return new ExpressionStatement(setValue.NoReturn());
 
                     if (loweredExpression is not null
-                        && !loweredExpression.GetExpressionType(scope).IsEqualTo(scope.CTypeSystem.Void))
+                        && !loweredExpression.GetExpressionType(scope).IsEqualTo(CTypeSystem.Void))
                     {
                         loweredExpression = new ConsumeExpression(loweredExpression);
                     }
@@ -280,7 +280,7 @@ internal static class BlockItemLowering
                 {
                     var resolvedFunctionType = (FunctionType)scope.ResolveType(d.FunctionType);
                     var (parameters, returnType) = resolvedFunctionType;
-                    if (d.IsMain && !returnType.Equals(scope.CTypeSystem.Int))
+                    if (d.IsMain && !returnType.IsEqualTo(CTypeSystem.Int))
                         throw new CompilationException(
                             $"Invalid return type for the {d.Name} function: " +
                             $"int expected, got {returnType}.");
@@ -374,13 +374,14 @@ internal static class BlockItemLowering
                         return Lower(switchScope, new ExpressionStatement(s.Expression));
                     }
 
+                    var testExpression = s.Expression.Lower(scope);
                     var dbi = new DeclarationBlockItem(
                         new ScopedIdentifierDeclaration(
                             StorageClass.Auto,
                             new List<InitializableDeclarationInfo>
                             {
-                            new(new LocalDeclarationInfo(s.Expression.GetExpressionType(scope), "$switch_tmp", null),
-                                s.Expression)
+                                new(new LocalDeclarationInfo(testExpression.GetExpressionType(scope), "$switch_tmp", null),
+                                testExpression)
                             }));
 
                     targetStmts.Add(Lower(switchScope, dbi));

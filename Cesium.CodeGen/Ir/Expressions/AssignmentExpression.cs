@@ -62,8 +62,8 @@ internal sealed class AssignmentExpression : IExpression
         IExpression right = rightExpanded.Lower(scope);
         IType leftType = left.GetExpressionType(scope);
         IType rightType = right.GetExpressionType(scope);
-        if (scope.CTypeSystem.IsConversionAvailable(rightType, leftType)
-            && scope.CTypeSystem.IsConversionRequired(rightType, leftType))
+        if (CTypeSystem.IsConversionAvailable(rightType, leftType)
+            && CTypeSystem.IsConversionRequired(rightType, leftType))
         {
             right = new TypeCastExpression(leftType, right);
         }

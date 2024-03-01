@@ -108,14 +108,24 @@ internal interface IScopedDeclarationInfo
 
         if (initializer is AssignmentInitializer ai)
         {
-            return ai.Expression.ToIntermediate();
+            if (ai.Designation != null)
+                return new CompoundObjectFieldInitializer(ai);
+            else
+                return ai.Expression.ToIntermediate();
         }
 
         if (initializer is ArrayInitializer arrayInitializer)
         {
             if (type is null)
             {
-                throw new CompilationException($"Type for array initializer unknown.");
+                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i)).ToImmutableArray();
+                return new CompoundObjectInitializationExpression(expr);
+            }
+
+            if (type.TypeKind is TypeKind.Struct or TypeKind.Unresolved)
+            {
+                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i)).ToImmutableArray();
+                return new CompoundObjectInitializationExpression(type, expr);
             }
 
             if (arrayInitializer.Initializers.Length == 0)

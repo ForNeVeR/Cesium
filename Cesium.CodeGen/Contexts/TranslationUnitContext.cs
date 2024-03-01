@@ -18,7 +18,6 @@ public class TranslationUnitContext
     public AssemblyDefinition Assembly => AssemblyContext.Assembly;
     public ModuleDefinition Module => AssemblyContext.Module;
     public TypeSystem TypeSystem => Module.TypeSystem;
-    internal CTypeSystem CTypeSystem { get; } = new();
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public TypeDefinition GlobalType => AssemblyContext.GlobalType;
 
@@ -195,7 +194,7 @@ public class TranslationUnitContext
                 }
             }
 
-            return new StructType(members, structType.Identifier);
+            return new StructType(members, structType.IsUnion, structType.Identifier);
         }
 
         if (type is FunctionType functionType)

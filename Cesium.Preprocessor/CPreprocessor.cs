@@ -17,7 +17,7 @@ public record CPreprocessor(
     IMacroContext MacroContext,
     IWarningProcessor WarningProcessor)
 {
-    private MacroExpansionEngine _macroExpansion = new(WarningProcessor, MacroContext);
+    private readonly MacroExpansionEngine _macroExpansion = new(WarningProcessor, MacroContext);
 
     public async Task<string> ProcessSource()
     {
@@ -176,8 +176,8 @@ public record CPreprocessor(
             }
             case EmptyDirective:
                 break;
-            case TextLine textLine:
-                foreach (var token in _macroExpansion.ExpandMacros(textLine.Tokens ?? []))
+            case TextLineBlock textLine:
+                foreach (var token in _macroExpansion.ExpandMacros(textLine.Tokens))
                 {
                     yield return token;
                 }

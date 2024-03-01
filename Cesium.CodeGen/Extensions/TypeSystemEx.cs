@@ -201,53 +201,55 @@ internal static class TypeSystemEx
                ));
     }
 
+    public static bool IsCArray(this TypeReference tr) => tr.Name.StartsWith("<SyntheticBuffer>");
+
     public static bool IsEqualTo(this TypeReference a, TypeReference b) => a.FullName == b.FullName;
     public static bool IsEqualTo(this IType a, IType b) => a.Equals(b);
 
-    public static bool IsSignedInteger(this CTypeSystem ts, IType t)
+    public static bool IsSignedInteger(this IType t)
     {
-        return t.IsEqualTo(ts.SignedChar)
-            || t.IsEqualTo(ts.Short)
-            || t.IsEqualTo(ts.Int)
-            || t.IsEqualTo(ts.Long)
-            || t.IsEqualTo(ts.NativeInt);
+        return t.IsEqualTo(CTypeSystem.SignedChar)
+            || t.IsEqualTo(CTypeSystem.Short)
+            || t.IsEqualTo(CTypeSystem.Int)
+            || t.IsEqualTo(CTypeSystem.Long)
+            || t.IsEqualTo(CTypeSystem.NativeInt);
     }
 
-    public static bool IsUnsignedInteger(this CTypeSystem ts, IType t)
+    public static bool IsUnsignedInteger(this IType t)
     {
-        return t.IsEqualTo(ts.Bool)
-            || t.IsEqualTo(ts.Char)
-            || t.IsEqualTo(ts.UnsignedChar)
-            || t.IsEqualTo(ts.UnsignedShort)
-            || t.IsEqualTo(ts.UnsignedInt)
-            || t.IsEqualTo(ts.UnsignedLong)
-            || t.IsEqualTo(ts.NativeUInt);
+        return t.IsEqualTo(CTypeSystem.Bool)
+            || t.IsEqualTo(CTypeSystem.Char)
+            || t.IsEqualTo(CTypeSystem.UnsignedChar)
+            || t.IsEqualTo(CTypeSystem.UnsignedShort)
+            || t.IsEqualTo(CTypeSystem.UnsignedInt)
+            || t.IsEqualTo(CTypeSystem.UnsignedLong)
+            || t.IsEqualTo(CTypeSystem.NativeUInt);
     }
 
-    public static bool IsFloatingPoint(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Double) || t.IsEqualTo(ts.Float);
-    public static bool IsInteger(this CTypeSystem ts, IType t) => ts.IsSignedInteger(t) || ts.IsUnsignedInteger(t);
-    public static bool IsNumeric(this CTypeSystem ts, IType t) => ts.IsInteger(t) || ts.IsFloatingPoint(t) || ts.IsEnum(t);
-    public static bool IsBool(this CTypeSystem ts, IType t) => t.IsEqualTo(ts.Bool);
-    public static bool IsEnum(this CTypeSystem ts, IType t) => t is EnumType;
+    public static bool IsFloatingPoint(this IType t) => t.IsEqualTo(CTypeSystem.Double) || t.IsEqualTo(CTypeSystem.Float);
+    public static bool IsInteger(this IType t) => t.IsSignedInteger() || t.IsUnsignedInteger();
+    public static bool IsNumeric(this IType t) => t.IsInteger() || t.IsFloatingPoint() || t.IsEnum();
+    public static bool IsBool(this IType t) => t.IsEqualTo(CTypeSystem.Bool);
+    public static bool IsEnum(this IType t) => t is EnumType;
 
 
     /// <remarks>See 6.3.1.8 Usual arithmetic conversions in the C standard.</remarks>
-    public static IType GetCommonNumericType(this CTypeSystem ts, IType a, IType b)
+    public static IType GetCommonNumericType(IType a, IType b)
     {
         // First, if the corresponding real type of either operand is (long) double,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is (long) double.
-        if (a.IsEqualTo(ts.Double) || b.IsEqualTo(ts.Double))
-            return ts.Double;
+        if (a.IsEqualTo(CTypeSystem.Double) || b.IsEqualTo(CTypeSystem.Double))
+            return CTypeSystem.Double;
 
         // Otherwise, if the corresponding real type of either operand is float,
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
-        if (a.IsEqualTo(ts.Float) || b.IsEqualTo(ts.Float))
-            return ts.Float;
+        if (a.IsEqualTo(CTypeSystem.Float) || b.IsEqualTo(CTypeSystem.Float))
+            return CTypeSystem.Float;
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] { ts.SignedChar, ts.Short, ts.Int, ts.Long, ts.NativeInt };
-        var unsignedTypes = new[] { ts.Char, ts.UnsignedChar, ts.UnsignedShort, ts.UnsignedInt, ts.UnsignedLong, ts.NativeUInt };
+        var signedTypes = new[] { CTypeSystem.SignedChar, CTypeSystem.Short, CTypeSystem.Int, CTypeSystem.Long, CTypeSystem.NativeInt};
+        var unsignedTypes = new[] { CTypeSystem.Char, CTypeSystem.UnsignedChar, CTypeSystem.UnsignedShort, CTypeSystem.UnsignedInt, CTypeSystem.UnsignedLong, CTypeSystem.NativeUInt };
         // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);

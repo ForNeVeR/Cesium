@@ -30,4 +30,6 @@ internal sealed class MemberAccessExpression : IExpression, IValueExpression
     public IType GetExpressionType(IDeclarationScope scope) => throw new AssertException("Should be lowered");
 
     public IValue Resolve(IDeclarationScope scope) => throw new AssertException("Should be lowered");
+
+    internal (IExpression target, string member) Deconstruct() => (_target, _memberIdentifier.Identifier);
 }

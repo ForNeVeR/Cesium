@@ -118,10 +118,11 @@ internal sealed record LocalDeclarationInfo(
                             $"Cannot update type {type} with a struct specifier {typeSpecifier}.");
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
-                    if (complexTypeKind != ComplexTypeKind.Struct)
-                        throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
+                    if (complexTypeKind is ComplexTypeKind.Struct or ComplexTypeKind.Union)
+                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
+                    else
+                        throw new AssertException($"Unknown complex type kind: {complexTypeKind}.");
 
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
                     break;
                 }
 
@@ -319,14 +320,20 @@ internal sealed record LocalDeclarationInfo(
         return structDeclarations.SelectMany(memberDeclarator =>
         {
             var (specifiersQualifiers, declarators) = memberDeclarator;
-            if (declarators == null)
-                throw new CompilationException(
-                    "Empty declarator list on a struct member declaration:" +
-                    $"{string.Join(", ", specifiersQualifiers)}.");
 
             var collection = specifiersQualifiers
                 .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
                 .ToList();
+
+            if (declarators == null) // maybe its anon structure or anon union?
+            {
+                if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion)) // yes, its anon structure or union
+                    return [Of(collection, null, null)];
+                else // nope
+                    throw new CompilationException(
+                       "Empty declarator list on a struct member declaration:" +
+                       $"{string.Join(", ", specifiersQualifiers)}.");
+            }
 
             return declarators.Select<StructDeclarator, LocalDeclarationInfo>(d =>
             {

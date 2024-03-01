@@ -10,7 +10,6 @@ namespace Cesium.CodeGen.Contexts;
 internal interface IDeclarationScope
 {
     TargetArchitectureSet ArchitectureSet { get; }
-    CTypeSystem CTypeSystem { get; }
     FunctionInfo? GetFunctionInfo(string identifier);
     void DeclareFunction(string identifier, FunctionInfo functionInfo);
     VariableInfo? GetGlobalField(string identifier);

@@ -53,8 +53,8 @@ internal sealed class BinaryOperatorExpression : IExpression
                 rightType = rightTypeConst.Base;
             }
 
-            if ((!scope.CTypeSystem.IsNumeric(leftType) && !scope.CTypeSystem.IsBool(leftType) && leftType is not PointerType)
-                || (!scope.CTypeSystem.IsNumeric(rightType) && !scope.CTypeSystem.IsBool(rightType) && rightType is not PointerType))
+            if ((!leftType.IsNumeric() && !leftType.IsBool() && leftType is not PointerType)
+                || (!rightType.IsNumeric() && !rightType.IsBool() && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
             return new BinaryOperatorExpression(left, Operator, right);
@@ -67,16 +67,16 @@ internal sealed class BinaryOperatorExpression : IExpression
             return LowerPointerArithmetics(scope, left, right, leftType, rightType);
         }
 
-        var commonType = scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        var commonType = TypeSystemEx.GetCommonNumericType(leftType, rightType);
         if (!leftType.IsEqualTo(commonType))
         {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(leftType, commonType));
+            Debug.Assert(CTypeSystem.IsConversionAvailable(leftType, commonType));
             left = new TypeCastExpression(commonType, left).Lower(scope);
         }
 
         if (!rightType.IsEqualTo(commonType))
         {
-            Debug.Assert(scope.CTypeSystem.IsConversionAvailable(rightType, commonType));
+            Debug.Assert(CTypeSystem.IsConversionAvailable(rightType, commonType));
             right = new TypeCastExpression(commonType, right).Lower(scope);
         }
 
@@ -166,7 +166,7 @@ internal sealed class BinaryOperatorExpression : IExpression
     public IType GetExpressionType(IDeclarationScope scope)
     {
         if (Operator.IsComparison() || Operator.IsLogical())
-            return scope.CTypeSystem.Bool;
+            return CTypeSystem.Bool;
 
         var leftType = Left.GetExpressionType(scope);
         var rightType = Right.GetExpressionType(scope);
@@ -183,13 +183,13 @@ internal sealed class BinaryOperatorExpression : IExpression
                     Debug.Assert(left.Base.GetSizeInBytes(scope.ArchitectureSet) ==
                                  right.Base.GetSizeInBytes(scope.ArchitectureSet));
 
-                    return scope.CTypeSystem.NativeInt; // ptrdiff_t, must be signed
+                    return CTypeSystem.NativeInt; // ptrdiff_t, must be signed
             }
         }
 
         // both bitwise and arithmetic operators obey same arithmetic conversions
         // https://en.cppreference.com/w/c/language/operator_arithmetic
-        return scope.CTypeSystem.GetCommonNumericType(leftType, rightType);
+        return TypeSystemEx.GetCommonNumericType(leftType, rightType);
     }
 
     public void EmitTo(IEmitScope scope)

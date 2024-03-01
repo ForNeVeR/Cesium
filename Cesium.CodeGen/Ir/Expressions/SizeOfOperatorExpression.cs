@@ -1,7 +1,6 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -27,5 +26,5 @@ internal sealed class SizeOfOperatorExpression : IExpression
         scope.SizeOf(type);
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => scope.CTypeSystem.UnsignedInt;
+    public IType GetExpressionType(IDeclarationScope scope) => CTypeSystem.UnsignedInt;
 }

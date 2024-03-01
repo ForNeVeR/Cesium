@@ -18,5 +18,5 @@ internal sealed class StringConstant : IConstant
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
 
-    public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.CharPtr;
+    public IType GetConstantType() => CTypeSystem.CharPtr;
 }

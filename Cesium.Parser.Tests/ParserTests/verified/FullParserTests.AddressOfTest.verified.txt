@@ -86,7 +86,8 @@
                         "Text": "x"
                       }
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]

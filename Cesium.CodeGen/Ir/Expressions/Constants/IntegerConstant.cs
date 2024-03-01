@@ -48,7 +48,7 @@ internal sealed class IntegerConstant : IConstant
         });
     }
 
-    public IType GetConstantType(IDeclarationScope scope) => scope.CTypeSystem.Int;
+    public IType GetConstantType() => CTypeSystem.Int;
 
     public override string ToString() => $"integer: {Value}";
 

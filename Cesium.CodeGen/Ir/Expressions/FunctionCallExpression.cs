@@ -99,9 +99,9 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
                 // Argument is in a vararg list. Use the actual argument type, except for cases when it is float
                 // (convert to double then).
                 targetType = loweredArg.GetExpressionType(scope);
-                if (targetType.Equals(scope.CTypeSystem.Float))
+                if (targetType.Equals(CTypeSystem.Float))
                 {
-                    targetType = scope.CTypeSystem.Double;
+                    targetType = CTypeSystem.Double;
                 }
             }
 

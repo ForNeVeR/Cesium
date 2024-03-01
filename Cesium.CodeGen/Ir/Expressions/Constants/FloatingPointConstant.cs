@@ -27,7 +27,7 @@ internal sealed class FloatingPointConstant : IConstant
         }
     }
 
-    public IType GetConstantType(IDeclarationScope scope) => _isFloat ? scope.CTypeSystem.Float : scope.CTypeSystem.Double;
+    public IType GetConstantType() => _isFloat ? CTypeSystem.Float : CTypeSystem.Double;
 
     public override string ToString() => $"{(_isFloat ? "float" : "double")}: {_value}";
 }

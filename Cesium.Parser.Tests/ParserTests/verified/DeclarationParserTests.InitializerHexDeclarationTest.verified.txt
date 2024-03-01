@@ -26,7 +26,8 @@
             "Kind": "IntLiteral",
             "Text": "0x22"
           }
-        }
+        },
+        "Designation": null
       }
     }
   ]

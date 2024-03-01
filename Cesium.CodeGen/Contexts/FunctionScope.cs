@@ -13,7 +13,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
-    public CTypeSystem CTypeSystem => Context.CTypeSystem;
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Context.GetFunctionInfo(identifier);
@@ -68,7 +67,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
         if (parametersInfo is null) return null;
         if (name == "__varargs" && parametersInfo.IsVarArg)
         {
-            return new ParameterInfo(new Ir.Types.PointerType(this.CTypeSystem.Void), name, parametersInfo.Parameters.Count);
+            return new ParameterInfo(new Ir.Types.PointerType(CTypeSystem.Void), name, parametersInfo.Parameters.Count);
         }
 
         return parametersInfo.Parameters.FirstOrDefault(p => p.Name == name);

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Cesium.TestFramework;
 using JetBrains.Annotations;
 
@@ -6,7 +7,7 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenTypeTests : CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source, string @namespace = "", string globalTypeFqn = "")
+    private static Task DoTest([StringSyntax("cpp")] string source, string @namespace = "", string globalTypeFqn = "")
     {
         var assembly = GenerateAssembly(default, @namespace: @namespace, globalTypeFqn: globalTypeFqn, sources: source);
         return VerifyTypes(assembly);
@@ -191,6 +192,67 @@ int main(void) {
 ");
 
     [Fact]
+    public Task SingleFieldStructWithUnionDefinition() => DoTest(@"typedef struct { union { int x; float f; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f = 5.2f;
+    return bar.x;
+}");
+
+    [Fact, NoVerify]
+    public void BadStructWithUnionDefinition() => DoesNotCompile(@"typedef struct { union { int x; float f; }; union { int x; float f; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f = 5.2f;
+    return bar.x;
+}", "Struct has multiple suitable members named \"f\".");
+
+    [Fact]
+    public Task MegaUnionDefinition() => DoTest(@"typedef struct { union { union { int x1; float x2; union { int x2; float f2; union { int x3; float f3; union { int x4; float f4; };};};}; }; } foo;
+int main ()
+{
+    foo bar;
+    bar.f4 = 5.2f;
+    return bar.x2;
+}");
+
+    [Fact]
+    public Task StructWithUnionsAndAnons() => DoTest(@"
+typedef struct {
+    int _1;
+    struct {
+        int _2a;
+    };
+    union {
+        long _3u;
+        int _4u;
+    };
+    union {
+        long _5u;
+        int _6u;
+    } uni;
+    struct {
+        int _7;
+    } s;
+} foo;
+
+int main() {
+    foo f;
+    f._1 = 2;
+    f._2a = 10;
+    f._3u = 10;
+    f.uni._5u = 10;
+    f.s._7 = 10;
+    return f._1 + f._2a + f._4u + f.uni._6u + f.s._7;
+}
+");
+
+    [Fact]
+    public Task MultipleFieldStructWithUnionDefinition() => DoTest("typedef struct { long l; union { int x; float f; }; } foo;");
+
+    [Fact]
     public Task ArrayDeclaration() => DoTest(@"int main()
 {
     int i;
@@ -289,5 +351,63 @@ typedef struct Token {
 struct Token {
     Token* x;
 };
+");
+
+    [Fact]
+    public Task StructInitialization() => DoTest(@"typedef struct Foo { int a; int b; } Foo;
+int main() {
+    Foo f = { 1, 2 };
+    return f.a + f.b;
+}
+");
+
+    [Fact]
+    public Task StructZeroInitialization() => DoTest(@"typedef struct Foo { int a; int b; } Foo;
+int main() {
+    Foo f = { };
+    return f.a + f.b;
+}
+");
+
+    [Fact]
+    public Task StructNamedInitialization() => DoTest(@"typedef struct Foo { int a; int b; } Foo;
+int main() {
+    Foo f = { .b = 1, .a = 2 };
+    return f.a + f.b;
+}
+");
+
+    [Fact]
+    public Task StructWithArrayInitialization1() => DoTest(@"typedef struct Foo { int a; int b[2]; } Foo;
+int main() {
+    Foo f = { .b[1] = 1, .b[0] = 2, .a = 32 };
+    return f.a + f.b[0] + f.b[1];
+}
+");
+
+    [Fact]
+    public Task StructWithArrayInitialization2() => DoTest(@"typedef struct Foo { int b[2]; int a; } Foo;
+int main() {
+    Foo f = { { 1, 2 }, 32 };
+    return f.a + f.b[0] + f.b[1];
+}
+");
+
+    [Fact]
+    public Task SuperHardStructInitialization() => DoTest(@"
+typedef struct Foo
+{
+    int a; int b; // 2 + 2 = 4;
+    struct { long _1; long _2; } inner;
+    struct { long he; long ha; } other_inner;
+    union { int integer; float f; };
+    struct { int anon_int; };
+    union { int not_anon; float its; } named_union;
+    struct { struct { int level_3; } level_2; } level_1;
+} Foo;
+int main() {
+    Foo f = { .a = 2, 2, {2,2}, { .he = 2, .ha = 2 }, .anon_int = 5, .integer = 5, .named_union.not_anon = 10, .level_1.level_2.level_3 = 10 };
+    return f.a + f.b + f.inner._1 + f.inner._2 + f.other_inner.ha + f.other_inner.he + f.level_1.level_2.level_3 + f.named_union.not_anon + f.anon_int + f.integer;
+}
 ");
 }

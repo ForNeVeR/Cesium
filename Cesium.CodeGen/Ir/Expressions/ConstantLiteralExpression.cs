@@ -28,7 +28,7 @@ internal sealed class ConstantLiteralExpression : IExpression
 
     public void EmitTo(IEmitScope scope) => Constant.EmitTo(scope);
 
-    public IType GetExpressionType(IDeclarationScope scope) => Constant.GetConstantType(scope);
+    public IType GetExpressionType(IDeclarationScope scope) => Constant.GetConstantType();
 
     public override string ToString() => $"{nameof(ConstantLiteralExpression)}: {Constant}";
 

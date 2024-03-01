@@ -1,35 +1,34 @@
 using Cesium.CodeGen.Extensions;
-using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed class CTypeSystem
+internal static class CTypeSystem
 {
-    public IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
-    public IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Bool);
-    public IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
-    public IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
-    public IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
-    public IType Short { get; } = new PrimitiveType(PrimitiveTypeKind.Short);
-    public IType UnsignedShort { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedShort);
-    public IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
-    public IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
-    public IType Long { get; } = new PrimitiveType(PrimitiveTypeKind.Long);
-    public IType UnsignedLong { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedLong);
-    public IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
-    public IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
-    public IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
-    public IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
-    public IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
+    public static IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
+    public static IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Bool);
+    public static IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
+    public static IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
+    public static IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
+    public static IType Short { get; } = new PrimitiveType(PrimitiveTypeKind.Short);
+    public static IType UnsignedShort { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedShort);
+    public static IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
+    public static IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
+    public static IType Long { get; } = new PrimitiveType(PrimitiveTypeKind.Long);
+    public static IType UnsignedLong { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedLong);
+    public static IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
+    public static IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);
+    public static IType Double { get; } = new PrimitiveType(PrimitiveTypeKind.Double);
+    public static IType NativeInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeInt);
+    public static IType NativeUInt { get; } = new PrimitiveType(PrimitiveTypeKind.NativeUInt);
 
-    public bool IsConversionAvailable(IType type, IType targetType)
+    public static bool IsConversionAvailable(IType type, IType targetType)
     {
         if (type.IsEqualTo(targetType)
-            || (this.IsBool(type) && this.IsInteger(targetType))
-            || (this.IsBool(targetType) && this.IsInteger(type)))
+            || (type.IsBool() && targetType.IsInteger())
+            || (targetType.IsBool() && type.IsInteger()))
             return true;
 
-        if (!this.IsNumeric(type))
+        if (!type.IsNumeric())
             return false;
 
         if (targetType.Equals(SignedChar))
@@ -58,7 +57,7 @@ internal sealed class CTypeSystem
             return false;
     }
 
-    internal bool IsConversionRequired(IType type, IType targetType)
+    public static bool IsConversionRequired(IType type, IType targetType)
     {
         if (type.IsEqualTo(targetType))
             return false;
