@@ -107,8 +107,8 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public void PushPragma(IPragma blockItem) { }
 
     /// <inheritdoc />
-    public T? GetPragma<T>() => default;
+    public T? GetPragma<T>() where T : IPragma => default;
 
     /// <inheritdoc />
-    public void RemovePragma<T>(Predicate<T> predicate) { }
+    public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
 }

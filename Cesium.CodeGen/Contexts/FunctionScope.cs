@@ -113,8 +113,8 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public void PushPragma(IPragma pragma) { }
 
     /// <inheritdoc />
-    public T? GetPragma<T>() => default;
+    public T? GetPragma<T>() where T : IPragma => default;
 
     /// <inheritdoc />
-    public void RemovePragma<T>(Predicate<T> predicate) { }
+    public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
 }

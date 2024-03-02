@@ -86,10 +86,10 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     public void PushPragma(IPragma declaration) => _pragmaStack.Add(declaration);
 
     /// <inheritdoc />
-    public T? GetPragma<T>() => _pragmaStack.OfType<T>().FirstOrDefault();
+    public T? GetPragma<T>() where T : IPragma => _pragmaStack.OfType<T>().Reverse().FirstOrDefault();
 
     /// <inheritdoc />
-    public void RemovePragma<T>(Predicate<T> predicate)
+    public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma
     {
         for (int i = _pragmaStack.Count - 1; i >= 0; i--)
         {

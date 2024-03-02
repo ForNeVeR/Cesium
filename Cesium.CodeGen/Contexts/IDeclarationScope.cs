@@ -56,12 +56,12 @@ internal interface IDeclarationScope
     /// <summary>
     /// Gets "pragma" from the internal stack
     /// </summary>
-    T? GetPragma<T>();
+    T? GetPragma<T>() where T : IPragma;
 
     /// <summary>
     /// Removes "pragma" from the internal stack
     /// </summary>
-    void RemovePragma<T>(Predicate<T> predicate);
+    void RemovePragma<T>(Predicate<T> predicate) where T : IPragma;
 
     List<SwitchCase>? SwitchCases { get; }
 }
