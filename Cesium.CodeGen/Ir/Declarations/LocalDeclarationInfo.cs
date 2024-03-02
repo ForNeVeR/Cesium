@@ -1,8 +1,8 @@
+using System.Globalization;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using System.Security;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Ir.Declarations;
@@ -300,7 +300,7 @@ internal sealed record LocalDeclarationInfo(
 
                     if (arr.Size is not ConstantLiteralExpression constantExpression ||
                             constantExpression.Constant.Kind != CTokenType.IntLiteral ||
-                            !int.TryParse(constantExpression.Constant.Text, out var size))
+                            !int.TryParse(constantExpression.Constant.Text, CultureInfo.InvariantCulture, out var size))
                         throw new CompilationException($"Array size specifier is not integer {arr.Size}.");
 
                     type = CreateArrayType(type, size);
@@ -309,7 +309,7 @@ internal sealed record LocalDeclarationInfo(
                     current = simple.Base;
                     break;
                 default:
-                    throw new CompilationException($"Direct abstract declarator is not supported, yet: {current}.");
+                    throw new AssertException($"Unknown direct abstract declarator: {current}.");
             }
         }
 
