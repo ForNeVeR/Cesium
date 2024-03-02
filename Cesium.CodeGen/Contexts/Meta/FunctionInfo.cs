@@ -3,7 +3,6 @@ using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using JetBrains.Annotations;
 using Mono.Cecil;
 
 namespace Cesium.CodeGen.Contexts.Meta;
@@ -21,11 +20,11 @@ internal record FunctionInfo(
     public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
     /// <summary>
-    /// <inheritdoc cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.LibName"/>
+    /// <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.LibName"/>
     /// </summary>
     public string? DllLibraryName { get; set; }
     /// <summary>
-    /// Check <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.Prefix"/>
+    /// <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.Prefix"/>
     /// </summary>
     public string? DllImportNameStrip { get; set; }
 
