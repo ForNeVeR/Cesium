@@ -24,8 +24,6 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         if (IsAnon) AnonIndentifier = CreateAnonIdentifier(members, isUnion);
     }
 
-    private bool IsLocal { get; set; }
-
     public bool IsAnon { get; private set; }
 
     public bool IsUnion { get; private set; }
@@ -119,8 +117,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
         if (resolved == null)
         {
-            try_again:
-            if (IsAnon || IsLocal)
+            if (IsAnon || Members.Count != 0)
             {
                 if (AnonType == null)
                     EmitAsAnonStructure(context);
@@ -128,12 +125,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
                 return AnonType!; // not null
             }
 
-            if (Members.Count == 0)
-                throw new CompilationException($"Can't find the type with name: {Identifier}");
-
-            // maybe its Local type?
-            IsLocal = true;
-            goto try_again;
+            throw new CompilationException($"Can't find the type with name: {Identifier}");
         }
 
         return resolved;
