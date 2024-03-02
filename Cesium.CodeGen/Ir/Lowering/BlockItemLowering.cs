@@ -477,7 +477,7 @@ internal static class BlockItemLowering
                 if (!pinv.IsEnd)
                     scope.PushPragma(pinv);
                 else
-                    scope.RemovePragma<PInvokeDefinition>(_ => _.LibName == pinv.LibName);
+                    scope.RemovePragma<PInvokeDefinition>(_ => true);
                 return pinv;
             default:
                 throw new ArgumentOutOfRangeException(nameof(blockItem));
