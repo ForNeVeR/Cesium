@@ -29,7 +29,7 @@ int not_pinvoke(void) { return 1; }
 ");
 
     [Fact] // win_puts -> pinvokeimpl(msvcrt, puts) int win_puts();
-    public Task PinvokePrefixPragma() => DoTest(@"
+    public Task PInvokePrefixPragma() => DoTest(@"
 #pragma pinvoke(""msvcrt"", win_)
 int win_puts(const char*);
 ");
