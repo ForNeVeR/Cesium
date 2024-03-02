@@ -268,7 +268,7 @@ internal static class BlockItemLowering
                             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {d.Identifier}.");
                     }
 
-                    var pinvoke = scope.GetSpecialEffect<PinvokeDefinition>();
+                    var pinvoke = scope.GetPragma<PInvokeDefinition>();
                     string? dllLibrary = pinvoke != null ? pinvoke.LibName : null;
 
                     var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, d.StorageClass, IsDefined: d.CliImportMemberName is not null)
@@ -473,11 +473,11 @@ internal static class BlockItemLowering
 
                     return new TypeDefBlockItem(list);
                 }
-            case PinvokeDefinition pinv:
+            case PInvokeDefinition pinv:
                 if (!pinv.IsEnd)
-                    scope.PushSpecialEffect(pinv);
+                    scope.PushPragma(pinv);
                 else
-                    scope.RemoveSpecialEffect<PinvokeDefinition>(_ => _.LibName == pinv.LibName);
+                    scope.RemovePragma<PInvokeDefinition>(_ => _.LibName == pinv.LibName);
                 return pinv;
             default:
                 throw new ArgumentOutOfRangeException(nameof(blockItem));

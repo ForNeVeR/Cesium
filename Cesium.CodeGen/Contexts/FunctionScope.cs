@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -108,9 +109,12 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     public List<SwitchCase>? SwitchCases => null;
 
-    public void PushSpecialEffect(object blockItem) { }
+    /// <inheritdoc />
+    public void PushPragma(IPragma pragma) { }
 
-    public T? GetSpecialEffect<T>() => default;
+    /// <inheritdoc />
+    public T? GetPragma<T>() => default;
 
-    public void RemoveSpecialEffect<T>(Predicate<T> predicate) { }
+    /// <inheritdoc />
+    public void RemovePragma<T>(Predicate<T> predicate) { }
 }

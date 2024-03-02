@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -26,7 +27,7 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
 
-    private readonly List<object> _specialEffects = new();
+    private readonly List<object> _pragmaStack = new();
 
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
@@ -81,27 +82,21 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
 
     public List<SwitchCase>? SwitchCases => null;
 
-    public void PushSpecialEffect(object declaration) => _specialEffects.Add(declaration);
+    /// <inheritdoc />
+    public void PushPragma(IPragma declaration) => _pragmaStack.Add(declaration);
 
-    public T? GetSpecialEffect<T>()
-    {
-        for(int i = _specialEffects.Count - 1; i >= 0; i--)
-        {
-            var effect = _specialEffects[i];
-            if (effect is T t)
-                return t;
-        }
-        return default;
-    }
+    /// <inheritdoc />
+    public T? GetPragma<T>() => _pragmaStack.OfType<T>().FirstOrDefault();
 
-    public void RemoveSpecialEffect<T>(Predicate<T> predicate)
+    /// <inheritdoc />
+    public void RemovePragma<T>(Predicate<T> predicate)
     {
-        for (int i = _specialEffects.Count - 1; i >= 0; i--)
+        for (int i = _pragmaStack.Count - 1; i >= 0; i--)
         {
-            var effect = _specialEffects[i];
+            var effect = _pragmaStack[i];
             if (effect is T t && predicate(t))
             {
-                _specialEffects.RemoveAt(i);
+                _pragmaStack.RemoveAt(i);
                 return;
             }
         }

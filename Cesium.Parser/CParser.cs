@@ -928,17 +928,13 @@ public partial class CParser
         // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
         new SymbolDeclaration((Declaration)declaration);
 
-    [Rule("external_declaration: '__pinvoke' '!' 'end' '!'")]
-    private static ExternalDeclaration MakePivnokeEndDeclaration(IToken _, IToken __, IToken ___, IToken ____) =>
-        new PinvokeDeclaration("end");
+    [Rule("external_declaration: '_Pragma' '(' 'pinvoke' ',' 'end' ')'")]
+    private static ExternalDeclaration MakePivnokeEndDeclaration(IToken _1, IToken _2, IToken _3, IToken _4, IToken _5, IToken _6) =>
+        new PInvokeDeclaration("end");
 
-    [Rule("external_declaration: '__pinvoke' '!' StringLiteral '!'")]
-    private static ExternalDeclaration MakePinvokeDeclaration(IToken _, IToken __, IToken dll, IToken ____) =>
-        new PinvokeDeclaration(dll.Text.Replace("\"", null));
-
-    [Rule("external_declaration: '__pinvoke' '!' StringLiteral '|' Identifier '!'")]
-    private static ExternalDeclaration MakePinvokeWithPrefixDeclaration(IToken _, IToken __, IToken dll, IToken ___, IToken prefix, IToken ____) =>
-       new PinvokeDeclaration(dll.Text.Replace("\"", null), prefix.Text);
+    [Rule("external_declaration: '_Pragma' '(' 'pinvoke' ',' StringLiteral ','? Identifier? ')'")]
+    private static ExternalDeclaration MakePinvokeWithPrefixDeclaration(IToken _1, IToken _2, IToken _3, IToken _4, IToken dll, IToken? ___, IToken? prefix, IToken ____) =>
+       new PInvokeDeclaration(dll.Text.Replace("\"", null), prefix?.Text);
 
     // 6.9.1 Function definitions
 

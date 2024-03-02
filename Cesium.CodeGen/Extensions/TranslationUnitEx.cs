@@ -13,7 +13,7 @@ internal static class TranslationUnitEx
         {
             Ast.FunctionDefinition func => [new FunctionDefinition(func)],
             Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym),
-            Ast.PinvokeDeclaration pinvoke => [new PinvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
+            Ast.PInvokeDeclaration pinvoke => [new PInvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
             _ => throw new WipException(212, $"Declaration not supported: {x}.")
         }));
 

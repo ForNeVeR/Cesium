@@ -20,7 +20,13 @@ internal record FunctionInfo(
     public StorageClass StorageClass { get; set; } = StorageClass;
     public bool IsDefined { get; set; } = IsDefined;
     public string? CliImportMember { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.LibName"/>
+    /// </summary>
     public string? DllLibraryName { get; set; }
+    /// <summary>
+    /// Check <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.Prefix"/>
+    /// </summary>
     public string? DllImportNameStrip { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)

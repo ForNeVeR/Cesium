@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -46,10 +47,21 @@ internal interface IDeclarationScope
     /// </summary>
     /// <returns>Name of the virtual label which can be used by continue statement</returns>
     string? GetContinueLabel();
-    
-    void PushSpecialEffect(object declaration);
-    T? GetSpecialEffect<T>();
-    void RemoveSpecialEffect<T>(Predicate<T> predicate);
+
+    /// <summary>
+    /// Push "pragma" to the internal stack
+    /// </summary>
+    void PushPragma(IPragma pragma);
+
+    /// <summary>
+    /// Gets "pragma" from the internal stack
+    /// </summary>
+    T? GetPragma<T>();
+
+    /// <summary>
+    /// Removes "pragma" from the internal stack
+    /// </summary>
+    void RemovePragma<T>(Predicate<T> predicate);
 
     List<SwitchCase>? SwitchCases { get; }
 }

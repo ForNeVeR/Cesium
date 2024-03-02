@@ -181,9 +181,7 @@ public record CPreprocessor(
                     // end:   pinvoke [0] ( [1] end        [2] ) [3]
                     // with prefix: pinvoke [0] ( [1] "lib name" [2] , [3] prefix [4] ) [5]
 
-                    // why '!'?
-                    // To prevent CParser from defining this as a method call.
-                    foreach(var tok in TokenizeString($"__pinvoke!{type!.Text}{(tokens.Count() > 5 ? $"|{tokens.ElementAt(4).Text}" : null)}!"))
+                    foreach(var tok in TokenizeString($"_Pragma(pinvoke, {type!.Text}{(tokens.Count() > 5 ? $",{tokens.ElementAt(4).Text}" : null)})"))
                         yield return tok;
                 }
                 break;
@@ -300,7 +298,7 @@ public record CPreprocessor(
 
     private static IEnumerable<IToken<CPreprocessorTokenType>> TokenizeString(string code)
     {
-        var tokenizer = new CPreprocessorLexer("c:/null.c", code);
+        var tokenizer = new CPreprocessorLexer("<null>", code);
         return tokenizer.ToEnumerableUntilEnd();
     }
 

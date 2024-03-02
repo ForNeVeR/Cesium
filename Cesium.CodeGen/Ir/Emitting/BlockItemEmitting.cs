@@ -198,7 +198,7 @@ internal static class BlockItemEmitting
 
                 return;
             }
-            case PinvokeDefinition:
+            case PInvokeDefinition:
                 return;
             default:
                 throw new ArgumentOutOfRangeException(nameof(blockItem));
