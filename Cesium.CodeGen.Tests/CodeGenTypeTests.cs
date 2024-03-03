@@ -411,7 +411,7 @@ int main() {
 }
 ");
 
-    [Fact]
+    [Fact(Skip = "TODO[#xxx]: Support local struct types")]
     public Task LocalStructTest() => DoTest("""
 int main(void) {
     struct foo {

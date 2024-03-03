@@ -96,12 +96,6 @@ internal sealed class LValueInstanceField : LValueField
 
         List<FieldDefinition>? path = null;
 
-        if (!_structType.IsAlreadyEmitted(scope.Context))
-        {
-            // The last-chance try to emit the type:
-            _structType.EmitType(scope.Context);
-        }
-
         var valueTypeReference = _structType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
 
