@@ -410,4 +410,15 @@ int main() {
     return f.a + f.b + f.inner._1 + f.inner._2 + f.other_inner.ha + f.other_inner.he + f.level_1.level_2.level_3 + f.named_union.not_anon + f.anon_int + f.integer;
 }
 ");
+
+    [Fact]
+    public Task LocalStructTest() => DoTest("""
+int main(void) {
+    struct foo {
+        int x;
+    } bar;
+    bar.x = 42;
+    return bar.x;
+}
+""");
 }

@@ -4,14 +4,13 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 {
-    internal const string AnonStructPrefix = "_Anon_";
-    internal const string AnonUnionPrefix = "_Union_";
+    private const string AnonStructPrefix = "_Anon_";
+    private const string AnonUnionPrefix = "_Union_";
 
     private TypeReference? AnonType;
 
@@ -21,7 +20,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         IsUnion = isUnion;
         Identifier = identifier;
         IsAnon = identifier == null;
-        if (IsAnon) AnonIndentifier = CreateAnonIdentifier(members, isUnion);
+        if (IsAnon) AnonIdentifier = CreateAnonIdentifier(members, isUnion);
     }
 
     public bool IsAnon { get; private set; }
@@ -35,7 +34,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
     public string? Identifier { get; }
 
     // We need a good name generator...
-    internal string? AnonIndentifier { get; }
+    private string? AnonIdentifier;
 
     public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
@@ -74,7 +73,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             {
                 if (type is StructType structType && structType.IsAnon)
                 {
-                    identifier = structType.AnonIndentifier;
+                    identifier = structType.AnonIdentifier;
                 }
                 else
                     throw new NotImplementedException($"Unexpected field with null ident and with type: {type}");
@@ -93,9 +92,20 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         }
     }
 
+    public void EmitType(TranslationUnitContext context)
+    {
+        var name = Identifier ?? CreateAnonIdentifier(Members, IsUnion);
+        context.GenerateType(name, this);
+    }
+
+    public bool IsAlreadyEmitted(TranslationUnitContext context) => context.GetTypeReference(this) != null;
+
     private void EmitAsAnonStructure(TranslationUnitContext context)
     {
-        var type = new TypeDefinition(string.Empty, IsAnon ? AnonIndentifier : Identifier, TypeAttributes.Public | TypeAttributes.Sealed,
+        var type = new TypeDefinition(
+            string.Empty,
+            CreateAnonIdentifier(Members, IsUnion),
+            TypeAttributes.Public | TypeAttributes.Sealed,
             context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
 
         FinishEmit(type, type.Name, context); // emit fields
@@ -117,15 +127,14 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
         if (resolved == null)
         {
-            if (IsAnon || Members.Count != 0)
+            if (IsAnon)
             {
                 if (AnonType == null)
                     EmitAsAnonStructure(context);
 
                 return AnonType!; // not null
             }
-
-            throw new CompilationException($"Can't find the type with name: {Identifier}");
+            throw new CompilationException($"Type {this} was not found.");
         }
 
         return resolved;
