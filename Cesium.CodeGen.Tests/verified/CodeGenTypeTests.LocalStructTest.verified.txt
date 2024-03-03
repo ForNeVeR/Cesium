@@ -1,0 +1,26 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        foo V_0
+      IL_0000: ldloca.s V_0
+      IL_0002: ldc.i4.s 42
+      IL_0004: stfld System.Int32 foo::x
+      IL_0009: ldloca.s V_0
+      IL_000b: ldfld System.Int32 foo::x
+      IL_0010: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: foo
+  Fields:
+    System.Int32 foo::x

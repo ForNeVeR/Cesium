@@ -22,7 +22,15 @@ internal sealed class SizeOfOperatorExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
-        var type = _type.Resolve(scope.Context);
+        var context = scope.Context;
+
+        // As sizeof is a type operator, it may need to emit anonymous types right here.
+        if (_type is IGeneratedType generatedType && !generatedType.IsAlreadyEmitted(context))
+        {
+            generatedType.EmitType(context);
+        }
+
+        var type = _type.Resolve(context);
         scope.SizeOf(type);
     }
 

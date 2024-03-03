@@ -64,29 +64,29 @@
       IL_00cb: conv.i8
       IL_00cc: ldloca.s V_0
       IL_00ce: ldflda _Anon_Long__1_Long__2 Foo::inner
-      IL_00d3: ldfld System.Int64 _Anon_Long__1_Long__2::_1
+      IL_00d3: ldfld System.Int64 <typedef>_Anon_Long__1_Long__2::_1
       IL_00d8: add
       IL_00d9: ldloca.s V_0
       IL_00db: ldflda _Anon_Long__1_Long__2 Foo::inner
-      IL_00e0: ldfld System.Int64 _Anon_Long__1_Long__2::_2
+      IL_00e0: ldfld System.Int64 <typedef>_Anon_Long__1_Long__2::_2
       IL_00e5: add
       IL_00e6: ldloca.s V_0
       IL_00e8: ldflda _Anon_Long_he_Long_ha Foo::other_inner
-      IL_00ed: ldfld System.Int64 _Anon_Long_he_Long_ha::ha
+      IL_00ed: ldfld System.Int64 <typedef>_Anon_Long_he_Long_ha::ha
       IL_00f2: add
       IL_00f3: ldloca.s V_0
       IL_00f5: ldflda _Anon_Long_he_Long_ha Foo::other_inner
-      IL_00fa: ldfld System.Int64 _Anon_Long_he_Long_ha::he
+      IL_00fa: ldfld System.Int64 <typedef>_Anon_Long_he_Long_ha::he
       IL_00ff: add
       IL_0100: ldloca.s V_0
       IL_0102: ldflda _Anon__level_2 Foo::level_1
-      IL_0107: ldflda _Anon_Int_level_3 _Anon__level_2::level_2
-      IL_010c: ldfld System.Int32 _Anon_Int_level_3::level_3
+      IL_0107: ldflda <typedef>_Anon_Int_level_3 <typedef>_Anon__level_2::level_2
+      IL_010c: ldfld System.Int32 <typedef>_Anon_Int_level_3::level_3
       IL_0111: conv.i8
       IL_0112: add
       IL_0113: ldloca.s V_0
       IL_0115: ldflda _Union_Int_not_anon_Float_its Foo::named_union
-      IL_011a: ldfld System.Int32 _Union_Int_not_anon_Float_its::not_anon
+      IL_011a: ldfld System.Int32 <typedef>_Union_Int_not_anon_Float_its::not_anon
       IL_011f: conv.i8
       IL_0120: add
       IL_0121: ldloca.s V_0
@@ -153,3 +153,26 @@
   Type: _Anon__level_2
   Fields:
     _Anon_Int_level_3 _Anon__level_2::level_2
+
+  Type: <typedef>_Anon_Long__1_Long__2
+  Fields:
+    System.Int64 <typedef>_Anon_Long__1_Long__2::_1
+    System.Int64 <typedef>_Anon_Long__1_Long__2::_2
+
+  Type: <typedef>_Anon_Long_he_Long_ha
+  Fields:
+    System.Int64 <typedef>_Anon_Long_he_Long_ha::he
+    System.Int64 <typedef>_Anon_Long_he_Long_ha::ha
+
+  Type: <typedef>_Anon_Int_level_3
+  Fields:
+    System.Int32 <typedef>_Anon_Int_level_3::level_3
+
+  Type: <typedef>_Anon__level_2
+  Fields:
+    <typedef>_Anon_Int_level_3 <typedef>_Anon__level_2::level_2
+
+  Type: <typedef>_Union_Int_not_anon_Float_its
+  Fields:
+    System.Int32 <typedef>_Union_Int_not_anon_Float_its::not_anon
+    System.Single <typedef>_Union_Int_not_anon_Float_its::its
