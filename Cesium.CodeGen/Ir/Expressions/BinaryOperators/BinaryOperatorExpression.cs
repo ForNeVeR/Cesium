@@ -53,8 +53,8 @@ internal sealed class BinaryOperatorExpression : IExpression
                 rightType = rightTypeConst.Base;
             }
 
-            if ((!leftType.IsNumeric() && leftType is not PointerType)
-                || (!rightType.IsNumeric() && rightType is not PointerType))
+            if ((!leftType.IsNumeric() && !leftType.IsBool() && leftType is not PointerType)
+                || (!rightType.IsNumeric() && !rightType.IsBool() && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
 
             return new BinaryOperatorExpression(left, Operator, right);

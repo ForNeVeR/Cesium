@@ -1,11 +1,12 @@
 using Cesium.CodeGen.Extensions;
+using Cesium.Core;
 
 namespace Cesium.CodeGen.Ir.Types;
 
 internal static class CTypeSystem
 {
     public static IType Void { get; } = new PrimitiveType(PrimitiveTypeKind.Void);
-    public static IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Int); // TODO[#179]: Figure out the right type.
+    public static IType Bool { get; } = new PrimitiveType(PrimitiveTypeKind.Bool);
     public static IType Char { get; } = new PrimitiveType(PrimitiveTypeKind.Char);
     public static IType SignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.SignedChar);
     public static IType UnsignedChar { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedChar);
@@ -33,6 +34,8 @@ internal static class CTypeSystem
 
         if (targetType.Equals(SignedChar))
             return true;
+        if (targetType.Equals(UnsignedChar))
+            return true;
         else if (targetType.Equals(Short))
             return true;
         else if (targetType.Equals(Int))
@@ -53,5 +56,43 @@ internal static class CTypeSystem
             return true;
         else
             return false;
+    }
+
+    public static bool IsConversionRequired(IType type, IType targetType)
+    {
+        if (type.IsEqualTo(targetType))
+            return false;
+
+        if (!type.IsNumeric())
+            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
+
+        if (targetType.Equals(SignedChar))
+            return true;
+        if (targetType.Equals(UnsignedChar))
+            return true;
+        else if (targetType.Equals(Short))
+            return true;
+        else if (targetType.Equals(Int))
+            return !type.Equals(Bool);
+        else if (targetType.Equals(Long))
+            return true;
+        else if (targetType.Equals(Char))
+            return true;
+        else if (targetType.Equals(UnsignedShort))
+            return true;
+        else if (targetType.Equals(UnsignedInt))
+            return true;
+        else if (targetType.Equals(UnsignedLong))
+            return true;
+        else if (targetType.Equals(Float))
+            return true;
+        else if (targetType.Equals(Double))
+            return true;
+        else if (targetType.Equals(NativeInt) || targetType is PointerType)
+            return true;
+        else if (targetType.Equals(Bool))
+            return false;
+        else
+            throw new CompilationException($"Conversion from {type} to {targetType} is not supported.");
     }
 }

@@ -246,6 +246,12 @@ internal static class TypeSystemEx
         if (a.IsEqualTo(CTypeSystem.Float) || b.IsEqualTo(CTypeSystem.Float))
             return CTypeSystem.Float;
 
+        if (a.IsEqualTo(CTypeSystem.Bool))
+            return b;
+
+        if (b.IsEqualTo(CTypeSystem.Bool))
+            return a;
+
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] { CTypeSystem.SignedChar, CTypeSystem.Short, CTypeSystem.Int, CTypeSystem.Long, CTypeSystem.NativeInt};

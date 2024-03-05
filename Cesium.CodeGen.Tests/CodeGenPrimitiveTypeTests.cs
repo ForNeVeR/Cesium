@@ -13,6 +13,7 @@ public class CodeGenPrimitiveTypeTests
     [InlineData("int", PrimitiveTypeKind.Int)]
     [InlineData("void", PrimitiveTypeKind.Void)]
     [InlineData("unsigned char", PrimitiveTypeKind.UnsignedChar)]
+    [InlineData("_Bool", PrimitiveTypeKind.Bool)]
     internal void Test(string typeString, PrimitiveTypeKind expectedKind)
     {
         var source = $"{typeString} x;";
