@@ -171,7 +171,19 @@ public record CPreprocessor(
                 {
                     IncludeContext.RegisterGuardedFileInclude(CompilationUnitPath);
                 }
+                else if (identifier == "pinvoke")
+                {
+                    if (pragma.Tokens == null)
+                        throw new PreprocessorException(pragma.Location, $"Bad pragma: {pragma}");
+                    var tokens = pragma.Tokens?.Where(_ => _.Kind != WhiteSpace)!;
+                    var type = tokens.ElementAt(2);
+                    // start: pinvoke [0] ( [1] "lib name" [2] ) [3]
+                    // end:   pinvoke [0] ( [1] end        [2] ) [3]
+                    // with prefix: pinvoke [0] ( [1] "lib name" [2] , [3] prefix [4] ) [5]
 
+                    foreach(var tok in TokenizeString($"_Pragma(pinvoke, {type!.Text}{(tokens.Count() > 5 ? $",{tokens.ElementAt(4).Text}" : null)})"))
+                        yield return tok;
+                }
                 break;
             }
             case EmptyDirective:
@@ -282,6 +294,12 @@ public record CPreprocessor(
         }
 
         yield return new Token<CPreprocessorTokenType>(new Range(), new Location(), "\n", NewLine);
+    }
+
+    private static IEnumerable<IToken<CPreprocessorTokenType>> TokenizeString(string code)
+    {
+        var tokenizer = new CPreprocessorLexer("<null>", code);
+        return tokenizer.ToEnumerableUntilEnd();
     }
 
     internal static void RaisePreprocessorParseError(ParseError error)

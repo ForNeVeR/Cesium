@@ -20,7 +20,8 @@
       },
       "Initializer": {
         "$type": "Cesium.Ast.ArrayInitializer, Cesium.Ast",
-        "Initializers": []
+        "Initializers": [],
+        "Designation": null
       }
     }
   ]

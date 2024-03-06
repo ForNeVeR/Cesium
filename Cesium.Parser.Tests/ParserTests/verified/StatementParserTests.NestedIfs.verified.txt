@@ -47,7 +47,8 @@
                     "Kind": "IntLiteral",
                     "Text": "0"
                   }
-                }
+                },
+                "Designation": null
               }
             }
           ]
@@ -85,7 +86,8 @@
                     "Kind": "IntLiteral",
                     "Text": "1"
                   }
-                }
+                },
+                "Designation": null
               }
             }
           ]

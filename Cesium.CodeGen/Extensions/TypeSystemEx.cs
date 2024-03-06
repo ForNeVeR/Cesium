@@ -201,6 +201,8 @@ internal static class TypeSystemEx
                ));
     }
 
+    public static bool IsCArray(this TypeReference tr) => tr.Name.StartsWith("<SyntheticBuffer>");
+
     public static bool IsEqualTo(this TypeReference a, TypeReference b) => a.FullName == b.FullName;
     public static bool IsEqualTo(this IType a, IType b) => a.Equals(b);
 
@@ -243,6 +245,12 @@ internal static class TypeSystemEx
         // the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
         if (a.IsEqualTo(CTypeSystem.Float) || b.IsEqualTo(CTypeSystem.Float))
             return CTypeSystem.Float;
+
+        if (a.IsEqualTo(CTypeSystem.Bool))
+            return b;
+
+        if (b.IsEqualTo(CTypeSystem.Bool))
+            return a;
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.

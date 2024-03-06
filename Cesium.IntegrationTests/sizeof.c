@@ -73,41 +73,38 @@ int testGlobalEnumSizeOf() {
     return 1;
 }
 
-// TODO [453]: Failing 
-//int testStructSizeof() {
-//    struct bar {
-//        int x;
-//        int y;
-//    };
-//
-//    int structSize = sizeof(struct bar);
-//
-//    if (structSize != 8) {
-//        return 0;
-//    }
-//
-//    return 1;
-//}
+int testStructSizeof() {
+    struct bar {
+        int x;
+        int y;
+    };
 
-// TODO[#332]: Failing 
-//int testStructSizeof() {
-//    return sizeof(int[5]);
-//}
+    int structSize = sizeof(struct bar);
 
-/// TODO[#453]: Struct can't be resolved
-//struct foo {
-//    int x;
-//    int y;
-//};
-//int testGlobalStructSizeof() {
-//    int structSize = sizeof(struct foo);
-//
-//    if (structSize != 8) {
-//        return 0;
-//    }
-//
-//    return 1;
-//}
+    if (structSize != 8) {
+        return 0;
+    }
+
+    return 1;
+}
+
+int testDirectArrSizeof() {
+    return sizeof(int[5]) == (sizeof(int) * 5);
+}
+
+struct foobar {
+    int x;
+    int y;
+};
+int testGlobalStructSizeof() {
+    int structSize = sizeof(struct foobar);
+
+    if (structSize != 8) {
+        return 0;
+    }
+
+    return 1;
+}
 
 int main(int argc, char* argv[])
 {
@@ -119,9 +116,9 @@ int main(int argc, char* argv[])
         return -2;
     }
 
-    //if (!testGlobalStructSizeof()) {
-    //    return -3;
-    //}
+    if (!testGlobalStructSizeof()) {
+        return -3;
+    }
 
     if (!testCharSizeof()) {
         return -4;
@@ -145,6 +142,14 @@ int main(int argc, char* argv[])
 
     if (!testGlobalEnumSizeOf()) {
         return -9;
+    }
+
+    if (!testStructSizeof()) {
+        return -10;
+    }
+
+    if (!testDirectArrSizeof()) {
+        return -11;
     }
 
     return 42;

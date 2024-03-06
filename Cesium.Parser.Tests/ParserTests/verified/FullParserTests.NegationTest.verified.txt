@@ -54,7 +54,8 @@
                       "Kind": "IntLiteral",
                       "Text": "-42"
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]

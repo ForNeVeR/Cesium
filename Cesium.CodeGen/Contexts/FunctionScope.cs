@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -107,4 +108,13 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public string? GetContinueLabel() => null;
 
     public List<SwitchCase>? SwitchCases => null;
+
+    /// <inheritdoc />
+    public void PushPragma(IPragma pragma) { }
+
+    /// <inheritdoc />
+    public T? GetPragma<T>() where T : IPragma => default;
+
+    /// <inheritdoc />
+    public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
 }

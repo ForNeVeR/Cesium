@@ -171,7 +171,7 @@ internal static class BlockItemLowering
                         {
                             var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
                             if (CTypeSystem.IsConversionAvailable(initializerType, type)
-                                && !initializerType.Equals(type))
+                                && CTypeSystem.IsConversionRequired(initializerType, type))
                             {
                                 initializerExpression = new TypeCastExpression(type, initializerExpression);
                             }
@@ -268,12 +268,18 @@ internal static class BlockItemLowering
                             throw new CompilationException($"Empty parameter list is not allowed for CLI-imported function {d.Identifier}.");
                     }
 
+                    var pinvoke = scope.GetPragma<PInvokeDefinition>();
+                    string? dllLibrary = pinvoke != null ? pinvoke.LibName : null;
+
                     var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, d.StorageClass, IsDefined: d.CliImportMemberName is not null)
                     {
-                        CliImportMember = d.CliImportMemberName
+                        CliImportMember = d.CliImportMemberName,
+                        DllLibraryName = dllLibrary,
+                        DllImportNameStrip = pinvoke?.Prefix
                     };
                     scope.DeclareFunction(d.Identifier, cliImportFunctionInfo);
-                    return new FunctionDeclaration(d.Identifier, d.StorageClass, resolvedFunctionType, d.CliImportMemberName);
+
+                    return new FunctionDeclaration(d.Identifier, d.StorageClass, resolvedFunctionType, d.CliImportMemberName, dllLibrary);
                 }
 
             case FunctionDefinition d:
@@ -467,6 +473,12 @@ internal static class BlockItemLowering
 
                     return new TypeDefBlockItem(list);
                 }
+            case PInvokeDefinition pinv:
+                if (!pinv.IsEnd)
+                    scope.PushPragma(pinv);
+                else
+                    scope.RemovePragma<PInvokeDefinition>(_ => true);
+                return pinv;
             default:
                 throw new ArgumentOutOfRangeException(nameof(blockItem));
         }

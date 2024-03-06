@@ -199,7 +199,7 @@ public class TranslationUnitContext
                 }
             }
 
-            return new StructType(members, structType.Identifier);
+            return new StructType(members, structType.IsUnion, structType.Identifier);
         }
 
         if (type is FunctionType functionType)

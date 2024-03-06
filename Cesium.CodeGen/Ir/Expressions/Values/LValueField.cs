@@ -37,6 +37,8 @@ internal abstract class LValueField : ILValue
         else
         {
             EmitGetFieldOwner(scope);
+            if (field is StructType.AnonStructFieldReference unionField)
+                unionField.EmitPath(scope);
             scope.LdFld(field);
         }
     }
@@ -66,7 +68,12 @@ internal abstract class LValueField : ILValue
 
     public void EmitSetValue(IEmitScope scope, IExpression value)
     {
+        var field = GetField(scope);
+
         EmitGetFieldOwner(scope);
+        if (field is StructType.AnonStructFieldReference unionField)
+            unionField.EmitPath(scope);
+
         value.EmitTo(scope);
         if (value is CompoundInitializationExpression)
         {
@@ -75,7 +82,7 @@ internal abstract class LValueField : ILValue
                 throw new CompilationException("Compound initialization is only supported for in-place arrays.");
             }
 
-            scope.AddInstruction(OpCodes.Ldflda, GetField(scope));
+            scope.AddInstruction(OpCodes.Ldflda, field);
             var expression = type.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
             expression.EmitTo(scope);
             scope.AddInstruction(OpCodes.Conv_U);

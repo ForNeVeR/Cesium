@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
@@ -118,10 +119,11 @@ internal sealed record LocalDeclarationInfo(
                             $"Cannot update type {type} with a struct specifier {typeSpecifier}.");
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
-                    if (complexTypeKind != ComplexTypeKind.Struct)
-                        throw new WipException(217, $"Complex type kind not supported, yet: {complexTypeKind}.");
+                    if (complexTypeKind is ComplexTypeKind.Struct or ComplexTypeKind.Union)
+                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
+                    else
+                        throw new AssertException($"Unknown complex type kind: {complexTypeKind}.");
 
-                    type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), identifier);
                     break;
                 }
 
@@ -291,13 +293,24 @@ internal sealed record LocalDeclarationInfo(
         var current = directAbstractDeclarator;
         while (current != null)
         {
-            throw current switch
+            switch(current)
             {
-                _ => new WipException(
-                                        332,
-                                        $"Direct abstract declarator is not supported, yet: {current}."),
-            };
-            current = current.Base;
+                case ArrayDirectAbstractDeclarator arr:
+                    current = arr.Base;
+
+                    if (arr.Size is not ConstantLiteralExpression constantExpression ||
+                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
+                            !int.TryParse(constantExpression.Constant.Text, CultureInfo.InvariantCulture, out var size))
+                        throw new CompilationException($"Array size specifier is not integer {arr.Size}.");
+
+                    type = CreateArrayType(type, size);
+                    break;
+                case SimpleDirectAbstractDeclarator simple: // does it exist?
+                    current = simple.Base;
+                    break;
+                default:
+                    throw new AssertException($"Unknown direct abstract declarator: {current}.");
+            }
         }
 
         return type;
@@ -319,14 +332,20 @@ internal sealed record LocalDeclarationInfo(
         return structDeclarations.SelectMany(memberDeclarator =>
         {
             var (specifiersQualifiers, declarators) = memberDeclarator;
-            if (declarators == null)
-                throw new CompilationException(
-                    "Empty declarator list on a struct member declaration:" +
-                    $"{string.Join(", ", specifiersQualifiers)}.");
 
             var collection = specifiersQualifiers
                 .Select<ISpecifierQualifierListItem, IDeclarationSpecifier>(x => x)
                 .ToList();
+
+            if (declarators == null) // maybe its anon structure or anon union?
+            {
+                if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion)) // yes, its anon structure or union
+                    return [Of(collection, null, null)];
+                else // nope
+                    throw new CompilationException(
+                       "Empty declarator list on a struct member declaration:" +
+                       $"{string.Join(", ", specifiersQualifiers)}.");
+            }
 
             return declarators.Select<StructDeclarator, LocalDeclarationInfo>(d =>
             {
@@ -406,6 +425,7 @@ internal sealed record LocalDeclarationInfo(
                 ["double"] => PrimitiveTypeKind.Double,
                 ["__nint"] => PrimitiveTypeKind.NativeInt,
                 ["__nuint"] => PrimitiveTypeKind.NativeUInt,
+                ["_Bool"] => PrimitiveTypeKind.Bool,
                 _ => throw new WipException(
                     224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),

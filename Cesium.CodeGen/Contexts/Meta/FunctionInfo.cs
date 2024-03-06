@@ -13,16 +13,20 @@ internal record FunctionInfo(
     IType ReturnType,
     StorageClass StorageClass,
     bool IsDefined,
-    MethodReference? MethodReference = null) : ICloneable
+    MethodReference? MethodReference = null)
 {
-    public ParametersInfo? Parameters { get; private set; } = Parameters;
-    public IType ReturnType { get; private set; } = ReturnType;
-    public StorageClass StorageClass { get; private set; } = StorageClass;
-    public bool IsDefined { get; private set; } = IsDefined;
-    public MethodReference? MethodReference { get; private set; } = MethodReference;
-    public string? CliImportMember { get; init; }
-
-    private FunctionInfo() : this(null, null!, default, false) {}
+    public ParametersInfo? Parameters { get; set; } = Parameters;
+    public StorageClass StorageClass { get; set; } = StorageClass;
+    public bool IsDefined { get; set; } = IsDefined;
+    public string? CliImportMember { get; set; }
+    /// <summary>
+    /// <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.LibName"/>
+    /// </summary>
+    public string? DllLibraryName { get; set; }
+    /// <summary>
+    /// <see cref="Cesium.CodeGen.Ir.BlockItems.PInvokeDefinition.Prefix"/>
+    /// </summary>
+    public string? DllImportNameStrip { get; set; }
 
     public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
     {
@@ -59,56 +63,5 @@ internal record FunctionInfo(
                 throw new CompilationException(
                     $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
-    }
-
-    object ICloneable.Clone()
-        => new FunctionInfo
-        {
-            Parameters = Parameters,
-            IsDefined = IsDefined,
-            StorageClass = StorageClass,
-            CliImportMember = CliImportMember,
-            ReturnType = ReturnType,
-            MethodReference = MethodReference
-        };
-
-    internal FunctionInfo ShallowClone => (FunctionInfo)((ICloneable)this).Clone();
-
-    internal class FunctionInfoBuilder
-    {
-        private readonly FunctionInfo _functionInfo;
-
-        private FunctionInfoBuilder(FunctionInfo functionInfo)
-            => _functionInfo = functionInfo.ShallowClone;
-
-        internal static FunctionInfoBuilder ToBuild(FunctionInfo functionInfo) => new(functionInfo);
-
-        internal FunctionInfoBuilder Parameters(ParametersInfo? parameterInfo)
-        {
-            _functionInfo.Parameters = parameterInfo;
-            return this;
-        }
-        internal FunctionInfoBuilder ReturnType(IType parameterInfo)
-        {
-            _functionInfo.ReturnType = parameterInfo;
-            return this;
-        }
-        internal FunctionInfoBuilder StorageClass(StorageClass storageClass)
-        {
-            _functionInfo.StorageClass = storageClass;
-            return this;
-        }
-        internal FunctionInfoBuilder IsDefined(bool isDefined)
-        {
-            _functionInfo.IsDefined = isDefined;
-            return this;
-        }
-        internal FunctionInfoBuilder MethodReference(MethodReference? methodReference)
-        {
-            _functionInfo.MethodReference = methodReference;
-            return this;
-        }
-
-        internal FunctionInfo Build() => _functionInfo;
     }
 }

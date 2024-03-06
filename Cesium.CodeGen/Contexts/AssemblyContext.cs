@@ -61,7 +61,21 @@ public class AssemblyContext
     {
         foreach (var (name, function) in Functions)
         {
-            if (!function.IsDefined) throw new CompilationException($"Function {name} not defined.");
+            if (!function.IsDefined)
+            {
+                if (function.DllLibraryName == null) throw new CompilationException($"Function {name} not defined.");
+                var funcDef = function.MethodReference!.Resolve();
+                funcDef.Attributes = MethodAttributes.Public | MethodAttributes.PInvokeImpl | MethodAttributes.Static | MethodAttributes.HideBySig;
+                ModuleReference? dll = Module.ModuleReferences.FirstOrDefault(_ => _.Name == function.DllLibraryName);
+                if (dll == null)
+                {
+                    dll = new ModuleReference(function.DllLibraryName);
+                    Module.ModuleReferences.Add(dll);
+                }
+                string entryPoint = function.DllImportNameStrip != null ? name.Replace(function.DllImportNameStrip, null) : name;
+                funcDef.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.NoMangle | PInvokeAttributes.SupportsLastError, entryPoint, dll);
+                function.IsDefined = true;
+            }
         }
 
         FinishGlobalInitializer();

@@ -1,5 +1,7 @@
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
@@ -24,6 +26,8 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
+
+    private readonly List<object> _pragmaStack = new();
 
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
@@ -77,4 +81,24 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     public string? GetContinueLabel() => null;
 
     public List<SwitchCase>? SwitchCases => null;
+
+    /// <inheritdoc />
+    public void PushPragma(IPragma declaration) => _pragmaStack.Add(declaration);
+
+    /// <inheritdoc />
+    public T? GetPragma<T>() where T : IPragma => _pragmaStack.OfType<T>().LastOrDefault();
+
+    /// <inheritdoc />
+    public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma
+    {
+        for (int i = _pragmaStack.Count - 1; i >= 0; i--)
+        {
+            var effect = _pragmaStack[i];
+            if (effect is T t && predicate(t))
+            {
+                _pragmaStack.RemoveAt(i);
+                return;
+            }
+        }
+    }
 }

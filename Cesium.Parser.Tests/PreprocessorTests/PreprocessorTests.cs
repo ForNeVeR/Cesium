@@ -22,38 +22,12 @@ public class PreprocessorTests : VerifyTestBase
         await Verify(result, GetSettings());
     }
 
-    private static async Task<string> DoPreprocess(
+    private static Task<string> DoPreprocess(
         [StringSyntax("cpp")] string source,
         Dictionary<string, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
-        Action<PreprocessorWarning>? onWarning = null)
-    {
-        var lexer = new CPreprocessorLexer(_mainMockedFilePath, source);
-        var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
-        var definesContext = new InMemoryDefinesContext();
-        if (defines != null)
-        {
-            foreach (var (name, value) in defines)
-            {
-                definesContext.DefineMacro(name, null, value);
-            }
-        }
-
-        IWarningProcessor warningProcessor = onWarning == null
-            ? new ListWarningProcessor()
-            : new LambdaWarningProcessor(onWarning);
-        using (warningProcessor as IDisposable)
-        {
-            var preprocessor = new CPreprocessor(
-                _mainMockedFilePath,
-                lexer,
-                includeContext,
-                definesContext,
-                warningProcessor);
-            var result = await preprocessor.ProcessSource();
-            return result;
-        }
-    }
+        Action<PreprocessorWarning>? onWarning = null) =>
+        PreprocessorUtil.DoPreprocess(_mainMockedFilePath, source, standardHeaders, defines, onWarning);
 
     [Fact]
     public Task IdentityTest() => DoTest(@"int main(void)

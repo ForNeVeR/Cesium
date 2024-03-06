@@ -1,0 +1,33 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      Locals:
+        <typedef>foo V_0
+      IL_0000: ldloca.s V_0
+      IL_0002: ldflda _Union_Int_x_Float_f <typedef>foo::_Union_Int_x_Float_f
+      IL_0007: ldc.r4 5.2
+      IL_000c: stfld System.Single _Union_Int_x_Float_f::f
+      IL_0011: ldloca.s V_0
+      IL_0013: ldflda _Union_Int_x_Float_f <typedef>foo::_Union_Int_x_Float_f
+      IL_0018: ldfld System.Int32 _Union_Int_x_Float_f::x
+      IL_001d: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
+
+  Type: <typedef>foo
+  Fields:
+    _Union_Int_x_Float_f <typedef>foo::_Union_Int_x_Float_f
+
+  Type: _Union_Int_x_Float_f
+  Fields:
+    System.Int32 _Union_Int_x_Float_f::x
+    System.Single _Union_Int_x_Float_f::f

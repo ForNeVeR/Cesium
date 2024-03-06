@@ -448,11 +448,11 @@ public partial class CParser
         ComplexTypeKind structOrUnion,
         IToken identifier) => new(structOrUnion, identifier?.Text, ImmutableArray<StructDeclaration>.Empty);
 
-    // TODO[#211]: struct-or-union-specifier: struct-or-union identifier
-
     [Rule("struct_or_union: 'struct'")]
     private static ComplexTypeKind MakeStructComplexTypeKind(IToken _) => ComplexTypeKind.Struct;
-    // TODO[#211]: struct-or-union: union
+
+    [Rule("struct_or_union: 'union'")]
+    private static ComplexTypeKind MakeUnionComplexTypeKind(IToken _) => ComplexTypeKind.Union;
 
     [Rule("struct_declaration_list: struct_declaration")]
     private static StructDeclarationList MakeStructDeclarationList(StructDeclaration structDeclaration) =>
@@ -748,26 +748,28 @@ public partial class CParser
     private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __, IToken ___) =>
         new ArrayInitializer(initializers);
 
-    [Rule("initializer_list: initializer")]
-    private static ImmutableArray<Initializer> MakeInitializerList(Initializer initializer) =>
-        ImmutableArray.Create<Initializer>(initializer);
+    [Rule("initializer_list: designation? initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(Designation? designation, Initializer initializer) =>
+        ImmutableArray.Create<Initializer>(initializer with { Designation = designation });
 
-    [Rule("initializer_list: initializer_list ',' initializer")]
-    private static ImmutableArray<Initializer> MakeInitializerList(ImmutableArray<Initializer> initializers, IToken _, Initializer initializer) =>
-        initializers.Add(initializer);
+    [Rule("initializer_list: initializer_list ',' designation? initializer")]
+    private static ImmutableArray<Initializer> MakeInitializerList(ImmutableArray<Initializer> initializers, IToken _, Designation? designation, Initializer initializer) =>
+        initializers.Add(initializer with { Designation = designation });
 
-    // TODO[#211]:
-    // initializer-list:
-    //     designation? initializer
-    //     initializer-list , designation? initializer
-    // designation:
-    //     designator-list =
-    // designator-list:
-    //     designator
-    //     designator-list designator
-    // designator:
-    //     [ constant-expression ]
-    //     . identifier
+    [Rule("designation: designator_list '='")]
+    private static Designation MakeDesignation(ImmutableArray<Designator> array, IToken _) => new(array);
+
+    [Rule("designator_list: designator")]
+    private static ImmutableArray<Designator> MakeDesignatorList(Designator designator) => ImmutableArray.Create(designator);
+
+    [Rule("designator_list: designator_list designator")]
+    private static ImmutableArray<Designator> MakeDesignatorList(ImmutableArray<Designator> array, Designator designator) => array.Add(designator);
+
+    [Rule("designator: '[' constant_expression ']' ")]
+    private static Designator MakeDesignator(IToken _, Expression expr, IToken __) => new BracketsDesignator(expr);
+
+    [Rule("designator: '.' Identifier ")]
+    private static Designator MakeDesignator(IToken _, IToken Identifier) => new IdentifierDesignator(Identifier.Text);
 
     // TODO[#211]: 6.7.10 Static assertions
 
@@ -925,6 +927,14 @@ public partial class CParser
     private static ExternalDeclaration MakeExternalDeclaration(IBlockItem declaration) =>
         // TODO[#115]: This direct cast should't be necessary. It is here because of the "lexer hack".
         new SymbolDeclaration((Declaration)declaration);
+
+    [Rule("external_declaration: '_Pragma' '(' 'pinvoke' ',' 'end' ')'")]
+    private static ExternalDeclaration MakePivnokeEndDeclaration(IToken _1, IToken _2, IToken _3, IToken _4, IToken _5, IToken _6) =>
+        new PInvokeDeclaration("end");
+
+    [Rule("external_declaration: '_Pragma' '(' 'pinvoke' ',' StringLiteral ','? Identifier? ')'")]
+    private static ExternalDeclaration MakePinvokeWithPrefixDeclaration(IToken _1, IToken _2, IToken _3, IToken _4, IToken dll, IToken? ___, IToken? prefix, IToken ____) =>
+       new PInvokeDeclaration(dll.Text.Replace("\"", null), prefix?.Text);
 
     // 6.9.1 Function definitions
 

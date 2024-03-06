@@ -54,7 +54,8 @@
                       "Kind": "FloatLiteral",
                       "Text": "1.0"
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]
@@ -87,7 +88,8 @@
                       "Kind": "FloatLiteral",
                       "Text": "1.0f"
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]
@@ -124,7 +126,8 @@
                       "Kind": "FloatLiteral",
                       "Text": "1.0l"
                     }
-                  }
+                  },
+                  "Designation": null
                 }
               }
             ]
