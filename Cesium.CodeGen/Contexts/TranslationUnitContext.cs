@@ -7,6 +7,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
+using FunctionInfoBuilder = Cesium.CodeGen.Contexts.Meta.FunctionInfo.FunctionInfoBuilder;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -72,9 +73,15 @@ public class TranslationUnitContext
                 ? existingDeclaration.StorageClass
                 : functionInfo.StorageClass;
             var mergedIsDefined = existingDeclaration.IsDefined || functionInfo.IsDefined;
-            existingDeclaration.Parameters = functionInfo.Parameters;
-            existingDeclaration.IsDefined = mergedIsDefined;
-            existingDeclaration.StorageClass = mergedStorageClass;
+
+            var updatedFunctionInfo = FunctionInfoBuilder
+                .ToBuild(existingDeclaration)
+                .Parameters(functionInfo.Parameters)
+                .IsDefined(mergedIsDefined)
+                .StorageClass(mergedStorageClass)
+                .Build();
+
+            Functions[identifier] = updatedFunctionInfo;
         }
     }
 
@@ -92,7 +99,7 @@ public class TranslationUnitContext
                 parameters);
         var existingDeclaration = Functions.GetValueOrDefault(name);
         Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
-        Functions[name] = existingDeclaration with { MethodReference = method };
+        Functions[name] = FunctionInfoBuilder.ToBuild(existingDeclaration).MethodReference(method).Build();
             return method;
     }
 
@@ -112,10 +119,8 @@ public class TranslationUnitContext
 
     internal void AddTypeDefinition(string name, IType type)
     {
-        if (_types.ContainsKey(name))
+        if (!_types.TryAdd(name, type))
             throw new CompilationException($"Type definition {name} was already defined.");
-
-        _types.Add(name, type);
     }
 
     internal void AddTagDefinition(string name, IType type)
@@ -260,14 +265,16 @@ public class TranslationUnitContext
 
     private FunctionInfo ProcessCliImport(FunctionInfo declaration, MethodReference implementation)
     {
-        return declaration with
-        {
-            MethodReference = implementation,
-            Parameters = declaration.Parameters is null ? null : declaration.Parameters with
-            {
-                Parameters = ProcessParameters(declaration.Parameters.Parameters)
-            }
-        };
+        return FunctionInfoBuilder
+            .ToBuild(declaration)
+            .MethodReference(implementation)
+            .Parameters(declaration.Parameters is null
+                ? null
+                : declaration.Parameters with
+                {
+                    Parameters = ProcessParameters(declaration.Parameters.Parameters)
+                })
+            .Build();
 
         List<ParameterInfo> ProcessParameters(ICollection<ParameterInfo> parameters)
         {
