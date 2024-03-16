@@ -12,7 +12,7 @@ public class CommandArgumentsBuilder
 
     public CommandArgumentsBuilder Argument(string argument)
     {
-        _builder.Append(" ");
+        _builder.Append(' ');
         if (NeedsEscaping(argument))
         {
             argument = Escape(argument);

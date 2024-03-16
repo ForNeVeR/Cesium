@@ -8,7 +8,7 @@
 
     <PropertyGroup Label="DefaultProperties">
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
-        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler</CesiumCompilerPackageName>
+        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Pack.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
         <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
     </PropertyGroup>
 

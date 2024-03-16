@@ -73,12 +73,25 @@
             "type": "string",
             "enum": [
               "Clean",
-              "Compile",
+              "CompileAll",
+              "ForceClear",
               "PackCompilerPacks",
+              "PackSdk",
               "PublishCompilerPacks",
-              "Restore"
+              "RestoreAll",
+              "TestAll",
+              "TestCodeGen",
+              "TestCompiler",
+              "TestIntegration",
+              "TestParser",
+              "TestRuntime",
+              "TestSdk"
             ]
           }
+        },
+        "SkipCaches": {
+          "type": "boolean",
+          "description": "If set to true, ignores all cached build results. Default: false"
         },
         "Solution": {
           "type": "string",
@@ -91,10 +104,19 @@
             "type": "string",
             "enum": [
               "Clean",
-              "Compile",
+              "CompileAll",
+              "ForceClear",
               "PackCompilerPacks",
+              "PackSdk",
               "PublishCompilerPacks",
-              "Restore"
+              "RestoreAll",
+              "TestAll",
+              "TestCodeGen",
+              "TestCompiler",
+              "TestIntegration",
+              "TestParser",
+              "TestRuntime",
+              "TestSdk"
             ]
           }
         },

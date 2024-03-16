@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Threading;
 using Nuke.Common;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
@@ -10,47 +8,43 @@ partial class Build : NukeBuild
     public static int Main()
     {
         // while (!Debugger.IsAttached) Thread.Sleep(100);
-        return Execute<Build>(x => x.Compile);
+        return Execute<Build>(x => x.CompileAll);
     }
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter("If set to true, ignores all cached build results. Default: false")]
+    readonly bool SkipCaches = false;
+
     [Solution(GenerateProjects = true)]
     readonly Solution Solution;
 
     Target Clean => _ => _
-        .Before(Restore)
+        .Before(RestoreAll)
         .Executes(() =>
         {
             DotNetClean();
         });
 
-    Target Restore => _ => _
+    Target RestoreAll => _ => _
         .Executes(() =>
         {
             DotNetRestore(_ => _
-                .SetProjectFile(BuildProjectFile ?? Solution.FileName));
+                .SetProjectFile(Solution.FileName));
         });
 
-    Target Compile => _ => _
-        .DependsOn(Restore)
+    Target CompileAll => _ => _
+        .DependsOn(RestoreAll)
         .Executes(() =>
         {
             DotNetBuild(_ => _
                 .SetConfiguration(Configuration)
-                .SetProjectFile(BuildProjectFile ?? Solution.FileName)
+                .SetProjectFile(Solution.FileName)
                 .EnableNoRestore());
         });
 
-    Target Test => _ => _
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            DotNetTest(_ => _
-                .SetConfiguration(Configuration)
-                .SetProjectFile(BuildProjectFile ?? Solution.FileName)
-                .EnableNoBuild()
-                .EnableNoRestore());
-        });
+    Target ForceClear => _ => _
+        .OnlyWhenDynamic(() => SkipCaches)
+        .Before(RestoreAll);
 }

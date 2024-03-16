@@ -2,10 +2,13 @@
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
 
+    <!-- Stub out targets required by the Microsoft.NET.Sdk -->
+    <Target Name="CreateManifestResourceNames"/>
+
     <PropertyGroup Label="MapOutputType" Condition="$(_CesiumModuleKind) == ''">
         <_CesiumModuleKind Condition="'$(OutputType)' == 'Exe'">Console</_CesiumModuleKind>
         <_CesiumModuleKind Condition="'$(OutputType)' == 'WinExe'">Windows</_CesiumModuleKind>
-        <_CesiumModuleKind Condition="'$(OutputType)' == 'Dll'">Library</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Library'">Library</_CesiumModuleKind>
     </PropertyGroup>
 
     <Target Name="CheckModuleKind" BeforeTargets="CesiumValidateProperties">
@@ -36,24 +39,28 @@
     </Target>
 
     <PropertyGroup>
-        <_CompilerOutput>$(OutDir)$(AssemblyName)</_CompilerOutput>
+        <_CompilerOutput>$(IntermediateOutputPath)$(AssemblyName)</_CompilerOutput>
     </PropertyGroup>
 
     <Target Name="CesiumValidateProperties" BeforeTargets="CesiumCompile"/>
 
-    <Target Name="CesiumCompile" BeforeTargets="Build"
+    <Target Name="CesiumCompile" BeforeTargets="CoreCompile"
             Inputs="@(Compile)"
-            Outputs="@(ResultingCommandLine)">
+            Outputs="$(_CompilerOutput)">
 
-        <ResolvePackageAssets ProjectPath="$(MSBuildProjectFullPath)"
-                              TargetFramework="$(TargetFrameworkMoniker)"
-                              RuntimeIdentifier="$(RuntimeIdentifier)"
-                              CompilationOnly="false">
-            <Output TaskParameter="ResolvedCompileTimeAssemblies" ItemName="_CesiumImport"/>
-        </ResolvePackageAssets>
+<!--        <ResolvePackageAssets ProjectPath="$(MSBuildProjectFullPath)"-->
+<!--                              TargetFramework="$(TargetFramework)"-->
+<!--                              RuntimeIdentifier="$(RuntimeIdentifier)"-->
+<!--                              ProjectAssetsFile="$(ProjectAssetsFile)"-->
+<!--                              ProjectAssetsCacheFile="$(ProjectAssetsCacheFile)"-->
+<!--                              DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"-->
+<!--                              DefaultImplicitPackages="$(DefaultImplicitPackages)">-->
+<!--            <Output TaskParameter="ResolvedCompileTimeAssemblies" ItemName="_CesiumImport"/>-->
+<!--        </ResolvePackageAssets>-->
 
         <!-- TODO[seclerp]: Add ability to set CoreLibPath -->
         <!-- TODO[seclerp]: Add ability to set DryRun -->
+        <!-- TODO[seclerp]: Add import items -->
         <CesiumCompile
             CompilerExe="$(CesiumCompilerPath)"
             InputFiles="@(CesiumCompile)"
@@ -63,11 +70,14 @@
             Architecture="$(_CesiumArchitecture)"
             ModuleType="$(_CesiumModuleKind)"
             RuntimePath="$(RuntimePath)"
-            ImportItems="@(_CesiumImport)"
-            PreprocessorItems="$(DefineConstants.Split(';'))"
-            ResultingCommandLine="$(ResultingCommandLine)">
+            PreprocessorItems="$(DefineConstants.Split(';'))">
+            <Output TaskParameter="ResultingCommandLine" PropertyName="$(_CesiumResultingCommandLine)"/>
+            <Output TaskParameter="OutputFiles" PropertyName="$(_CesiumOutputFile)"/>
         </CesiumCompile>
 
     </Target>
+
+    <!-- Integrate with .NET build infrastructure -->
+    <Target Name="CoreCompile" />
 
 </Project>

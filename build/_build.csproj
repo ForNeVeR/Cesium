@@ -19,6 +19,9 @@
       <Compile Update="Build.Sdk.cs">
         <DependentUpon>Build.cs</DependentUpon>
       </Compile>
+      <Compile Update="Build.Tests.cs">
+        <DependentUpon>Build.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

@@ -45,6 +45,7 @@ public class CesiumCompile : Task
     public bool DryRun = false;
 
     [Output] public string? ResultingCommandLine { get; private set; }
+    [Output] public TaskItem[]? OutputFiles { get; private set; }
 
     public override bool Execute()
     {
@@ -70,6 +71,8 @@ public class CesiumCompile : Task
         };
 
         ResultingCommandLine = $"{compilerProcess.StartInfo.FileName} {compilerProcess.StartInfo.Arguments}";
+        OutputFiles = [new TaskItem(OutputFile)];
+
         if (!DryRun)
         {
             compilerProcess.Start();
@@ -122,7 +125,7 @@ public class CesiumCompile : Task
         var (isFrameworkValid, framework) = TryParseFramework(Framework);
         if (!isFrameworkValid)
         {
-            var validValues = Enum.GetValues<FrameworkKind>().Select(kind => kind.ToString());
+            var validValues =  Enum.GetValues(typeof(FrameworkKind)).Cast<FrameworkKind>().Select(kind => kind.ToString());
             ReportValidationError("CES1004", $"Framework should be in range: '{string.Join(", ", validValues)}'");
             success = false;
         }
@@ -130,7 +133,7 @@ public class CesiumCompile : Task
         var (isArchValid, arch) = TryParseArchitectureKind(Architecture);
         if (!isArchValid)
         {
-            var validValues = Enum.GetValues<ArchitectureKind>().Select(kind => kind.ToString());
+            var validValues =  Enum.GetValues(typeof(ArchitectureKind)).Cast<ArchitectureKind>().Select(kind => kind.ToString());
             ReportValidationError("CES1005", $"Architecture should be in range: '{string.Join(", ", validValues)}'");
             success = false;
         }
@@ -138,7 +141,7 @@ public class CesiumCompile : Task
         var (isModuleKindValid, moduleKind) = TryParseModuleKind(ModuleType);
         if (!isModuleKindValid)
         {
-            var validValues = Enum.GetValues<ModuleKind>().Select(kind => kind.ToString());
+            var validValues = Enum.GetValues(typeof(ModuleKind)).Cast<ModuleKind>().Select(kind => kind.ToString());
             ReportValidationError("CES1006", $"ModuleKind should be in range: '{string.Join(", ", validValues)}'");
             success = false;
         }
@@ -172,9 +175,9 @@ public class CesiumCompile : Task
         if (!success) return false;
 
         options = new ValidatedOptions(
-            CompilerExe: CompilerExe ?? throw new UnreachableException(),
+            CompilerExe: CompilerExe,
             InputItems: InputFiles.Select(item => item.ItemSpec).ToArray(),
-            OutputFile: OutputFile ?? throw new UnreachableException(),
+            OutputFile: OutputFile,
             Namespace: Namespace,
             Framework: framework,
             Architecture: arch,
@@ -214,7 +217,7 @@ public class CesiumCompile : Task
         if (!string.IsNullOrWhiteSpace(options.Namespace))
         {
             yield return "--namespace";
-            yield return options.Namespace;
+            yield return options.Namespace!;
         }
 
         foreach (var import in options.ImportItems)
@@ -226,13 +229,13 @@ public class CesiumCompile : Task
         if (!string.IsNullOrWhiteSpace(options.CoreLibPath))
         {
             yield return "--corelib";
-            yield return options.CoreLibPath;
+            yield return options.CoreLibPath!;
         }
 
         if (!string.IsNullOrWhiteSpace(options.RuntimePath))
         {
             yield return "--runtime";
-            yield return options.RuntimePath;
+            yield return options.RuntimePath!;
         }
 
         foreach (var item in options.PreprocessorItems)
