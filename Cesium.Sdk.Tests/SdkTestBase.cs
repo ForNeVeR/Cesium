@@ -7,6 +7,8 @@ namespace Cesium.Sdk.Tests;
 
 public abstract class SdkTestBase
 {
+    private const string _binLogFile = "build_result.binlog";
+
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -42,12 +44,13 @@ public abstract class SdkTestBase
         {
             WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
-            Arguments = $"build \"{testProjectFile}\" -t:{joinedTargets} -v:diag /bl:build_result.binlog",
+            Arguments = $"msbuild \"{testProjectFile}\" /t:{joinedTargets} /restore /bl:{_binLogFile}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
             UseShellExecute = false,
         };
+
 
         using var process = new Process();
         process.StartInfo = startInfo;

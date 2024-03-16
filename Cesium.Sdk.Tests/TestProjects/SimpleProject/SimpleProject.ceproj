@@ -3,6 +3,6 @@
         <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <CesiumCompile Include="hello.c" />
+        <Compile Include="hello.c" />
     </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
     [InlineData("SimpleProject")]
     public void CesiumCompile_ShouldSucceed(string projectName)
     {
-        var result = ExecuteTargets(projectName, "Build");
+        var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
         ClearOutput();
