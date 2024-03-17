@@ -18,16 +18,28 @@ public partial class Build
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
             var runtimeIds = compilerProject.GetProperty("RuntimeIdentifiers").EvaluatedValue.Split(";");
+
+            var runtimeIds = compilerProject.GetEvaluatedProperty("RuntimeIdentifiers").Split(";");
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
+            if (!string.IsNullOrEmpty(RuntimeId))
+            {
+                Log.Information($"Executing only {RuntimeId} because it was specified explicitly.");
+                PublishCompiler(RuntimeId);
+                return;
+            }
+
             foreach (var runtimeId in runtimeIds)
+                PublishCompiler(runtimeId);
+
+            void PublishCompiler(string runtimeId)
             {
                 Log.Information(SkipCaches+"");
                 if (!SkipCaches && !NeedPublishCompilerPack(compilerProject, runtimeId))
                 {
                     Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
-                    continue;
+                    return;
                 }
 
                 Log.Information($"Publishing for {runtimeId}...");
@@ -44,16 +56,27 @@ public partial class Build
         .Executes(() =>
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+
             var runtimeIds = compilerProject.GetRuntimeIds();
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
+            if (!string.IsNullOrEmpty(RuntimeId))
+            {
+                Log.Information($"Executing only {RuntimeId} because it was specified explicitly.");
+                PackCompiler(RuntimeId);
+                return;
+            }
+
             foreach (var runtimeId in runtimeIds)
+                PackCompiler(runtimeId);
+
+            void PackCompiler(string runtimeId)
             {
                 if (!SkipCaches && !NeedPackageCompilerPack(compilerProject, runtimeId))
                 {
                     Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
-                    continue;
+                    return;
                 }
 
                 Log.Information($"Packing compiler for {runtimeId}...");
