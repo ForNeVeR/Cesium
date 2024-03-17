@@ -2,13 +2,23 @@
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
 
+    <PropertyGroup Label="PostInstallProperties">
+        <_NuGetPackageRootNormalized Condition="$(CesiumCompilerPackagePath) == ''">$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))</_NuGetPackageRootNormalized>
+        <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
+        <_CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == ''">$(_NuGetPackageRootNormalized)</_CesiumCompilerPackagePath>
+        <CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == '' AND $(_CesiumCompilerPackagePath) != ''">$([System.IO.Path]::Combine($(_CesiumCompilerPackagePath), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</CesiumCompilerPackagePath>
+        <CesiumCompilerPath Condition="$(OS) != 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/Cesium.Compiler</CesiumCompilerPath>
+        <CesiumCompilerPath Condition="$(OS) == 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/Cesium.Compiler.exe</CesiumCompilerPath>
+        <CesiumCompilerExists>$([System.IO.File]::Exists('$(CesiumCompilerPath)'))</CesiumCompilerExists>
+    </PropertyGroup>
+
     <!-- Stub out targets required by the Microsoft.NET.Sdk -->
     <Target Name="CreateManifestResourceNames"/>
 
     <PropertyGroup Label="MapOutputType" Condition="$(_CesiumModuleKind) == ''">
         <_CesiumModuleKind Condition="'$(OutputType)' == 'Exe'">Console</_CesiumModuleKind>
         <_CesiumModuleKind Condition="'$(OutputType)' == 'WinExe'">Windows</_CesiumModuleKind>
-        <_CesiumModuleKind Condition="'$(OutputType)' == 'Library'">Library</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Library'">Dll</_CesiumModuleKind>
     </PropertyGroup>
 
     <Target Name="CheckModuleKind" BeforeTargets="CesiumValidateProperties">
@@ -17,9 +27,9 @@
     </Target>
 
     <PropertyGroup Label="MapTargetFramework" Condition="$(_CesiumFramework) == ''">
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">net6.0</_CesiumFramework>
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">net48</_CesiumFramework>
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">netstandard2.0</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">Net</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">NetFramework</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">NetStandard</_CesiumFramework>
     </PropertyGroup>
 
     <Target Name="CheckFramework" BeforeTargets="CesiumValidateProperties">
@@ -71,8 +81,8 @@
             ModuleType="$(_CesiumModuleKind)"
             RuntimePath="$(RuntimePath)"
             PreprocessorItems="$(DefineConstants.Split(';'))">
-            <Output TaskParameter="ResultingCommandLine" PropertyName="$(_CesiumResultingCommandLine)"/>
-            <Output TaskParameter="OutputFiles" PropertyName="$(_CesiumOutputFile)"/>
+            <Output TaskParameter="ResultingCommandLine" PropertyName="_CesiumResultingCommandLine"/>
+            <Output TaskParameter="OutputFiles" PropertyName="_CesiumOutputFile"/>
         </CesiumCompile>
 
     </Target>

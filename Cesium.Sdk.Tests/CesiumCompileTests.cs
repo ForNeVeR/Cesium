@@ -11,6 +11,6 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        ClearOutput();
+        // ClearOutput();
     }
 }
