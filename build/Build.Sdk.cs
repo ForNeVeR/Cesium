@@ -17,7 +17,6 @@ public partial class Build
         .Executes(() =>
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
-            var runtimeIds = compilerProject.GetProperty("RuntimeIdentifiers").EvaluatedValue.Split(";");
 
             var runtimeIds = compilerProject.GetEvaluatedProperty("RuntimeIdentifiers").Split(";");
             Log.Information(

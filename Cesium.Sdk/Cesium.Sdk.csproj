@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
     </ItemGroup>
 
     <Import Project="TestTargets.targets" />
