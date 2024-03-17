@@ -10,13 +10,19 @@ public class CommandArgumentsBuilder
 {
     private StringBuilder _builder = new StringBuilder();
 
+    public CommandArgumentsBuilder RawArgument(string value)
+    {
+        _builder.Append(' ');
+        _builder.Append(value);
+
+        return this;
+    }
+
     public CommandArgumentsBuilder Argument(string argument)
     {
         _builder.Append(' ');
         if (NeedsEscaping(argument))
-        {
             argument = Escape(argument);
-        }
         _builder.Append(argument);
 
         return this;
@@ -25,7 +31,7 @@ public class CommandArgumentsBuilder
     public string Build() => _builder.ToString();
 
     private bool NeedsEscaping(string argument) =>
-        argument.Length > 0 && argument.All(c => !char.IsWhiteSpace(c) && c != '"');
+        argument.Length > 0 && argument.Any(c => char.IsWhiteSpace(c) || c != '"');
 
     private static string Escape(string argument)
     {

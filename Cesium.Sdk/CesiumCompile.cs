@@ -54,18 +54,12 @@ public class CesiumCompile : Task
             return false;
         }
 
-        var argumentsBuilder = new CommandArgumentsBuilder();
-        foreach (var argument in CollectCommandLineArguments(options))
-        {
-            argumentsBuilder.Argument(argument);
-        }
-
         var compilerProcess = new Process
         {
             StartInfo =
             {
                 FileName = options.CompilerExe,
-                Arguments = argumentsBuilder.Build(),
+                Arguments = CollectCommandLineArguments(options),
                 UseShellExecute = false,
             }
         };
@@ -191,66 +185,69 @@ public class CesiumCompile : Task
         return true;
     }
 
-    private IEnumerable<string> CollectCommandLineArguments(ValidatedOptions options)
+    private string CollectCommandLineArguments(ValidatedOptions options)
     {
-        yield return options.CompilerExe;
-        yield return "--nologo";
+        var builder = new CommandArgumentsBuilder();
+
+        builder.RawArgument("--nologo");
 
         if (options.Framework is { } framework)
         {
-            yield return "--framework";
-            yield return framework.ToString();
+            builder.RawArgument("--framework");
+            builder.RawArgument(framework.ToString());
         }
 
         if (options.Architecture is { } arch)
         {
-            yield return "--arch";
-            yield return arch.ToString();
+            builder.RawArgument("--arch");
+            builder.RawArgument(arch.ToString());
         }
 
         if (options.ModuleKind is { } moduleKind)
         {
-            yield return "--modulekind";
-            yield return moduleKind.ToString();
+            builder.RawArgument("--modulekind");
+            builder.RawArgument(moduleKind.ToString());
         }
 
         if (!string.IsNullOrWhiteSpace(options.Namespace))
         {
-            yield return "--namespace";
-            yield return options.Namespace!;
+            builder.RawArgument("--namespace");
+            builder.RawArgument(options.Namespace!);
         }
 
         foreach (var import in options.ImportItems)
         {
-            yield return "--import";
-            yield return import;
+            builder.RawArgument("--import");
+            builder.Argument(import);
         }
 
         if (!string.IsNullOrWhiteSpace(options.CoreLibPath))
         {
-            yield return "--corelib";
-            yield return options.CoreLibPath!;
+            builder.RawArgument("--corelib");
+            builder.Argument(options.CoreLibPath!);
         }
 
         if (!string.IsNullOrWhiteSpace(options.RuntimePath))
         {
-            yield return "--runtime";
-            yield return options.RuntimePath!;
+            builder.RawArgument("--runtime");
+            builder.Argument(options.RuntimePath!);
         }
 
         foreach (var item in options.PreprocessorItems)
         {
-            yield return "-D";
-            yield return item;
+            builder.RawArgument("-D");
+            builder.Argument(item);
         }
 
-        yield return "--out";
-        yield return $"\"{options.OutputFile}\"";
+        builder.RawArgument("--out");
+        builder.Argument(options.OutputFile);
 
         foreach (var input in options.InputItems)
         {
-            yield return $"\"{input}\"";
+            builder.Argument(input);
         }
+
+        return builder.Build();
     }
 
     private void ReportValidationError(string code, string message) =>

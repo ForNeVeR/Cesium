@@ -2,18 +2,29 @@
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
 
-    <PropertyGroup Label="PostInstallProperties">
-        <_NuGetPackageRootNormalized Condition="$(CesiumCompilerPackagePath) == ''">$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))</_NuGetPackageRootNormalized>
+    <PropertyGroup Label="CompilerInstallationProperties" Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
-        <_CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == ''">$(_NuGetPackageRootNormalized)</_CesiumCompilerPackagePath>
-        <CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == '' AND $(_CesiumCompilerPackagePath) != ''">$([System.IO.Path]::Combine($(_CesiumCompilerPackagePath), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</CesiumCompilerPackagePath>
-        <CesiumCompilerPath Condition="$(OS) != 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/Cesium.Compiler</CesiumCompilerPath>
-        <CesiumCompilerPath Condition="$(OS) == 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(CesiumCompilerPackagePath)/tools/Cesium.Compiler.exe</CesiumCompilerPath>
-        <CesiumCompilerExists>$([System.IO.File]::Exists('$(CesiumCompilerPath)'))</CesiumCompilerExists>
+        <_CesiumCompilerPackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</_CesiumCompilerPackagePath>
+        <CesiumCompilerPath Condition="$(OS) != 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)/tools/Cesium.Compiler</CesiumCompilerPath>
+        <CesiumCompilerPath Condition="$(OS) == 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)\tools\Cesium.Compiler.exe</CesiumCompilerPath>
     </PropertyGroup>
+
+    <Target Name="CheckCompilerPath" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Missing path to a Cesium compiler. Either set 'SkipCesiumCompilerInstallation' property to 'false' or specify path directly using 'CesiumCompilerPath' property."
+               Condition="$(SkipCesiumCompilerInstallation) == 'true' AND $(CesiumCompilerPath) == ''" />
+    </Target>
 
     <!-- Stub out targets required by the Microsoft.NET.Sdk -->
     <Target Name="CreateManifestResourceNames"/>
+
+    <Target Name="LocateRuntimeAssembly" AfterTargets="ResolveAssemblyReferences" Condition="$(CesiumCoreLibAssemblyPath) == ''">
+        <ItemGroup>
+            <_CoreLibAssembly Include="@(ReferencePath)" Condition="'%(AssemblyName)'=='System.Private.CoreLib' OR '%(AssemblyName)'=='mscorlib'" />
+        </ItemGroup>
+        <PropertyGroup>
+            <CesiumCoreLibAssemblyPath>%(_CoreLibAssembly.Identity)</CesiumCoreLibAssemblyPath>
+        </PropertyGroup>
+    </Target>
 
     <PropertyGroup Label="MapOutputType" Condition="$(_CesiumModuleKind) == ''">
         <_CesiumModuleKind Condition="'$(OutputType)' == 'Exe'">Console</_CesiumModuleKind>
@@ -68,18 +79,17 @@
 <!--            <Output TaskParameter="ResolvedCompileTimeAssemblies" ItemName="_CesiumImport"/>-->
 <!--        </ResolvePackageAssets>-->
 
-        <!-- TODO[seclerp]: Add ability to set CoreLibPath -->
         <!-- TODO[seclerp]: Add ability to set DryRun -->
         <!-- TODO[seclerp]: Add import items -->
         <CesiumCompile
             CompilerExe="$(CesiumCompilerPath)"
-            InputFiles="@(CesiumCompile)"
+            InputFiles="@(Compile)"
             OutputFile="$(_CompilerOutput)"
             Namespace="$(RootNamespace)"
             Framework="$(_CesiumFramework)"
             Architecture="$(_CesiumArchitecture)"
             ModuleType="$(_CesiumModuleKind)"
-            RuntimePath="$(RuntimePath)"
+            CoreLibPath="$(CesiumCoreLibAssemblyPath)"
             PreprocessorItems="$(DefineConstants.Split(';'))">
             <Output TaskParameter="ResultingCommandLine" PropertyName="_CesiumResultingCommandLine"/>
             <Output TaskParameter="OutputFiles" PropertyName="_CesiumOutputFile"/>
