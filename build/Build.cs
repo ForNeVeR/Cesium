@@ -1,5 +1,6 @@
 using Nuke.Common;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
@@ -20,17 +21,22 @@ partial class Build : NukeBuild
     [Solution(GenerateProjects = true)]
     readonly Solution Solution;
 
+    [Parameter("If set, only executes targets for a specified runtime identifier. Provided RID must be included in <RuntimeIdentifiers> property of Cesium.Compiler project.")]
+    readonly string RuntimeId = string.Empty;
+
     Target Clean => _ => _
         .Before(RestoreAll)
         .Executes(() =>
         {
-            DotNetClean();
+            DotNetClean(_ => _
+                .Apply(settings => !string.IsNullOrEmpty(RuntimeId) ? settings.SetRuntime(RuntimeId) : settings));
         });
 
     Target RestoreAll => _ => _
         .Executes(() =>
         {
             DotNetRestore(_ => _
+                .Apply(settings => !string.IsNullOrEmpty(RuntimeId) ? settings.SetRuntime(RuntimeId) : settings)
                 .SetProjectFile(Solution.FileName));
         });
 
@@ -39,6 +45,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             DotNetBuild(_ => _
+                .Apply(settings => !string.IsNullOrEmpty(RuntimeId) ? settings.SetRuntime(RuntimeId) : settings)
                 .SetConfiguration(Configuration)
                 .SetProjectFile(Solution.FileName)
                 .EnableNoRestore());

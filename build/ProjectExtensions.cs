@@ -5,21 +5,26 @@ public static class ProjectExtensions
 {
     public static IReadOnlyCollection<string> GetRuntimeIds(this Project project)
     {
-        return project.GetProperty("RuntimeIdentifiers").EvaluatedValue.Split(";");
+        return project.GetEvaluatedProperty("RuntimeIdentifiers").Split(";");
     }
 
     public static string GetVersion(this Project project)
     {
-        return project.GetProperty("VersionPrefix").EvaluatedValue;
+        return project.GetEvaluatedProperty("VersionPrefix");
     }
 
     public static string GetPackageOutputPath(this Project project)
     {
-        return project.GetProperty("PackageOutputPath").EvaluatedValue;
+        return project.GetEvaluatedProperty("PackageOutputPath");
     }
 
     public static string GetPublishDirectory(this Project project)
     {
-        return project.GetProperty("PublishDir").EvaluatedValue;
+        return project.GetEvaluatedProperty("PublishDir");
+    }
+
+    public static string GetEvaluatedProperty(this Project project, string name)
+    {
+        return project.GetProperty(name).EvaluatedValue;
     }
 }
