@@ -66,6 +66,10 @@
           "type": "string",
           "description": "Root directory during build execution"
         },
+        "RuntimeId": {
+          "type": "string",
+          "description": "If set, only executes targets for a specified runtime identifier. Provided RID must be included in <RuntimeIdentifiers> property of Cesium.Compiler project"
+        },
         "Skip": {
           "type": "array",
           "description": "List of targets to be skipped. Empty list skips all dependencies",
