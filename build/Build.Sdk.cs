@@ -46,6 +46,7 @@ public partial class Build
                     .SetConfiguration(Configuration)
                     .SetProject(compilerProject.ProjectFileLocation.File)
                     .SetRuntime(runtimeId)
+                    .SetSelfContained(true)
                     .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
             }
         });
