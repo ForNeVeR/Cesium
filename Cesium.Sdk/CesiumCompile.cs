@@ -126,7 +126,7 @@ public class CesiumCompile : Task
         if (!isFrameworkValid)
         {
             var validValues =  Enum.GetValues(typeof(FrameworkKind)).Cast<FrameworkKind>().Select(kind => kind.ToString());
-            ReportValidationError("CES1004", $"Framework should be in range: '{string.Join(", ", validValues)}'");
+            ReportValidationError("CES1004", $"Framework should be in range: '{string.Join(", ", validValues)}', actual: '{Framework}'");
             success = false;
         }
 
@@ -134,7 +134,7 @@ public class CesiumCompile : Task
         if (!isArchValid)
         {
             var validValues =  Enum.GetValues(typeof(ArchitectureKind)).Cast<ArchitectureKind>().Select(kind => kind.ToString());
-            ReportValidationError("CES1005", $"Architecture should be in range: '{string.Join(", ", validValues)}'");
+            ReportValidationError("CES1005", $"Architecture should be in range: '{string.Join(", ", validValues)}', actual: '{Architecture}'");
             success = false;
         }
 
@@ -142,7 +142,7 @@ public class CesiumCompile : Task
         if (!isModuleKindValid)
         {
             var validValues = Enum.GetValues(typeof(ModuleKind)).Cast<ModuleKind>().Select(kind => kind.ToString());
-            ReportValidationError("CES1006", $"ModuleKind should be in range: '{string.Join(", ", validValues)}'");
+            ReportValidationError("CES1006", $"ModuleKind should be in range: '{string.Join(", ", validValues)}', actual: '{ModuleType}'");
             success = false;
         }
 
