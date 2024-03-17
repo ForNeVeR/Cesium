@@ -15,19 +15,8 @@
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <PackageReference Include="$(CesiumCompilerPackageName)"
                           Version="$(CesiumCompilerPackageVersion)"
-                          GeneratePathProperty="true"
                           PrivateAssets="All"/>
     </ItemGroup>
-
-    <PropertyGroup Label="PostInstallProperties">
-        <CesiumCompilerPackagePath Condition="$(CesiumCompilerPackagePath) == '' AND $(PkgCesium_Compiler) != ''">$(PkgCesium_Compiler)</CesiumCompilerPackagePath>
-        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">
-            $(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName)
-        </CesiumCompilerPath>
-        <CesiumCompilerPath Condition="$(CesiumCompilerPath) == '' AND $(CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">
-            $(CesiumCompilerPackagePath)/tools/$(CesiumCompilerPackageName).exe
-        </CesiumCompilerPath>
-    </PropertyGroup>
 
     <UsingTask TaskName="Cesium.Sdk.CesiumCompile"
                AssemblyFile="$(MSBuildThisFileDirectory)..\tools\Cesium.Sdk.dll"/>
