@@ -77,6 +77,9 @@ int main()
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
+    [Fact] public Task PointerPointerMain() => DoTest("int main(int argc, char **argv){}");
+    [Fact] public Task ConstConstMain() => DoTest("int main(int argc, const char * const *argv){}");
+    [Fact] public Task ConstArgcMain() => DoTest("int main(const int argc, char* argv[]){}");
     [Fact, NoVerify] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
     [Fact, NoVerify] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
     [Fact, NoVerify]

@@ -125,12 +125,16 @@ internal sealed class FunctionDefinition : IBlockItem
         bool isValid = true;
 
         var argc = parameterList[0];
-        if (argc.Type is not PrimitiveType { Kind: PrimitiveTypeKind.Int }) isValid = false;
+        if (argc.Type is not PrimitiveType { Kind: PrimitiveTypeKind.Int } // int argc
+            and not ConstType { Base: PrimitiveType { Kind: PrimitiveTypeKind.Int } /* const int argc */ }) isValid = false;
 
         var argv = parameterList[1];
-        if (argv.Type is not PointerType
+        if (argv.Type is not PointerType // char** or char*[]
             {
                 Base: PointerType { Base: PrimitiveType { Kind: PrimitiveTypeKind.Char } }
+            } and not PointerType // [opt const] char * const *
+            {
+                Base: PointerType { Base: ConstType { Base: PrimitiveType { Kind: PrimitiveTypeKind.Char } } }
             }) isValid = false;
 
         if (!isValid)
