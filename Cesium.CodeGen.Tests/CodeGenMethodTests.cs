@@ -114,6 +114,16 @@ int main() { foo x,x2; x2.x=0; }");
 ");
 
     [Fact]
+    public Task UnaryPlusAndStart() => DoTest(@"
+int main() {
+    short a = -2;
+    short* b = &a;
+    short c = *b;
+    int x = (+c) - (+1) - (-1);
+    return sizeof(+c);
+} ");
+
+    [Fact]
     public Task ReturnWithoutArgument() => DoTest(@"void console_read()
 {
     return;
