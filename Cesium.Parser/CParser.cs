@@ -182,7 +182,7 @@ public partial class CParser
         : new UnaryOperatorExpression(@operator.Text, target);
 
     [Rule("unary_operator: '&'")]
-    // TODO[#207]: [Rule("unary_operator: '+'")]
+    [Rule("unary_operator: '+'")]
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
