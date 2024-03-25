@@ -12,6 +12,7 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using FunctionInfoBuilder = Cesium.CodeGen.Contexts.Meta.FunctionInfo.FunctionInfoBuilder;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -74,7 +75,7 @@ public class AssemblyContext
                 }
                 string entryPoint = function.DllImportNameStrip != null ? name.Replace(function.DllImportNameStrip, null) : name;
                 funcDef.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.NoMangle | PInvokeAttributes.SupportsLastError, entryPoint, dll);
-                function.IsDefined = true;
+                Functions[name] = FunctionInfoBuilder.ToBuild(function).IsDefined(true).Build();
             }
         }
 
