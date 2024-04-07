@@ -42,7 +42,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             "",
             Identifier is null ? "<typedef>" + name : Identifier,
             TypeAttributes.Sealed,
-            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
+            context.Module.ImportReference(new TypeReference("System", "ValueType", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)));
         switch (context.AssemblyContext.ArchitectureSet)
         {
             case TargetArchitectureSet.Dynamic:
@@ -106,7 +106,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             string.Empty,
             CreateAnonIdentifier(Members, IsUnion),
             TypeAttributes.Public | TypeAttributes.Sealed,
-            context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")));
+            context.Module.ImportReference(new TypeReference("System", "ValueType", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)));
 
         FinishEmit(type, type.Name, context); // emit fields
 
