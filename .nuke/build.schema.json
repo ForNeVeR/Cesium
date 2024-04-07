@@ -62,6 +62,10 @@
             "type": "string"
           }
         },
+        "PublishAot": {
+          "type": "boolean",
+          "description": "If set to true, publishes compiler packs in AOT mode"
+        },
         "Root": {
           "type": "string",
           "description": "Root directory during build execution"

@@ -41,12 +41,15 @@ public partial class Build
                     return;
                 }
 
-                Log.Information($"Publishing for {runtimeId}...");
+                Log.Information($"Publishing for {runtimeId}, AOT {(PublishAot ? "enabled" : "disabled")}...");
                 DotNetPublish(o => o
                     .SetConfiguration(Configuration)
                     .SetProject(compilerProject.ProjectFileLocation.File)
                     .SetRuntime(runtimeId)
                     .SetSelfContained(true)
+                    .SetPublishTrimmed(PublishAot)
+                    .SetPublishSingleFile(PublishAot)
+                    .SetProperty("PublishAot", PublishAot)
                     .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
             }
         });
