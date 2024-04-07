@@ -299,7 +299,7 @@ public class AssemblyContext
             "",
             stubStructTypeName,
             TypeAttributes.Sealed | TypeAttributes.ExplicitLayout | TypeAttributes.NestedPrivate,
-            Module.ImportReference(MscorlibAssembly.GetType("System.ValueType")))
+            Module.ImportReference(new TypeReference("System", "ValueType", MscorlibAssembly.MainModule, MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)))
         {
             PackingSize = 1,
             ClassSize = size
