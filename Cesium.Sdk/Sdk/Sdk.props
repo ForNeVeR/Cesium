@@ -8,6 +8,7 @@
 
     <PropertyGroup Label="DefaultProperties">
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
+        <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Pack.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
         <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
     </PropertyGroup>
@@ -15,7 +16,14 @@
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <PackageReference Include="$(CesiumCompilerPackageName)"
                           Version="$(CesiumCompilerPackageVersion)"
-                          PrivateAssets="All"/>
+                          PrivateAssets="all"
+                          ExcludeAssets="runtime"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" $(SkipCesiumRuntimeInstallation) != 'true' ">
+        <PackageReference Include="Cesium.Runtime"
+                          Version="$(CesiumCompilerPackageVersion)"
+                          PrivateAssets="all"/>
     </ItemGroup>
 
     <UsingTask TaskName="Cesium.Sdk.CesiumCompile"
