@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MedallionShell" />
         <PackageReference Include="Microsoft.Build" />
         <PackageReference Include="Microsoft.Build.Tasks.Core" />
         <PackageReference Include="Microsoft.Build.Utilities.Core" />

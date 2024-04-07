@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
 using Cesium.Solution.Metadata;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
 
-public abstract class SdkTestBase
+public abstract class SdkTestBase : IDisposable
 {
     private const string _binLogFile = "build_result.binlog";
 
@@ -40,17 +41,21 @@ public abstract class SdkTestBase
         var joinedTargets = string.Join(";", targets);
         var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
         var testProjectFolder = Path.GetDirectoryName(testProjectFile) ?? throw new ArgumentNullException(nameof(testProjectFile));
+        var binLogFile = Path.Combine(testProjectFolder, $"build_result_{projectName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog");
+
+        const string objFolderPropertyName = "IntermediateOutputPath";
+        const string binFolderPropertyName = "OutDir";
+
         var startInfo = new ProcessStartInfo
         {
             WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
-            Arguments = $"msbuild \"{testProjectFile}\" /t:{joinedTargets} /restore /bl:{_binLogFile}",
+            Arguments = $"msbuild \"{testProjectFile}\" /t:{joinedTargets} /restore /bl:{binLogFile}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
             UseShellExecute = false,
         };
-
 
         using var process = new Process();
         process.StartInfo = startInfo;
@@ -84,13 +89,18 @@ public abstract class SdkTestBase
             ? "Build succeeded"
             : $"Build failed with exit code {process.ExitCode}");
 
-        var binFolder = Path.Combine(testProjectFolder, "bin");
-        var objFolder = Path.Combine(testProjectFolder, "obj");
+        var properties = MSBuildCli.EvaluateProperties(testProjectFile, objFolderPropertyName, binFolderPropertyName);
+        _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
+
+        var binFolder = Path.Combine(testProjectFolder, properties[binFolderPropertyName]);
+        var objFolder = Path.Combine(testProjectFolder, properties[objFolderPropertyName]);
 
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
 
-        return new BuildResult(process.ExitCode, binArtifacts, objArtifacts);
+        var result = new BuildResult(process.ExitCode, binArtifacts, objArtifacts);
+        _testOutputHelper.WriteLine($"Build result: {JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true })}");
+        return result;
 
         IReadOnlyCollection<string> CollectArtifacts(string folder) =>
             Directory.Exists(folder)
@@ -147,8 +157,13 @@ public abstract class SdkTestBase
         IReadOnlyCollection<string> OutputArtifacts,
         IReadOnlyCollection<string> IntermediateArtifacts);
 
-    protected void ClearOutput()
+    private void ClearOutput()
     {
         Directory.Delete(_temporaryPath, true);
+    }
+
+    public void Dispose()
+    {
+        ClearOutput();
     }
 }
