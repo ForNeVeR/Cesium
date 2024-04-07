@@ -19,7 +19,7 @@
 
     <Target Name="LocateRuntimeAssembly" AfterTargets="ResolveAssemblyReferences" Condition="$(CesiumCoreLibAssemblyPath) == ''">
         <ItemGroup>
-            <_CoreLibAssembly Include="@(ReferencePath)" Condition="'%(AssemblyName)'=='System.Private.CoreLib' OR '%(AssemblyName)'=='mscorlib'" />
+            <_CoreLibAssembly Include="@(ReferencePath)" Condition="'%(ReferencePath.AssemblyName)'=='System.Runtime' OR '%(ReferencePath.AssemblyName)'=='mscorlib'" />
         </ItemGroup>
         <PropertyGroup>
             <CesiumCoreLibAssemblyPath>%(_CoreLibAssembly.Identity)</CesiumCoreLibAssemblyPath>
