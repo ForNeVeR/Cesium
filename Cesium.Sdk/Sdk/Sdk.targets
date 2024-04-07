@@ -65,7 +65,11 @@
     </Target>
 
     <PropertyGroup>
-        <_CompilerOutput>$(IntermediateOutputPath)$(AssemblyName).dll</_CompilerOutput>
+        <_CompilerOutputBase>$(IntermediateOutputPath)$(AssemblyName)</_CompilerOutputBase>
+        <_CompilerOutputExtenion>dll</_CompilerOutputExtenion>
+        <!-- Exe and WinExe in netfx expects .exe to copy output task -->
+        <_CompilerOutputExtenion Condition="$(_CesiumFramework) == 'NetFramework' AND $(OutputType) != 'Library'">exe</_CompilerOutputExtenion>
+        <_CompilerOutput>$(_CompilerOutputBase).$(_CompilerOutputExtenion)</_CompilerOutput>
     </PropertyGroup>
 
     <Target Name="CesiumValidateProperties" BeforeTargets="CesiumCompile"/>
