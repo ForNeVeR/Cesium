@@ -2,6 +2,11 @@
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
 
+    <PropertyGroup Label="RuntimeConfig">
+        <GenerateRuntimeConfigurationFiles Condition="$(OutputType) != 'Library'">true</GenerateRuntimeConfigurationFiles>
+        <GenerateRuntimeConfigurationFiles Condition="$(OutputType) == 'Library'">false</GenerateRuntimeConfigurationFiles>
+    </PropertyGroup>
+
     <PropertyGroup Label="CompilerInstallationProperties" Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
         <_CesiumCompilerPackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</_CesiumCompilerPackagePath>
@@ -60,7 +65,7 @@
     </Target>
 
     <PropertyGroup>
-        <_CompilerOutput>$(IntermediateOutputPath)$(AssemblyName)</_CompilerOutput>
+        <_CompilerOutput>$(IntermediateOutputPath)$(AssemblyName).dll</_CompilerOutput>
     </PropertyGroup>
 
     <Target Name="CesiumValidateProperties" BeforeTargets="CesiumCompile"/>
