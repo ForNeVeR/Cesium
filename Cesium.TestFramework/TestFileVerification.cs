@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using Cesium.Solution.Metadata;
 
 namespace Cesium.TestFramework;
 
@@ -49,16 +50,19 @@ public static class TestFileVerification
 
     private static string GetTestProjectSourceDirectory(Assembly assembly)
     {
-        var currentPath = Path.GetDirectoryName(assembly.Location)!;
-        while (!Directory.EnumerateFileSystemEntries(currentPath, "*.csproj").Any())
-        {
-            currentPath = Path.GetDirectoryName(currentPath);
-            if (currentPath == null)
-                throw new InvalidOperationException(
-                    $"Could not find the test project source directory for assembly \"{assembly.Location}\".");
-        }
+        // Assuming that output assembly name (AssemblyName MSBuild property) is equal to the project name
+        var projectName = assembly.GetName().Name;
+        if (projectName is null)
+            throw new InvalidOperationException(
+                $"Name is missing for an assembly at location \"{assembly.Location}\".");
 
-        return currentPath;
+        var fullProjectFolderPath = Path.Combine(SolutionMetadata.SourceRoot, projectName);
+        var fullProjectFilePath = Path.Combine(fullProjectFolderPath, $"{projectName}.csproj");
+        if (!File.Exists(fullProjectFilePath))
+            throw new InvalidOperationException(
+                $"Could not find the test project source directory for assembly \"{assembly.Location}\".");
+
+        return fullProjectFolderPath;
     }
 
     private static IReadOnlySet<string> GetAcceptedFilePaths(string sourceDirectory)

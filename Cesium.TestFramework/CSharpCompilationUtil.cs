@@ -2,6 +2,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using AsyncKeyedLock;
 using Cesium.CodeGen;
+using Cesium.Solution.Metadata;
 using Xunit.Abstractions;
 
 namespace Cesium.TestFramework;
@@ -66,11 +67,10 @@ public static class CSharpCompilationUtil
     }
 
     public static readonly string CesiumRuntimeLibraryPath = Path.Combine(
-        TestStructureUtil.SolutionRootPath,
-        "Cesium.Runtime",
+        SolutionMetadata.ArtifactsRoot,
         "bin",
-        _configuration,
-        _cesiumRuntimeLibTargetRuntime,
+        "Cesium.Runtime",
+        $"{_configuration.ToLower()}_{_cesiumRuntimeLibTargetRuntime}",
         "Cesium.Runtime.dll");
 
     private static Task CompileCSharpProject(ITestOutputHelper output, string directory, string projectName) =>

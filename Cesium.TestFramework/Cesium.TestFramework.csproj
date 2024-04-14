@@ -17,6 +17,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
       <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+      <ProjectReference Include="..\Cesium.Solution.Metadata\Cesium.Solution.Metadata.csproj" />
     </ItemGroup>
 
 </Project>
