@@ -1,6 +1,7 @@
 using Cesium.TestFramework;
 using JetBrains.Annotations;
 using AsyncKeyedLock;
+using Cesium.Solution.Metadata;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
@@ -72,7 +73,7 @@ public class IntegrationTestContext : IAsyncDisposable
     private static async Task BuildRuntime(ITestOutputHelper output)
     {
         var runtimeProjectFile = Path.Combine(
-            TestStructureUtil.SolutionRootPath,
+            SolutionMetadata.SourceRoot,
             "Cesium.Runtime/Cesium.Runtime.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, runtimeProjectFile);
     }
@@ -80,7 +81,7 @@ public class IntegrationTestContext : IAsyncDisposable
     private static async Task BuildCompiler(ITestOutputHelper output)
     {
         var compilerProjectFile = Path.Combine(
-            TestStructureUtil.SolutionRootPath,
+            SolutionMetadata.SourceRoot,
             "Cesium.Compiler/Cesium.Compiler.csproj");
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, compilerProjectFile);
     }

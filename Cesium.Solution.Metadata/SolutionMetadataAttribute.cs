@@ -3,11 +3,13 @@ namespace Cesium.Solution.Metadata;
 public class SolutionMetadataAttribute : Attribute
 {
     public string SourceRoot { get; }
+    public string ArtifactsRoot { get; }
     public string VersionPrefix { get; }
 
-    public SolutionMetadataAttribute(string sourceRoot, string versionPrefix)
+    public SolutionMetadataAttribute(string sourceRoot, string artifactsRoot, string versionPrefix)
     {
         SourceRoot = sourceRoot;
+        ArtifactsRoot = artifactsRoot;
         VersionPrefix = versionPrefix;
     }
 }
