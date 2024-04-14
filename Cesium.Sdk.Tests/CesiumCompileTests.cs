@@ -28,8 +28,8 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts);
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts);
+        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
@@ -51,8 +51,8 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts);
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts);
+        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
@@ -74,8 +74,8 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts);
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts);
+        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
@@ -96,7 +96,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         var result = ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts);
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts);
+        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 }

@@ -3,7 +3,7 @@ using Medallion.Shell;
 
 namespace Cesium.Sdk.Tests;
 
-public static class MSBuildCli
+public static class MSBuildCLI
 {
     public static string EvaluateProperty(string projectPath, string propertyName)
     {
