@@ -89,7 +89,7 @@ public abstract class SdkTestBase : IDisposable
             ? "Build succeeded"
             : $"Build failed with exit code {process.ExitCode}");
 
-        var properties = MSBuildCli.EvaluateProperties(testProjectFile, objFolderPropertyName, binFolderPropertyName);
+        var properties = MSBuildCLI.EvaluateProperties(testProjectFile, objFolderPropertyName, binFolderPropertyName);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
         var binFolder = Path.Combine(testProjectFolder, properties[binFolderPropertyName]);
@@ -102,12 +102,12 @@ public abstract class SdkTestBase : IDisposable
         _testOutputHelper.WriteLine($"Build result: {JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true })}");
         return result;
 
-        IReadOnlyCollection<string> CollectArtifacts(string folder) =>
+        IReadOnlyCollection<BuildArtifact> CollectArtifacts(string folder) =>
             Directory.Exists(folder)
                 ? Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
-                    .Select(path => Path.GetRelativePath(folder, path))
+                    .Select(path => new BuildArtifact(Path.GetRelativePath(folder, path), path))
                     .ToList()
-                : Array.Empty<string>();
+                : Array.Empty<BuildArtifact>();
     }
 
     private static void EmitNuGetConfig(string configFilePath, string packageSourcePath)
@@ -154,8 +154,12 @@ public abstract class SdkTestBase : IDisposable
 
     protected record BuildResult(
         int ExitCode,
-        IReadOnlyCollection<string> OutputArtifacts,
-        IReadOnlyCollection<string> IntermediateArtifacts);
+        IReadOnlyCollection<BuildArtifact> OutputArtifacts,
+        IReadOnlyCollection<BuildArtifact> IntermediateArtifacts);
+
+    protected record BuildArtifact(
+        string FileName,
+        string FullPath);
 
     private void ClearOutput()
     {
