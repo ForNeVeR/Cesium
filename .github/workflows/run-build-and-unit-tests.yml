@@ -34,6 +34,14 @@ jobs:
         shell: bash
         run: dotnet build
 
+      - name: 🚚 Publish Compiler Packs 🚚
+        shell: bash
+        run: dotnet nuke PublishCompilerPacks
+
+      - name: 📦 Pack Compiler Packs 📦
+        shell: bash
+        run: dotnet nuke PackCompilerPacks
+
       - name: ✅ Run Unit Tests ✅
         shell: bash
-        run: dotnet test
+        run: dotnet nuke TestAll --configuration Debug

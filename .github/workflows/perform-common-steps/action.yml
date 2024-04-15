@@ -14,6 +14,10 @@ runs:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
 
+    - name: 🛠️ Restore local .NET tools 🛠️
+      shell: bash
+      run: dotnet tool restore
+
     - name: 🔄 Restore Nuget Packages 🔄
       shell: bash
       run: dotnet restore
