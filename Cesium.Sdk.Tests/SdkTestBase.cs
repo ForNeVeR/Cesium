@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Cesium.Solution.Metadata;
 using Xunit.Abstractions;
@@ -92,8 +93,8 @@ public abstract class SdkTestBase : IDisposable
         var properties = MSBuildCLI.EvaluateProperties(testProjectFile, objFolderPropertyName, binFolderPropertyName);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
-        var binFolder = Path.Combine(testProjectFolder, properties[binFolderPropertyName]);
-        var objFolder = Path.Combine(testProjectFolder, properties[objFolderPropertyName]);
+        var binFolder = NormalizePath(Path.GetFullPath(properties[binFolderPropertyName], testProjectFolder));
+        var objFolder = NormalizePath(Path.GetFullPath(properties[objFolderPropertyName], testProjectFolder));
 
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
@@ -102,12 +103,15 @@ public abstract class SdkTestBase : IDisposable
         _testOutputHelper.WriteLine($"Build result: {JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true })}");
         return result;
 
-        IReadOnlyCollection<BuildArtifact> CollectArtifacts(string folder) =>
-            Directory.Exists(folder)
+        IReadOnlyCollection<BuildArtifact> CollectArtifacts(string folder)
+        {
+            _testOutputHelper.WriteLine($"Collecting artifacts from '{folder}' folder");
+            return Directory.Exists(folder)
                 ? Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories)
                     .Select(path => new BuildArtifact(Path.GetRelativePath(folder, path), path))
                     .ToList()
                 : Array.Empty<BuildArtifact>();
+        }
     }
 
     private static void EmitNuGetConfig(string configFilePath, string packageSourcePath)
@@ -150,6 +154,14 @@ public abstract class SdkTestBase : IDisposable
             var fileName = Path.GetFileName(filePath);
             File.Copy(filePath, Path.Combine(target, fileName));
         }
+    }
+
+    private static string NormalizePath(string path)
+    {
+        var normalizedPath = new Uri(path).LocalPath;
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? normalizedPath
+            : normalizedPath.Replace('\\', '/');
     }
 
     protected record BuildResult(

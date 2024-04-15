@@ -34,7 +34,6 @@ public partial class Build
 
             void PublishCompiler(string runtimeId)
             {
-                Log.Information(SkipCaches+"");
                 if (!SkipCaches && !NeedPublishCompilerPack(compilerProject, runtimeId))
                 {
                     Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
