@@ -38,6 +38,7 @@ Documentation
 - [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
+- [Cesium SDK][docs.msbuild-sdk]
 - [Architecture Sets][docs.architecture-sets]
 - [CLI-Related Language Extensions][docs.language-extensions]
 - [Built-in Functions][docs.builtins]

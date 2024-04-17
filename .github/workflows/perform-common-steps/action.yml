@@ -20,4 +20,4 @@ runs:
 
     - name: 🔄 Restore Nuget Packages 🔄
       shell: bash
-      run: dotnet restore
+      run: dotnet nuke RestoreAll

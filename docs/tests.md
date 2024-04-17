@@ -3,15 +3,31 @@ Cesium Tests
 
 Being a compiler, Cesium requires a complicated test suite checking every feature.
 
-There are two kinds of tests in Cesium: unit tests (directly calling various internal APIs in the compiler) and integration tests (interacting with the compiler executable and comparing the resulting programs' behavior with programs compiled by other compilers).
+There are three kinds of tests in Cesium: unit tests (directly calling various internal APIs in the compiler), integration tests (interacting with the compiler executable and comparing the resulting programs' behavior with programs compiled by other compilers) and SDK tests (testing integration with MSBuild via MSBuild project SDK).
+
+Running Tests
+-------------
+To run all tests from solution, make sure to restore locally installed tools:
+```console
+dotnet tool restore
+```
+
+Then, run `TestAll` target using NUKE:
+```console
+dotnet nuke TestAll
+```
+
+You could also execute test from specific corresponding test projects:
+- `dotnet nuke TestParser`
+- `dotnet nuke TestCompiler`
+- `dotnet nuke TestCodeGen`
+- `dotnet nuke TestRuntime`
+- `dotnet nuke TestIntegration`
+- `dotnet nuke TestSdk`
 
 Unit Tests
 ----------
-Unit tests in Cesium are normal .NET tests, so they are runnable by the following shell command:
-s
-```console
-$ dotnet test
-```
+Unit tests in Cesium are normal .NET tests.
 
 There are two kinds of unit tests: a few of "the real" unit tests (e.g. `Cesium.Parser.Tests.LexerTests.IdentifierTests`) and a set of [characterization tests][wiki.characterization-tests]. The real unit tests verify certain facts using assertions of the Xunit testing framework, but their usage in the compiler is small. The characterization tests, on the other hand, invoke parts of the compiler on various sources, and then dump the results (e.g. a full parse tree of a code fragment, or a whole compiled assembly).
 
@@ -53,3 +69,24 @@ There are two categories of integration tests: .NET interop tests and compiler v
 
 [wiki.characterization-tests]: https://en.wikipedia.org/wiki/Characterization_test
 
+SDK Tests
+---------
+#### How SDK tests work
+SDK tests check correctness of integration with MSBuild. They are focused on build output, including artifacts existence asserting.
+
+SDK tests (and Cesium Project SDK itself) require compiler bundle to be built and packed. A compiler bundle is a special platform-specific NuGet package containing a published compiler executable with dependencies. It is not intended to be used as a runtime dependency and only used while building project.
+
+Compiler packing is done by 2 NUKE targets:
+- `PublishCompilerBundle`: a target that make platform-specific `dotnet publish` of compiler bundle to corresponding artifacts' folder.
+- `PackCompilerBundle`: a target that wraps a published compiler bundle into a NuGet package which is then used by SDK to deliver compiler to user's project
+
+Both targets are called automatically when `TestSdk` target is invoked.
+
+SDK itself should also be built to be used in test projects. This is done by dependent target `PackSdk` which produces `Cesium.Sdk` NuGet package, suitable as Project SDK.
+
+Having all necessary dependencies, SDK tests are invoking `dotnet build` CLI with test projects, representing different layouts and configurations. Test result is determined by MSBuild output and artifacts presence.
+
+#### Adding new tests
+Adding new tests is quite straightforward.
+1. Add a test project if needed to the `TestProjects` directory. All items from that folder will be automatically included into temporary test execution directory.
+2. Write a test with the new test project in use. Look for the examples at `CesiumCompileTests.cs`.

@@ -12,8 +12,8 @@ partial class Build : NukeBuild
         return Execute<Build>(x => x.CompileAll);
     }
 
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+    [Parameter("Configuration to build - Default is 'Debug' or 'Release'")]
+    readonly Configuration Configuration = Configuration.Debug;
 
     [Parameter("If set to true, ignores all cached build results. Default: false")]
     readonly bool SkipCaches = false;
@@ -23,6 +23,10 @@ partial class Build : NukeBuild
 
     [Parameter("If set, only executes targets for a specified runtime identifier. Provided RID must be included in <RuntimeIdentifiers> property of Cesium.Compiler project.")]
     readonly string RuntimeId = string.Empty;
+
+    string EffectiveRuntimeId => !string.IsNullOrEmpty(RuntimeId)
+        ? RuntimeId
+        : Solution.Cesium_Compiler.GetProperty("DefaultAppHostRuntimeIdentifier") ?? string.Empty;
 
     [Parameter("If set to true, publishes compiler packs in AOT mode.")]
     readonly bool PublishAot = false;
