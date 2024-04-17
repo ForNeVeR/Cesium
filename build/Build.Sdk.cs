@@ -11,9 +11,9 @@ using Project = Microsoft.Build.Evaluation.Project;
 
 public partial class Build
 {
-    const string _compilerPackPackagePrefix = "Cesium.Compiler.Pack";
+    const string _compilerPackPackagePrefix = "Cesium.Compiler.Bundle";
 
-    Target PublishCompilerPacks => _ => _
+    Target PublishAllCompilerBundles => _ => _
         .Executes(() =>
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
@@ -22,39 +22,18 @@ public partial class Build
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
-            if (!string.IsNullOrEmpty(RuntimeId))
-            {
-                Log.Information($"Executing only {RuntimeId} because it was specified explicitly.");
-                PublishCompiler(RuntimeId);
-                return;
-            }
-
             foreach (var runtimeId in runtimeIds)
                 PublishCompiler(runtimeId);
-
-            void PublishCompiler(string runtimeId)
-            {
-                if (!SkipCaches && !NeedPublishCompilerPack(compilerProject, runtimeId))
-                {
-                    Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
-                    return;
-                }
-
-                Log.Information($"Publishing for {runtimeId}, AOT {(PublishAot ? "enabled" : "disabled")}...");
-                DotNetPublish(o => o
-                    .SetConfiguration(Configuration)
-                    .SetProject(compilerProject.ProjectFileLocation.File)
-                    .SetRuntime(runtimeId)
-                    .SetSelfContained(true)
-                    .SetPublishTrimmed(PublishAot)
-                    .SetPublishSingleFile(PublishAot)
-                    .SetProperty("PublishAot", PublishAot)
-                    .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
-            }
         });
 
-    Target PackCompilerPacks => _ => _
-        .DependsOn(PublishCompilerPacks)
+    Target PublishCompilerBundle => _ => _
+        .Executes(() =>
+        {
+            PublishCompiler(EffectiveRuntimeId);
+        });
+
+    Target PackAllCompilerBundles => _ => _
+        .DependsOn(PublishAllCompilerBundles)
         .Executes(() =>
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
@@ -63,27 +42,15 @@ public partial class Build
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
-            if (!string.IsNullOrEmpty(RuntimeId))
-            {
-                Log.Information($"Executing only {RuntimeId} because it was specified explicitly.");
-                PackCompiler(RuntimeId);
-                return;
-            }
-
             foreach (var runtimeId in runtimeIds)
                 PackCompiler(runtimeId);
+        });
 
-            void PackCompiler(string runtimeId)
-            {
-                if (!SkipCaches && !NeedPackageCompilerPack(compilerProject, runtimeId))
-                {
-                    Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
-                    return;
-                }
-
-                Log.Information($"Packing compiler for {runtimeId}...");
-                EmitCompilerPack(runtimeId, compilerProject);
-            }
+    Target PackCompilerBundle => _ => _
+        .DependsOn(PublishCompilerBundle)
+        .Executes(() =>
+        {
+            PackCompiler(EffectiveRuntimeId);
         });
 
     Target PackSdk => _ => _
@@ -143,6 +110,42 @@ public partial class Build
                 };
             }
         }
+    }
+
+    void PublishCompiler(string runtimeId)
+    {
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+
+        if (!SkipCaches && !NeedPublishCompilerPack(compilerProject, runtimeId))
+        {
+            Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
+            return;
+        }
+
+        Log.Information($"Publishing for {runtimeId}, AOT {(PublishAot ? "enabled" : "disabled")}...");
+        DotNetPublish(o => o
+            .SetConfiguration(Configuration)
+            .SetProject(compilerProject.ProjectFileLocation.File)
+            .SetRuntime(runtimeId)
+            .SetSelfContained(true)
+            .SetPublishTrimmed(PublishAot)
+            .SetPublishSingleFile(PublishAot)
+            .SetProperty("PublishAot", PublishAot)
+            .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
+    }
+
+    void PackCompiler(string runtimeId)
+    {
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+
+        if (!SkipCaches && !NeedPackageCompilerPack(compilerProject, runtimeId))
+        {
+            Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
+            return;
+        }
+
+        Log.Information($"Packing compiler for {runtimeId}...");
+        EmitCompilerPack(runtimeId, compilerProject);
     }
 
     string GetCompilerRuntimePublishFolder(Project compilerProject, string runtimeId) =>

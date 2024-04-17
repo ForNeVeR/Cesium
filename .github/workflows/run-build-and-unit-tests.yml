@@ -32,16 +32,16 @@ jobs:
 
       - name: 🛠 Build Solution 🛠
         shell: bash
-        run: dotnet build
+        run: dotnet nuke CompileAll
 
-      - name: 🚚 Publish Compiler Packs 🚚
+      - name: 🚚 Publish Compiler Bundle 🚚
         shell: bash
-        run: dotnet nuke PublishCompilerPacks
+        run: dotnet nuke PublishCompilerBundle
 
-      - name: 📦 Pack Compiler Packs 📦
+      - name: 📦 Pack Compiler Bundle 📦
         shell: bash
-        run: dotnet nuke PackCompilerPacks
+        run: dotnet nuke PackCompilerBundle
 
       - name: ✅ Run Unit Tests ✅
         shell: bash
-        run: dotnet nuke TestAll --configuration Debug
+        run: dotnet nuke TestAll

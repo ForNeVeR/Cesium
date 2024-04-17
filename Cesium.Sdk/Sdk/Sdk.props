@@ -9,7 +9,7 @@
     <PropertyGroup Label="DefaultProperties">
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
-        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Pack.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
+        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Bundle.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
         <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
