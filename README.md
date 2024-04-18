@@ -116,6 +116,7 @@ If you're interested in certain project areas, check the per-area issue labels:
 [docs.builtins]: docs/builtins.md
 [docs.contributing]: CONTRIBUTING.md
 [docs.design-notes]: docs/design-notes.md
+[docs.msbuild-sdk]: docs/msbuild-sdk.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md
