@@ -1,6 +1,8 @@
-namespace Cesium.Sdk.Tests.Framework;
+using Cesium.TestFramework.Exceptions;
 
-public static class AssertEx
+namespace Cesium.TestFramework;
+
+public static class AssertCollection
 {
     public static void Includes<T>(IReadOnlyCollection<T> expected, IReadOnlyCollection<T> all)
     {
