@@ -31,7 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Solution.Metadata\Cesium.Solution.Metadata.csproj" />
+      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
 </Project>

@@ -3,14 +3,13 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Cesium.Solution.Metadata;
+using Cesium.TestFramework;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
 
 public abstract class SdkTestBase : IDisposable
 {
-    private const string _binLogFile = "build_result.binlog";
-
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -36,7 +35,7 @@ public abstract class SdkTestBase : IDisposable
         EmitGlobalJson(GlobalJsonPath, $"{SolutionMetadata.VersionPrefix}");
     }
 
-    protected BuildResult ExecuteTargets(string projectName, params string[] targets)
+    protected async Task<BuildResult> ExecuteTargets(string projectName, params string[] targets)
     {
         var projectFile = $"{projectName}/{projectName}.ceproj";
         var joinedTargets = string.Join(";", targets);
@@ -90,7 +89,7 @@ public abstract class SdkTestBase : IDisposable
             ? "Build succeeded"
             : $"Build failed with exit code {process.ExitCode}");
 
-        var properties = MSBuildCLI.EvaluateProperties(testProjectFile, objFolderPropertyName, binFolderPropertyName);
+        var properties = await DotNetCliHelper.EvaluateMSBuildProperties(_testOutputHelper, testProjectFile, objFolderPropertyName, binFolderPropertyName);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
         var binFolder = NormalizePath(Path.GetFullPath(properties[binFolderPropertyName], testProjectFolder));

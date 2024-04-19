@@ -1,6 +1,6 @@
 using Xunit.Sdk;
 
-namespace Cesium.Sdk.Tests.Framework;
+namespace Cesium.TestFramework.Exceptions;
 
 public class IncludesAssertFailedException<T>(
     IEnumerable<T> expected,

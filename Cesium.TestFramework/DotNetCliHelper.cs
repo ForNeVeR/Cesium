@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Medallion.Shell;
 using Xunit.Abstractions;
 
@@ -23,6 +24,29 @@ public static class DotNetCliHelper
             "--configuration", configuration,
             projectFilePath
         });
+    }
+
+    public static async Task<string> EvaluateMSBuildProperty(ITestOutputHelper output, string projectPath, string propertyName)
+    {
+        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{propertyName}" ]);
+        return result.StandardOutput;
+    }
+
+    public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(ITestOutputHelper output, string projectPath, params string[] propertyNames)
+    {
+        if (!propertyNames.Any())
+            return new Dictionary<string, string>();
+
+        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ]);
+        var resultString = result.StandardOutput;
+        if (propertyNames.Length == 1)
+            return new Dictionary<string, string> { { propertyNames[0], resultString } };
+
+        var resultJson = JsonDocument.Parse(resultString);
+        var propertiesJson = resultJson.RootElement.GetProperty("Properties").EnumerateObject().ToArray();
+
+        return propertiesJson
+            .ToDictionary(property => property.Name, property => property.Value.GetString() ?? string.Empty);
     }
 
     public static Task<CommandResult> RunDotNetDll(

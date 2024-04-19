@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using Cesium.Sdk.Tests.Framework;
+using Cesium.TestFramework;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
@@ -8,7 +8,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
 {
     [Theory]
     [InlineData("SimpleCoreExe")]
-    public void CesiumCompile_Core_Exe_ShouldSucceed(string projectName)
+    public async Task CesiumCompile_Core_Exe_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
         [
@@ -25,16 +25,16 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
             $"{projectName}.deps.json",
         ];
 
-        var result = ExecuteTargets(projectName, "Restore", "Build");
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
     [InlineData("SimpleNetfxExe")]
-    public void CesiumCompile_NetFx_Exe_ShouldSucceed(string projectName)
+    public async Task CesiumCompile_NetFx_Exe_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
         [
@@ -48,17 +48,17 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
             $"{projectName}.runtimeconfig.json"
         ];
 
-        var result = ExecuteTargets(projectName, "Restore", "Build");
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
     [InlineData("SimpleCoreLibrary")]
     [InlineData("SimpleNetStandardLibrary")]
-    public void CesiumCompile_Core_Library_ShouldSucceed(string projectName)
+    public async Task CesiumCompile_Core_Library_ShouldSucceed(string projectName)
     {
         string[] expectedObjArtifacts =
         [
@@ -71,16 +71,16 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
             $"{projectName}.deps.json",
         ];
 
-        var result = ExecuteTargets(projectName, "Restore", "Build");
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 
     [Theory]
     [InlineData("SimpleNetfxLibrary")]
-    public void CesiumCompile_NetFxLibrary_ShouldSucceed(string projectName)
+    public async Task CesiumCompile_NetFxLibrary_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
         [
@@ -93,10 +93,10 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
             "Cesium.Runtime.dll",
         ];
 
-        var result = ExecuteTargets(projectName, "Restore", "Build");
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
 
         Assert.True(result.ExitCode == 0);
-        AssertEx.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
-        AssertEx.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
     }
 }
