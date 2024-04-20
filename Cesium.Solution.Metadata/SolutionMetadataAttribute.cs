@@ -1,5 +1,6 @@
 namespace Cesium.Solution.Metadata;
 
+/// <summary>This attribute is only used by the Cesium test infrastructure.</summary>
 public class SolutionMetadataAttribute : Attribute
 {
     public string SourceRoot { get; }
