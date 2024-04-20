@@ -12,14 +12,9 @@ public readonly unsafe struct FuncPtr<TDelegate> where TDelegate : MulticastDele
         _value = (IntPtr)ptr;
     }
 
-    public FuncPtr(IntPtr ptr)
-    {
-        _value = ptr;
-    }
-
     public static implicit operator TDelegate(FuncPtr<TDelegate> funcPtr) => (TDelegate)Activator.CreateInstance(typeof(TDelegate), [null, funcPtr._value])!;
     public static implicit operator FuncPtr<TDelegate>(TDelegate @delegate) => @delegate.Method.MethodHandle.GetFunctionPointer();
-    public static implicit operator FuncPtr<TDelegate>(IntPtr funcPtr) => new(funcPtr);
+    public static implicit operator FuncPtr<TDelegate>(IntPtr funcPtr) => new((void*)funcPtr);
     public static implicit operator FuncPtr<TDelegate>(void* funcPtr) => new(funcPtr);
 
     public TDelegate AsDelegate() => this;
