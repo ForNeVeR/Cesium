@@ -187,67 +187,67 @@ public class CesiumCompile : Task
 
     private string CollectCommandLineArguments(ValidatedOptions options)
     {
-        var builder = new CommandArgumentsBuilder();
+        var args = new List<string>();
 
-        builder.RawArgument("--nologo");
+        args.Add("--nologo");
 
         if (options.Framework is { } framework)
         {
-            builder.RawArgument("--framework");
-            builder.RawArgument(framework.ToString());
+            args.Add("--framework");
+            args.Add(framework.ToString());
         }
 
         if (options.Architecture is { } arch)
         {
-            builder.RawArgument("--arch");
-            builder.RawArgument(arch.ToString());
+            args.Add("--arch");
+            args.Add(arch.ToString());
         }
 
         if (options.ModuleKind is { } moduleKind)
         {
-            builder.RawArgument("--modulekind");
-            builder.RawArgument(moduleKind.ToString());
+            args.Add("--modulekind");
+            args.Add(moduleKind.ToString());
         }
 
         if (!string.IsNullOrWhiteSpace(options.Namespace))
         {
-            builder.RawArgument("--namespace");
-            builder.RawArgument(options.Namespace!);
+            args.Add("--namespace");
+            args.Add(options.Namespace!);
         }
 
         foreach (var import in options.ImportItems)
         {
-            builder.RawArgument("--import");
-            builder.Argument(import);
+            args.Add("--import");
+            args.Add(import);
         }
 
         if (!string.IsNullOrWhiteSpace(options.CoreLibPath))
         {
-            builder.RawArgument("--corelib");
-            builder.Argument(options.CoreLibPath!);
+            args.Add("--corelib");
+            args.Add(options.CoreLibPath!);
         }
 
         if (!string.IsNullOrWhiteSpace(options.RuntimePath))
         {
-            builder.RawArgument("--runtime");
-            builder.Argument(options.RuntimePath!);
+            args.Add("--runtime");
+            args.Add(options.RuntimePath!);
         }
 
         foreach (var item in options.PreprocessorItems)
         {
-            builder.RawArgument("-D");
-            builder.Argument(item);
+            args.Add("-D");
+            args.Add(item);
         }
 
-        builder.RawArgument("--out");
-        builder.Argument(options.OutputFile);
+        args.Add("--out");
+        args.Add(options.OutputFile);
 
         foreach (var input in options.InputItems)
         {
-            builder.Argument(input);
+            args.Add(input);
         }
 
-        return builder.Build();
+        return ArgumentUtil.ToCommandLineString(args);
     }
 
     private void ReportValidationError(string code, string message) =>
