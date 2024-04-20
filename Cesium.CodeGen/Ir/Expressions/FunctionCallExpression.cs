@@ -124,11 +124,12 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
         if (_callee == null)
             throw new AssertException("Should be lowered");
 
-        EmitArgumentList(scope, _callee.Parameters, _arguments);
-
         var functionName = _function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
         var methodReference = callee.MethodReference ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
+
+        EmitArgumentList(scope, _callee.Parameters, _arguments, methodReference);
+
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, methodReference));
     }
 

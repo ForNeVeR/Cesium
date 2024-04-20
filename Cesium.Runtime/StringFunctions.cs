@@ -12,81 +12,32 @@ namespace Cesium.Runtime;
 /// </summary>
 public static unsafe class StringFunctions
 {
-    public static nuint StrLen(byte* str)
-    {
-#if NETSTANDARD
-        if (str == null)
-        {
-            return 0;
-        }
+    public static nuint StrLen(UTF8String str) => str.Length;
 
-        Encoding encoding = Encoding.UTF8;
-        int byteLength = 0;
-        byte* search = str;
-        while (*search != '\0')
-        {
-            byteLength++;
-            search++;
-        }
-
-        int stringLength = encoding.GetCharCount(str, byteLength);
-        return (uint)stringLength;
-#else
-        return (uint)(Marshal.PtrToStringUTF8((nint)str)?.Length ?? 0);
-#endif
-    }
-    public static byte* StrCpy(byte* dest, byte* src)
+    public static byte* StrCpy(UTF8String dest, UTF8String src)
     {
-        if (dest == null)
-        {
+        if (!dest)
             return null;
-        }
 
-        var result = dest;
-        if (src == null)
-        {
+        if (!src)
             return dest;
-        }
 
-        byte* search = src;
-        while (*search != '\0')
-        {
-            *dest = *search;
-            search++;
-            dest++;
-        }
+        src.CopyTo(dest);
 
-        *dest = 0;
-        return result;
+        return dest;
     }
-    public static byte* StrNCpy(byte* dest, byte* src, nuint count)
+
+    public static byte* StrNCpy(UTF8String dest, UTF8String src, nuint count)
     {
-        if (dest == null)
-        {
+        if (!dest)
             return null;
-        }
 
-        var result = dest;
-        if (src == null)
-        {
+        if (!src)
             return dest;
-        }
 
-        uint counter = 0;
-        byte* search = src;
-        while (*search != '\0')
-        {
-            *dest = *search;
-            search++;
-            dest++;
-            counter++;
-            if (counter == count)
-            {
-                break;
-            }
-        }
+        src.CopyTo(dest, count);
 
-        return result;
+        return dest;
     }
     public static byte* StrCat(byte* dest, byte* src)
     {
@@ -184,24 +135,12 @@ public static unsafe class StringFunctions
 
         return dest;
     }
-    public static byte* StrChr(byte* str, int ch)
+    public static byte* StrChr(UTF8String str, int ch)
     {
-        if (str == null)
-        {
+        if (!str)
             return null;
-        }
 
-        while (*str != 0)
-        {
-            if (*str == ch)
-            {
-                return str;
-            }
-
-            str++;
-        }
-
-        return null;
+        return str.FindEntry((byte)ch);
     }
 
     public static int StrCmp(byte* lhs, byte* rhs)
