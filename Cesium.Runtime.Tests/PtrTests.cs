@@ -9,7 +9,7 @@ public unsafe class PtrTests
         Assert.Equal(0x1234L, (long)v.AsPtr());
         Assert.Equal(0x1234L, (long)v.AsPtr<byte>());
 
-        Assert.Equal(sizeof(long), sizeof(VoidPtr));
+        Assert.Equal(sizeof(IntPtr), sizeof(VoidPtr));
     }
 
     [Fact]
@@ -20,7 +20,7 @@ public unsafe class PtrTests
         Assert.Equal((IntPtr)0x2345, t.AsIntPtr());
         Assert.Equal(0x2345L, (long)t.AsPtr<byte>());
 
-        Assert.Equal(sizeof(long), sizeof(CPtr<int>));
+        Assert.Equal(sizeof(IntPtr), sizeof(CPtr<int>));
     }
 
     [Fact]
@@ -28,6 +28,15 @@ public unsafe class PtrTests
     {
         var a = new FuncPtr<Action>((void*)0x1234);
         Assert.Equal(0x1234L, (long)a.AsPtr());
-        Assert.Equal(sizeof(long), sizeof(FuncPtr<Action>));
+        Assert.Equal(sizeof(IntPtr), sizeof(FuncPtr<Action>));
+
+        FuncPtr<Func<int>> funcPtr = (Func<int>)SomeAnonFunc;
+        var func = SomeAnonFunc;
+        Assert.Equal(funcPtr.AsDelegate()(), func());
+
+        funcPtr = (delegate*<int>)&SomeAnonFunc;
+        Assert.Equal(funcPtr.AsDelegate()(), func());
+
+        static int SomeAnonFunc() => 5;
     }
 }
