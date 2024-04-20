@@ -18,7 +18,8 @@ There are two kinds of tests in Cesium: unit tests and integration tests.
 Run the unit and integration tests using this shell command:
 
 ```console
-$ dotnet test
+$ dotnet restore
+$ dotnet nuke TestAll
 ```
 
 Publishing
