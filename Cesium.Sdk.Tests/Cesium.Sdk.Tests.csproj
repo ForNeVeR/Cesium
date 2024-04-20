@@ -31,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Cesium.Sdk\Cesium.Sdk.csproj" />
       <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
