@@ -80,6 +80,11 @@ Compiler packing is done by 2 NUKE targets:
 - `PublishCompilerBundle`: a target that make platform-specific `dotnet publish` of compiler bundle to corresponding artifacts' folder.
 - `PackCompilerBundle`: a target that wraps a published compiler bundle into a NuGet package which is then used by SDK to deliver compiler to user's project
 
+If you want to run these tests separately, run the targets using a shell command:
+```console
+$ dotnet nuke PackCompilerBundle
+```
+
 Both targets are called automatically when `TestSdk` target is invoked.
 
 SDK itself should also be built to be used in test projects. This is done by dependent target `PackSdk` which produces `Cesium.Sdk` NuGet package, suitable as Project SDK.
