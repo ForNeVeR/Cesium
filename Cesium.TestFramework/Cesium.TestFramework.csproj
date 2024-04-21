@@ -6,7 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MedallionShell"  />
+      <PackageReference Include="AsyncKeyedLock" />
+      <PackageReference Include="MedallionShell" />
       <PackageReference Include="Verify.Xunit" />
       <PackageReference Include="Yoakke.SynKit.C.Syntax" />
       <PackageReference Include="Yoakke.SynKit.Lexer" />

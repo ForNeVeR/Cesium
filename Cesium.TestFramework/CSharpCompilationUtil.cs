@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using System.Xml.XPath;
+using AsyncKeyedLock;
 using Cesium.CodeGen;
 using Xunit.Abstractions;
 
@@ -15,7 +16,7 @@ public static class CSharpCompilationUtil
     private const string _projectName = "TestProject";
 
     /// <summary>Semaphore that controls the amount of simultaneously running tests.</summary>
-    private static readonly SemaphoreSlim _testSemaphore = new(Environment.ProcessorCount);
+    private static readonly AsyncNonKeyedLocker _testSemaphore = new(Environment.ProcessorCount);
 
     public static async Task<string> CompileCSharpAssembly(
         ITestOutputHelper output,
@@ -23,8 +24,7 @@ public static class CSharpCompilationUtil
         string cSharpSource)
     {
         if (runtime != DefaultRuntime) throw new Exception($"Runtime {runtime} not supported for test compilation.");
-        await _testSemaphore.WaitAsync();
-        try
+        using (await _testSemaphore.LockAsync())
         {
             var directory = Path.GetTempFileName();
             File.Delete(directory);
@@ -34,10 +34,6 @@ public static class CSharpCompilationUtil
             await File.WriteAllTextAsync(Path.Combine(projectDirectory, "Program.cs"), cSharpSource);
             await CompileCSharpProject(output, directory, _projectName);
             return Path.Combine(projectDirectory, "bin", _configuration, _targetRuntime, _projectName + ".dll");
-        }
-        finally
-        {
-            _testSemaphore.Release();
         }
     }
 

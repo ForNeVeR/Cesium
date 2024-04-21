@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AsyncKeyedLock" Version="6.3.4" />
+    <PackageVersion Include="AsyncKeyedLock" Version="6.4.1" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="3.1.2" />
     <PackageVersion Include="JetBrains.Annotations" Version="2023.3.0" />
