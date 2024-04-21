@@ -50,7 +50,7 @@ public abstract class SdkTestBase : IDisposable
         {
             WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
-            Arguments = $"msbuild \"{testProjectFile}\" /t:{joinedTargets} /restore /bl:{binLogFile}",
+            ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", "/restore", $"/bl:{binLogFile}" },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
