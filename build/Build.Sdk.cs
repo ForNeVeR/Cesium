@@ -11,7 +11,7 @@ using Project = Microsoft.Build.Evaluation.Project;
 
 public partial class Build
 {
-    const string _compilerPackPackagePrefix = "Cesium.Compiler.Bundle";
+    const string _compilerBundlePackagePrefix = "Cesium.Compiler.Bundle";
 
     Target PublishAllCompilerBundles => _ => _
         .Executes(() =>
@@ -63,17 +63,17 @@ public partial class Build
                 return;
             }
 
-            Log.Information($"Packing SDK...");
+            Log.Information("Packing SDK...");
             DotNetPack(o => o
                 .SetConfiguration(Configuration)
                 .SetProject(Solution.Cesium_Sdk.Path));
         });
 
-    void EmitCompilerPack(string runtimeId, Project compilerProject)
+    void EmitCompilerBundle(string runtimeId, Project compilerProject)
     {
         var version = compilerProject.GetVersion();
-        var runtimePackageId = GetRuntimePackId(runtimeId);
-        var packageFile = GetRuntimePackFileName(version, runtimeId);
+        var runtimePackageId = GetRuntimeBundleId(runtimeId);
+        var packageFile = GetRuntimeBundleFileName(version, runtimeId);
         var publishDirectory = GetCompilerRuntimePublishFolder(compilerProject, runtimeId);
         Directory.CreateDirectory(publishDirectory);
         var publishedFiles = Directory.GetFiles(publishDirectory, "*.*", SearchOption.AllDirectories);
@@ -116,7 +116,7 @@ public partial class Build
     {
         var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
 
-        if (!SkipCaches && !NeedPublishCompilerPack(compilerProject, runtimeId))
+        if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
         {
             Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
             return;
@@ -138,14 +138,14 @@ public partial class Build
     {
         var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
 
-        if (!SkipCaches && !NeedPackageCompilerPack(compilerProject, runtimeId))
+        if (!SkipCaches && !NeedPackageCompilerBundle(compilerProject, runtimeId))
         {
             Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
             return;
         }
 
         Log.Information($"Packing compiler for {runtimeId}...");
-        EmitCompilerPack(runtimeId, compilerProject);
+        EmitCompilerBundle(runtimeId, compilerProject);
     }
 
     string GetCompilerRuntimePublishFolder(Project compilerProject, string runtimeId) =>
@@ -158,13 +158,13 @@ public partial class Build
     static string GetRuntimeArtifactFolder(string version, string runtimeId) =>
         $"pack_{version}_{runtimeId}";
 
-    static string GetRuntimePackId(string runtimeId) =>
-        $"{_compilerPackPackagePrefix}.{runtimeId}";
+    static string GetRuntimeBundleId(string runtimeId) =>
+        $"{_compilerBundlePackagePrefix}.{runtimeId}";
 
-    static string GetRuntimePackFileName(string version, string runtimeId) =>
-        $"{_compilerPackPackagePrefix}.{runtimeId}.{version}.nupkg";
+    static string GetRuntimeBundleFileName(string version, string runtimeId) =>
+        $"{_compilerBundlePackagePrefix}.{runtimeId}.{version}.nupkg";
 
-    bool NeedPublishCompilerPack(Project compiler, string runtimeId)
+    bool NeedPublishCompilerBundle(Project compiler, string runtimeId)
     {
         var folder = GetCompilerRuntimePublishFolder(compiler, runtimeId);
 
@@ -172,11 +172,11 @@ public partial class Build
                || Directory.GetFiles(folder, "Cesium.Compiler*").Length == 0;
     }
 
-    bool NeedPackageCompilerPack(Project compiler, string runtimeId)
+    bool NeedPackageCompilerBundle(Project compiler, string runtimeId)
     {
         var version = compiler.GetVersion();
         var packageDirectory = compiler.GetPackageOutputPath();
-        var packageFileName = GetRuntimePackFileName(version, runtimeId);
+        var packageFileName = GetRuntimeBundleFileName(version, runtimeId);
 
         return !File.Exists(Path.Combine(packageDirectory, packageFileName));
     }
