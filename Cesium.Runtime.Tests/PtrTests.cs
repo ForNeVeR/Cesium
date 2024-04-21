@@ -9,7 +9,7 @@ public unsafe class PtrTests
         Assert.Equal(0x1234L, (long)v.AsPtr());
         Assert.Equal(0x1234L, (long)v.AsPtr<byte>());
 
-        Assert.Equal(sizeof(IntPtr), sizeof(VoidPtr));
+        Assert.Equal(sizeof(long), sizeof(VoidPtr));
     }
 
     [Fact]
@@ -20,7 +20,7 @@ public unsafe class PtrTests
         Assert.Equal((IntPtr)0x2345, t.AsIntPtr());
         Assert.Equal(0x2345L, (long)t.AsPtr<byte>());
 
-        Assert.Equal(sizeof(IntPtr), sizeof(CPtr<int>));
+        Assert.Equal(sizeof(long), sizeof(CPtr<int>));
     }
 
     [Fact]

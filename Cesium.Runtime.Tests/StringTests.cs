@@ -6,6 +6,8 @@ public unsafe class StringTests
     [Fact]
     public void ComplexTest()
     {
+        Assert.Equal(sizeof(long), sizeof(UTF8String));
+
         UTF8String someString = (byte*)Marshal.StringToHGlobalAnsi("Hello world!\0");
 
         Assert.Equal("Hello world!".Length, (int)someString.Length);
