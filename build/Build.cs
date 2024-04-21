@@ -8,7 +8,6 @@ partial class Build : NukeBuild
 {
     public static int Main()
     {
-        // while (!Debugger.IsAttached) Thread.Sleep(100);
         return Execute<Build>(x => x.CompileAll);
     }
 
