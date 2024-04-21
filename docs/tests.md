@@ -80,10 +80,11 @@ Compiler packing is done by 2 NUKE targets:
 - `PublishCompilerBundle`: a target that make platform-specific `dotnet publish` of compiler bundle to corresponding artifacts' folder.
 - `PackCompilerBundle`: a target that wraps a published compiler bundle into a NuGet package which is then used by SDK to deliver compiler to user's project
 
-If you want to run these tests separately, run the targets using a shell command:
+If you want to run these tests without Nuke (e.g. from the IDE), run the targets using a shell command:
 ```console
 $ dotnet nuke PackCompilerBundle
 ```
+After that, run the tests in your preferred way.
 
 Both targets are called automatically when `TestSdk` target is invoked.
 
