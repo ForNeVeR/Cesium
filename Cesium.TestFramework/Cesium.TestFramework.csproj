@@ -8,7 +8,9 @@
     <ItemGroup>
       <PackageReference Include="AsyncKeyedLock" />
       <PackageReference Include="MedallionShell" />
+      <PackageReference Include="Newtonsoft.Json" />
       <PackageReference Include="Verify.Xunit" />
+      <PackageReference Include="xunit.assert" />
       <PackageReference Include="Yoakke.SynKit.C.Syntax" />
       <PackageReference Include="Yoakke.SynKit.Lexer" />
       <PackageReference Include="Yoakke.SynKit.Parser" />

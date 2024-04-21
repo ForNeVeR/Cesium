@@ -30,7 +30,7 @@ public static class TestFileVerification
 
     public static void VerifyAllTestsFromAssembly(Assembly assembly)
     {
-        var testClasses = assembly.GetTypes().Where(t => t.GetCustomAttributes<UsesVerifyAttribute>().Any()).ToList();
+        var testClasses = assembly.GetTypes().Where(t => t.IsAssignableTo(typeof(VerifyTestBase))).ToList();
         Verify(testClasses);
     }
 
