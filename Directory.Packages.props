@@ -10,7 +10,7 @@
     <PackageVersion Include="MedallionShell" Version="1.6.2" />
     <PackageVersion Include="Meziantou.Xunit.ParallelTestFramework" Version="2.1.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
     <PackageVersion Include="QuikGraph" Version="2.5.0" />
     <PackageVersion Include="Verify.Xunit" Version="16.3.5" />
     <PackageVersion Include="xunit" Version="2.4.2" />
