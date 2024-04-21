@@ -17,7 +17,7 @@ int main(void)
 
     return x(40);
 
-    // TODO [#196]
+    // TODO[#196]
     // foov_t y = &foov;
     // return (x(40) + y(40, 123, 456, "foo")) / 2;
 }
