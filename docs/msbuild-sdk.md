@@ -14,10 +14,10 @@ Source files are defined with `<Compile>` items, very similar to other .NET lang
 ```xml
 <ItemGroup>
     <Compile Include="hello.c" />
-    <Compile Include="example.c" />
+    <Compile Include="folder/*.c" />
 </ItemGroup>
 ```
-> Note: In the current SDK implementation, compile units should be defined explicitly, in opposite to C# `<Compile>` items.
+> Note: In the current SDK implementation, source files will not be included into compilation implicitly. They should be defined in `<Compile>` items, in opposite to SDK-style C# projects, where all C# source files are implicitly added to the compilation.
 
 ### References
 
@@ -31,7 +31,7 @@ Not supported yet.
 Not supported yet.
 
 ### Preprocessor directives
-`<DefineConstants>` property is directly mapped to a list of preprocessor items. So, you could define such constants in .csproj:
+`<DefineConstants>` property is directly mapped to a list of preprocessor items. So, you could define such constants in `.ceproj`:
 ```xml
 <PropertyGroup>
     <DefineConstants>$(DefineConstants);FOO;BAR</DefineConstants>
@@ -39,7 +39,7 @@ Not supported yet.
 ```
 
 And then use it in your .c code:
-```c++
+```c
 #ifdef FOO
 int foo() { return 0; }
 #endif
