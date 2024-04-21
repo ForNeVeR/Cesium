@@ -14,20 +14,22 @@ public unsafe readonly struct UTF8String
 {
     public readonly static UTF8String NullString = new UTF8String((byte*)0);
 
-    private readonly byte* _value;
+    private readonly long _value;
 
-    public UTF8String(byte* text) => _value = text;
+    public UTF8String(byte* text) => _value = (long)text;
+
+    public byte* Pointer => (byte*)_value;
 
     public byte this[int index]
     {
-        get => _value[index];
-        set => _value[index] = value;
+        get => Pointer[index];
+        set => Pointer[index] = value;
     }
 
     public byte this[nuint index]
     {
-        get => _value[index];
-        set => _value[index] = value;
+        get => Pointer[index];
+        set => Pointer[index] = value;
     }
 
     /// <summary>
@@ -38,7 +40,7 @@ public unsafe readonly struct UTF8String
         get
         {
             nuint length = 0;
-            while (_value[length] != 0) length++;
+            while (Pointer[length] != 0) length++;
             return length;
         }
     }
@@ -51,7 +53,7 @@ public unsafe readonly struct UTF8String
         get
         {
             nuint length = 0;
-            while (_value[length] != 0) length++;
+            while (Pointer[length] != 0) length++;
             return length + 1;
         }
     }
@@ -60,12 +62,12 @@ public unsafe readonly struct UTF8String
     /// <summary>
     /// Creates a Span for the full length of the string
     /// </summary>
-    public Span<byte> Span => new(_value, (int)Length);
+    public Span<byte> Span => new(Pointer, (int)Length);
 
     /// <summary>
     /// Creates Span(ptr, int.MaxValue)
     /// </summary>
-    public Span<byte> UncheckedSpan => new(_value, int.MaxValue);
+    public Span<byte> UncheckedSpan => new(Pointer, int.MaxValue);
 #endif
 
     /// <summary>
@@ -78,7 +80,7 @@ public unsafe readonly struct UTF8String
 
 #if NETSTANDARD
         for(nuint i = 0; i < len; i++)
-            dest[i] = _value[i];
+            dest[i] = this[i];
 #else
         UncheckedSpan.Slice(0, (int)len).CopyTo(dest.UncheckedSpan);
 #endif
@@ -95,7 +97,7 @@ public unsafe readonly struct UTF8String
 
 #if NETSTANDARD
         for (nuint i = 0; i < len; i++)
-            dest[i] = _value[i];
+            dest[i] = this[i];
 #else
         UncheckedSpan.Slice(0, (int)len).CopyTo(dest.UncheckedSpan);
 #endif
@@ -117,18 +119,18 @@ public unsafe readonly struct UTF8String
 #else
         var index = Span.IndexOf(ch);
         if (index == -1) return NullString;
-        return (byte*)Unsafe.AsPointer(ref Unsafe.AddByteOffset(ref Unsafe.AsRef<byte>(_value), (nuint)index));
+        return (byte*)Unsafe.AsPointer(ref Unsafe.AddByteOffset(ref Unsafe.AsRef<byte>(Pointer), (nuint)index));
 #endif
     }
 
-    public UTF8String At(int index) => new UTF8String(_value + index);
-    public UTF8String At(nuint index) => new UTF8String(_value + index);
+    public UTF8String At(int index) => new UTF8String(Pointer + index);
+    public UTF8String At(nuint index) => new UTF8String(Pointer + index);
 
     public override string ToString() => new string((sbyte*)_value);
 
     public static bool operator !(UTF8String str) => (nuint)str._value == 0;
 
-    public static implicit operator byte*(UTF8String str) => str._value;
+    public static implicit operator byte*(UTF8String str) => str.Pointer;
     public static implicit operator IntPtr(UTF8String str) => (IntPtr)str._value;
 
     public static implicit operator UTF8String(byte* p) => new UTF8String(p);
