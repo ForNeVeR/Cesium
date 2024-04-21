@@ -502,7 +502,7 @@ int console_read(struct struct1* s) {
     return s->x;
 }");
 
-    // TODO [#196]
+    // TODO[#196]
     /* [Fact]
     public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
 

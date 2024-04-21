@@ -10,7 +10,7 @@
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Bundle.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
-        <!-- TODO: Do not forget to add info on updating this to the maintainer guide -->
+        <!-- TODO[#571]: Do not forget to add info on updating this to the maintainer guide -->
         <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
