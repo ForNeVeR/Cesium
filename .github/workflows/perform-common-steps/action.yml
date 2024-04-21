@@ -12,7 +12,7 @@ runs:
       uses: actions/cache@v2
       with:
         path: ${{ env.NUGET_PACKAGES }}
-        key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
+        key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
 
     - name: 🛠️ Restore local .NET tools 🛠️
       shell: bash
