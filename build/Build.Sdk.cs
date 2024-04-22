@@ -14,6 +14,7 @@ public partial class Build
     const string _compilerBundlePackagePrefix = "Cesium.Compiler.Bundle";
 
     Target PublishAllCompilerBundles => _ => _
+        .DependsOn(CompileAll)
         .Executes(() =>
         {
             var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
@@ -27,6 +28,7 @@ public partial class Build
         });
 
     Target PublishCompilerBundle => _ => _
+        .DependsOn(CompileAll)
         .Executes(() =>
         {
             PublishCompiler(EffectiveRuntimeId);
@@ -54,6 +56,7 @@ public partial class Build
         });
 
     Target PackSdk => _ => _
+        .DependsOn(CompileAll)
         .Executes(() =>
         {
             var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject();
