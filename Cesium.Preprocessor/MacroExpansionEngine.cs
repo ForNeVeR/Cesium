@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using Cesium.Core;
 using Cesium.Core.Warnings;
@@ -10,6 +11,8 @@ namespace Cesium.Preprocessor;
 
 public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroContext macroContext)
 {
+    private string __VA_OPT__Rule = ",";
+
     public IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {
         using var lexer = new TransactionalLexer(tokens, warningProcessor);
@@ -237,12 +240,13 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
                     var next = ConsumeSignificant();
                     var sequence = ExpandMacros(ProcessTokenNoHash(next));
 
-                    // TODO[#542]: Figure out what to do if the sequence is more than one item.
-                    yield return new Token<CPreprocessorTokenType>(
-                        next.Range,
-                        next.Location,
-                        sequence.Single().Text,
-                        CPreprocessorTokenType.PreprocessingToken);
+                    if (next.Text == "__VA_ARGS__" && !sequence.Any()) // if va_args is empty
+                        PoofComma();
+                    else // if VA_ARGS is not empty, then return its content
+                        foreach (var item in sequence)
+                        {
+                            yield return item;
+                        }
                     break;
                 }
                 default:
@@ -267,6 +271,18 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
             yield return space;
         }
         yield break;
+
+        void PoofComma()
+        {
+            foreach (var tok in lexer.EnumerateInReverse()) // look at previous tokens
+                if (tok.Text == ",") // is that a comma?
+                {
+                    MemoryMarshal.GetReference(tok.Text.AsSpan()) = ' '; // poof and there`s no more comma
+                    break;
+                } // if something separates us from the comma, then we're in the wrong place.
+                else if (tok.Kind is not CPreprocessorTokenType.WhiteSpace and not CPreprocessorTokenType.DoubleHash)
+                    break;
+        }
 
         IToken<CPreprocessorTokenType>? PeekSignificant()
         {
@@ -329,7 +345,7 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
                             yield return new Token<CPreprocessorTokenType>(
                                 new Yoakke.SynKit.Text.Range(),
                                 new Location(),
-                                ",",
+                                __VA_OPT__Rule,
                                 CPreprocessorTokenType.Separator);
                         }
 
@@ -339,6 +355,49 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
 
                     break;
                 }
+                case { Kind: CPreprocessorTokenType.PreprocessingToken, Text: "__VA_OPT__" }:
+                    {
+                        var empty = arguments.VarArg.Count == 1 ?
+                            arguments.VarArg[0].Count == 0 : // bad ghost var arg
+                            arguments.VarArg.Count == 0;
+                        if (empty)
+                            PoofComma();
+
+                        var prevIsComma = empty ? false :
+                            lexer.EnumerateInReverse()
+                            .TakeWhile(_ => string.IsNullOrWhiteSpace(_.Text) || _.Text == ",")
+                            .Any(_ => _.Kind == CPreprocessorTokenType.Separator);
+
+                        var next = ConsumeSignificant();
+                        if (next.Text != "(")
+                            throw new PreprocessorException(token.Location,
+                                "Incorrect use of __VA_OPT__");
+
+                        if (lexer.Peek(1).Text == ")")
+                        {
+                            __VA_OPT__Rule = lexer.Consume().Text;
+                            lexer.Consume();
+
+                            if (!empty & !prevIsComma)
+                                yield return new Token<CPreprocessorTokenType>(
+                                    token.Range,
+                                    token.Location,
+                                    __VA_OPT__Rule,
+                                    CPreprocessorTokenType.Separator);
+                            break;
+                        }
+
+                        while (true)
+                        {
+                            var tok = lexer.Consume();
+                            if (tok.Text == ")") break;
+                            if (empty) continue; // skip to ")" if VA_ARGS is empty
+                            foreach (var t in ProcessTokenNoHash(tok))
+                                yield return t;
+                        }
+
+                        break;
+                    }
                 default:
                     yield return token;
                     break;

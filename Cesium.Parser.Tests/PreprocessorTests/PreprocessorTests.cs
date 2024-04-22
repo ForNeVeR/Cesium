@@ -1029,4 +1029,33 @@ MACRO(1
 2
 3)
 """);
+
+    [Fact]
+    public Task TestDoubleHashVaArgs() => DoTest("""
+#define F(...) f(1, ##__VA_ARGS__)
+F(1,2f,"3",lol);
+F();
+""");
+
+    [Fact]
+    public Task TestVaOptCase1() => DoTest("""
+#define F(...) f(0 __VA_OPT__(,) __VA_ARGS__)
+F(a, b, c)
+F() 
+""");
+
+    [Fact]
+    public Task TestVaOptCase2() => DoTest("""
+#define G(X, ...) f(0, X __VA_OPT__(,) __VA_ARGS__)
+G(a, b, c)
+G(a, )
+G(a)
+""");
+
+    [Fact]
+    public Task TestVaOptCase3() => DoTest("""
+#define SDEF(sname, ...) S sname __VA_OPT__(= { __VA_ARGS__ })
+SDEF(foo);
+SDEF(bar, 1, 2);
+""");
 }

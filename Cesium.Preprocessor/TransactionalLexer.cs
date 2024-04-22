@@ -13,6 +13,7 @@ internal class TransactionalLexer(
     private int _nextTokenToReturn;
     private int _openTransactions;
 
+    public IEnumerable<IToken<CPreprocessorTokenType>> EnumerateInReverse() => _allTokens.Slice(0, _nextTokenToReturn - 1).Reverse<IToken<CPreprocessorTokenType>>();
     public IToken<CPreprocessorTokenType> Consume() => _allTokens[_nextTokenToReturn++];
     public IToken<CPreprocessorTokenType> Peek(int idx = 0) => _allTokens[_nextTokenToReturn + idx];
     public bool IsEnd => _nextTokenToReturn >= _allTokens.Count || Peek() is { Kind: CPreprocessorTokenType.End };
