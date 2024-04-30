@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         return -4;
     }
 
-    // TODO: This test is not portable: on Windows, Cesium and MSVC use different sizes for long.
+    // TODO[#586]: This test is not portable: on Windows, Cesium and MSVC use different sizes for long.
     // int maxULongLengthInChars = sizeof(long) == 4 ? 10 : 20;
     // if (printf("%lu\n", -1L) != maxULongLengthInChars + 1) { // + 1 for \n
     //     return -5;
