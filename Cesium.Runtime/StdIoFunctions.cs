@@ -298,7 +298,6 @@ public unsafe static class StdIoFunctions
                 case "d":
                 case "ld":
                 case "i":
-                case "li":
                     int intValue = (int)((long*)varargs)[consumedArgs];
                     var intValueString = intValue.ToString();
                     if (alwaysSign && intValue > 0)
@@ -319,16 +318,45 @@ public unsafe static class StdIoFunctions
                     consumedBytes += intValueString.Length;
                     consumedArgs++;
                     break;
-                case "u":
-                case "lu":
+                case "li":
+                    long longValue = ((long*)varargs)[consumedArgs];
+                    var longValueString = longValue.ToString();
+                    if (alwaysSign && longValue > 0)
                     {
-                        uint uintValue = (uint)((long*)varargs)[consumedArgs];
-                        var uintValueString = uintValue.ToString();
-                        streamWriter.Write(uintValueString);
-                        consumedBytes += uintValueString.Length;
-                        consumedArgs++;
-                        break;
+                        streamWriter.Write('+');
                     }
+
+                    if (longValueString.Length < precision)
+                    {
+                        streamWriter.Write(new string('0', precision - longValueString.Length));
+                    }
+
+                    if (precision != 0 || longValue != 0)
+                    {
+                        streamWriter.Write(longValueString);
+                    }
+
+                    consumedBytes += longValueString.Length;
+                    consumedArgs++;
+                    break;
+                case "u":
+                {
+                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                    var uintValueString = uintValue.ToString();
+                    streamWriter.Write(uintValueString);
+                    consumedBytes += uintValueString.Length;
+                    consumedArgs++;
+                    break;
+                }
+                case "lu":
+                {
+                    ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
+                    var ulongValueString = ulongValue.ToString();
+                    streamWriter.Write(ulongValueString);
+                    consumedBytes += ulongValueString.Length;
+                    consumedArgs++;
+                    break;
+                }
                 case "f":
                     {
                         var floatNumber = ((double*)varargs)[consumedArgs];
