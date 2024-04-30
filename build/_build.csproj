@@ -22,6 +22,9 @@
       <Compile Update="Build.Tests.cs">
         <DependentUpon>Build.cs</DependentUpon>
       </Compile>
+      <Compile Update="Build.Templates.cs">
+        <DependentUpon>Build.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>
