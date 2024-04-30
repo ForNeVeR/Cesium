@@ -1,0 +1,9 @@
+<Project Sdk="Cesium.Sdk/CesiumVersion">
+    <PropertyGroup>
+        <TargetFramework>Tfm</TargetFramework>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="lib.c" />
+    </ItemGroup>
+</Project>
