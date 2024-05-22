@@ -24,7 +24,7 @@
     <PackageVersion Include="Yoakke.SynKit.Text" Version="2024.1.6-15.18.30-nightly" />
     <PackageVersion Include="Nuke.Common" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Build" Version="17.9.5" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="17.9.5" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.9.5" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="17.10.4" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.10.4" />
   </ItemGroup>
 </Project>
