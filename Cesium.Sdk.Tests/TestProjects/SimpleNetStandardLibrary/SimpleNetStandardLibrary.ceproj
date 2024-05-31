@@ -3,7 +3,4 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <OutputType>Library</OutputType>
     </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="library.c" />
-    </ItemGroup>
 </Project>
