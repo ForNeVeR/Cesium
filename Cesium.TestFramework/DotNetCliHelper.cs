@@ -49,6 +49,17 @@ public static class DotNetCliHelper
             .ToDictionary(property => property.Name, property => property.Value.GetString() ?? string.Empty);
     }
 
+    public static async Task<IEnumerable<(string identity, string? fullPath)>> EvaluateMSBuildItem(ITestOutputHelper output, string projectPath, string itemName)
+    {
+        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ]);
+        var resultString = result.StandardOutput;
+        var resultJson = JsonDocument.Parse(resultString);
+        var itemsJson = resultJson.RootElement.GetProperty("Items").EnumerateObject().ToArray();
+        var itemsDict = itemsJson.ToDictionary(item => item.Name, item => item.Value.EnumerateArray());
+
+        return itemsDict[itemName].Select(meta => (meta.GetProperty("Identity").GetString()!, meta.GetProperty("FullPath").GetString()));
+    }
+
     public static Task<CommandResult> RunDotNetDll(
         ITestOutputHelper output,
         string workingDirectoryPath,

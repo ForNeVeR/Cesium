@@ -3,7 +3,4 @@
         <TargetFramework>net48</TargetFramework>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="hello.c" />
-    </ItemGroup>
 </Project>

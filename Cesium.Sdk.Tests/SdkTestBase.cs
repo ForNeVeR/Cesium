@@ -117,6 +117,15 @@ public abstract class SdkTestBase : IDisposable
         }
     }
 
+    protected async Task<IEnumerable<string>> ListItems(string projectName, string itemName)
+    {
+        var projectFile = $"{projectName}/{projectName}.ceproj";
+        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
+        var items = await DotNetCliHelper.EvaluateMSBuildItem(_testOutputHelper, testProjectFile, itemName);
+
+        return items.Select(i => i.identity);
+    }
+
     private static void EmitNuGetConfig(string configFilePath, string packageSourcePath)
     {
         File.WriteAllText(configFilePath, $"""
