@@ -1,7 +1,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup Label="SdkCustomization">
-        <EnableDefaultItems>false</EnableDefaultItems>
+        <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        <EnableDefaultItems>true</EnableDefaultItems>
+        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+        <EnableDefaultContentItems>false</EnableDefaultContentItems>
+        <EnableDefaultPRIResourceItems>false</EnableDefaultPRIResourceItems>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+        <DefaultLanguageSourceExtension>.c</DefaultLanguageSourceExtension>
     </PropertyGroup>
 
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -14,6 +20,11 @@
         <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
+
+    <ItemGroup Label="DefaultItems">
+        <!-- .c files are included by the Microsoft.NET.Sdk using DefaultLanguageSourceExtension, but .h ones are not -->
+        <Compile Include="**/*.h" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition="$(EnableDefaultCompileItems) == 'true'" />
+    </ItemGroup>
 
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <PackageReference Include="$(CesiumCompilerPackageName)"
