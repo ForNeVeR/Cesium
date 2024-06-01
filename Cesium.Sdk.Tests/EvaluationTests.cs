@@ -9,10 +9,10 @@ namespace Cesium.Sdk.Tests;
 public class EvaluationTests(ITestOutputHelper testOutputHelper) : SdkTestBase(testOutputHelper)
 {
     [Theory]
-    [InlineData("SimpleCoreExe")]
+    [InlineData("SimpleCoreLibraryWithHeader")]
     public async Task Evaluation_EnableDefaultCompileItems(string projectName)
     {
-        HashSet<string> expectedCompileItems = ["hello.c"];
+        HashSet<string> expectedCompileItems = ["library.c", "library.h"];
 
         var items = await ListItems(projectName, "Compile");
 
@@ -20,7 +20,7 @@ public class EvaluationTests(ITestOutputHelper testOutputHelper) : SdkTestBase(t
     }
 
     [Theory]
-    [InlineData("SimpleDisableDefaultCompileItems")]
+    [InlineData("SimpleExplicitCompileItems")]
     public async Task Evaluation_DisableDefaultCompileItems(string projectName)
     {
         HashSet<string> expectedCompileItems = ["hello.c"];
