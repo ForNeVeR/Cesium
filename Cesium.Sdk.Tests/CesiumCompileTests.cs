@@ -58,6 +58,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
     [Theory]
     [InlineData("SimpleCoreLibrary")]
     [InlineData("SimpleNetStandardLibrary")]
+    [InlineData("SimpleCoreLibraryWithHeader")]
     public async Task CesiumCompile_Core_Library_ShouldSucceed(string projectName)
     {
         string[] expectedObjArtifacts =
