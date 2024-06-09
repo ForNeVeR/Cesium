@@ -13,10 +13,10 @@ public abstract class SdkTestBase : IDisposable
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-    protected string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
-    protected string GlobalJsonPath => Path.Combine(_temporaryPath, "global.json");
+    private string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
+    private string GlobalJsonPath => Path.Combine(_temporaryPath, "global.json");
 
-    public SdkTestBase(ITestOutputHelper testOutputHelper)
+    protected SdkTestBase(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
 
@@ -55,12 +55,16 @@ public abstract class SdkTestBase : IDisposable
             RedirectStandardError = true,
             CreateNoWindow = true,
             UseShellExecute = false,
+            Environment =
+            {
+                ["NUGET_PACKAGES"] = Path.Combine(_temporaryPath, "package-cache")
+            }
         };
 
         using var process = new Process();
         process.StartInfo = startInfo;
 
-        process.OutputDataReceived += (sender, e) =>
+        process.OutputDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
@@ -68,7 +72,7 @@ public abstract class SdkTestBase : IDisposable
             }
         };
 
-        process.ErrorDataReceived += (sender, e) =>
+        process.ErrorDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
@@ -81,7 +85,7 @@ public abstract class SdkTestBase : IDisposable
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        process.WaitForExit();
+        await process.WaitForExitAsync();
 
         var success = process.ExitCode == 0;
 
@@ -117,9 +121,6 @@ public abstract class SdkTestBase : IDisposable
     {
         File.WriteAllText(configFilePath, $"""
             <configuration>
-                <config>
-                    <add key="globalPackagesFolder" value="packages" />
-                </config>
                 <packageSources>
                     <add key="local" value="{packageSourcePath}" />
                </packageSources>
