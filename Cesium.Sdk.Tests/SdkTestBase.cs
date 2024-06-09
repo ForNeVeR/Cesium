@@ -12,6 +12,7 @@ public abstract class SdkTestBase : IDisposable
 {
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    private readonly Dictionary<string, string> _dotNetEnvVars;
 
     private string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
     private string GlobalJsonPath => Path.Combine(_temporaryPath, "global.json");
@@ -19,6 +20,7 @@ public abstract class SdkTestBase : IDisposable
     protected SdkTestBase(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
+        _dotNetEnvVars = new() { ["NUGET_PACKAGES"] = Path.Combine(_temporaryPath, "package-cache") };
 
         File.Delete(_temporaryPath);
 
@@ -55,11 +57,11 @@ public abstract class SdkTestBase : IDisposable
             RedirectStandardError = true,
             CreateNoWindow = true,
             UseShellExecute = false,
-            Environment =
-            {
-                ["NUGET_PACKAGES"] = Path.Combine(_temporaryPath, "package-cache")
-            }
         };
+        foreach (var (name, var) in _dotNetEnvVars)
+        {
+            startInfo.Environment[name] = var;
+        }
 
         using var process = new Process();
         process.StartInfo = startInfo;
@@ -93,7 +95,12 @@ public abstract class SdkTestBase : IDisposable
             ? "Build succeeded"
             : $"Build failed with exit code {process.ExitCode}");
 
-        var properties = await DotNetCliHelper.EvaluateMSBuildProperties(_testOutputHelper, testProjectFile, objFolderPropertyName, binFolderPropertyName);
+        var properties = await DotNetCliHelper.EvaluateMSBuildProperties(
+            _testOutputHelper,
+            testProjectFile,
+            env: _dotNetEnvVars,
+            objFolderPropertyName,
+            binFolderPropertyName);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
         var binFolder = NormalizePath(Path.GetFullPath(properties[binFolderPropertyName], testProjectFolder));
@@ -121,7 +128,7 @@ public abstract class SdkTestBase : IDisposable
     {
         var projectFile = $"{projectName}/{projectName}.ceproj";
         var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
-        var items = await DotNetCliHelper.EvaluateMSBuildItem(_testOutputHelper, testProjectFile, itemName);
+        var items = await DotNetCliHelper.EvaluateMSBuildItem(_testOutputHelper, testProjectFile, itemName, env: _dotNetEnvVars);
 
         return items.Select(i => i.identity);
     }

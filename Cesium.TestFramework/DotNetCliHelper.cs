@@ -32,12 +32,21 @@ public static class DotNetCliHelper
         return result.StandardOutput;
     }
 
-    public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(ITestOutputHelper output, string projectPath, params string[] propertyNames)
+    public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(
+        ITestOutputHelper output,
+        string projectPath,
+        IReadOnlyDictionary<string, string>? env = null,
+        params string[] propertyNames)
     {
         if (!propertyNames.Any())
             return new Dictionary<string, string>();
 
-        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ]);
+        var result = await ExecUtil.Run(
+            output,
+            "dotnet",
+            Environment.CurrentDirectory,
+            [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ],
+            env);
         var resultString = result.StandardOutput;
         if (propertyNames.Length == 1)
             return new Dictionary<string, string> { { propertyNames[0], resultString } };
@@ -49,9 +58,18 @@ public static class DotNetCliHelper
             .ToDictionary(property => property.Name, property => property.Value.GetString() ?? string.Empty);
     }
 
-    public static async Task<IEnumerable<(string identity, string? fullPath)>> EvaluateMSBuildItem(ITestOutputHelper output, string projectPath, string itemName)
+    public static async Task<IEnumerable<(string identity, string? fullPath)>> EvaluateMSBuildItem(
+        ITestOutputHelper output,
+        string projectPath,
+        string itemName,
+        IReadOnlyDictionary<string, string>? env = null)
     {
-        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ]);
+        var result = await ExecUtil.Run(
+            output,
+            "dotnet",
+            Environment.CurrentDirectory,
+            [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ],
+            env);
         var resultString = result.StandardOutput;
         var resultJson = JsonDocument.Parse(resultString);
         var itemsJson = resultJson.RootElement.GetProperty("Items").EnumerateObject().ToArray();
