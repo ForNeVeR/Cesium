@@ -15,7 +15,7 @@
     <PackageVersion Include="Verify.Xunit" Version="25.3.0" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.assert" Version="2.9.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="Yoakke.SynKit.C.Syntax" Version="2024.1.6-15.18.30-nightly" />
     <PackageVersion Include="Yoakke.SynKit.Lexer" Version="2024.1.6-15.18.30-nightly" />
     <PackageVersion Include="Yoakke.SynKit.Lexer.Generator" Version="2024.1.6-15.18.30-nightly" />
