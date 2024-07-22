@@ -495,6 +495,39 @@ int foo() { return 0; }
 "));
     }
 
+    [Fact, NoVerify]
+    public Task IfUndefinedVariable() => DoPreprocess(
+            """
+            #if FOO
+            int a = 1;
+            #endif
+            """
+        );
+
+    [Fact]
+    public Task IgnoreIfExpressionWithUndefinedVariable() => DoTest(
+        """
+        #if FOO
+        int a = 1;
+        #endif
+        """
+    );
+
+    [Fact, NoVerify]
+    public async Task IfWithNoExpressionThrowsError()
+    {
+        var ex = await Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(
+            """
+            #define FOO
+            #if FOO
+            int a = 1;
+            #endif
+            """
+        ));
+
+        Assert.Contains("No value provided where an integer was expected", ex.Message);
+    }
+
     [Fact]
     public Task IfExpressionEqualsLiteral() => DoTest(
 @"#define mycondition 1
