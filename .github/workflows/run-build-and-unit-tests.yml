@@ -25,15 +25,23 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
     steps:
       - name: 📝 Fetch Sources 📝
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: 💡 Perform Common Steps 💡
         uses: ./.github/workflows/perform-common-steps
 
       - name: 🛠 Build Solution 🛠
         shell: bash
-        run: dotnet build
+        run: dotnet nuke CompileAll
+
+      - name: 🚚 Publish Compiler Bundle 🚚
+        shell: bash
+        run: dotnet nuke PublishCompilerBundle
+
+      - name: 📦 Pack Compiler Bundle 📦
+        shell: bash
+        run: dotnet nuke PackCompilerBundle
 
       - name: ✅ Run Unit Tests ✅
         shell: bash
-        run: dotnet test
+        run: dotnet nuke TestAll

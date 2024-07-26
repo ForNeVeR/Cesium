@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MedallionShell" />
+        <PackageReference Include="Microsoft.Build" />
+        <PackageReference Include="Microsoft.Build.Tasks.Core" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" >
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="TestProjects\**\*" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Cesium.Sdk\Cesium.Sdk.csproj" />
+      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
+    </ItemGroup>
+
+</Project>

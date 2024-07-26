@@ -1,0 +1,112 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' "/>
+
+    <PropertyGroup Label="RuntimeConfig">
+        <GenerateRuntimeConfigurationFiles Condition="$(OutputType) != 'Library'">true</GenerateRuntimeConfigurationFiles>
+        <GenerateRuntimeConfigurationFiles Condition="$(OutputType) == 'Library'">false</GenerateRuntimeConfigurationFiles>
+    </PropertyGroup>
+
+    <PropertyGroup Label="CompilerInstallationProperties" Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
+        <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
+        <_CesiumCompilerPackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</_CesiumCompilerPackagePath>
+        <CesiumCompilerPath Condition="$(OS) != 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)/tools/Cesium.Compiler</CesiumCompilerPath>
+        <CesiumCompilerPath Condition="$(OS) == 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)\tools\Cesium.Compiler.exe</CesiumCompilerPath>
+    </PropertyGroup>
+
+    <Target Name="CheckCompilerPath" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Missing path to a Cesium compiler. Either set 'SkipCesiumCompilerInstallation' property to 'false' or specify path directly using 'CesiumCompilerPath' property."
+               Condition="$(SkipCesiumCompilerInstallation) == 'true' AND $(CesiumCompilerPath) == ''" />
+    </Target>
+
+    <!-- Stub out targets required by the Microsoft.NET.Sdk -->
+    <Target Name="CreateManifestResourceNames"/>
+
+    <Target Name="LocateRuntimeAssembly" AfterTargets="ResolveAssemblyReferences" Condition="$(CesiumCoreLibAssemblyPath) == ''">
+        <ItemGroup>
+            <_CoreLibAssembly Include="@(ReferencePath)" Condition="'%(ReferencePath.AssemblyName)'=='System.Runtime' OR '%(ReferencePath.AssemblyName)'=='mscorlib'" />
+        </ItemGroup>
+        <PropertyGroup>
+            <CesiumCoreLibAssemblyPath>%(_CoreLibAssembly.Identity)</CesiumCoreLibAssemblyPath>
+        </PropertyGroup>
+    </Target>
+
+    <PropertyGroup Label="MapOutputType" Condition="$(_CesiumModuleKind) == ''">
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Exe'">Console</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'WinExe'">Windows</_CesiumModuleKind>
+        <_CesiumModuleKind Condition="'$(OutputType)' == 'Library'">Dll</_CesiumModuleKind>
+    </PropertyGroup>
+
+    <Target Name="CheckModuleKind" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported OutputType: $(OutputType), Supported OutputTypes are: Exe, WinExe and Dll."
+               Condition="'$(_CesiumModuleKind)' == ''" />
+    </Target>
+
+    <PropertyGroup Label="MapTargetFramework" Condition="$(_CesiumFramework) == ''">
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">Net</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">NetFramework</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">NetStandard</_CesiumFramework>
+    </PropertyGroup>
+
+    <Target Name="CheckFramework" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported TargetFramework: $(TargetFramework). Supported frameworks are: net6.0, netstandard2.0 and net48."
+               Condition="'$(_CesiumFramework)' == ''" />
+    </Target>
+
+    <PropertyGroup Label="MapArchitecture" Condition="$(_CesiumArchitecture) == ''">
+        <_CesiumArchitecture Condition="'$(Platform)' == 'AnyCPU'">Dynamic</_CesiumArchitecture>
+        <_CesiumArchitecture Condition="'$(Platform)' == 'x64'">Bit64</_CesiumArchitecture>
+        <_CesiumArchitecture Condition="'$(Platform)' == 'x86'">Bit32</_CesiumArchitecture>
+    </PropertyGroup>
+
+    <Target Name="CheckArchitecture" BeforeTargets="CesiumValidateProperties">
+        <Error Text="Unsupported Platform: $(Platform). Supported platforms are: AnyCPU, x64 and x86."
+               Condition="'$(_CesiumFramework)' == ''" />
+    </Target>
+
+    <PropertyGroup>
+        <_CompilerOutputBase>$(IntermediateOutputPath)$(AssemblyName)</_CompilerOutputBase>
+        <_CompilerOutputExtenion>dll</_CompilerOutputExtenion>
+        <!-- Exe and WinExe in netfx expects .exe to copy output task -->
+        <_CompilerOutputExtenion Condition="$(_CesiumFramework) == 'NetFramework' AND $(OutputType) != 'Library'">exe</_CompilerOutputExtenion>
+        <_CompilerOutput>$(_CompilerOutputBase).$(_CompilerOutputExtenion)</_CompilerOutput>
+    </PropertyGroup>
+
+    <Target Name="CesiumValidateProperties" BeforeTargets="CesiumCompile"/>
+
+    <Target Name="CesiumCompile" BeforeTargets="CoreCompile"
+            Inputs="@(Compile)"
+            Outputs="$(_CompilerOutput)">
+
+<!--        <ResolvePackageAssets ProjectPath="$(MSBuildProjectFullPath)"-->
+<!--                              TargetFramework="$(TargetFramework)"-->
+<!--                              RuntimeIdentifier="$(RuntimeIdentifier)"-->
+<!--                              ProjectAssetsFile="$(ProjectAssetsFile)"-->
+<!--                              ProjectAssetsCacheFile="$(ProjectAssetsCacheFile)"-->
+<!--                              DotNetAppHostExecutableNameWithoutExtension="$(_DotNetAppHostExecutableNameWithoutExtension)"-->
+<!--                              DefaultImplicitPackages="$(DefaultImplicitPackages)">-->
+<!--            <Output TaskParameter="ResolvedCompileTimeAssemblies" ItemName="_CesiumImport"/>-->
+<!--        </ResolvePackageAssets>-->
+
+        <!-- TODO[seclerp]: Add ability to set DryRun -->
+        <!-- TODO[seclerp]: Add import items -->
+        <CesiumCompile
+            CompilerExe="$(CesiumCompilerPath)"
+            InputFiles="@(Compile)"
+            OutputFile="$(_CompilerOutput)"
+            Namespace="$(RootNamespace)"
+            Framework="$(_CesiumFramework)"
+            Architecture="$(_CesiumArchitecture)"
+            ModuleType="$(_CesiumModuleKind)"
+            CoreLibPath="$(CesiumCoreLibAssemblyPath)"
+            PreprocessorItems="$(DefineConstants.Split(';'))">
+            <Output TaskParameter="ResultingCommandLine" PropertyName="_CesiumResultingCommandLine"/>
+            <Output TaskParameter="OutputFiles" PropertyName="_CesiumOutputFile"/>
+        </CesiumCompile>
+
+    </Target>
+
+    <!-- Integrate with .NET build infrastructure -->
+    <Target Name="CoreCompile" />
+
+</Project>

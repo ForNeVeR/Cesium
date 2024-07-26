@@ -4,16 +4,20 @@ runs:
   using: "composite"
   steps:
     - name: ⚙ Setup .NET SDK ⚙
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.x'
+        global-json-file: global.json
 
     - name: ♻ NuGet Cache ♻
       uses: actions/cache@v2
       with:
         path: ${{ env.NUGET_PACKAGES }}
-        key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj') }}
+        key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
+
+    - name: 🛠️ Restore local .NET tools 🛠️
+      shell: bash
+      run: dotnet tool restore
 
     - name: 🔄 Restore Nuget Packages 🔄
       shell: bash
-      run: dotnet restore
+      run: dotnet nuke RestoreAll

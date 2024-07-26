@@ -1,0 +1,43 @@
+﻿System.Int32 <Module>::main(System.Int32 argc, System.Byte** argv)
+  IL_0000: ldc.i4.0
+  IL_0001: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>(System.String[] args)
+  Locals:
+    System.Int32 V_0
+    System.Byte*[] V_1
+    System.Byte*[] V_2
+    System.Byte*[] (pinned) V_3
+    System.Int32 V_4
+  IL_0000: ldarg.0
+  IL_0001: ldlen
+  IL_0002: ldc.i4.1
+  IL_0003: add
+  IL_0004: stloc.0
+  IL_0005: ldarg.0
+  IL_0006: call System.Byte*[] Cesium.Runtime.RuntimeHelpers::ArgsToArgv(System.String[])
+  IL_000b: stloc.1
+  IL_000c: ldloc.1
+  IL_000d: ldlen
+  IL_000e: newarr System.Byte*
+  IL_0013: stloc.2
+  IL_0014: ldloc.1
+  IL_0015: ldloc.2
+  IL_0016: ldc.i4.0
+  IL_0017: call System.Void System.Array::CopyTo(System.Array,System.Int32)
+  IL_001c: ldloc.0
+  IL_001d: ldloc.2
+  IL_001e: stloc.3
+  IL_001f: ldloc.3
+  IL_0020: ldc.i4.0
+  IL_0021: ldelema System.Byte*
+  IL_0026: call System.Int32 <Module>::main(System.Int32,System.Byte**)
+  IL_002b: stloc.s V_4
+  IL_002d: ldnull
+  IL_002e: stloc.3
+  IL_002f: ldloc.1
+  IL_0030: call System.Void Cesium.Runtime.RuntimeHelpers::FreeArgv(System.Byte*[])
+  IL_0035: ldloc.s V_4
+  IL_0037: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_003c: ldloc.s V_4
+  IL_003e: ret

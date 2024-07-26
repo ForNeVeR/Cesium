@@ -1,0 +1,6 @@
+<Project Sdk="Cesium.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+</Project>

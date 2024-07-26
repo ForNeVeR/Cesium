@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="Cesium.Solution.Metadata.SolutionMetadataAttribute">
+            <_Parameter1>$(CesiumSourceRoot)</_Parameter1>
+            <_Parameter2>$(ArtifactsPath)</_Parameter2>
+            <_Parameter3>$(VersionPrefix)</_Parameter3>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+</Project>

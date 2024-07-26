@@ -171,6 +171,24 @@ int main() {
 """);
 
     [Fact]
+    public Task SignedByteArrayTest() => DoTest(@"
+int main() {
+    signed char x[1] = { -1 };
+    signed char y = x[0];
+    int z = (int)y;
+    return z;
+}");
+
+    [Fact]
+    public Task UnSignedByteArrayTest2() => DoTest(@"
+int main() {
+    unsigned char a[1] = { 255 };
+    unsigned char b = a[0];
+    int c = (int)b;
+    return c;
+}");
+
+    [Fact]
     public Task PointerAsArray() => DoTest("""
 int main(void)
 {

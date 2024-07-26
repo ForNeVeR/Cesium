@@ -1,6 +1,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
@@ -12,7 +13,7 @@ internal abstract class FunctionCallExpressionBase : IExpression
     public abstract void EmitTo(IEmitScope scope);
     public abstract IType GetExpressionType(IDeclarationScope scope);
 
-    protected void EmitArgumentList(IEmitScope scope, ParametersInfo? paramInfo, IReadOnlyList<IExpression> arguments)
+    protected void EmitArgumentList(IEmitScope scope, ParametersInfo? paramInfo, IReadOnlyList<IExpression> arguments, MethodReference? method = null)
     {
         var explicitParametersCount = paramInfo?.Parameters.Count ?? 0;
         var varArgParametersCount = arguments.Count - explicitParametersCount;
@@ -39,8 +40,28 @@ internal abstract class FunctionCallExpressionBase : IExpression
             scope.AddInstruction(OpCodes.Stloc, varArgBuffer);
         }
 
+        var counter = 0;
         foreach (var argument in arguments.Take(explicitParametersCount))
+        {
             argument.EmitTo(scope);
+            if (paramInfo?.IsVarArg != true && method != null)
+            {
+                var passedArg = argument.GetExpressionType((IDeclarationScope)scope).Resolve(scope.Context);
+                var actualArg = method.Parameters[counter].ParameterType;
+                counter++;
+                if (passedArg.FullName != actualArg.FullName)
+                {
+                    //var conversion = actualArg.Resolve().Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
+                    //    method.ReturnType == actualArg && method.Parameters[0].ParameterType == passedArg); <--- exception :(
+                    //if (conversion == null)
+                    //    continue;
+                    var conversion = new MethodReference("op_Implicit", actualArg, actualArg); // Gentlemen are taken at their word.
+                    conversion.Parameters.Add(new(passedArg));
+
+                    scope.AddInstruction(OpCodes.Call, conversion);
+                }
+            }
+        }
 
         if (paramInfo?.IsVarArg == true)
         {

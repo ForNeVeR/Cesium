@@ -1,23 +1,31 @@
 using System.Collections.Immutable;
+using System.Text;
 using Cesium.Preprocessor;
 
 namespace Cesium.Compiler;
 
-public sealed class FileSystemIncludeContext : IIncludeContext
+public sealed class FileSystemIncludeContext(string stdLibDirectory, IEnumerable<string> currentDirectory)
+    : IIncludeContext
 {
-    private readonly string _stdLibDirectory;
-    private readonly ImmutableArray<string> _userIncludeDirectories;
+    private readonly ImmutableArray<string> _userIncludeDirectories = [..currentDirectory];
     private readonly List<string> _guardedIncludedFiles = new();
 
-    public FileSystemIncludeContext(string stdLibDirectory, IEnumerable<string> currentDirectory)
+    public override string ToString()
     {
-        _stdLibDirectory = stdLibDirectory;
-        _userIncludeDirectories = currentDirectory.ToImmutableArray();
+        var result = new StringBuilder();
+        result.AppendLine($"Standard library directory: \"{stdLibDirectory}\"");
+        result.Append("User include directories: [\n");
+        foreach (var dir in _userIncludeDirectories)
+        {
+            result.Append($"\"{dir}\"\n");
+        }
+        result.Append("]");
+        return result.ToString();
     }
 
     public string LookUpAngleBracedIncludeFile(string filePath)
     {
-        var path = Path.Combine(_stdLibDirectory, filePath);
+        var path = Path.Combine(stdLibDirectory, filePath);
         if (File.Exists(path))
             return Path.GetFullPath(path);
 
@@ -41,7 +49,7 @@ public sealed class FileSystemIncludeContext : IIncludeContext
                 return Path.GetFullPath(path);
         }
 
-        path = Path.Combine(_stdLibDirectory, filePath);
+        path = Path.Combine(stdLibDirectory, filePath);
         return Path.GetFullPath(path);
     }
 

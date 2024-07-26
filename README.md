@@ -38,6 +38,7 @@ Documentation
 - [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
+- [Cesium SDK][docs.msbuild-sdk]
 - [Architecture Sets][docs.architecture-sets]
 - [CLI-Related Language Extensions][docs.language-extensions]
 - [Built-in Functions][docs.builtins]
@@ -115,6 +116,7 @@ If you're interested in certain project areas, check the per-area issue labels:
 [docs.builtins]: docs/builtins.md
 [docs.contributing]: CONTRIBUTING.md
 [docs.design-notes]: docs/design-notes.md
+[docs.msbuild-sdk]: docs/msbuild-sdk.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license]: LICENSE.md

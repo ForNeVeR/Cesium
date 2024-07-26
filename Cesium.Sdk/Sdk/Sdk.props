@@ -1,0 +1,45 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="SdkCustomization">
+        <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        <EnableDefaultItems>true</EnableDefaultItems>
+        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+        <EnableDefaultContentItems>false</EnableDefaultContentItems>
+        <EnableDefaultPRIResourceItems>false</EnableDefaultPRIResourceItems>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+        <DefaultLanguageSourceExtension>.c</DefaultLanguageSourceExtension>
+    </PropertyGroup>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+    <PropertyGroup Label="DefaultProperties">
+        <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
+        <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
+        <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Bundle.$(NETCoreSdkRuntimeIdentifier)</CesiumCompilerPackageName>
+        <!-- TODO[#571]: Do not forget to add info on updating this to the maintainer guide -->
+        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.0.1</CesiumCompilerPackageVersion>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    </PropertyGroup>
+
+    <ItemGroup Label="DefaultItems">
+        <!-- .c files are included by the Microsoft.NET.Sdk using DefaultLanguageSourceExtension, but .h ones are not -->
+        <Compile Include="**/*.h" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition="$(EnableDefaultCompileItems) == 'true'" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
+        <PackageReference Include="$(CesiumCompilerPackageName)"
+                          Version="$(CesiumCompilerPackageVersion)"
+                          PrivateAssets="all"
+                          ExcludeAssets="runtime"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" $(SkipCesiumRuntimeInstallation) != 'true' ">
+        <PackageReference Include="Cesium.Runtime"
+                          Version="$(CesiumCompilerPackageVersion)"
+                          PrivateAssets="all"/>
+    </ItemGroup>
+
+    <UsingTask TaskName="Cesium.Sdk.CesiumCompile"
+               AssemblyFile="$(MSBuildThisFileDirectory)..\tools\Cesium.Sdk.dll"/>
+
+</Project>

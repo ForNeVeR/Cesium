@@ -83,7 +83,7 @@ public record CPreprocessor(
                 {
                     throw new PreprocessorException(
                         filePathToken.Location,
-                        $"Cannot find file {filePath} for include directive.");
+                        $"Cannot find file {filePath} for include directive. Include context: {IncludeContext}");
                 }
                 await foreach (var token in ProcessInclude(includeFilePath, reader))
                 {

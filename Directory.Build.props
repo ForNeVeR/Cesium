@@ -7,4 +7,10 @@
         <WarningsAsErrors>nullable</WarningsAsErrors>
         <LangVersion>12.0</LangVersion>
     </PropertyGroup>
+    <PropertyGroup Label="Artifacts">
+        <UseArtifactsOutput>true</UseArtifactsOutput>
+    </PropertyGroup>
+    <PropertyGroup Label="Navigation">
+        <CesiumSourceRoot>$(MSBuildThisFileDirectory)</CesiumSourceRoot>
+    </PropertyGroup>
 </Project>

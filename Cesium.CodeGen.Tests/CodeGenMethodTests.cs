@@ -77,6 +77,9 @@ int main()
     [Fact] public Task VoidParameterMain() => DoTest("int main(void){}");
     [Fact] public Task PointerReceivingFunction() => DoTest("void foo(int *ptr){}");
     [Fact] public Task StandardMain() => DoTest("int main(int argc, char *argv[]){}");
+    [Fact] public Task PointerPointerMain() => DoTest("int main(int argc, char **argv){}");
+    [Fact] public Task ConstConstMain() => DoTest("int main(int argc, const char * const *argv){}");
+    [Fact] public Task ConstArgcMain() => DoTest("int main(const int argc, char* argv[]){}");
     [Fact, NoVerify] public void NonstandardMainDoesNotCompile1() => DoesNotCompile("void main(){}", "Invalid return type");
     [Fact, NoVerify] public void NonstandardMainDoesNotCompile2() => DoesNotCompile("int main(int c){}", "Invalid parameter");
     [Fact, NoVerify]
@@ -109,6 +112,16 @@ int main() { foo x,x2; x2.x=0; }");
     return x + 2;
 }
 ");
+
+    [Fact]
+    public Task UnaryPlusAndStart() => DoTest(@"
+int main() {
+    short a = -2;
+    short* b = &a;
+    short c = *b;
+    int x = (+c) - (+1) - (-1);
+    return sizeof(+c);
+} ");
 
     [Fact]
     public Task ReturnWithoutArgument() => DoTest(@"void console_read()
@@ -492,7 +505,7 @@ int console_read(struct struct1* s) {
     return s->x;
 }");
 
-    // TODO [#196]
+    // TODO[#196]
     /* [Fact]
     public Task VarargFunctionPointerCallTest() => DoTest(@"int foo(int a, ...) { return a; }
 

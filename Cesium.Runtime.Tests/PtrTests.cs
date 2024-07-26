@@ -28,6 +28,15 @@ public unsafe class PtrTests
     {
         var a = new FuncPtr<Action>((void*)0x1234);
         Assert.Equal(0x1234L, (long)a.AsPtr());
-        Assert.Equal(sizeof(long), sizeof(FuncPtr<Action>));
+        Assert.Equal(sizeof(IntPtr), sizeof(FuncPtr<Action>));
+
+        FuncPtr<Func<int>> funcPtr = (Func<int>)SomeAnonFunc;
+        var func = SomeAnonFunc;
+        Assert.Equal(funcPtr.AsDelegate()(), func());
+
+        funcPtr = (delegate*<int>)&SomeAnonFunc;
+        Assert.Equal(funcPtr.AsDelegate()(), func());
+
+        static int SomeAnonFunc() => 5;
     }
 }

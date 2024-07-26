@@ -17,6 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F6830-E724-4B3A-BFDC-3FA1301A59D0}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
@@ -61,6 +64,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2
 		docs\tests.md = docs\tests.md
 		docs\type-system.md = docs\type-system.md
 		docs\design-notes.md = docs\design-notes.md
+		docs\msbuild-sdk.md = docs\msbuild-sdk.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
@@ -76,11 +80,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perform-common-steps", "per
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Core", "Cesium.Core\Cesium.Core.csproj", "{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Sdk", "Cesium.Sdk\Cesium.Sdk.csproj", "{736A7F26-F507-48C5-BF48-3726EA2399CB}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Runtime.Tests", "Cesium.Runtime.Tests\Cesium.Runtime.Tests.csproj", "{526D8E61-6143-490F-BB9D-E7CD78512E55}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Compiler.Tests", "Cesium.Compiler.Tests\Cesium.Compiler.Tests.csproj", "{A5E33E79-E710-4F2F-838F-20CD0A3142F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.TestFramework.Tests", "Cesium.TestFramework.Tests\Cesium.TestFramework.Tests.csproj", "{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Sdk.Tests", "Cesium.Sdk.Tests\Cesium.Sdk.Tests.csproj", "{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Solution.Metadata", "Cesium.Solution.Metadata\Cesium.Solution.Metadata.csproj", "{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{05416E66-3615-4ABB-A130-F37EC18785A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{F59EF607-B888-4FC2-8148-43B019F33C7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Templates.CSharp", "Cesium.Templates.CSharp\Cesium.Templates.CSharp.csproj", "{D26ED37B-1F41-4001-8755-47026763A32A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +104,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05416E66-3615-4ABB-A130-F37EC18785A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05416E66-3615-4ABB-A130-F37EC18785A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -144,6 +162,22 @@ Global
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D26ED37B-1F41-4001-8755-47026763A32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D26ED37B-1F41-4001-8755-47026763A32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D26ED37B-1F41-4001-8755-47026763A32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D26ED37B-1F41-4001-8755-47026763A32A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,6 +185,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C08E4851-DE2E-490E-970D-4F6A0A902A98} = {720F6830-E724-4B3A-BFDC-3FA1301A59D0}
 		{BDB20BB2-0C0E-4EEA-8D65-AF53A3E65837} = {C08E4851-DE2E-490E-970D-4F6A0A902A98}
+		{D26ED37B-1F41-4001-8755-47026763A32A} = {F59EF607-B888-4FC2-8148-43B019F33C7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4EAC8E60-2623-4A2D-B08C-4326184915E7}

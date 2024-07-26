@@ -37,8 +37,8 @@ internal sealed record InPlaceArrayType(IType Base, int Size) : IType
 
         CustomAttribute GenerateCustomFieldAttribute()
         {
-            var typeType = context.Module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.Type"));
-            var fixedBufferAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.FixedBufferAttribute") ?? throw new AssertException(
+            var typeType = context.Module.ImportReference(new TypeReference("System", "Type", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary));
+            var fixedBufferAttributeType = new TypeReference("System.Runtime.CompilerServices", "FixedBufferAttribute", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary) ?? throw new AssertException(
                     "Cannot find a type System.Runtime.CompilerServices.FixedBufferAttribute.");
             var fixedBufferCtor = new MethodReference(".ctor", context.TypeSystem.Void, fixedBufferAttributeType);
             fixedBufferCtor.Parameters.Add(new ParameterDefinition(typeType));
@@ -104,12 +104,12 @@ internal sealed record InPlaceArrayType(IType Base, int Size) : IType
         // }
 
         ModuleDefinition module = context.Module;
-        var compilerGeneratedAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.CompilerGeneratedAttribute") ?? throw new AssertException(
+        var compilerGeneratedAttributeType = new TypeReference("System.Runtime.CompilerServices", "CompilerGeneratedAttribute", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary) ?? throw new AssertException(
                 "Cannot find a type System.Runtime.CompilerServices.CompilerGeneratedAttribute.");
         var compilerGeneratedCtor = new MethodReference(".ctor", context.TypeSystem.Void, compilerGeneratedAttributeType);
         var compilerGeneratedAttribute = new CustomAttribute(module.ImportReference(compilerGeneratedCtor));
 
-        var unsafeValueTypeAttributeType = context.AssemblyContext.MscorlibAssembly.GetType("System.Runtime.CompilerServices.UnsafeValueTypeAttribute") ?? throw new AssertException(
+        var unsafeValueTypeAttributeType = new TypeReference("System.Runtime.CompilerServices", "UnsafeValueTypeAttribute", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary) ?? throw new AssertException(
                 "Cannot find a type System.Runtime.CompilerServices.UnsafeValueTypeAttribute.");
         var unsafeValueTypeCtor = new MethodReference(".ctor", context.TypeSystem.Void, unsafeValueTypeAttributeType);
         var unsafeValueTypeAttribute = new CustomAttribute(module.ImportReference(unsafeValueTypeCtor));
@@ -118,7 +118,7 @@ internal sealed record InPlaceArrayType(IType Base, int Size) : IType
             "",
             $"<SyntheticBuffer>{fieldName}",
             TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.NestedPublic,
-            module.ImportReference(context.AssemblyContext.MscorlibAssembly.GetType("System.ValueType")))
+            module.ImportReference(new TypeReference("System", "ValueType", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)))
         {
             PackingSize = 0,
             ClassSize = sizeInBytes,

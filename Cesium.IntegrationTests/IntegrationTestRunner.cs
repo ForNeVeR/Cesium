@@ -1,3 +1,4 @@
+using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
 using Xunit.Abstractions;
 
@@ -20,7 +21,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     public static IEnumerable<object[]> TestCaseProvider()
     {
-        var testCaseDirectory = Path.Combine(TestStructureUtil.SolutionRootPath, "Cesium.IntegrationTests");
+        var testCaseDirectory = Path.Combine(SolutionMetadata.SourceRoot, "Cesium.IntegrationTests");
         var cFiles = Directory.EnumerateFileSystemEntries(testCaseDirectory, "*.c", SearchOption.AllDirectories);
         return cFiles
             .Where(file => !file.EndsWith(".ignore.c"))
@@ -61,7 +62,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             Directory.CreateDirectory(objDirPath);
 
             var sourceFilePath = Path.Combine(
-                TestStructureUtil.SolutionRootPath,
+                SolutionMetadata.SourceRoot,
                 "Cesium.IntegrationTests",
                 relativeSourcePath);
 
@@ -179,7 +180,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             "run",
             "--no-build",
             "--configuration", IntegrationTestContext.BuildConfiguration,
-            "--project", Path.Combine(TestStructureUtil.SolutionRootPath, "Cesium.Compiler"),
+            "--project", Path.Combine(SolutionMetadata.SourceRoot, "Cesium.Compiler"),
             "--",
             "--nologo",
             sourceFilePath,
@@ -192,10 +193,10 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         {
             var coreLibPath = WindowsEnvUtil.MsCorLibPath;
             var runtimeLibPath = Path.Combine(
-                TestStructureUtil.SolutionRootPath,
-                "Cesium.Runtime/bin",
-                IntegrationTestContext.BuildConfiguration,
-                "netstandard2.0/Cesium.Runtime.dll"
+                SolutionMetadata.ArtifactsRoot,
+                "bin/Cesium.Runtime",
+                $"{IntegrationTestContext.BuildConfiguration.ToLower()}_netstandard2.0",
+                "Cesium.Runtime.dll"
             );
             args.AddRange(new[]
             {

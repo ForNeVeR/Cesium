@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AsyncKeyedLock" />
         <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="MedallionShell" />
         <PackageReference Include="Meziantou.Xunit.ParallelTestFramework" />

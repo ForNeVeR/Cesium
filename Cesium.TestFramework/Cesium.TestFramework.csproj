@@ -6,8 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MedallionShell"  />
+      <PackageReference Include="AsyncKeyedLock" />
+      <PackageReference Include="MedallionShell" />
+      <PackageReference Include="Newtonsoft.Json" />
       <PackageReference Include="Verify.Xunit" />
+      <PackageReference Include="xunit.assert" />
       <PackageReference Include="Yoakke.SynKit.C.Syntax" />
       <PackageReference Include="Yoakke.SynKit.Lexer" />
       <PackageReference Include="Yoakke.SynKit.Parser" />
@@ -16,6 +19,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
       <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+      <ProjectReference Include="..\Cesium.Solution.Metadata\Cesium.Solution.Metadata.csproj" />
     </ItemGroup>
 
 </Project>

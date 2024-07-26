@@ -13,6 +13,7 @@ internal static class TypeSystemEx
     public const string CPtrFullTypeName = "Cesium.Runtime.CPtr`1";
     public const string VoidPtrFullTypeName = "Cesium.Runtime.VoidPtr";
     public const string FuncPtrFullTypeName = "Cesium.Runtime.FuncPtr`1";
+    public const string EquivalentTypeAttributeName = "Cesium.Runtime.Attributes.EquivalentTypeAttribute";
 
     public static MethodReference MethodLookup(
         this TranslationUnitContext context,
@@ -158,6 +159,21 @@ internal static class TypeSystemEx
         if (type2.FullName.Equals(VoidPtrFullTypeName))
         {
             return type1 is PointerType pt && pt.ElementType.IsEqualTo(typeSystem.Void);
+        }
+
+        var resolvedType2 = type2.Resolve();
+        if (resolvedType2.HasCustomAttributes)
+        {
+            // check for EquivalentTypeAttribute
+            foreach(var attr in resolvedType2.CustomAttributes)
+            {
+                if (!attr.AttributeType.FullName.Equals(EquivalentTypeAttributeName))
+                    continue;
+
+                var eqType = (TypeReference)attr.ConstructorArguments[0].Value;
+                if (type1.FullName == eqType.FullName)
+                    return true;
+            }
         }
 
         if (type2 is not GenericInstanceType type2Instance) return false;
