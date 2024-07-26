@@ -9,6 +9,7 @@
     <ItemGroup>
       <PackageReference Include="Mono.Cecil" />
       <PackageReference Include="QuikGraph" />
+      <PackageReference Include="QuikGraph.Graphviz" />
     </ItemGroup>
 
     <ItemGroup>

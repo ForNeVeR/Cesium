@@ -111,4 +111,16 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
 
     /// <inheritdoc />
     public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
+
+    public void MergeScope(BlockScope scope)
+    {
+        foreach (var (variableName, variable) in scope._variables)
+        {
+            _variables.Add(variableName, variable);
+        }
+        foreach (var (variableName, variableDefinition) in scope._variableDefinition)
+        {
+            _variableDefinition.Add(variableName, variableDefinition);
+        }
+    }
 }

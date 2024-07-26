@@ -89,7 +89,7 @@ internal sealed class FunctionDefinition : IBlockItem
             assembly.EntryPoint = entryPoint;
         }
 
-        EmitCode(context, functionScope);
+        EmitCode(functionScope);
     }
 
     /// <summary>
@@ -269,11 +269,10 @@ internal sealed class FunctionDefinition : IBlockItem
         return syntheticEntrypoint;
     }
 
-    private void EmitCode(TranslationUnitContext context, FunctionScope scope)
+    private void EmitCode(FunctionScope scope)
     {
-        var loweredStmt = (CompoundStatement) BlockItemLowering.Lower(scope, Statement);
+        var loweredStmt = BlockItemLowering.LowerBody(scope, Statement);
         var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
-            context,
             scope,
             loweredStmt,
             FunctionType.ReturnType,
