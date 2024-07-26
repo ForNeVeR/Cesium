@@ -15,6 +15,7 @@ internal sealed class ControlFlowChecker
     {
         public IBlockItem? BlockItem { get; }
         public bool Terminator { get; }
+        public bool? Reached { get; set; }
 
         public CodeBlockVertex(IBlockItem? blockItem, bool terminator = false)
         {
@@ -120,6 +121,27 @@ internal sealed class ControlFlowChecker
             var vtx = new CodeBlockVertex(stmt);
             graph.AddVertex(vtx);
             return (vtx, new List<CodeBlockVertex>() /* empty */);
+        }
+    }
+
+    private static void AnalyzeReachability(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph)
+    {
+        var start = graph.Vertices.First();
+        AnalyzeReachability(graph, start);
+        foreach (var item in graph.Vertices)
+        {
+            if (item.Reached == null)
+                item.Reached = false;
+        }
+    }
+
+    private static void AnalyzeReachability(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, CodeBlockVertex vertex)
+    {
+        if (vertex.Reached != null) return;
+        vertex.Reached = true;
+        foreach (var node in graph.Edges.Where(x => x.Source == vertex).Select(x => x.Target))
+        {
+            AnalyzeReachability(graph, node);
         }
     }
 
@@ -274,7 +296,6 @@ internal sealed class ControlFlowChecker
     }
 
     public static IBlockItem CheckAndTransformControlFlow(
-        TranslationUnitContext context,
         FunctionScope scope,
         CompoundStatement block,
         IType returnType,
@@ -283,18 +304,20 @@ internal sealed class ControlFlowChecker
     {
         var dset = new AdjacencyGraph<CodeBlockVertex, CodeBlockEdge>();
         var terminator = FillGraph(dset, block);
+        AnalyzeReachability(dset);
 
         var preTerminators = dset.Edges.Where(x => x.Target == terminator).Select(x => x.Source).ToArray();
         if (preTerminators.Length == 0)
             // log
             Console.WriteLine("Code does not terminate");
 
-        var isVoidFn = returnType.Resolve(context) == context.TypeSystem.Void;
+        var isVoidFn = returnType.Equals(CTypeSystem.Void);
         var isReturnRequired = !isVoidFn && !isMain;
 
         foreach (var preTerminator in preTerminators)
         {
             if (preTerminator.BlockItem is ReturnStatement) continue;
+            if (preTerminator.Reached == false) continue;
 
             if (isReturnRequired)
             {
@@ -322,6 +345,12 @@ internal sealed class ControlFlowChecker
 
                 block.Statements.Add(retn);
             }
+        }
+
+        if (preTerminators.All(pt => pt.Reached == false))
+        {
+            var retn = new ReturnStatement(isMain ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
+            block.Statements.Add(retn);
         }
 
         return block;

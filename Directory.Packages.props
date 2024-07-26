@@ -12,6 +12,7 @@
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="QuikGraph" Version="2.5.0" />
+    <PackageVersion Include="QuikGraph.Graphviz" Version="2.5.0" />
     <PackageVersion Include="Verify.Xunit" Version="26.3.0" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.assert" Version="2.9.0" />
