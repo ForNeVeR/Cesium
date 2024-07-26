@@ -58,7 +58,64 @@ internal static class BlockItemLowering
         return Lower(scope, new CompoundStatement(stmts, scope));
     }
 
-    public static IBlockItem Lower(IDeclarationScope scope, IBlockItem blockItem)
+    public static CompoundStatement LowerBody(FunctionScope scope, IBlockItem blockItem)
+    {
+        CompoundStatement compoundStatement = (CompoundStatement)Lower(scope, blockItem);
+        var blockScope = new BlockScope(scope, BreakLabel: null, ContinueLabel: null);
+        var linearizedStatement = new CompoundStatement(Linearize(compoundStatement, blockScope).ToList(), blockScope);
+        return linearizedStatement;
+    }
+
+    public static IBlockItem LowerDeclaration(IDeclarationScope scope, IBlockItem blockItem)
+    {
+        return Lower(scope, blockItem);
+    }
+
+    private static IEnumerable<IBlockItem> Linearize(CompoundStatement compoundStatement, BlockScope scope)
+    {
+        Debug.Assert(compoundStatement.EmitScope != null);
+        BlockScope currentScope = (BlockScope)compoundStatement.EmitScope;
+        scope.MergeScope(currentScope);
+        foreach (var statement in compoundStatement.Statements)
+        {
+            if (statement is CompoundStatement nestedCompound)
+            {
+                foreach (var nestedStatement in Linearize(nestedCompound, scope))
+                {
+                    yield return nestedStatement;
+                }
+            }
+            else if (statement is LabelStatement labelStatement)
+            {
+                if (labelStatement.Expression is CompoundStatement nestedLabeledCompound)
+                {
+                    bool first = true;
+                    foreach (var nestedStatement in Linearize(nestedLabeledCompound, scope))
+                    {
+                        if (first)
+                        {
+                            first = false;
+                            yield return new LabelStatement(labelStatement.Identifier, nestedStatement, true);
+                        }
+                        else
+                        {
+                            yield return nestedStatement;
+                        }
+                    }
+                }
+                else
+                {
+                    yield return statement;
+                }
+            }
+            else
+            {
+                yield return statement;
+            }
+        }
+    }
+
+    private static IBlockItem Lower(IDeclarationScope scope, IBlockItem blockItem)
     {
         switch (blockItem)
         {

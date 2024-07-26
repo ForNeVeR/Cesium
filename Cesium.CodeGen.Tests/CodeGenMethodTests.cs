@@ -336,6 +336,9 @@ int main()
 }", "Function foo has no return statement.");
 
     [Fact]
+    public Task ReturnInsideInfiniteForTest() => DoTest("int test() { for(;;) { return; } }");
+
+    [Fact]
     public Task ConsumeUnusedResult() => DoTest(@"
 int test () { return 1; }
 int main()
