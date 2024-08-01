@@ -8,7 +8,6 @@ internal sealed record IdentifierExpression(Location Location, string Identifier
 {
     public string? EvaluateExpression(IMacroContext context)
     {
-        string? lastValue = null;
         var searchValue = Identifier;
         do
         {
@@ -23,11 +22,11 @@ internal sealed record IdentifierExpression(Location Location, string Identifier
             if (context.TryResolveMacro(searchValue, out _, out var macroReplacement))
             {
                 searchValue = macroReplacement.SkipWhile(t => t.Kind == CPreprocessorTokenType.WhiteSpace)
-                    .FirstOrDefault()?.Text ?? "";
+                    .FirstOrDefault()?.Text ?? string.Empty;
                 continue;
             }
 
-            return lastValue;
+            return searchValue == string.Empty ? null : "0";
         }
         while (true);
     }
