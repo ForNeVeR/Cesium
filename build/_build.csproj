@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="Nuke.Common" />
     </ItemGroup>
 
