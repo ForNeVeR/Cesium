@@ -54,4 +54,17 @@ public class CodeGenIfTests : CodeGenTestBase
     if (!1)
         a = 1;
 }");
+
+    [Fact]
+    public Task IfElseWithNestedDeclarationTest() => DoTest(@"int main()
+{
+    if (1) {
+        int a;
+        a = 1;
+    }
+    else {
+        int a;
+        a = 2;
+    }
+}");
 }

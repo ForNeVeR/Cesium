@@ -8,13 +8,13 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal sealed class LValueLocalVariable : ILValue
 {
     private readonly IType _variableType;
-    private readonly string _name;
+    private readonly int _varIndex;
     private VariableDefinition? _definition;
 
-    public LValueLocalVariable(IType variableType, string name)
+    public LValueLocalVariable(IType variableType, int varIndex)
     {
         _variableType = variableType;
-        _name = name;
+        _varIndex = varIndex;
     }
 
     public void EmitGetValue(IEmitScope scope)
@@ -76,5 +76,5 @@ internal sealed class LValueLocalVariable : ILValue
     public IType GetValueType() => _variableType;
 
     private VariableDefinition GetVariableDefinition(IEmitScope scope) =>
-        _definition ??= scope.ResolveVariable(_name);
+        _definition ??= scope.ResolveVariable(_varIndex);
 }

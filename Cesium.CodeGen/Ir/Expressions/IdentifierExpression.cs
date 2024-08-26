@@ -62,7 +62,7 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
         if (var is not null)
         {
             if (var.StorageClass == Declarations.StorageClass.Auto)
-                return new LValueLocalVariable(var.Type, Identifier);
+                return new LValueLocalVariable(var.Type, var.Index);
 
             if (var.StorageClass == Declarations.StorageClass.Static)
                 return new LValueGlobalVariable(var.Type, Identifier);

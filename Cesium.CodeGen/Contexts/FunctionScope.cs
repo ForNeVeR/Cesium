@@ -23,7 +23,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
     private readonly Dictionary<string, Instruction> _labels = new();
-    private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
+    private readonly Dictionary<int, VariableDefinition> _variableDefinition = new();
     public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
@@ -45,19 +45,20 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
         return Context.GetInitializerScope().GetVariable(identifier);
     }
 
-    public VariableDefinition ResolveVariable(string identifier)
+    public VariableDefinition ResolveVariable(int varIndex)
     {
-        if (!_variables.TryGetValue(identifier, out var variableType))
+        var variableType = _variables.FirstOrDefault(_ => _.Value.Index == varIndex).Value;
+        if (variableType is null)
         {
-            throw new CompilationException($"Identifier {identifier} was not found in the {Method} scope");
+            throw new CompilationException($"Identifier {varIndex} was not found in the {Method} scope");
         }
 
-        if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
+        if (!_variableDefinition.TryGetValue(varIndex, out var variableDefinition))
         {
             var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);
-            _variableDefinition.Add(identifier, variableDefinition);
+            _variableDefinition.Add(varIndex, variableDefinition);
         }
 
         return variableDefinition;

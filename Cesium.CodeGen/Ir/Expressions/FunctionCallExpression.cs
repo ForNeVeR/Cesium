@@ -69,7 +69,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
 
             return new IndirectFunctionCallExpression(
-                new GetValueExpression(new LValueLocalVariable(var.Type, var.Identifier)),
+                new GetValueExpression(new LValueLocalVariable(var.Type, var.Index)),
                 f,
                 ConvertArgs(scope, f.Parameters));
         }

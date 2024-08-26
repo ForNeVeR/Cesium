@@ -11,7 +11,7 @@ internal interface IEmitScope
     AssemblyContext AssemblyContext { get; }
     ModuleDefinition Module { get; }
     TranslationUnitContext Context { get; }
-    VariableDefinition ResolveVariable(string identifier);
+    VariableDefinition ResolveVariable(int varIndex);
     ParameterDefinition ResolveParameter(int index);
 
     /// <summary>

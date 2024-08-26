@@ -49,8 +49,8 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     {
         return _variables.GetValueOrDefault(identifier);
     }
-    public VariableDefinition ResolveVariable(string identifier) =>
-        throw new AssertException("Cannot add a variable into a global constructor scope");
+    public VariableDefinition ResolveVariable(int varIndex) =>
+        throw new AssertException("Cannot resolve a variable into a global constructor scope");
 
     public ParameterInfo? GetParameterInfo(string name) => null;
     public ParameterDefinition ResolveParameter(int index) =>

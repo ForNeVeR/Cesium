@@ -27,7 +27,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public MethodDefinition Method => Parent.Method;
 
     private readonly Dictionary<string, VariableInfo> _variables = new();
-    private readonly Dictionary<string, VariableDefinition> _variableDefinition = new();
+    private readonly Dictionary<int, VariableDefinition> _variableDefinition = new();
 
     public VariableInfo? GetVariable(string identifier)
     {
@@ -56,19 +56,20 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         }
     }
 
-    public VariableDefinition ResolveVariable(string identifier)
+    public VariableDefinition ResolveVariable(int varIndex)
     {
-        if (!_variables.TryGetValue(identifier, out var variableType))
+        var variableType = _variables.FirstOrDefault(_ => _.Value.Index == varIndex).Value;
+        if (variableType is null)
         {
-            return Parent.ResolveVariable(identifier);
+            return Parent.ResolveVariable(varIndex);
         }
 
-        if (!_variableDefinition.TryGetValue(identifier, out var variableDefinition))
+        if (!_variableDefinition.TryGetValue(varIndex, out var variableDefinition))
         {
             var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);
-            _variableDefinition.Add(identifier, variableDefinition);
+            _variableDefinition.Add(varIndex, variableDefinition);
         }
 
         return variableDefinition;
@@ -116,7 +117,14 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     {
         foreach (var (variableName, variable) in scope._variables)
         {
-            _variables.Add(variableName, variable);
+            var currentKey = variableName;
+            int i = 0;
+            while (_variables.ContainsKey(currentKey))
+            {
+                currentKey = variableName + "_" + i++;
+            }
+
+            _variables.Add(currentKey, variable);
         }
         foreach (var (variableName, variableDefinition) in scope._variableDefinition)
         {

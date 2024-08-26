@@ -60,4 +60,13 @@ public class CodeGenForTests : CodeGenTestBase
 {
     for(int i = 0; i < 10; ++i) ++i;
 }");
+
+    [Fact]
+    public Task For_TwoLoopsWithSameCounterName() => DoTest(
+        @"int main()
+{
+    for(int i = 0; i < 10; ++i) ++i;
+
+    for(int i = 0; i < 10; ++i) ++i;
+}");
 }
