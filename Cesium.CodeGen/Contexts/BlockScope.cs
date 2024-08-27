@@ -26,8 +26,8 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
 
-    private readonly Dictionary<string, VariableInfo> _variables = new();
-    private readonly Dictionary<int, VariableDefinition> _variableDefinition = new();
+    internal readonly Dictionary<string, VariableInfo> _variables = new();
+    internal readonly Dictionary<int, VariableDefinition> _variableDefinition = new();
 
     public VariableInfo? GetVariable(string identifier)
     {
@@ -112,23 +112,4 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
 
     /// <inheritdoc />
     public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
-
-    public void MergeScope(BlockScope scope)
-    {
-        foreach (var (variableName, variable) in scope._variables)
-        {
-            var currentKey = variableName;
-            int i = 0;
-            while (_variables.ContainsKey(currentKey))
-            {
-                currentKey = variableName + "_" + i++;
-            }
-
-            _variables.Add(currentKey, variable);
-        }
-        foreach (var (variableName, variableDefinition) in scope._variableDefinition)
-        {
-            _variableDefinition.Add(variableName, variableDefinition);
-        }
-    }
 }

@@ -61,8 +61,7 @@ internal static class BlockItemLowering
     public static CompoundStatement LowerBody(FunctionScope scope, IBlockItem blockItem)
     {
         CompoundStatement compoundStatement = (CompoundStatement)Lower(scope, blockItem);
-        var blockScope = new BlockScope(scope, BreakLabel: null, ContinueLabel: null);
-        var linearizedStatement = new CompoundStatement(Linearize(compoundStatement, blockScope).ToList(), blockScope);
+        var linearizedStatement = new CompoundStatement(Linearize(compoundStatement, scope).ToList(), scope);
         return linearizedStatement;
     }
 
@@ -71,7 +70,7 @@ internal static class BlockItemLowering
         return Lower(scope, blockItem);
     }
 
-    private static IEnumerable<IBlockItem> Linearize(CompoundStatement compoundStatement, BlockScope scope)
+    private static IEnumerable<IBlockItem> Linearize(CompoundStatement compoundStatement, FunctionScope scope)
     {
         Debug.Assert(compoundStatement.EmitScope != null);
         BlockScope currentScope = (BlockScope)compoundStatement.EmitScope;
@@ -107,6 +106,19 @@ internal static class BlockItemLowering
                 {
                     yield return statement;
                 }
+            }
+            else if (statement is IfElseStatement ifElseStatement)
+            {
+                var elsePart = ifElseStatement.FalseBranch is null ? null
+                    : ifElseStatement.FalseBranch is CompoundStatement falseBranch
+                        ? new CompoundStatement(Linearize(falseBranch, scope).ToList(), null)
+                        : ifElseStatement.FalseBranch;
+
+                var truePart = ifElseStatement.TrueBranch is CompoundStatement trueBranch
+                        ? new CompoundStatement(Linearize(trueBranch, scope).ToList(), null)
+                        : ifElseStatement.TrueBranch;
+
+                yield return new IfElseStatement(ifElseStatement.Expression, truePart, elsePart) { IsEscapeBranchRequired = ifElseStatement.IsEscapeBranchRequired };
             }
             else
             {

@@ -118,4 +118,23 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     /// <inheritdoc />
     public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
+
+    public void MergeScope(BlockScope scope)
+    {
+        foreach (var (variableName, variable) in scope._variables)
+        {
+            var currentKey = variableName;
+            int i = 0;
+            while (_variables.ContainsKey(currentKey))
+            {
+                currentKey = variableName + "_" + i++;
+            }
+
+            _variables.Add(currentKey, variable);
+        }
+        foreach (var (variableName, variableDefinition) in scope._variableDefinition)
+        {
+            _variableDefinition.Add(variableName, variableDefinition);
+        }
+    }
 }

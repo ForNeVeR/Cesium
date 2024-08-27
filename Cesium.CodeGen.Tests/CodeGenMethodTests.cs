@@ -515,4 +515,17 @@ int main()
 
     return fooptr(123, 456);
 }"); */
+
+    [Fact]
+    public Task VariablesInsideIf() => DoTest(@"
+int main()
+{
+    const char* x = ""val"";
+    if (x)
+    {
+        const char* y = x;
+    }
+
+    return 1;
+}");
 }
