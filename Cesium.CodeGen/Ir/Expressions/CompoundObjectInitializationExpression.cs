@@ -1,20 +1,19 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
-using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using System.Collections.Immutable;
-using System.Xml.Linq;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 internal sealed class CompoundObjectInitializationExpression : IExpression
 {
     private IType? _type;
-    private TypeDefinition? _typeDef;
+    private FieldDefinition? _typeDef;
+    private Action? _prefixAction;
+    private Action? _postfixAction;
     private readonly ImmutableArray<IExpression?> _initializers;
     private IDeclarationScope? _scope;
 
@@ -29,7 +28,12 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         _initializers = initializers;
     }
 
-    public void Hint(TypeDefinition type) => _typeDef = type;
+    public void Hint(FieldDefinition type, Action prefixAction, Action postfixAction)
+    {
+        _typeDef = type;
+        _prefixAction = prefixAction;
+        _postfixAction = postfixAction;
+    }
 
     public void EmitTo(IEmitScope scope)
     {
@@ -37,7 +41,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             throw new Exception("_type is null!");
 
         var instructions = scope.Method.Body.Instructions;
-        TypeDefinition typeDef = _type != null ? ((StructType)_type).Resolve(scope.Context).Resolve() : _typeDef!;
+        TypeDefinition typeDef = _type != null ? ((StructType)_type).Resolve(scope.Context).Resolve() : _typeDef!.FieldType.Resolve();
         var fieldsDefs = typeDef.Fields;
         var initializers = _initializers;
 
@@ -51,11 +55,18 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 if (expr == null)
                     throw new CompilationException($"Retrieved null initializer!");
 
+                
+                if (_prefixAction is not null)
+                {
+                    _prefixAction();
+                    instructions.Add(Instruction.Create(OpCodes.Ldflda, _typeDef));
+                }
                 if (i != 0)
                 {
                     instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
                     instructions.Add(Instruction.Create(OpCodes.Sizeof, element)); // size = sizeof(array element)
                     instructions.Add(Instruction.Create(OpCodes.Mul)); // offset = id * size
+                    instructions.Add(Instruction.Create(OpCodes.Add)); // offset = id * size
                 }
                 expr.EmitTo(scope);
                 instructions.Add(GetWriteInstruction(element.MetadataType));
@@ -63,6 +74,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             return;
         }
 
+        _prefixAction?.Invoke();
         var newobj = new VariableDefinition(typeDef);
         scope.Method.Body.Variables.Add(newobj);
 
@@ -70,7 +82,15 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         instructions.Add(Instruction.Create(OpCodes.Initobj, typeDef));
 
         if (initializers.Length == 0) // zero init like SomeType name = { };
+        {
+            instructions.Add(Instruction.Create(OpCodes.Ldloc, newobj)); // push new object
+            if (_prefixAction is not null)
+            {
+                _prefixAction();
+                instructions.Add(Instruction.Create(OpCodes.Ldflda, _typeDef));
+            }
             return;
+        }    
 
         for (int i = 0; i < initializers.Length; i++)
         {
@@ -92,11 +112,20 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             }
             else if (init is CompoundObjectInitializationExpression objInit)
             {
-                instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
+                
                 // UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE
-                objInit.Hint(fieldsDefs[i].FieldType.Resolve());
+                objInit.Hint(
+                    fieldsDefs[i],
+                    () =>
+                    {
+                        instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
+                        //instructions.Add(Instruction.Create(OpCodes.Ldflda, fieldsDefs[i]));
+                    },
+                    () =>
+                    {
+                    });
                 objInit.EmitTo(scope);
-                instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[i]));
+                //instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[i]));
             }
             else if (init is AssignmentExpression assignment)
             {
@@ -107,6 +136,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         }
 
         instructions.Add(Instruction.Create(OpCodes.Ldloc, newobj)); // push new object
+        _postfixAction?.Invoke();
     }
 
     private static void EmitPathToField(IEmitScope scope, TypeDefinition type, CompoundObjectFieldInitializer initializer)
