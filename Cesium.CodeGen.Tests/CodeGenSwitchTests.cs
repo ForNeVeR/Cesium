@@ -44,7 +44,7 @@ public class CodeGenSwitchTests : CodeGenTestBase
     int x = 0;
     switch(x) { case 1 + x: break; };
     return 1;
-}", "Expression Cesium.CodeGen.Ir.Expressions.IdentifierExpression cannot be evaluated as constant expression.");
+}", "Expression Cesium.CodeGen.Ir.Expressions.GetValueExpression cannot be evaluated as constant expression.");
 
     [Fact]
     public Task MultiCases() => DoTest(@"int main()
