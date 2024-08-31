@@ -60,4 +60,17 @@ void test()
 {
     work(Green);
 }");
+
+    [Fact]
+    public Task EnumInCase() => DoTest(@"
+enum Colour { Red, Green, Blue };
+
+void test()
+{
+    enum Colour x = 42;
+    switch (x) {
+        case Blue:
+            break;
+    }
+}");
 }
