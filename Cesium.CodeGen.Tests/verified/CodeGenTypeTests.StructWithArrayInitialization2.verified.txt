@@ -8,40 +8,43 @@
       IL_0000: ldloca V_1
       IL_0004: initobj Foo
       IL_000a: ldloca V_1
-      IL_000e: ldc.i4.1
-      IL_000f: stind.i4
-      IL_0010: ldc.i4 1
-      IL_0015: sizeof System.Int32
-      IL_001b: mul
-      IL_001c: ldc.i4.2
-      IL_001d: stind.i4
-      IL_001e: stfld Foo/<SyntheticBuffer>b Foo::b
-      IL_0023: ldloca V_1
-      IL_0027: ldc.i4.s 32
-      IL_0029: stfld System.Int32 Foo::a
-      IL_002e: ldloc V_1
-      IL_0032: stloc.0
-      IL_0033: ldloca.s V_0
-      IL_0035: ldfld System.Int32 Foo::a
-      IL_003a: ldloca.s V_0
-      IL_003c: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_0041: ldc.i4.0
-      IL_0042: conv.i
-      IL_0043: ldc.i4 4
-      IL_0048: mul
-      IL_0049: add
-      IL_004a: ldind.i4
-      IL_004b: add
-      IL_004c: ldloca.s V_0
-      IL_004e: ldflda Foo/<SyntheticBuffer>b Foo::b
-      IL_0053: ldc.i4.1
-      IL_0054: conv.i
-      IL_0055: ldc.i4 4
-      IL_005a: mul
-      IL_005b: add
-      IL_005c: ldind.i4
-      IL_005d: add
-      IL_005e: ret
+      IL_000e: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_0013: ldc.i4.1
+      IL_0014: stind.i4
+      IL_0015: ldloca V_1
+      IL_0019: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_001e: ldc.i4 1
+      IL_0023: sizeof System.Int32
+      IL_0029: mul
+      IL_002a: add
+      IL_002b: ldc.i4.2
+      IL_002c: stind.i4
+      IL_002d: ldloca V_1
+      IL_0031: ldc.i4.s 32
+      IL_0033: stfld System.Int32 Foo::a
+      IL_0038: ldloc V_1
+      IL_003c: stloc.0
+      IL_003d: ldloca.s V_0
+      IL_003f: ldfld System.Int32 Foo::a
+      IL_0044: ldloca.s V_0
+      IL_0046: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_004b: ldc.i4.0
+      IL_004c: conv.i
+      IL_004d: ldc.i4 4
+      IL_0052: mul
+      IL_0053: add
+      IL_0054: ldind.i4
+      IL_0055: add
+      IL_0056: ldloca.s V_0
+      IL_0058: ldflda Foo/<SyntheticBuffer>b Foo::b
+      IL_005d: ldc.i4.1
+      IL_005e: conv.i
+      IL_005f: ldc.i4 4
+      IL_0064: mul
+      IL_0065: add
+      IL_0066: ldind.i4
+      IL_0067: add
+      IL_0068: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
