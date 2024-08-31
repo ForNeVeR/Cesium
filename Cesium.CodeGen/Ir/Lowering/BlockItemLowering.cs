@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
@@ -77,53 +78,69 @@ internal static class BlockItemLowering
         scope.MergeScope(currentScope);
         foreach (var statement in compoundStatement.Statements)
         {
-            if (statement is CompoundStatement nestedCompound)
+            foreach (var nestedStatement in LinearizeBlockItem(statement, scope))
             {
-                foreach (var nestedStatement in Linearize(nestedCompound, scope))
-                {
-                    yield return nestedStatement;
-                }
+                yield return nestedStatement;
             }
-            else if (statement is LabelStatement labelStatement)
+        }
+    }
+    private static IEnumerable<IBlockItem> LinearizeBlockItem(IBlockItem statement, FunctionScope scope)
+    {
+        if (statement is CompoundStatement nestedCompound)
+        {
+            foreach (var nestedStatement in Linearize(nestedCompound, scope))
             {
-                if (labelStatement.Expression is CompoundStatement nestedLabeledCompound)
+                yield return nestedStatement;
+            }
+        }
+        else if (statement is LabelStatement labelStatement)
+        {
+            if (labelStatement.Expression is CompoundStatement nestedLabeledCompound)
+            {
+                bool first = true;
+                foreach (var nestedStatement in Linearize(nestedLabeledCompound, scope))
                 {
-                    bool first = true;
-                    foreach (var nestedStatement in Linearize(nestedLabeledCompound, scope))
+                    if (first)
                     {
-                        if (first)
-                        {
-                            first = false;
-                            yield return new LabelStatement(labelStatement.Identifier, nestedStatement, true);
-                        }
-                        else
-                        {
-                            yield return nestedStatement;
-                        }
+                        first = false;
+                        yield return new LabelStatement(labelStatement.Identifier, nestedStatement, true);
+                    }
+                    else
+                    {
+                        yield return nestedStatement;
                     }
                 }
-                else
-                {
-                    yield return statement;
-                }
-            }
-            else if (statement is IfElseStatement ifElseStatement)
-            {
-                var elsePart = ifElseStatement.FalseBranch is null ? null
-                    : ifElseStatement.FalseBranch is CompoundStatement falseBranch
-                        ? new CompoundStatement(Linearize(falseBranch, scope).ToList(), null)
-                        : ifElseStatement.FalseBranch;
-
-                var truePart = ifElseStatement.TrueBranch is CompoundStatement trueBranch
-                        ? new CompoundStatement(Linearize(trueBranch, scope).ToList(), null)
-                        : ifElseStatement.TrueBranch;
-
-                yield return new IfElseStatement(ifElseStatement.Expression, truePart, elsePart) { IsEscapeBranchRequired = ifElseStatement.IsEscapeBranchRequired };
             }
             else
             {
                 yield return statement;
             }
+        }
+        else if (statement is IfElseStatement ifElseStatement)
+        {
+            var elsePart = Simplify(ifElseStatement.FalseBranch);
+            var truePart = Simplify(ifElseStatement.TrueBranch);
+
+            yield return new IfElseStatement(ifElseStatement.Expression, truePart, elsePart) { IsEscapeBranchRequired = ifElseStatement.IsEscapeBranchRequired };
+
+            [return: NotNullIfNotNull(nameof(blockItem))]
+            IBlockItem? Simplify(IBlockItem? blockItem)
+            {
+                if (blockItem is null) return null;
+
+                if (blockItem is CompoundStatement falseBranch)
+                {
+                    return new CompoundStatement(Linearize(falseBranch, scope).ToList(), null);
+                }
+
+                var result = LinearizeBlockItem(blockItem, scope).ToList();
+                if (result.Count == 1) return result[0];
+                return new CompoundStatement(result, null);
+            }
+        }
+        else
+        {
+            yield return statement;
         }
     }
 

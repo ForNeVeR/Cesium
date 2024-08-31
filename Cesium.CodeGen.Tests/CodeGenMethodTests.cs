@@ -528,4 +528,24 @@ int main()
 
     return 1;
 }");
+
+    [Fact]
+    public Task VariablesInsideNestedIf() => DoTest(@"
+int main()
+{
+    const char* x = ""val"";
+    for (;;)
+    {
+        const char* y = x;
+        if (x)
+        {
+            y - x;
+        }
+        else if (x)
+        {
+            y - x;
+        }
+        return 1;
+    }
+}");
 }
