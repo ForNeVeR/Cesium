@@ -12,8 +12,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="Nuke.Common" />
+    </ItemGroup>
+    <ItemGroup Label="Transitive package references"> <!-- for the sole purpose of pinning the correct versions -->
+        <PackageReference Include="JetBrains.Annotations" />
     </ItemGroup>
 
     <ItemGroup>
