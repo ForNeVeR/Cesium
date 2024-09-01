@@ -48,7 +48,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         switch (storageClass)
         {
             case StorageClass.Auto:
-                _variables.Add(identifier, new(identifier, storageClass, variable, constant));
+                _variables.Add(identifier, new(storageClass, variable, constant));
                 break;
             case StorageClass.Static:
                 ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable, constant);

@@ -5,6 +5,7 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Contexts.Utilities;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Emitting;
 using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
@@ -220,17 +221,17 @@ public class AssemblyContext
         return null;
     }
 
-    internal void AddAssemblyLevelField(string name, Ir.Declarations.StorageClass storageClass, IType type)
+    internal void AddAssemblyLevelField(string name, StorageClass storageClass, IType type)
     {
         if (_globalFields.TryGetValue(name, out var globalField))
         {
-            if (globalField.StorageClass != Ir.Declarations.StorageClass.Extern && storageClass != Ir.Declarations.StorageClass.Extern)
+            if (globalField.StorageClass != StorageClass.Extern && storageClass != StorageClass.Extern)
                 throw new CompilationException($"Cannot add a duplicate global field named \"{name}\".");
 
             return;
         }
 
-        _globalFields.Add(name, new (name, storageClass, type, null));
+        _globalFields.Add(name, new (storageClass, type, null));
     }
 
     public FieldDefinition? ResolveAssemblyLevelField(string name, TranslationUnitContext context)

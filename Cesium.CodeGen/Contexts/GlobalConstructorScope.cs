@@ -1,4 +1,3 @@
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.BlockItems;
@@ -33,13 +32,13 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     {
         if (constant is not null)
         {
-            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+            _variables.Add(identifier, new(storageClass, variableType, constant));
             return;
         }
 
         if (storageClass == StorageClass.Static)
         {
-            _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+            _variables.Add(identifier, new(storageClass, variableType, constant));
         }
 
         Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);

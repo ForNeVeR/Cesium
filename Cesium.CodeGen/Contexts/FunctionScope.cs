@@ -28,7 +28,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
-        _variables.Add(identifier, new(identifier, storageClass, variableType, constant));
+        _variables.Add(identifier, new(storageClass, variableType, constant));
         if (storageClass == StorageClass.Static)
         {
             Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);
