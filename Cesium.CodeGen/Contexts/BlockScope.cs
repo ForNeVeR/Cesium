@@ -26,8 +26,10 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
     public TranslationUnitContext Context => Parent.Context;
     public MethodDefinition Method => Parent.Method;
 
-    internal readonly Dictionary<string, VariableInfo> _variables = new();
-    internal readonly Dictionary<int, VariableDefinition> _variableDefinition = new();
+    private readonly Dictionary<string, VariableInfo> _variables = new();
+    private readonly Dictionary<int, VariableDefinition> _variableDefinitions = new();
+    public IReadOnlyDictionary<string, VariableInfo> Variables => _variables;
+    public IReadOnlyDictionary<int, VariableDefinition> VariableDefinitions => _variableDefinitions;
 
     public VariableInfo? GetVariable(string identifier)
     {
@@ -64,12 +66,12 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
             return Parent.ResolveVariable(varIndex);
         }
 
-        if (!_variableDefinition.TryGetValue(varIndex, out var variableDefinition))
+        if (!_variableDefinitions.TryGetValue(varIndex, out var variableDefinition))
         {
             var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);
-            _variableDefinition.Add(varIndex, variableDefinition);
+            _variableDefinitions.Add(varIndex, variableDefinition);
         }
 
         return variableDefinition;

@@ -7,6 +7,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -69,7 +70,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
         if (parametersInfo is null) return null;
         if (name == "__varargs" && parametersInfo.IsVarArg)
         {
-            return new ParameterInfo(new Ir.Types.PointerType(CTypeSystem.Void), name, parametersInfo.Parameters.Count);
+            return new ParameterInfo(new PointerType(CTypeSystem.Void), name, parametersInfo.Parameters.Count);
         }
 
         return parametersInfo.Parameters.FirstOrDefault(p => p.Name == name);
@@ -121,7 +122,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
     public void MergeScope(BlockScope scope)
     {
-        foreach (var (variableName, variable) in scope._variables)
+        foreach (var (variableName, variable) in scope.Variables)
         {
             var currentKey = variableName;
             int i = 0;
@@ -132,7 +133,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
             _variables.Add(currentKey, variable);
         }
-        foreach (var (variableName, variableDefinition) in scope._variableDefinition)
+        foreach (var (variableName, variableDefinition) in scope.VariableDefinitions)
         {
             _variableDefinition.Add(variableName, variableDefinition);
         }
