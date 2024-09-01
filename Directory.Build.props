@@ -13,4 +13,11 @@
     <PropertyGroup Label="Navigation">
         <CesiumSourceRoot>$(MSBuildThisFileDirectory)</CesiumSourceRoot>
     </PropertyGroup>
+    <PropertyGroup Label="CI">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+    <PropertyGroup Label="Packages">
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+    </PropertyGroup>
 </Project>
