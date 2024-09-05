@@ -314,19 +314,22 @@ internal sealed class ControlFlowChecker
         var isVoidFn = returnType.Equals(CTypeSystem.Void);
         var isReturnRequired = !isVoidFn && !isMain;
 
+        if (isVoidFn)
+        {
+            var hasExpressionReturn = (ReturnStatement?)dset.Vertices.FirstOrDefault(_ => _.BlockItem is ReturnStatement { Expression: { } })?.BlockItem;
+            if (hasExpressionReturn is not null)
+            {
+                throw new CompilationException($"Function {scope.Method.Name} has return type void, and thus cannot have expression in return.");
+            }
+        }
+
         foreach (var preTerminator in preTerminators)
         {
             if (preTerminator.BlockItem is ReturnStatement) continue;
             if (preTerminator.Reached == false) continue;
 
-            if (isReturnRequired)
-            {
-                // bad error message
-                throw new CompilationException($"Function {scope.Method.Name} has no return statement.");
-            }
-
             // inserting fake return
-            var retn = new ReturnStatement(isMain ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
+            var retn = new ReturnStatement(!isVoidFn ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
 
             if (preTerminator.BlockItem is {} original)
             {
