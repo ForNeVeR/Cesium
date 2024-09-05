@@ -1,0 +1,9 @@
+﻿System.Int32 <Module>::test()
+  IL_0000: nop
+  IL_0001: ldc.i4.5
+  IL_0002: ret
+  IL_0003: nop
+  IL_0004: br IL_0000
+  IL_0009: nop
+  IL_000a: ldc.i4.0
+  IL_000b: ret

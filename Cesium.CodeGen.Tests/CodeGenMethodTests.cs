@@ -342,14 +342,23 @@ int main()
     int unused = 0;
 }");
 
-    [Fact, NoVerify]
-    public void ImplicitReturnDisallowedNonMain() => DoesNotCompile(@"int foo()
+    [Fact]
+    public void ImplicitReturnAllowedNonMain() => DoTest(@"int foo()
 {
     int unused;
-}", "Function foo has no return statement.");
+}");
+
+    [Fact, NoVerify]
+    public void ExpressionReturnDisallowedInVoidFunction() => DoesNotCompile(@"void foo()
+{
+    return 4;
+}", "Function foo has return type void, and thus cannot have expression in return.");
 
     [Fact]
-    public Task ReturnInsideInfiniteForTest() => DoTest("int test() { for(;;) { return; } }");
+    public Task ReturnInsideInfiniteForTest() => DoTest("void test() { for(;;) { return; } }");
+
+    [Fact]
+    public Task ReturnValueInsideInfiniteForTest() => DoTest("int test() { for(;;) { return 5; } }");
 
     [Fact]
     public Task ConsumeUnusedResult() => DoTest(@"
