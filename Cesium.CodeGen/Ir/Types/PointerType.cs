@@ -6,10 +6,17 @@ using Mono.Cecil.Rocks;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed record PointerType(IType Base) : IType
+internal sealed class PointerType : IType, IEquatable<PointerType>
 {
     /// <inheritdoc />
     public TypeKind TypeKind => TypeKind.Pointer;
+
+    public IType Base { get; }
+
+    public PointerType(IType @base)
+    {
+        this.Base = @base;
+    }
 
     public static int? SizeInBytes(TargetArchitectureSet arch) => arch switch
     {
@@ -55,5 +62,40 @@ internal sealed record PointerType(IType Base) : IType
             throw new AssertException($"Architecture {arch} shouldn't enter dynamic pointer size calculation.");
 
         return new SizeOfOperatorExpression(this);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? other)
+    {
+        if (other is PointerType)
+        {
+            return Equals((PointerType)other);
+        }
+        return false;
+    }
+
+    /// <inheritdoc />
+    public bool Equals(PointerType? other)
+    {
+        if (other is null) return false;
+        if (TypeKind != other.TypeKind) return false;
+        if (Base is StructType baseStructType && other.Base is StructType otherStructType)
+        {
+            return baseStructType.Identifier == otherStructType.Identifier
+                && baseStructType.Members.Count == otherStructType.Members.Count;
+        }
+
+        return this.Base.Equals(other.Base);
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = 123123 ^ (int)TypeKind;
+        if (Base is StructType baseStructType)
+        {
+            return hash ^ (baseStructType.Identifier?.GetHashCode() ?? 0) ^ baseStructType.Members.Count;
+        }
+
+        return hash ^ Base.GetHashCode();
     }
 }

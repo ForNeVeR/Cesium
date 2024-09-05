@@ -96,18 +96,12 @@ public class TranslationUnitContext
             return method;
     }
 
-    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<string, IType> _types = new();
     private readonly Dictionary<string, IType> _tags = new();
 
     internal void GenerateType(string name, IGeneratedType type)
     {
-        if (!_generatedTypes.ContainsKey(type))
-        {
-            var typeReference = type.StartEmit(name, this);
-            _generatedTypes.Add(type, typeReference);
-            type.FinishEmit(typeReference, name, this);
-        }
+        AssemblyContext.GenerateType(this, name, type);
     }
 
     internal void AddTypeDefinition(string name, IType type)
@@ -213,7 +207,7 @@ public class TranslationUnitContext
         return type;
     }
 
-    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
+    internal TypeReference? GetTypeReference(IGeneratedType type) => AssemblyContext.GetTypeReference(type);
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
     internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
