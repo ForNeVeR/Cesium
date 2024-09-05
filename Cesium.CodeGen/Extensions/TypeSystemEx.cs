@@ -237,6 +237,7 @@ internal static class TypeSystemEx
             || t.IsEqualTo(CTypeSystem.Char)
             || t.IsEqualTo(CTypeSystem.UnsignedChar)
             || t.IsEqualTo(CTypeSystem.UnsignedShort)
+            || t.IsEqualTo(CTypeSystem.Unsigned)
             || t.IsEqualTo(CTypeSystem.UnsignedInt)
             || t.IsEqualTo(CTypeSystem.UnsignedLong)
             || t.IsEqualTo(CTypeSystem.NativeUInt);
@@ -271,7 +272,7 @@ internal static class TypeSystemEx
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
         var signedTypes = new[] { CTypeSystem.SignedChar, CTypeSystem.Short, CTypeSystem.Int, CTypeSystem.Long, CTypeSystem.NativeInt};
-        var unsignedTypes = new[] { CTypeSystem.Char, CTypeSystem.UnsignedChar, CTypeSystem.UnsignedShort, CTypeSystem.UnsignedInt, CTypeSystem.UnsignedLong, CTypeSystem.NativeUInt };
+        var unsignedTypes = new[] { CTypeSystem.Char, CTypeSystem.UnsignedChar, CTypeSystem.UnsignedShort, CTypeSystem.Unsigned, CTypeSystem.UnsignedInt, CTypeSystem.UnsignedLong, CTypeSystem.NativeUInt };
         // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
         var aSignedRank = RankOf(a, signedTypes);
