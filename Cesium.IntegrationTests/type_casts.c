@@ -50,5 +50,7 @@ int main(void)
     (void) foo(1, 2);
     (void) (1, foo(1, 2));
 
+    unsigned x = (unsigned)2;
+
     return 42;
 }

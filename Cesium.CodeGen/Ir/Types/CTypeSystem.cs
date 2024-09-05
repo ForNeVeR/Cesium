@@ -14,6 +14,7 @@ internal static class CTypeSystem
     public static IType UnsignedShort { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedShort);
     public static IType Int { get; } = new PrimitiveType(PrimitiveTypeKind.Int);
     public static IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
+    public static IType Unsigned { get; } = new PrimitiveType(PrimitiveTypeKind.Unsigned);
     public static IType Long { get; } = new PrimitiveType(PrimitiveTypeKind.Long);
     public static IType UnsignedLong { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedLong);
     public static IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
@@ -46,7 +47,7 @@ internal static class CTypeSystem
             return true;
         else if (targetType.Equals(UnsignedShort))
             return true;
-        else if (targetType.Equals(UnsignedInt))
+        else if (targetType.Equals(UnsignedInt) || targetType.Equals(UnsignedInt))
             return true;
         else if (targetType.Equals(UnsignedLong))
             return true;
@@ -80,7 +81,7 @@ internal static class CTypeSystem
             return true;
         else if (targetType.Equals(UnsignedShort))
             return true;
-        else if (targetType.Equals(UnsignedInt))
+        else if (targetType.Equals(UnsignedInt) || targetType.Equals(UnsignedInt))
             return true;
         else if (targetType.Equals(UnsignedLong))
             return true;
