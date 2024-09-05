@@ -111,21 +111,19 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 EmitPathToField(scope, typeDef, f);
             }
             else if (init is CompoundObjectInitializationExpression objInit)
-            {
-                
+            {                
                 // UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE
                 objInit.Hint(
                     fieldsDefs[i],
                     () =>
                     {
                         instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
-                        //instructions.Add(Instruction.Create(OpCodes.Ldflda, fieldsDefs[i]));
                     },
                     () =>
                     {
+                        instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[i]));
                     });
                 objInit.EmitTo(scope);
-                //instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[i]));
             }
             else if (init is AssignmentExpression assignment)
             {
