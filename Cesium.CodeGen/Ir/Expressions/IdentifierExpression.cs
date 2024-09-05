@@ -53,12 +53,6 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
         if (var is not null && par is not null)
             throw new CompilationException($"Variable {Identifier} is both available as a local and as a function parameter.");
 
-        if (var is not null && fun is not null)
-            throw new CompilationException($"Variable {Identifier} is both available as a local and as a function name.");
-
-        if (fun is not null && par is not null)
-            throw new CompilationException($"Variable {Identifier} is both available as a function name and as a function parameter.");
-
         if (var is not null)
         {
             if (var.StorageClass == Declarations.StorageClass.Auto)
