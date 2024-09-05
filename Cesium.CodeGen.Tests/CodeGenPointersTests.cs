@@ -95,7 +95,7 @@ public class CodeGenPointersTests : CodeGenTestBase
     [Fact, NoVerify]
     public void CannotUseBuiltinOffsetOfOnPointerType() => DoesNotCompile(
         "typedef struct { int x; } a; int m() { return &__builtin_offsetof_instance((a**)0).x; }",
-        "__builtin_offsetof_instance: type \"PointerType { Base = Cesium.CodeGen.Ir.Types.StructType, TypeKind = Pointer }\" is not a struct type."
+        "__builtin_offsetof_instance: type \"Cesium.CodeGen.Ir.Types.PointerType\" is not a struct type."
     );
 
     [Fact, NoVerify]

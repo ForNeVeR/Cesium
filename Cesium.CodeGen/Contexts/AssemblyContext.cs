@@ -87,6 +87,7 @@ public class AssemblyContext
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
@@ -328,6 +329,18 @@ public class AssemblyContext
         constantPool.Fields.Add(field);
         return field;
     }
+
+    internal void GenerateType(TranslationUnitContext context, string name, IGeneratedType type)
+    {
+        if (!_generatedTypes.ContainsKey(type))
+        {
+            var typeReference = type.StartEmit(name, context);
+            _generatedTypes.Add(type, typeReference);
+            type.FinishEmit(typeReference, name, context);
+        }
+    }
+
+    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
 
     private struct ByteArrayWrapper
     {
