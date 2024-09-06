@@ -1,0 +1,22 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Int32 <Module>::main()
+      IL_0000: ldc.i4.s 11
+      IL_0002: call Cesium.Runtime.UTF8String Test::Func(System.Int32)
+      IL_0007: call System.Byte* Cesium.Runtime.UTF8String::op_Implicit(Cesium.Runtime.UTF8String)
+      IL_000c: ldc.i4.0
+      IL_000d: ceq
+      IL_000f: ldc.i4.0
+      IL_0010: ceq
+      IL_0012: ret
+
+    System.Int32 <Module>::<SyntheticEntrypoint>()
+      Locals:
+        System.Int32 V_0
+      IL_0000: call System.Int32 <Module>::main()
+      IL_0005: stloc.s V_0
+      IL_0007: ldloc.s V_0
+      IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+      IL_000e: ldloc.s V_0
+      IL_0010: ret
