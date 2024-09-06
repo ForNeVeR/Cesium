@@ -197,4 +197,10 @@ int main(void)
    (y + 5)[0] = 0;
 }
 """);
+
+    [Fact]
+    public Task ConstByteArrayTest() => DoTest(@"
+int main() {
+    const char a[1] = { 255 };
+}");
 }

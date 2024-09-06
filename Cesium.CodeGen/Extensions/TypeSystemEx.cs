@@ -317,6 +317,16 @@ internal static class TypeSystemEx
         }
     }
 
+    public static IType EraseConstType(this IType a)
+    {
+        if (a is ConstType constType)
+        {
+            return EraseConstType(constType.Base);
+        }
+
+        return a;
+    }
+
     public static TypeDefinition GetRuntimeHelperType(this TranslationUnitContext context)
     {
         var runtimeHelpersType = context.AssemblyContext.CesiumRuntimeAssembly.GetType("Cesium.Runtime.RuntimeHelpers");

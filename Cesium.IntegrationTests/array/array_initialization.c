@@ -17,6 +17,15 @@ int testCharArray() {
     return 1;
 }
 
+int testConstCharArray() {
+    const char a[] = { 'A','B','C','D' };
+    if (a[3] != 'D') {
+        return 0;
+    }
+
+    return 1;
+}
+
 int testSCharArray() {
     signed char a[10] = { 99, 0, 22, -17, 2, 0, };
     if (a[3] != -17) {
@@ -68,6 +77,10 @@ int main(int argc, char *argv[])
 
     if (!testGlobalIntArray()) {
         return -4;
+    }
+
+    if (!testConstCharArray()) {
+        return -5;
     }
 
     return 42;
