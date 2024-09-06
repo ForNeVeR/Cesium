@@ -66,7 +66,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                     instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
                     instructions.Add(Instruction.Create(OpCodes.Sizeof, element)); // size = sizeof(array element)
                     instructions.Add(Instruction.Create(OpCodes.Mul)); // offset = id * size
-                    instructions.Add(Instruction.Create(OpCodes.Add)); // offset = id * size
+                    instructions.Add(Instruction.Create(OpCodes.Add)); // parent_struct_field_address + offset
                 }
                 expr.EmitTo(scope);
                 instructions.Add(GetWriteInstruction(element.MetadataType));
@@ -84,9 +84,9 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         if (initializers.Length == 0) // zero init like SomeType name = { };
         {
             instructions.Add(Instruction.Create(OpCodes.Ldloc, newobj)); // push new object
-            if (_prefixAction is not null)
+            if (_postfixAction is not null)
             {
-                _prefixAction();
+                _postfixAction();
                 instructions.Add(Instruction.Create(OpCodes.Ldflda, _typeDef));
             }
             return;
