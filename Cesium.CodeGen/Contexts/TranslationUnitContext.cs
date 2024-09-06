@@ -101,7 +101,7 @@ public class TranslationUnitContext
 
     internal void GenerateType(string name, IGeneratedType type)
     {
-        AssemblyContext.GenerateType(this, name, type);
+        AssemblyContext.GenerateType(this, name, (StructType)type);
     }
 
     internal void AddTypeDefinition(string name, IType type)

@@ -330,17 +330,33 @@ public class AssemblyContext
         return field;
     }
 
-    internal void GenerateType(TranslationUnitContext context, string name, IGeneratedType type)
+    internal void GenerateType(TranslationUnitContext context, string name, StructType type)
     {
         if (!_generatedTypes.ContainsKey(type))
         {
             var typeReference = type.StartEmit(name, context);
             _generatedTypes.Add(type, typeReference);
+            foreach (var member in type.Members)
+            {
+                if (member.Type is StructType structType)
+                {
+                    structType.EmitType(context);
+                }
+
+                if (member.Type is Ir.Types.PointerType { Base: StructType structTypePtr })
+                {
+                    structTypePtr.EmitType(context);
+                }
+            }
+
             type.FinishEmit(typeReference, name, context);
         }
     }
 
-    internal TypeReference? GetTypeReference(IGeneratedType type) => _generatedTypes.GetValueOrDefault(type);
+    internal TypeReference? GetTypeReference(IGeneratedType type)
+    {
+        return _generatedTypes.GetValueOrDefault(type);
+    }
 
     private struct ByteArrayWrapper
     {
