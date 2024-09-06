@@ -247,6 +247,7 @@ internal static class TypeSystemEx
     public static bool IsInteger(this IType t) => t.IsSignedInteger() || t.IsUnsignedInteger();
     public static bool IsNumeric(this IType t) => t.IsInteger() || t.IsFloatingPoint() || t.IsEnum();
     public static bool IsBool(this IType t) => t.IsEqualTo(CTypeSystem.Bool);
+    public static bool IsVoid(this IType t) => t.IsEqualTo(CTypeSystem.Void);
     public static bool IsEnum(this IType t) => t is EnumType;
 
 
@@ -356,5 +357,27 @@ internal static class TypeSystemEx
     {
         var constructor = typeof(TargetFrameworkAttribute).GetConstructor(new[] { typeof(string) });
         return context.Module.ImportReference(constructor);
+    }
+
+    public static MethodReference? FindConversionFrom(this TypeReference actualArg, TypeReference passedArg, TranslationUnitContext context)
+    {
+        var argumentType = actualArg.Resolve();
+        var conversion = argumentType.Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
+            method.ReturnType.IsEqualTo(actualArg) && method.Parameters.Count == 1 && method.Parameters[0].ParameterType.IsEqualTo(passedArg));
+        if (conversion == null)
+            return null;
+
+        return context.Module.ImportReference(conversion);
+    }
+
+    public static MethodReference? FindConversionTo(this TypeReference actualArg, TypeReference passedArg, TranslationUnitContext context)
+    {
+        var argumentType = actualArg.Resolve();
+        var conversion = argumentType.Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
+            method.ReturnType.IsEqualTo(passedArg) && method.Parameters.Count == 1 && method.Parameters[0].ParameterType.IsEqualTo(actualArg));
+        if (conversion == null)
+            return null;
+
+        return context.Module.ImportReference(conversion);
     }
 }

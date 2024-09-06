@@ -5,6 +5,7 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Diagnostics.Metrics;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -131,6 +132,19 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
         EmitArgumentList(scope, _callee.Parameters, _arguments, methodReference);
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, methodReference));
+        if (!_callee.ReturnType.IsVoid())
+        {
+            var passedArg = _callee.ReturnType.Resolve(scope.Context);
+            var actualArg = methodReference.ReturnType;
+            if (passedArg.FullName != actualArg.FullName)
+            {
+                var conversion = actualArg.FindConversionTo(passedArg, scope.Context);
+                if (conversion != null)
+                {
+                    scope.AddInstruction(OpCodes.Call, conversion);
+                }
+            }
+        }
     }
 
     public override IType GetExpressionType(IDeclarationScope scope)

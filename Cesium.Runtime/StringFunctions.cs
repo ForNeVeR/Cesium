@@ -1,4 +1,5 @@
 #if NETSTANDARD
+using System.Drawing;
 using System.Text;
 #else
 using System.Collections.Specialized;
@@ -191,5 +192,20 @@ public static unsafe class StringFunctions
         }
 
         return 0;
+    }
+
+    public static UTF8String StrDup(UTF8String src)
+    {
+        return StrNDup(src, src.Length);
+    }
+
+    public static UTF8String StrNDup(UTF8String src, nuint count)
+    {
+        if (src.Pointer == null)
+            return UTF8String.NullString;
+
+        var dest = new UTF8String((byte*)StdLibFunctions.Malloc(count));
+        src.CopyTo(dest, count);
+        return dest;
     }
 }

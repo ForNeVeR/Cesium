@@ -51,13 +51,9 @@ internal abstract class FunctionCallExpressionBase : IExpression
                 counter++;
                 if (passedArg.FullName != actualArg.FullName)
                 {
-                    //var conversion = actualArg.Resolve().Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
-                    //    method.ReturnType == actualArg && method.Parameters[0].ParameterType == passedArg); <--- exception :(
-                    //if (conversion == null)
-                    //    continue;
-                    var conversion = new MethodReference("op_Implicit", actualArg, actualArg); // Gentlemen are taken at their word.
-                    conversion.Parameters.Add(new(passedArg));
-
+                    var conversion = actualArg.FindConversionFrom(passedArg, scope.Context);
+                    if (conversion == null)
+                        continue;
                     scope.AddInstruction(OpCodes.Call, conversion);
                 }
             }

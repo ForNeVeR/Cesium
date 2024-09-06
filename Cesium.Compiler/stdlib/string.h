@@ -30,3 +30,9 @@ int strcmp(const char* lhs, const char* rhs);
 
 __cli_import("Cesium.Runtime.StringFunctions::MemCmp")
 int memcmp(const void* lhs, const void* rhs, size_t count);
+
+__cli_import("Cesium.Runtime.StringFunctions::StrDup")
+char* strdup(const char* src);
+
+__cli_import("Cesium.Runtime.StringFunctions::StrNDup")
+char* strndup(const char* src, size_t size);
