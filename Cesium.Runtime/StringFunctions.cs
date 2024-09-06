@@ -196,7 +196,7 @@ public static unsafe class StringFunctions
 
     public static UTF8String StrDup(UTF8String src)
     {
-        return StrNDup(src, src.Length);
+        return StrNDup(src, src.Length + 1);
     }
 
     public static UTF8String StrNDup(UTF8String src, nuint count)

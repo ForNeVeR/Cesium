@@ -378,7 +378,7 @@ internal static class TypeSystemEx
 
     public static MethodReference? FindConversionTo(this TypeReference actualArg, TypeReference passedArg, TranslationUnitContext context)
     {
-        var conversion = new MethodReference("op_Implicit", passedArg, passedArg); // Gentlemen are taken at their word.
+        var conversion = new MethodReference("op_Implicit", passedArg, actualArg); // Gentlemen are taken at their word.
         conversion.Parameters.Add(new(actualArg));
         return conversion;
 #if !RESOLUTION_CESIUM
