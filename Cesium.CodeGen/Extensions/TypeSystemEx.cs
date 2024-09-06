@@ -351,6 +351,11 @@ internal static class TypeSystemEx
 
     public static MethodReference? FindConversionFrom(this TypeReference actualArg, TypeReference passedArg, TranslationUnitContext context)
     {
+#if !RESOLUTION_CESIUM
+        var conversion = new MethodReference("op_Implicit", actualArg, actualArg); // Gentlemen are taken at their word.
+        conversion.Parameters.Add(new(passedArg));
+        return conversion;
+#else
         var argumentType = actualArg.Resolve();
         var conversion = argumentType.Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
             method.ReturnType.IsEqualTo(actualArg) && method.Parameters.Count == 1 && method.Parameters[0].ParameterType.IsEqualTo(passedArg));
@@ -358,10 +363,16 @@ internal static class TypeSystemEx
             return null;
 
         return context.Module.ImportReference(conversion);
+#endif
     }
 
     public static MethodReference? FindConversionTo(this TypeReference actualArg, TypeReference passedArg, TranslationUnitContext context)
     {
+        var conversion = new MethodReference("op_Implicit", passedArg, passedArg); // Gentlemen are taken at their word.
+        conversion.Parameters.Add(new(actualArg));
+        return conversion;
+#if !RESOLUTION_CESIUM
+#else
         var argumentType = actualArg.Resolve();
         var conversion = argumentType.Methods.FirstOrDefault(method => method.Name == "op_Implicit" &&
             method.ReturnType.IsEqualTo(passedArg) && method.Parameters.Count == 1 && method.Parameters[0].ParameterType.IsEqualTo(actualArg));
@@ -369,5 +380,6 @@ internal static class TypeSystemEx
             return null;
 
         return context.Module.ImportReference(conversion);
+#endif
     }
 }
