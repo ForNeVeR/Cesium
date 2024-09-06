@@ -136,7 +136,8 @@ internal sealed class LValueInstanceField : LValueField
                 var resolved = field.FieldType.Resolve();
                 if (resolved == null) continue;
                 if (resolved.IsPrimitive) continue; // They don't have fields, so skip them
-                if ((resolved.Name.StartsWith("_Union_") || resolved.Name.StartsWith("_Anon_")) && RecursiveBuildPath(fieldName, field, list))
+                if ((resolved.Name.StartsWith("<typedef>_Union_") || resolved.Name.StartsWith("<typedef>_Anon_") || resolved.Name.StartsWith("_Union_") || resolved.Name.StartsWith("_Anon_"))
+                    && RecursiveBuildPath(fieldName, field, list))
                 {
                     list.Add(field);
                     return true;

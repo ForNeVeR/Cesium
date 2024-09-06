@@ -60,6 +60,13 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             default:
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
         }
+        if (IsUnion)
+        {
+            structType.ClassSize = -1;
+            structType.PackingSize = -1;
+            structType.IsExplicitLayout = true;
+        }
+
         context.Module.Types.Add(structType);
         return structType;
     }
@@ -94,32 +101,11 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     public void EmitType(TranslationUnitContext context)
     {
-        var name = Identifier ?? CreateAnonIdentifier(Members, IsUnion);
+        var name = IsAnon ? CreateAnonIdentifier(Members, IsUnion) : Identifier ?? CreateAnonIdentifier(Members, IsUnion);
         context.GenerateType(name, this);
     }
 
     public bool IsAlreadyEmitted(TranslationUnitContext context) => context.GetTypeReference(this) != null;
-
-    private void EmitAsAnonStructure(TranslationUnitContext context)
-    {
-        var type = new TypeDefinition(
-            string.Empty,
-            CreateAnonIdentifier(Members, IsUnion),
-            TypeAttributes.Public | TypeAttributes.Sealed,
-            context.Module.ImportReference(new TypeReference("System", "ValueType", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)));
-
-        FinishEmit(type, type.Name, context); // emit fields
-
-        if (IsUnion)
-        {
-            type.ClassSize = -1;
-            type.PackingSize = -1;
-            type.IsExplicitLayout = true;
-        }
-
-        context.Module.Types.Add(type);
-        AnonType = type;
-    }
 
     public TypeReference Resolve(TranslationUnitContext context)
     {
@@ -127,13 +113,6 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
         if (resolved == null)
         {
-            if (IsAnon)
-            {
-                if (AnonType == null)
-                    EmitAsAnonStructure(context);
-
-                return AnonType!; // not null
-            }
             throw new CompilationException($"Type {this} was not found.");
         }
 
