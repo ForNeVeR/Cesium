@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Mono.Cecil.Cil;
@@ -46,7 +47,7 @@ internal sealed class CompoundInitializationExpression : IExpression
         if (_type is not InPlaceArrayType inPlaceArrayType)
             throw new NotImplementedException("Nested initializers not yet supported");
 
-        if (inPlaceArrayType.Base is not PrimitiveType primitiveType)
+        if (inPlaceArrayType.Base.EraseConstType() is not PrimitiveType primitiveType)
             throw new NotImplementedException($"Non-primitive type not yet supported");
 
         if (constantLiteralExpression.Constant is IntegerConstant integer)

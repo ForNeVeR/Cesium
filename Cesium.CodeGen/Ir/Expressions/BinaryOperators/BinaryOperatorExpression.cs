@@ -43,15 +43,8 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         if (Operator.IsComparison())
         {
-            if (leftType is ConstType leftTypeConst)
-            {
-                leftType = leftTypeConst.Base;
-            }
-
-            if (rightType is ConstType rightTypeConst)
-            {
-                rightType = rightTypeConst.Base;
-            }
+            leftType = leftType.EraseConstType();
+            rightType = rightType.EraseConstType();
 
             if ((!leftType.IsNumeric() && !leftType.IsBool() && leftType is not PointerType)
                 || (!rightType.IsNumeric() && !rightType.IsBool() && rightType is not PointerType))
@@ -107,17 +100,8 @@ internal sealed class BinaryOperatorExpression : IExpression
                     throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
                 }
 
-                var leftBasePart = leftPointerType.Base;
-                if (leftBasePart is ConstType leftBaseConstType)
-                {
-                    leftBasePart = leftBaseConstType.Base;
-                }
-
-                var rightBasePart = rightPointerType.Base;
-                if (rightBasePart is ConstType rightBaseConstType)
-                {
-                    rightBasePart = rightBaseConstType.Base;
-                }
+                var leftBasePart = leftPointerType.Base.EraseConstType();
+                var rightBasePart = rightPointerType.Base.EraseConstType();
 
                 if (!leftBasePart.IsEqualTo(rightBasePart))
                     throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
