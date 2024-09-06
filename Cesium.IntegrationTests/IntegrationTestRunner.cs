@@ -1,5 +1,6 @@
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
+using System.Runtime.InteropServices;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
@@ -24,9 +25,14 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         var testCaseDirectory = Path.Combine(SolutionMetadata.SourceRoot, "Cesium.IntegrationTests");
         var cFiles = Directory.EnumerateFileSystemEntries(testCaseDirectory, "*.c", SearchOption.AllDirectories);
         return cFiles
-            .Where(file => !file.EndsWith(".ignore.c"))
+            .Where(IsFileValid)
             .Select(file => Path.GetRelativePath(testCaseDirectory, file))
             .Select(path => new object[] { path });
+    }
+
+    private static bool IsFileValid(string file)
+    {
+        return !file.EndsWith(".ignore.c") && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && file.EndsWith(".msvc_ignore.c"));
     }
 
     private enum TargetFramework

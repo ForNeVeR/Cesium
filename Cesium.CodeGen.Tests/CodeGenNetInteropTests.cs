@@ -188,4 +188,22 @@ int main(void)
 {
     return Func(""Hi"") - 2;
 }");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task TestEquivalentTypeAttributeUsingInReturn(TargetArchitectureSet architecture) => DoTest(architecture,
+@"using Cesium.Runtime;
+public static unsafe class Test
+{
+    public static UTF8String Func(int __unused) => UTF8String.NullString;
+}",
+@"
+__cli_import(""Test::Func"")
+char* Func(int __unused);
+
+int main(void)
+{
+    return Func(11) != 0;
+}");
 }
