@@ -36,11 +36,15 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
             throw new CompilationException($"'{_prefixOperator.Text}' needs l-value");
         }
 
-        return new AssignmentExpression(
+        return new CommaExpression(new AssignmentExpression(
             valueTarget,
             AssignmentOperator.Assign,
             newValueExpression
-        ).Lower(scope);
+        ).Lower(scope), new BinaryOperatorExpression(
+            target,
+            GetReverseOperator(),
+            new ConstantLiteralExpression(new IntegerConstant("1"))
+        ));
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
@@ -52,5 +56,12 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
         CTokenType.Increment => BinaryOperator.Add,
         CTokenType.Decrement => BinaryOperator.Subtract,
         _ => throw new AssertException($"Token type {token.Kind} is invalid"),
+    };
+
+    private BinaryOperator GetReverseOperator() => _operator switch
+    {
+        BinaryOperator.Add => BinaryOperator.Subtract,
+        BinaryOperator.Subtract => BinaryOperator.Add,
+        _ => throw new AssertException($"Operator {_operator} is invalid"),
     };
 }

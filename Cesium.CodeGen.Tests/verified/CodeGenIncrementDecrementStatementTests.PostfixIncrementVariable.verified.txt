@@ -6,7 +6,13 @@
   IL_0002: add
   IL_0003: stloc.0
   IL_0004: ldloc.0
-  IL_0005: ret
+  IL_0005: pop
+  IL_0006: ldloc.0
+  IL_0007: ldc.i4.1
+  IL_0008: sub
+  IL_0009: pop
+  IL_000a: ldloc.0
+  IL_000b: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
