@@ -203,4 +203,15 @@ int main(void)
 int main() {
     const char a[1] = { 255 };
 }");
+
+    [Fact]
+    public Task ArrayCharComparison() => DoTest(@"
+int main() {
+    const char a[1] = { 'A' };
+    if (a[0] != 'D') {
+        return 0;
+    }
+
+    return 1;
+}");
 }

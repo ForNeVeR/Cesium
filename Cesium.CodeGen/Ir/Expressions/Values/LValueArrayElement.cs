@@ -1,4 +1,5 @@
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
@@ -42,7 +43,7 @@ internal sealed class LValueArrayElement : ILValue
 
     private (OpCode, OpCode?) GetElementOpcodes()
     {
-        var elementType = GetValueType();
+        var elementType = GetValueType().EraseConstType();
         return elementType switch
         {
             PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
