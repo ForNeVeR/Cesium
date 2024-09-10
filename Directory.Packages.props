@@ -13,7 +13,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="QuikGraph" Version="2.5.0" />
     <PackageVersion Include="QuikGraph.Graphviz" Version="2.5.0" />
-    <PackageVersion Include="Verify.Xunit" Version="26.4.0" />
+    <PackageVersion Include="Verify.Xunit" Version="26.4.4" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.assert" Version="2.9.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
