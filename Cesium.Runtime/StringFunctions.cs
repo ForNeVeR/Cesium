@@ -196,7 +196,7 @@ public static unsafe class StringFunctions
 
     public static UTF8String StrDup(UTF8String src)
     {
-        return StrNDup(src, src.Length + 1);
+        return StrNDup(src, src.Length);
     }
 
     public static UTF8String StrNDup(UTF8String src, nuint count)
@@ -204,8 +204,9 @@ public static unsafe class StringFunctions
         if (src.Pointer == null)
             return UTF8String.NullString;
 
-        var dest = new UTF8String((byte*)StdLibFunctions.Malloc(count));
+        var dest = new UTF8String((byte*)StdLibFunctions.Malloc(count + 1));
         src.CopyTo(dest, count);
+        dest[count] = 0;
         return dest;
     }
 }
