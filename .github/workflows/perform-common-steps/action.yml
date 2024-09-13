@@ -9,7 +9,7 @@ runs:
         global-json-file: global.json
 
     - name: ♻ NuGet Cache ♻
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}.nuget.${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
