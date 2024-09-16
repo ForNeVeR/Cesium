@@ -1,4 +1,4 @@
-﻿System.Void <Module>::foo(System.Int32* x)
+System.Void <Module>::foo(System.Int32* x)
   IL_0000: ldarg.0
   IL_0001: ldc.i4.4
   IL_0002: ldc.i4.1

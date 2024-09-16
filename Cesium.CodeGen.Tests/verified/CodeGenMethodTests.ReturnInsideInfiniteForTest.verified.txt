@@ -1,4 +1,4 @@
-﻿System.Void <Module>::test()
+System.Void <Module>::test()
   IL_0000: nop
   IL_0001: ret
   IL_0002: nop

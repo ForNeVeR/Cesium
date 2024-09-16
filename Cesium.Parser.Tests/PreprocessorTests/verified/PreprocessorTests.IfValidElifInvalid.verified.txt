@@ -1,1 +1,1 @@
-﻿int ifFunc() { return 0; }
+int ifFunc() { return 0; }

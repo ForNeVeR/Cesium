@@ -1,4 +1,4 @@
-﻿System.Void <Module>::foo()
+System.Void <Module>::foo()
   IL_0000: ret
 
 System.Int32 <Module>::main()

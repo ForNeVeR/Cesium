@@ -1,4 +1,4 @@
-﻿int bar = 0;
+int bar = 0;
 
 
 

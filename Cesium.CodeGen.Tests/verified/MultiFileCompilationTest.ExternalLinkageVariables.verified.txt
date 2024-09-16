@@ -1,4 +1,4 @@
-﻿Module: Primary
+Module: Primary
   Type: <Module>
   Fields:
     System.Int32 <Module>::test

@@ -1,1 +1,1 @@
-﻿int elifTwoFunc() { return 0; }
+int elifTwoFunc() { return 0; }

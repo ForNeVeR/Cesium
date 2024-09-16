@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.IfElseStatement, Cesium.Ast",
   "Expression": {
     "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",

@@ -1,4 +1,4 @@
-﻿Identifier: __cli_import
+Identifier: __cli_import
 OpenParen: (
 StringLiteral: "System.Runtime.InteropServices.Marshal::AllocHGlobal"
 CloseParen: )

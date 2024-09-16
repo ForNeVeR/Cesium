@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::m()
+System.Int32 <Module>::m()
   Locals:
     a V_0
   IL_0000: ldloca V_0

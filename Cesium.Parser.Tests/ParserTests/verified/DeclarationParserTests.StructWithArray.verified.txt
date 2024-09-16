@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.Declaration, Cesium.Ast",
   "Specifiers": [
     {

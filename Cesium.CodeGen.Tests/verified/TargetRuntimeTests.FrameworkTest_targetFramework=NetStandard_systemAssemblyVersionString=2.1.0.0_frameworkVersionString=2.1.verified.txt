@@ -1,1 +1,1 @@
-﻿TargetFrameworkAttribute.FrameworkName: .NETStandard,Version=v2.1
+TargetFrameworkAttribute.FrameworkName: .NETStandard,Version=v2.1

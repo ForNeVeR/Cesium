@@ -1,4 +1,4 @@
-﻿PreprocessingToken: "int"
+PreprocessingToken: "int"
 WhiteSpace: " "
 PreprocessingToken: "main"
 LeftParen: "("

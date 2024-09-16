@@ -1,4 +1,4 @@
-﻿KeywordInt: int
+KeywordInt: int
 Identifier: main
 OpenParen: (
 KeywordInt: int

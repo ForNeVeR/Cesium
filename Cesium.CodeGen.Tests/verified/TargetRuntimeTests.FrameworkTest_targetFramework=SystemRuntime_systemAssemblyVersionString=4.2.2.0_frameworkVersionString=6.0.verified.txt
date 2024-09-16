@@ -1,1 +1,1 @@
-﻿TargetFrameworkAttribute.FrameworkName: .NETCoreApp,Version=v6.0
+TargetFrameworkAttribute.FrameworkName: .NETCoreApp,Version=v6.0

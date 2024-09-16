@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::not_pinvoke()
+System.Int32 <Module>::not_pinvoke()
   IL_0000: ldc.i4.1
   IL_0001: ret
 

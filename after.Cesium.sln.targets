@@ -1,4 +1,4 @@
-﻿<Project InitialTargets="WorkAroundMSBuild2064">
+<Project InitialTargets="WorkAroundMSBuild2064">
     <Target Name="WorkAroundMSBuild2064">
         <!-- Work around https://github.com/Microsoft/msbuild/issues/2064 by
              removing *.proj from the generated solution metaproject. -->

@@ -1,4 +1,4 @@
-﻿void foo() {}
+void foo() {}
 
 int bar = 0;
 
