@@ -45,3 +45,11 @@ jobs:
       - name: ✅ Run Unit Tests ✅
         shell: bash
         run: dotnet nuke TestAll
+
+  encoding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify encoding
+        shell: pwsh
+        run: scripts/Test-Encoding.ps1

@@ -33,6 +33,15 @@ dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-containe
 
 Then navigate to `Cesium.Compiler\bin\Debug\net7.0\win-x64\publish\` and that's your Cesium.
 
+File Encoding Changes
+---------------------
+If the automation asks you to update the file encoding (line endings or UTF-8 BOM) in certain files, run the following PowerShell script ([PowerShell Core][powershell] is recommended to run this script):
+```console
+$ pwsh -File scripts/Test-Encoding.ps1 -AutoFix
+```
+
+The `-AutoFix` switch will automatically fix the encoding issues, and you'll only need to commit and push the changes.
+
 [docs.tests]: docs/tests.md
 [dotnet.download]: https://dotnet.microsoft.com/en-us/download
 [powershell]: https://github.com/PowerShell/PowerShell
