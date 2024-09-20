@@ -17,6 +17,7 @@ public class StdIoFunctionTests
     [Theory]
     [InlineData(-1L, "%li", 2, "-1")]
     [InlineData(-1L, "%lu", 20, "18446744073709551615")]
+    [InlineData(-1L, "%zu", 20, "18446744073709551615")]
     public void FPrintFLong(long input, string format, int expectedExitCode, string expectedResult)
     {
         var (exitCode, result) = TestFPrintF(format, input);

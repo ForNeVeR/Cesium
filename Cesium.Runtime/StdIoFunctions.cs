@@ -231,7 +231,7 @@ public unsafe static class StdIoFunctions
             }
 
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
-            if (formatString[formatStartPosition + addition] == 'l')
+            if (formatString[formatStartPosition + addition] == 'l' || formatString[formatStartPosition + addition] == 'z')
             {
                 addition++;
                 formatSpecifier += formatString[formatStartPosition + addition].ToString();
@@ -349,7 +349,8 @@ public unsafe static class StdIoFunctions
                     break;
                 }
                 case "lu":
-                {
+                case "zu":
+                    {
                     ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
                     var ulongValueString = ulongValue.ToString();
                     streamWriter.Write(ulongValueString);
