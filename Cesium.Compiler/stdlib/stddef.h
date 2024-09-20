@@ -1,6 +1,8 @@
 #pragma once
 typedef __nint ptrdiff_t;
 typedef __nuint size_t;
+typedef __nuint intptr_t;
+typedef __nuint uintptr_t;
 
 typedef unsigned int max_align_t;
 
