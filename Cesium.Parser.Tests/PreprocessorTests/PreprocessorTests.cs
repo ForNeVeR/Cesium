@@ -422,6 +422,12 @@ int main() { return foo; }
 ");
 
     [Fact]
+    public Task ReplaceNumberInArray() => DoTest(
+@"#define foo 100
+typedef char bar[foo];
+");
+
+    [Fact]
     public Task ReplaceAfterStar() => DoTest(
 @"# define __getopt_argv_const const
 int int main(char *__getopt_argv_const *___argv) { return 0; }
