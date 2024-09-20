@@ -214,4 +214,10 @@ int main() {
 
     return 1;
 }");
+
+    [Fact]
+    public Task ConstExpressionSizeArrayTest() => DoTest(@"
+int main() {
+    const char a[1 + 1] = { 255 };
+}");
 }

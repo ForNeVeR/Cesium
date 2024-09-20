@@ -1,6 +1,7 @@
 using System.Globalization;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
@@ -230,12 +231,15 @@ internal sealed record LocalDeclarationInfo(
                     }
                     else
                     {
-                        if (sizeExpr is not ConstantLiteralExpression constantExpression ||
-                            constantExpression.Constant.Kind != CTokenType.IntLiteral ||
-                            !int.TryParse(constantExpression.Constant.Text, out var size))
-                            throw new CompilationException($"Array size specifier is not integer {sizeExpr}.");
+                        var constantResult = ConstantEvaluator.TryGetConstantValue(sizeExpr.ToIntermediate());
+                        if (constantResult.Constant is { } constant
+                            && constant is IntegerConstant integerConstant)
+                        {
+                            type = CreateArrayType(type, (int)integerConstant.Value);
+                            break;
+                        }
 
-                        type = CreateArrayType(type, size);
+                        throw new CompilationException($"Array size specifier is not integer {sizeExpr}.");
                     }
 
                     break;
