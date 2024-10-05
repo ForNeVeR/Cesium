@@ -1,8 +1,8 @@
+using System.Diagnostics;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.Core;
-using System.Diagnostics;
 
 namespace Cesium.CodeGen;
 
@@ -40,7 +40,7 @@ internal static class ConstantEvaluator
                         UnaryOperator.BitwiseNot => (null, new IntegerConstant(~constInt.Value)),
                         UnaryOperator.LogicalNot => (null, new IntegerConstant(constInt.Value != 0 ? 0 : 1)),
                         UnaryOperator.AddressOf or UnaryOperator.Indirection => ($"Operator {unOp.Operator} is not compile-time evaluable", null),
-                        _ => ($"Invalid unary operator {unOp.Operator}", null),
+                        _ => throw new ArgumentOutOfRangeException($"Invalid unary operator {unOp.Operator}."),
                     };
                 }
 
@@ -51,7 +51,7 @@ internal static class ConstantEvaluator
 
                     if (leftConstant is not IntegerConstant leftInt ||
                         rightConstant is not IntegerConstant rightInt)
-                        throw new CompilationException("Evaluated constants are not integer");
+                        return ($"Evaluated constants ({leftConstant}, {rightConstant}) are not integer.", null);
 
                     return binOp.Operator switch
                     {
