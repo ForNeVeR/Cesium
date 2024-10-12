@@ -1,4 +1,4 @@
-﻿Module: Primary
+Module: Primary
   Type: <Module>
   Methods:
     System.Int32 <Module>::<SyntheticEntrypoint>()

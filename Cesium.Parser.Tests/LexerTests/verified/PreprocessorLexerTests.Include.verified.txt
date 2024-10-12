@@ -1,4 +1,4 @@
-﻿Hash: "#"
+Hash: "#"
 PreprocessingToken: "include"
 WhiteSpace: " "
 HeaderName: ""foo.h""

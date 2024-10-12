@@ -1,4 +1,4 @@
-﻿System.Void <Module>::test()
+System.Void <Module>::test()
   Locals:
     System.Int32 V_0
   IL_0000: ldc.i4.1
