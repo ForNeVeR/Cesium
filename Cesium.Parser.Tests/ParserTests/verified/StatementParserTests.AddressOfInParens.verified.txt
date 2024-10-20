@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
   "Expression": {
     "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
