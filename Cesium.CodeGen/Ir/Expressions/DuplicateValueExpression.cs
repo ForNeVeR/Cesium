@@ -20,7 +20,7 @@ internal class DuplicateValueExpression : IExpression
     {
         _value.EmitGetValue(scope);
         var processor = scope.Method.Body.GetILProcessor();
-        processor.Emit(OpCodes.Pop);
+        processor.Emit(OpCodes.Dup);
     }
 
     public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType();
