@@ -2,15 +2,11 @@
   Locals:
     test* V_0
   IL_0000: ldloc.0
-  IL_0001: sizeof test
-  IL_0007: ldc.i4.1
-  IL_0008: mul
-  IL_0009: add
-  IL_000a: stloc.0
-  IL_000b: ldloc.0
+  IL_0001: dup
+  IL_0002: sizeof test
+  IL_0008: ldc.i4.1
+  IL_0009: mul
+  IL_000a: add
+  IL_000b: stloc.0
   IL_000c: pop
-  IL_000d: ldloc.0
-  IL_000e: ldc.i4.1
-  IL_000f: sub
-  IL_0010: pop
-  IL_0011: ret
+  IL_000d: ret

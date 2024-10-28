@@ -23,23 +23,27 @@ public enum AssignmentOperator
 
 internal sealed class AssignmentExpression : IExpression
 {
+    private readonly bool _doReturn;
+
     public IValueExpression Left { get; }
     public IExpression Right{ get; }
     public AssignmentOperator Operator { get; }
 
-    public AssignmentExpression(Ast.AssignmentExpression expression)
+    public AssignmentExpression(Ast.AssignmentExpression expression, bool doReturn = true)
     {
         Operator = GetOperatorKind(expression.Operator);
         Left = expression.Left.ToIntermediate() as IValueExpression
                ?? throw new AssertException($"Not a value expression: {expression.Left}.");
         Right = expression.Right.ToIntermediate();
+        _doReturn = doReturn;
     }
 
-    public AssignmentExpression(IValueExpression left, AssignmentOperator @operator, IExpression right)
+    public AssignmentExpression(IValueExpression left, AssignmentOperator @operator, IExpression right, bool doReturn = true)
     {
         Left = left;
         Operator = @operator;
         Right = right;
+        _doReturn = doReturn;
     }
 
     public IExpression Lower(IDeclarationScope scope)
@@ -72,7 +76,7 @@ internal sealed class AssignmentExpression : IExpression
         if (value is not ILValue lvalue)
             throw new CompilationException($"Not an lvalue: {value}.");
 
-        return new SetValueExpression(lvalue, right);
+        return new SetValueExpression(lvalue, right, _doReturn);
     }
 
     // `x = v` expression returns type of x (and v)

@@ -9,7 +9,11 @@ internal sealed class ExpressionStatement : IBlockItem
 
     internal ExpressionStatement(IExpression? expression)
     {
-        Expression = expression;
+        Expression = expression switch
+        {
+            PostfixIncrementDecrementExpression => new DiscardResultExpression(expression),
+            _ => expression
+        };
     }
 
     public ExpressionStatement(Ast.ExpressionStatement statement) : this(statement.Expression?.ToIntermediate())

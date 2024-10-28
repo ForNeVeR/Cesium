@@ -6,6 +6,7 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
+using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -25,26 +26,29 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var target = _target.Lower(scope);
-        var newValueExpression = new BinaryOperatorExpression(
-            target,
-            _operator,
-            new ConstantLiteralExpression(new IntegerConstant("1"))
-        );
 
         if (target is not IValueExpression valueTarget)
         {
             throw new CompilationException($"'{_prefixOperator.Text}' needs l-value");
         }
 
-        return new CommaExpression(new AssignmentExpression(
+        var value = valueTarget.Resolve(scope);
+        var duplicateValueExpression = new DuplicateValueExpression(value);
+
+        var newValueExpression = new BinaryOperatorExpression(
+            duplicateValueExpression,
+            _operator,
+            new ConstantLiteralExpression(new IntegerConstant("1"))
+        );
+
+        return new ValuePreservationExpression(
+            value,
+            new AssignmentExpression(
             valueTarget,
             AssignmentOperator.Assign,
-            newValueExpression
-        ).Lower(scope), new BinaryOperatorExpression(
-            target,
-            GetReverseOperator(),
-            new ConstantLiteralExpression(new IntegerConstant("1"))
-        ));
+            newValueExpression,
+            doReturn: false
+        ).Lower(scope));
     }
 
     public void EmitTo(IEmitScope scope) => throw new AssertException("Should be lowered");
@@ -56,12 +60,5 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
         CTokenType.Increment => BinaryOperator.Add,
         CTokenType.Decrement => BinaryOperator.Subtract,
         _ => throw new AssertException($"Token type {token.Kind} is invalid"),
-    };
-
-    private BinaryOperator GetReverseOperator() => _operator switch
-    {
-        BinaryOperator.Add => BinaryOperator.Subtract,
-        BinaryOperator.Subtract => BinaryOperator.Add,
-        _ => throw new AssertException($"Operator {_operator} is invalid"),
     };
 }
