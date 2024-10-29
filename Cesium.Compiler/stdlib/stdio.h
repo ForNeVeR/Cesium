@@ -1,5 +1,6 @@
 #pragma once
 #include <stdarg.h>
+#include <stddef.h>
 
 typedef void FILE;
 
@@ -27,3 +28,45 @@ int putchar(char _Character);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::PutC")
 int putc(char _Character, FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FGetC")
+int fgetc(FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FGetS")
+char* fgets(char* str, int count, FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FEof")
+int feof(FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FOpen")
+FILE* fopen(const char* filename, const char* mode);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FOpenS")
+errno_t fopen_s(FILE* * streamptr,
+    const char* filename,
+    const char* mode);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FClose")
+int fclose(FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::Rewind")
+int rewind(FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FError")
+int ferror(FILE* stream);
+
+#define SEEK_SET    0
+#define SEEK_CUR    1
+
+#define SEEK_END    2
+
+#define EOF    (-1)
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FSeek")
+int fseek(FILE* stream, long offset, int origin);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::PError")
+void perror(const char* s);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::Remove")
+int remove(const char* pathname);

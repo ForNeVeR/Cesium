@@ -119,9 +119,10 @@ public unsafe static class StdLibFunctions
         }
     }
 
-    internal static void SetErrNo(int newErrorCode)
+    internal static int SetErrNo(int newErrorCode)
     {
         errNo = newErrorCode;
+        return newErrorCode;
     }
 
     public static void* Сalloc(UIntPtr num, UIntPtr size)
@@ -149,13 +150,13 @@ public unsafe static class StdLibFunctions
 
     public static int Atoi(byte* ptr)
     {
-        var str = StdIoFunctions.Unmarshal(ptr);
+        var str = CesiumFunctions.Unmarshal(ptr);
         return Convert.ToInt32(str);
     }
 
     public static byte* GetEnv(byte* ptr)
     {
-        var envKey = StdIoFunctions.Unmarshal(ptr);
+        var envKey = CesiumFunctions.Unmarshal(ptr);
 
         if (envKey is null)
         {
