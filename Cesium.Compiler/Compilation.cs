@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Cesium.Ast;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
@@ -30,6 +31,17 @@ internal static class Compilation
             return 0;
         }
 
+        if (compilationOptions.ProduceAstFile)
+        {
+            foreach (var inputFilePath in inputFilePaths)
+            {
+                Ast.TranslationUnit translationUnit = await CreateAst(compilationOptions, inputFilePath);
+                DumpAst(translationUnit);
+            }
+
+            return 0;
+        }
+
         Console.WriteLine($"Generating assembly {outputFilePath}.");
 
         var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
@@ -43,6 +55,12 @@ internal static class Compilation
         SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath, compilationOptions.CesiumRuntime);
 
         return 0;
+    }
+
+    private static void DumpAst(TranslationUnit translationUnit)
+    {
+        var astDumper = new AstDumper(Console.Out);
+        astDumper.Dump(translationUnit);
     }
 
     private static AssemblyContext CreateAssembly(string outputFilePath, CompilationOptions compilationOptions)
@@ -99,7 +117,15 @@ internal static class Compilation
 
     private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
     {
-        var content = await Preprocess(inputFilePath, context.CompilationOptions);
+        Ast.TranslationUnit translationUnit = await CreateAst(context.CompilationOptions, inputFilePath);
+
+        var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
+        context.EmitTranslationUnit(translationUnitName, translationUnit);
+    }
+
+    private static async Task<Ast.TranslationUnit> CreateAst(CompilationOptions compilationOptions, string inputFilePath)
+    {
+        var content = await Preprocess(inputFilePath, compilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
@@ -118,9 +144,7 @@ internal static class Compilation
         var firstUnprocessedToken = parser.TokenStream.Peek();
         if (firstUnprocessedToken.Kind != CTokenType.End)
             throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}. Next token {firstUnprocessedToken.Text}.");
-
-        var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
-        context.EmitTranslationUnit(translationUnitName, translationUnit);
+        return translationUnit;
     }
 
     private static void SaveAssembly(

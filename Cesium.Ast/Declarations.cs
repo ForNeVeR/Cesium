@@ -25,7 +25,7 @@ public sealed record StructOrUnionSpecifier(
     ImmutableArray<StructDeclaration> StructDeclarations) : ITypeSpecifier;
 public sealed record EnumSpecifier(
     string? Identifier,
-    ImmutableArray<EnumDeclaration>? StructDeclarations) : ITypeSpecifier;
+    ImmutableArray<EnumDeclaration>? EnumDeclarations) : ITypeSpecifier;
 
 public sealed record NamedTypeSpecifier(string TypeDefName) : ITypeSpecifier;
 
@@ -85,7 +85,7 @@ public sealed record IdentifierListDirectDeclarator(
     IDirectDeclarator Base,
     ImmutableArray<string>? Identifiers) : IDirectDeclarator;
 
-public record DeclaratorDirectDeclarator(Declarator Declarator) : IDirectDeclarator
+public sealed record DeclaratorDirectDeclarator(Declarator Declarator) : IDirectDeclarator
 {
     public IDirectDeclarator? Base => null;
 }

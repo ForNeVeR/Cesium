@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.Declaration, Cesium.Ast",
   "Specifiers": [
     {
@@ -8,7 +8,7 @@
     {
       "$type": "Cesium.Ast.EnumSpecifier, Cesium.Ast",
       "Identifier": null,
-      "StructDeclarations": [
+      "EnumDeclarations": [
         {
           "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
           "Identifier": "TK_PUNCT",

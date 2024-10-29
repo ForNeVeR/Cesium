@@ -28,7 +28,7 @@ public class CommandLineParser
                 return 2;
             }
 
-            if (!args.ProducePreprocessedFile && string.IsNullOrWhiteSpace(args.OutputFilePath))
+            if (!(args.ProducePreprocessedFile || args.DumpAst) && string.IsNullOrWhiteSpace(args.OutputFilePath))
             {
                 reporter.ReportError("Required option 'o, out' is missing.");
                 return 3;

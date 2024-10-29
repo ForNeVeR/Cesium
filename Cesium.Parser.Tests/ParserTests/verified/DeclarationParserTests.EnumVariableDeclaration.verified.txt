@@ -1,10 +1,10 @@
-﻿{
+{
   "$type": "Cesium.Ast.Declaration, Cesium.Ast",
   "Specifiers": [
     {
       "$type": "Cesium.Ast.EnumSpecifier, Cesium.Ast",
       "Identifier": "Colour",
-      "StructDeclarations": null
+      "EnumDeclarations": null
     }
   ],
   "InitDeclarators": [

@@ -58,6 +58,9 @@ public class Arguments
     [Option('E', HelpText = "Produce preprocessed file")]
     public bool ProducePreprocessedFile { get; init; } = false;
 
+    [Option("ast-dump", HelpText = "Produce AST dump")]
+    public bool DumpAst { get; init; } = false;
+
     [Option('I', HelpText = "Adds include directory of header files")]
     public IEnumerable<string> IncludeDirectories { get; init; } = Array.Empty<string>();
 

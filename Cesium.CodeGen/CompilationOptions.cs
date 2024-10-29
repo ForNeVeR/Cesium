@@ -13,4 +13,5 @@ public record CompilationOptions(
     string GlobalClassFqn,
     IList<string> DefineConstants,
     IList<string> AdditionalIncludeDirectories,
-    bool ProducePreprocessedFile);
+    bool ProducePreprocessedFile,
+    bool ProduceAstFile);
