@@ -1,4 +1,6 @@
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
+
 #if !NETSTANDARD
 using System.Runtime.InteropServices;
 #endif
@@ -13,11 +15,13 @@ public unsafe static class StdIoFunctions
     internal record StreamHandle
     {
         public required string FileMode { get; set; }
+        public FileStream? Stream { get; set; }
         public Func<TextReader>? Reader { get; set; }
         public Func<TextWriter>? Writer { get; set; }
+        public int ErrNo { get; set; }
     }
 
-    internal static List<StreamHandle> Handles = new();
+    internal static List<StreamHandle?> Handles = new();
 
     private const int StdIn = 0;
 
@@ -77,6 +81,7 @@ public unsafe static class StdIoFunctions
         try
         {
             streamWriter.Write(RuntimeHelpers.Unmarshal(str));
+            streamWriter.Flush();
             return 0;
         }
         catch (Exception) // TODO[#154]: Exception handling.
@@ -465,48 +470,186 @@ public unsafe static class StdIoFunctions
         return consumedBytes + remainderString.Length;
     }
 
-    internal static string? Unmarshal(byte* str)
+    public unsafe static void* FOpen(byte* filename, byte* mode)
     {
-#if NETSTANDARD
-        Encoding encoding = Encoding.UTF8;
-        int byteLength = 0;
-        byte* search = str;
-        while (*search != '\0')
+        void* streamptr;
+        var errorCode = FOpenS(&streamptr, filename, mode);
+        if (errorCode != 0)
         {
-            byteLength++;
-            search++;
+            StdLibFunctions.SetErrNo(errorCode);
+            return null;
         }
 
-        int stringLength = encoding.GetCharCount(str, byteLength);
-        string s = new('\0', stringLength);
-        fixed (char* pTempChars = s)
-        {
-            encoding.GetChars(str, byteLength, pTempChars, stringLength);
-        }
-
-        return s;
-#else
-        return Marshal.PtrToStringUTF8((nint)str);
-#endif
+        return streamptr;
     }
 
-    internal static byte* MarshalStr(string? str)
+    public static int FOpenS(void** streamptr, byte* filename, byte* mode)
     {
-        Encoding encoding = Encoding.UTF8;
-        if (str is null)
+        if (filename == null) return ErrNo.EACCES;
+        var fileName = CesiumFunctions.Unmarshal(filename);
+        if (fileName == null) return ErrNo.EINVAL;
+        var modeString = CesiumFunctions.Unmarshal(mode);
+        if (modeString == null) return ErrNo.EINVAL;
+        FileMode fileMode;
+        FileAccess fileAccess;
+        var extended = modeString.Contains('+');
+        if (modeString[0] == 'r')
+        {
+            fileMode = FileMode.Open;
+            fileAccess = !extended ? FileAccess.Read : FileAccess.ReadWrite;
+        }
+        else if (modeString[0] == 'w')
+        {
+            fileMode = modeString.Contains('x') ? FileMode.CreateNew : FileMode.Create;
+            fileAccess = !extended ? FileAccess.Write : FileAccess.ReadWrite;
+        }
+        else if (modeString[0] == 'a')
+        {
+            fileMode = FileMode.OpenOrCreate;
+            fileAccess = !extended ? FileAccess.Write : FileAccess.ReadWrite;
+        }
+        else
+        {
+            return ErrNo.EINVAL;
+        }
+
+        FileStream stream;
+        stream = new(fileName, fileMode, fileAccess);
+        var handle = new StreamHandle()
+        {
+            FileMode = modeString,
+            Stream = stream,
+        };
+        if (fileAccess != FileAccess.Write)
+        {
+            handle.Reader = () => new StreamReader(stream);
+        }
+        if (fileAccess != FileAccess.Read)
+        {
+            handle.Writer = () => new StreamWriter(stream);
+        }
+
+        Handles.Add(handle);
+        *streamptr = GetLastStream();
+        return 0;
+    }
+
+    public static int FClose(void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        streamHandle.Stream!.Close();
+        var handleIndex = (int)(IntPtr)stream;
+        Handles[handleIndex] = null;
+        return 0;
+    }
+
+    public static int FGetC(void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        return streamHandle.Stream!.ReadByte();
+    }
+
+    public static byte* FGetS(byte* str, int count, void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
         {
             return null;
         }
 
-        var bytes = encoding.GetBytes(str);
-        var storage = (byte*)StdLibFunctions.Malloc((nuint)bytes.Length + 1);
-        for (var i = 0; i < bytes.Length;i++)
+        byte[] buffer = new byte[count];
+        for (var i = 0; i < count - 1; i++)
         {
-            storage[i] = bytes[i];
+            var result = streamHandle.Stream!.ReadByte();
+            if (result == -1)
+            {
+                str[i] = 0;
+                return null;
+            }
+
+            str[i] = (byte)result;
+            if (result == '\n')
+            {
+                str[i+1] = 0;
+                break;
+            }
         }
 
-        storage[bytes.Length] = 0;
-        return storage;
+        str[count - 1] = 0;
+        return str;
+    }
+
+    public static int FEof(void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        return streamHandle.Reader!().Peek() == -1 ? 1 : 0;
+    }
+
+    public static int FSeek(void* stream, long offset, int origin)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        streamHandle.Stream!.Seek(offset, (SeekOrigin)origin);
+        return 0;
+    }
+
+    public static int FError(void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        return streamHandle.ErrNo;
+    }
+
+    public static int Rewind(void* stream)
+    {
+        var streamHandle = GetStreamHandle(stream);
+        if (streamHandle == null)
+        {
+            return ErrNo.EBADF;
+        }
+
+        streamHandle.Stream!.Flush(true);
+        streamHandle.Stream!.Seek(0, SeekOrigin.Begin);
+        return 0;
+    }
+
+    public static void PError(byte* s)
+    {
+        Console.Error.WriteLine($"{CesiumFunctions.Unmarshal(s)}: {StringFunctions.StrError(*StdLibFunctions.GetErrNo())}");
+    }
+
+    public static int Remove(byte* pathname)
+    {
+        File.Delete(CesiumFunctions.Unmarshal(pathname)!);
+        return 0;
+    }
+
+    private static unsafe void* GetLastStream()
+    {
+        return (void*)(IntPtr)(Handles.Count - 1);
     }
 
     private static StreamHandle? GetStreamHandle(void* stream)

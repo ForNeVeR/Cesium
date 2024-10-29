@@ -209,4 +209,89 @@ public static unsafe class StringFunctions
         dest[count] = 0;
         return dest;
     }
+
+    public static UTF8String StrError(int errnum)
+    {
+        switch (errnum)
+        {
+            case ErrNo.EPERM:
+                return CesiumFunctions.MarshalStr("ErrNo.EPERM");
+            case ErrNo.ENOENT:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOENT");
+            case ErrNo.ESRCH:
+                return CesiumFunctions.MarshalStr("ErrNo.ESRCH");
+            case ErrNo.EINTR:
+                return CesiumFunctions.MarshalStr("ErrNo.EINTR");
+            case ErrNo.EIO:
+                return CesiumFunctions.MarshalStr("ErrNo.EIO");
+            case ErrNo.ENXIO:
+                return CesiumFunctions.MarshalStr("ErrNo.ENXIO");
+            case ErrNo.E2BIG:
+                return CesiumFunctions.MarshalStr("ErrNo.E2BIG");
+            case ErrNo.ENOEXEC:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOEXEC");
+            case ErrNo.EBADF:
+                return CesiumFunctions.MarshalStr("ErrNo.EBADF");
+            case ErrNo.ECHILD:
+                return CesiumFunctions.MarshalStr("ErrNo.ECHILD");
+            case ErrNo.EAGAIN:
+                return CesiumFunctions.MarshalStr("ErrNo.EAGAIN");
+            case ErrNo.ENOMEM:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOMEM");
+            case ErrNo.EACCES:
+                return CesiumFunctions.MarshalStr("ErrNo.EACCES");
+            case ErrNo.EFAULT:
+                return CesiumFunctions.MarshalStr("ErrNo.EFAULT");
+            case ErrNo.EBUSY:
+                return CesiumFunctions.MarshalStr("ErrNo.EBUSY");
+            case ErrNo.EEXIST:
+                return CesiumFunctions.MarshalStr("ErrNo.EEXIST");
+            case ErrNo.EXDEV:
+                return CesiumFunctions.MarshalStr("ErrNo.EXDEV");
+            case ErrNo.ENODEV:
+                return CesiumFunctions.MarshalStr("ErrNo.ENODEV");
+            case ErrNo.ENOTDIR:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOTDIR");
+            case ErrNo.EISDIR:
+                return CesiumFunctions.MarshalStr("ErrNo.EISDIR");
+            case ErrNo.ENFILE:
+                return CesiumFunctions.MarshalStr("ErrNo.ENFILE");
+            case ErrNo.EMFILE:
+                return CesiumFunctions.MarshalStr("ErrNo.EMFILE");
+            case ErrNo.ENOTTY:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOTTY");
+            case ErrNo.EFBIG:
+                return CesiumFunctions.MarshalStr("ErrNo.EFBIG");
+            case ErrNo.ENOSPC:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOSPC");
+            case ErrNo.ESPIPE:
+                return CesiumFunctions.MarshalStr("ErrNo.ESPIPE");
+            case ErrNo.EROFS:
+                return CesiumFunctions.MarshalStr("ErrNo.EROFS");
+            case ErrNo.EMLINK:
+                return CesiumFunctions.MarshalStr("ErrNo.EMLINK");
+            case ErrNo.EPIPE:
+                return CesiumFunctions.MarshalStr("ErrNo.EPIPE");
+            case ErrNo.EDOM:
+                return CesiumFunctions.MarshalStr("ErrNo.EDOM");
+            case ErrNo.EDEADLK:
+                return CesiumFunctions.MarshalStr("ErrNo.EDEADLK");
+            case ErrNo.ENAMETOOLONG:
+                return CesiumFunctions.MarshalStr("ErrNo.ENAMETOOLONG");
+            case ErrNo.ENOLCK:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOLCK");
+            case ErrNo.ENOTEMPTY:
+                return CesiumFunctions.MarshalStr("ErrNo.ENOTEMPTY");
+            case ErrNo.EINVAL:
+                return CesiumFunctions.MarshalStr("ErrNo.EINVAL");
+            case ErrNo.ERANGE:
+                return CesiumFunctions.MarshalStr("ErrNo.ERANGE");
+            case ErrNo.EILSEQ:
+                return CesiumFunctions.MarshalStr("ErrNo.EILSEQ");
+            case ErrNo.STRUNCATE:
+                return CesiumFunctions.MarshalStr("ErrNo.STRUNCATE");
+            default:
+                return UTF8String.NullString;
+        }
+    }
 }
