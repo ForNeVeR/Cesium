@@ -62,6 +62,11 @@ public unsafe static class StdIoFunctions
         }
     }
 
+    public static int GetChar()
+    {
+        return FGetC((void*)(IntPtr)StdIn);
+    }
+
     public static int FPutS(byte* str, void* stream)
     {
         var streamHandle = GetStreamHandle(stream);
@@ -556,7 +561,23 @@ public unsafe static class StdIoFunctions
             return ErrNo.EBADF;
         }
 
-        return streamHandle.Stream!.ReadByte();
+        return GetCharacterFromFile(streamHandle);
+    }
+
+    private static int GetCharacterFromFile(StreamHandle streamHandle)
+    {
+        if (streamHandle.Stream is null)
+        {
+            var reader = streamHandle.Reader;
+            if (reader is null)
+            {
+                return ErrNo.EBADF;
+            }
+
+            return reader().Read();
+        }
+
+        return streamHandle.Stream.ReadByte();
     }
 
     public static byte* FGetS(byte* str, int count, void* stream)
@@ -570,7 +591,7 @@ public unsafe static class StdIoFunctions
         byte[] buffer = new byte[count];
         for (var i = 0; i < count - 1; i++)
         {
-            var result = streamHandle.Stream!.ReadByte();
+            var result = GetCharacterFromFile(streamHandle);
             if (result == -1)
             {
                 str[i] = 0;
