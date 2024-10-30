@@ -41,10 +41,11 @@ internal sealed class CharConstant : IConstant
             'n' => '\n',
             'r' => '\r',
             't' => '\t',
-            'v' => '\v',
+            '?' => '?',
+            'v' => (char)0x0b,
             'x' => (char)int.Parse(text.AsSpan(2), System.Globalization.NumberStyles.AllowHexSpecifier),
             > '0' and < '9' => (char)Convert.ToInt32(text.Substring(2), 8),
-            _ => throw new CompilationException($"Unknown escape sequence '{text}'"),
+            _ => text[1],
         };
     }
 }
