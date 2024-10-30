@@ -49,28 +49,30 @@ internal sealed class BinaryOperatorExpression : IExpression
             if ((!leftType.IsNumeric() && !leftType.IsBool() && leftType is not PointerType)
                 || (!rightType.IsNumeric() && !rightType.IsBool() && rightType is not PointerType))
                 throw new CompilationException($"Unable to compare {leftType} to {rightType}");
-
-            return new BinaryOperatorExpression(left, Operator, right);
+        }
+        else
+        {
+            // rest of the operators are arithmetic
+            if (MayDecayToPointer(leftType) || MayDecayToPointer(rightType))
+            {
+                return LowerPointerArithmetics(scope, left, right, leftType, rightType);
+            }
         }
 
-        // rest of the operators are arithmetic
+        if (!Operator.IsComparison() || (leftType.IsNumeric() && rightType.IsNumeric() && !leftType.IsEnum() && !rightType.IsEnum() && !leftType.IsBool() && !rightType.IsBool()))
+        { 
+            var commonType = TypeSystemEx.GetCommonNumericType(leftType, rightType);
+            if (!leftType.IsEqualTo(commonType))
+            {
+                Debug.Assert(CTypeSystem.IsConversionAvailable(leftType, commonType));
+                left = new TypeCastExpression(commonType, left).Lower(scope);
+            }
 
-        if (MayDecayToPointer(leftType) || MayDecayToPointer(rightType))
-        {
-            return LowerPointerArithmetics(scope, left, right, leftType, rightType);
-        }
-
-        var commonType = TypeSystemEx.GetCommonNumericType(leftType, rightType);
-        if (!leftType.IsEqualTo(commonType))
-        {
-            Debug.Assert(CTypeSystem.IsConversionAvailable(leftType, commonType));
-            left = new TypeCastExpression(commonType, left).Lower(scope);
-        }
-
-        if (!rightType.IsEqualTo(commonType))
-        {
-            Debug.Assert(CTypeSystem.IsConversionAvailable(rightType, commonType));
-            right = new TypeCastExpression(commonType, right).Lower(scope);
+            if (!rightType.IsEqualTo(commonType))
+            {
+                Debug.Assert(CTypeSystem.IsConversionAvailable(rightType, commonType));
+                right = new TypeCastExpression(commonType, right).Lower(scope);
+            }
         }
 
         return new BinaryOperatorExpression(left, Operator, right);

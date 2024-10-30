@@ -233,8 +233,7 @@ internal static class TypeSystemEx
 
     public static bool IsUnsignedInteger(this IType t)
     {
-        return t.IsEqualTo(CTypeSystem.Bool)
-            || t.IsEqualTo(CTypeSystem.Char)
+        return t.IsEqualTo(CTypeSystem.Char)
             || t.IsEqualTo(CTypeSystem.UnsignedChar)
             || t.IsEqualTo(CTypeSystem.UnsignedShort)
             || t.IsEqualTo(CTypeSystem.Unsigned)
@@ -245,7 +244,7 @@ internal static class TypeSystemEx
 
     public static bool IsFloatingPoint(this IType t) => t.IsEqualTo(CTypeSystem.Double) || t.IsEqualTo(CTypeSystem.Float);
     public static bool IsInteger(this IType t) => t.IsSignedInteger() || t.IsUnsignedInteger();
-    public static bool IsNumeric(this IType t) => t.IsInteger() || t.IsFloatingPoint() || t.IsEnum();
+    public static bool IsNumeric(this IType t) => t.IsInteger() || t.IsFloatingPoint() || t.IsEnum() || t.IsBool();
     public static bool IsBool(this IType t) => t.IsEqualTo(CTypeSystem.Bool);
     public static bool IsVoid(this IType t) => t.IsEqualTo(CTypeSystem.Void);
     public static bool IsEnum(this IType t) => t is EnumType;
