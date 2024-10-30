@@ -11,6 +11,9 @@ typedef void FILE;
 __cli_import("Cesium.Runtime.StdIoFunctions::PutS")
 int puts(char *s);
 
+__cli_import("Cesium.Runtime.StdIoFunctions::GetChar")
+int getchar(void);
+
 __cli_import("Cesium.Runtime.StdIoFunctions::FPutS")
 int fputs(char* s, FILE* stream);
 
