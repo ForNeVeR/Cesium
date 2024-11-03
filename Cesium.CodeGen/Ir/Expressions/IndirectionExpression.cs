@@ -8,22 +8,22 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class IndirectionExpression : IExpression, IValueExpression
 {
-    private readonly IExpression _target;
+    internal IExpression Target { get; }
 
     public IndirectionExpression(IExpression target)
     {
-        _target = target;
+        Target = target;
     }
 
     internal IndirectionExpression(Ast.IndirectionExpression expression)
     {
         expression.Deconstruct(out var target);
-        _target = target.ToIntermediate();
+        Target = target.ToIntermediate();
     }
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var lowered = new IndirectionExpression(_target.Lower(scope));
+        var lowered = new IndirectionExpression(Target.Lower(scope));
         return new GetValueExpression(lowered.Resolve(scope));
     }
 
@@ -33,11 +33,11 @@ internal sealed class IndirectionExpression : IExpression, IValueExpression
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        var targetType = _target.GetExpressionType(scope);
+        var targetType = Target.GetExpressionType(scope);
         return targetType switch
         {
-            InPlaceArrayType arrayType => new LValueIndirection(_target, new PointerType(arrayType.Base)),
-            PointerType pointerType => new LValueIndirection(_target, pointerType),
+            InPlaceArrayType arrayType => new LValueIndirection(Target, new PointerType(arrayType.Base)),
+            PointerType pointerType => new LValueIndirection(Target, pointerType),
             _ => throw new CompilationException($"Required a pointer or an array type, got {targetType} instead.")
         };
     }

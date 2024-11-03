@@ -1,0 +1,18 @@
+﻿System.Void <Module>::test()
+  Locals:
+    System.Byte* V_0
+    System.Byte V_1
+  IL_0000: ldsflda <ConstantPool>/<ConstantPoolItemType4> <ConstantPool>::ConstDataBuffer0
+  IL_0005: stloc.0
+  IL_0006: ldloc.0
+  IL_0007: ldc.i4.1
+  IL_0008: ldc.i4.0
+  IL_0009: mul
+  IL_000a: add
+  IL_000b: ldind.i1
+  IL_000c: conv.i4
+  IL_000d: ldc.i4.1
+  IL_000e: add
+  IL_000f: conv.u1
+  IL_0010: stloc.1
+  IL_0011: ret

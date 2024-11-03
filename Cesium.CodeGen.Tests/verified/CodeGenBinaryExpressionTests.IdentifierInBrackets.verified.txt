@@ -1,0 +1,14 @@
+﻿System.Void <Module>::test()
+  Locals:
+    System.Byte V_0
+    System.Byte V_1
+  IL_0000: ldc.i4.1
+  IL_0001: conv.u1
+  IL_0002: stloc.0
+  IL_0003: ldloc.0
+  IL_0004: conv.i4
+  IL_0005: ldc.i4.1
+  IL_0006: add
+  IL_0007: conv.u1
+  IL_0008: stloc.1
+  IL_0009: ret
