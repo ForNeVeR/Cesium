@@ -60,7 +60,9 @@ internal sealed class BinaryOperatorExpression : IExpression
         }
 
         if (!Operator.IsComparison() || (leftType.IsNumeric() && rightType.IsNumeric() && !leftType.IsEnum() && !rightType.IsEnum() && !leftType.IsBool() && !rightType.IsBool()))
-        { 
+        {
+            leftType = leftType.EraseConstType();
+            rightType = rightType.EraseConstType();
             var commonType = TypeSystemEx.GetCommonNumericType(leftType, rightType);
             if (!leftType.IsEqualTo(commonType))
             {
@@ -175,6 +177,8 @@ internal sealed class BinaryOperatorExpression : IExpression
 
         // both bitwise and arithmetic operators obey same arithmetic conversions
         // https://en.cppreference.com/w/c/language/operator_arithmetic
+        leftType = leftType.EraseConstType();
+        rightType = rightType.EraseConstType();
         return TypeSystemEx.GetCommonNumericType(leftType, rightType);
     }
 

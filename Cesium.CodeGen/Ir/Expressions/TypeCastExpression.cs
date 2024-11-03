@@ -1,9 +1,12 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Linq.Expressions;
 using C = Cesium.CodeGen.Ir.Types.CTypeSystem;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -79,6 +82,41 @@ internal sealed class TypeCastExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
+        if (TargetType is NamedType namedType)
+        {
+            var resolvedTypeCandidate = scope.TryGetType(namedType.TypeName);
+            if (resolvedTypeCandidate is null)
+            {
+                if (Expression is UnaryOperatorExpression { Operator: UnaryOperator.Promotion } unaryExpression)
+                {
+                    return new BinaryOperators.BinaryOperatorExpression(new IdentifierExpression(namedType.TypeName), BinaryOperator.Add, unaryExpression.Target).Lower(scope);
+                }
+            }
+        }
+
+        if (TargetType is InPlaceArrayType inPlaceArrayType && inPlaceArrayType.Base is NamedType namedType1)
+        {
+            var resolvedTypeCandidate = scope.TryGetType(namedType1.TypeName);
+            if (resolvedTypeCandidate is null)
+            {
+                if (Expression is UnaryOperatorExpression { Operator: UnaryOperator.Promotion } unaryExpression)
+                {
+                    return new BinaryOperators.BinaryOperatorExpression(
+                        new SubscriptingExpression(
+                            new IdentifierExpression(namedType1.TypeName),
+                            new ConstantLiteralExpression(new IntegerConstant(inPlaceArrayType.Size))),
+                        BinaryOperator.Add,
+                        unaryExpression.Target).Lower(scope);
+                }
+                if (Expression is IndirectionExpression indirectionExpression)
+                {
+                    return new SubscriptingExpression(
+                        new IdentifierExpression(namedType1.TypeName),
+                        indirectionExpression.Target).Lower(scope);
+                }
+            }
+        }
+
         var resolvedType = scope.ResolveType(TargetType);
 
         return resolvedType is PrimitiveType { Kind: PrimitiveTypeKind.Void }
