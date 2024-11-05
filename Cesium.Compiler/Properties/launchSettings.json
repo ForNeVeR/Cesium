@@ -1,0 +1,47 @@
+{
+    "profiles": {
+        "Cesium.Compiler": {
+            "commandName": "Project"
+        },
+        "Profile 1": {
+            "commandName": "Project",
+            "commandLineArgs": "-o test.dll adjustablearrowcap.c bitmap.c bmpcodec.c brush.c carbon-private.c customlinecap.c dstream.c emfcodec.c emfplus.c font.c gdi32.c general.c gifcodec.c graphics-cairo.c graphics-metafile.c graphics-path.c graphics-pathiterator.c graphics.c hatchbrush.c icocodec.c image.c imageattributes.c jpegcodec.c lineargradientbrush.c matrix.c metafile.c pathgradientbrush.c pen.c pngcodec.c print.c region-bitmap.c region-path-tree.c region.c solidbrush.c stringformat.c text-cairo.c text-metafile.c text-pango.c text.c texturebrush.c tiffcodec.c win32-private.c wmfcodec.c",
+            "workingDirectory": "D:\\d\\github\\mono\\libgdiplus\\src"
+        },
+        "issue646": {
+            "commandName": "Project",
+            "commandLineArgs": "-o india.dll --modulekind Console hello.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "dumpast": {
+            "commandName": "Project",
+            "commandLineArgs": "--ast-dump hello.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "1brc_1.c": {
+            "commandName": "Project",
+            "commandLineArgs": "-o 1brc_1.dll --modulekind Console D:\\d\\github\\1brc\\1.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "1brc_2.c": {
+            "commandName": "Project",
+            "commandLineArgs": "-o 1brc_2.dll --modulekind Console D:\\d\\github\\1brc\\2.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "1brc_3.c": {
+            "commandName": "Project",
+            "commandLineArgs": "-o 1brc_3.dll --modulekind Console D:\\d\\github\\1brc\\3.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "fopen": {
+            "commandName": "Project",
+            "commandLineArgs": "-o fopen.dll --modulekind Console D:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\io\\fopen.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        },
+        "fgets": {
+            "commandName": "Project",
+            "commandLineArgs": "-o fgets.dll --modulekind Console D:\\d\\github\\Cesium\\Cesium.IntegrationTests\\stdlib\\io\\fgets.c",
+            "workingDirectory": "D:\\d\\github\\Cesium\\Cesium.Samples\\"
+        }
+    }
+}

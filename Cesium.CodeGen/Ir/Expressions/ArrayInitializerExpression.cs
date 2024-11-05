@@ -25,6 +25,31 @@ internal sealed class ArrayInitializerExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        throw new NotImplementedException();
+        return InlineConstantExpressions(scope);
+    }
+
+    public ArrayInitializerExpression InlineConstantExpressions(IDeclarationScope scope)
+    {
+        List<IExpression?> expressions = new();
+        foreach (var initializer in Initializers)
+        {
+            if (initializer is null)
+            {
+                expressions.Add(initializer);
+                continue;
+            }
+
+            var (errorMessage, constant) = ConstantEvaluator.TryGetConstantValue(initializer);
+            if (constant != null)
+            {
+                expressions.Add(new ConstantLiteralExpression(constant));
+            }
+            else
+            {
+                expressions.Add(initializer);
+            }
+        }
+
+        return new ArrayInitializerExpression(expressions.ToImmutableArray());
     }
 }
