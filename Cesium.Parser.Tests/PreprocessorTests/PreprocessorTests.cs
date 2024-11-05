@@ -605,6 +605,14 @@ int foo() { return 0; }
 ");
 
     [Fact]
+    public Task IfExpressionAdd() => DoTest(
+@"#define mycondition 0
+#if (mycondition + 1) <= 1
+int foo() { return 0; }
+#endif
+");
+
+    [Fact]
     public Task IfExpressionDefined() => DoTest(
 @"#define mycondition
 #if defined mycondition

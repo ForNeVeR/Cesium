@@ -11,4 +11,8 @@ internal enum CPreprocessorOperator
     Negation,
     LogicalOr,
     LogicalAnd,
+    Add,
+    Sub,
+    Mul,
+    Div,
 }

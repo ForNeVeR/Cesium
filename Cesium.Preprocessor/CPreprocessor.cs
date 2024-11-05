@@ -250,7 +250,7 @@ public record CPreprocessor(
         }
 
         if (!(stream.IsEnd || stream.Peek().Kind == End))
-            throw new AssertException("(stream.IsEnd || stream.Peek().Kind == End) is not true.");
+            throw new AssertException($"(stream.IsEnd || stream.Peek().Kind == End) is not true. Current token {stream.Peek()}");
 
         return expression.Ok.Value;
     }
