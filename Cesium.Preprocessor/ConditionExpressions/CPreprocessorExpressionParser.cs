@@ -27,12 +27,16 @@ internal partial class CPreprocessorExpressionParser
     [Rule("simple_expression: identifier")]
     private static IPreprocessorExpression MakeSimpleExpression(IPreprocessorExpression expression) => expression;
 
-    [Rule("binary_expression: simple_expression '==' simple_expression")]
-    [Rule("binary_expression: simple_expression '!=' simple_expression")]
-    [Rule("binary_expression: simple_expression '<=' simple_expression")]
-    [Rule("binary_expression: simple_expression '>=' simple_expression")]
-    [Rule("binary_expression: simple_expression '<' simple_expression")]
-    [Rule("binary_expression: simple_expression '>' simple_expression")]
+    [Rule("binary_expression: expression '==' expression")]
+    [Rule("binary_expression: expression '!=' expression")]
+    [Rule("binary_expression: expression '<=' expression")]
+    [Rule("binary_expression: expression '>=' expression")]
+    [Rule("binary_expression: expression '<' expression")]
+    [Rule("binary_expression: expression '>' expression")]
+    [Rule("binary_expression: expression '+' expression")]
+    [Rule("binary_expression: expression '-' expression")]
+    [Rule("binary_expression: expression '*' expression")]
+    [Rule("binary_expression: expression '/' expression")]
     [Rule("binary_expression: expression '||' expression")]
     [Rule("binary_expression: expression '&&' expression")]
     private static BinaryExpression MakeBinaryExpression(IPreprocessorExpression left, ICPreprocessorToken token, IPreprocessorExpression right)
@@ -53,6 +57,10 @@ internal partial class CPreprocessorExpressionParser
 
     private static CPreprocessorOperator GetOperator(ICPreprocessorToken token) => token.Text switch
     {
+        "+" => CPreprocessorOperator.Add,
+        "-" => CPreprocessorOperator.Sub,
+        "*" => CPreprocessorOperator.Mul,
+        "/" => CPreprocessorOperator.Div,
         "==" => CPreprocessorOperator.Equals,
         "!=" => CPreprocessorOperator.NotEquals,
         "<=" => CPreprocessorOperator.LessOrEqual,

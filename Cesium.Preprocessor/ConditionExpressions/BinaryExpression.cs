@@ -23,6 +23,10 @@ internal class BinaryExpression(
 
         var result = @operator switch
         {
+            CPreprocessorOperator.Add => (parsedFirstValue + parsedSecondValue).AsBoolean(),
+            CPreprocessorOperator.Sub => (parsedFirstValue - parsedSecondValue).AsBoolean(),
+            CPreprocessorOperator.Mul => (parsedFirstValue * parsedSecondValue).AsBoolean(),
+            CPreprocessorOperator.Div => (parsedFirstValue / parsedSecondValue).AsBoolean(),
             CPreprocessorOperator.Equals => parsedFirstValue == parsedSecondValue,
             CPreprocessorOperator.NotEquals => parsedFirstValue != parsedSecondValue,
             CPreprocessorOperator.LessOrEqual => parsedFirstValue <= parsedSecondValue,
