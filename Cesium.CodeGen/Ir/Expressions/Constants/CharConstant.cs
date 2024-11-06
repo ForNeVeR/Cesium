@@ -1,6 +1,6 @@
+using System.Globalization;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
-using Cesium.Core;
 using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Constants;
@@ -32,18 +32,18 @@ internal sealed class CharConstant : IConstant
         return text[1] switch
         {
             '\'' => '\'',
-            '0' => '\0',
             '"' => '"',
+            '?' => '?',
             '\\' => '\\',
+            '0' => '\0',
             'a' => '\a',
             'b' => '\b',
             'f' => '\f',
             'n' => '\n',
             'r' => '\r',
             't' => '\t',
-            '?' => '?',
-            'v' => (char)0x0b,
-            'x' => (char)int.Parse(text.AsSpan(2), System.Globalization.NumberStyles.AllowHexSpecifier),
+            'v' => '\v',
+            'x' => (char)int.Parse(text.AsSpan(2), NumberStyles.AllowHexSpecifier),
             > '0' and < '9' => (char)Convert.ToInt32(text.Substring(2), 8),
             _ => text[1],
         };
