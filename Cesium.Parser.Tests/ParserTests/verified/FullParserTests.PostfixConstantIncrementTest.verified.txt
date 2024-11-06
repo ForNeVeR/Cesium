@@ -74,16 +74,16 @@
               "Operator": "=",
               "Right": {
                 "$type": "Cesium.Ast.PostfixIncrementDecrementExpression, Cesium.Ast",
-                "PrefixOperator": {
-                  "Kind": "Increment",
-                  "Text": "++"
-                },
                 "Target": {
                   "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                   "Constant": {
                     "Kind": "IntLiteral",
                     "Text": "5"
                   }
+                },
+                "PostfixOperator": {
+                  "Kind": "Increment",
+                  "Text": "++"
                 }
               }
             }

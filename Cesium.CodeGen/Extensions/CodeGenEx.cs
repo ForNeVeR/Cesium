@@ -65,4 +65,7 @@ internal static class CodeGenEx
 
     public static void SizeOf(this IEmitScope scope, TypeReference type) =>
         scope.AddInstruction(Instruction.Create(OpCodes.Sizeof, type));
+
+    public static void Dup(this IEmitScope scope) =>
+        scope.AddInstruction(Instruction.Create(OpCodes.Dup));
 }

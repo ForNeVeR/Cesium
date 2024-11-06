@@ -1,5 +1,5 @@
 using Cesium.Ast;
-using System.Xml.Linq;
+using Cesium.Core;
 
 namespace Cesium.Compiler;
 
@@ -38,7 +38,7 @@ internal class AstDumper
                 DumpPInvokeDeclaration(pInvokeDeclaration);
                 break;
             default:
-                throw new Core.AssertException($"Unknown external declaration of type {declaration.GetType()}.");
+                throw new AssertException($"Unknown external declaration of type {declaration.GetType()}.");
         }
     }
 
@@ -61,7 +61,7 @@ internal class AstDumper
             foreach (var declaration in functionDefinition.Declarations)
             {
                 DumpDeclaration(declaration);
-            }    
+            }
 
             _writer.Indent--;
         }
@@ -193,7 +193,7 @@ internal class AstDumper
                 _writer.Indent--;
                 break;
             default:
-                throw new Core.AssertException($"Unknown direct declarator of type {directDeclarator.GetType()}.");
+                throw new AssertException($"Unknown direct declarator of type {directDeclarator.GetType()}.");
         }
     }
 
@@ -266,7 +266,7 @@ internal class AstDumper
                 _writer.Indent--;
                 break;
             default:
-                throw new Core.AssertException($"Unknown direct abstract declarator of type {directAbstractDeclarator.GetType()}.");
+                throw new AssertException($"Unknown direct abstract declarator of type {directAbstractDeclarator.GetType()}.");
         }
     }
 
@@ -322,7 +322,7 @@ internal class AstDumper
                 _writer.Indent--;
                 break;
             default:
-                throw new Core.AssertException($"Unknown initializer of type {initializer.GetType()}.");
+                throw new AssertException($"Unknown initializer of type {initializer.GetType()}.");
         }
     }
 
@@ -352,7 +352,7 @@ internal class AstDumper
                 _writer.WriteLine($"IdentifierDesignator .{identifierDesignator.FieldName}");
                 break;
             default:
-                throw new Core.AssertException($"Unknown designator of type {designator.GetType()}.");
+                throw new AssertException($"Unknown designator of type {designator.GetType()}.");
         }
     }
 
@@ -370,7 +370,7 @@ internal class AstDumper
                 DumpISpecifierQualifierListItem(specifierQualifierListItem);
                 break;
             default:
-                throw new Core.AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
+                throw new AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
         }
     }
 
@@ -391,7 +391,7 @@ internal class AstDumper
                 _writer.WriteLine($"NamedTypeSpecifier {namedTypeSpecifier.TypeDefName}");
                 break;
             default:
-                throw new Core.AssertException($"Unknown type specifier of type {typeSpecifier.GetType()}.");
+                throw new AssertException($"Unknown type specifier of type {typeSpecifier.GetType()}.");
         }
     }
 
@@ -445,7 +445,7 @@ internal class AstDumper
                 DumpITypeSpecifier(typeSpecifier);
                 break;
             default:
-                throw new Core.AssertException($"Unknown specifier qualified list item of type {specifierQualifierListItem.GetType()}.");
+                throw new AssertException($"Unknown specifier qualified list item of type {specifierQualifierListItem.GetType()}.");
         }
     }
 
@@ -556,7 +556,7 @@ internal class AstDumper
                 _writer.Indent--;
                 break;
             case PostfixIncrementDecrementExpression postfixIncrementDecrementExpression:
-                _writer.WriteLine($"PostfixIncrementDecrementExpression {postfixIncrementDecrementExpression.PrefixOperator.Text}");
+                _writer.WriteLine($"PostfixIncrementDecrementExpression {postfixIncrementDecrementExpression.PostfixOperator.Text}");
                 _writer.Indent++;
                 _writer.WriteLine($"Target");
                 _writer.Indent++;
@@ -663,7 +663,7 @@ internal class AstDumper
                 _writer.Indent--;
                 break;
             default:
-                throw new Core.AssertException($"Unknown expression of type {expression.GetType()}.");
+                throw new AssertException($"Unknown expression of type {expression.GetType()}.");
         }
     }
 
@@ -863,7 +863,7 @@ internal class AstDumper
                 DumpDeclaration(declaration);
                 break;
             default:
-                throw new Core.AssertException($"Unknown statement of type {statement.GetType()}.");
+                throw new AssertException($"Unknown statement of type {statement.GetType()}.");
         }
     }
 

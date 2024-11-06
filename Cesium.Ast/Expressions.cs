@@ -20,7 +20,7 @@ public sealed record FunctionCallExpression(Expression Function, ImmutableArray<
 public sealed record TypeCastOrNamedFunctionCallExpression(string TypeOrFunctionName, ImmutableArray<Expression> Arguments) : Expression;
 public sealed record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public sealed record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
-public sealed record PostfixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
+public sealed record PostfixIncrementDecrementExpression(Expression Target, IToken<CTokenType> PostfixOperator) : Expression;
 
 // 6.5.3 Unary operators
 public sealed record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;

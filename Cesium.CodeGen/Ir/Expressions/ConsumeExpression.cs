@@ -4,16 +4,9 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
-internal sealed class ConsumeExpression : IExpression
+internal sealed class ConsumeExpression(IExpression expression) : IExpression
 {
-    private readonly IExpression _expression;
-
-    public ConsumeExpression(IExpression expression)
-    {
-        _expression = expression;
-    }
-
-    public IExpression Lower(IDeclarationScope scope) => new ConsumeExpression(_expression.Lower(scope));
+    public IExpression Lower(IDeclarationScope scope) => new ConsumeExpression(expression.Lower(scope));
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
@@ -22,14 +15,14 @@ internal sealed class ConsumeExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
-        if (_expression is SetValueExpression sv)
+        if (expression is SetValueExpression sv)
         {
             sv.NoReturn().EmitTo(scope);
 
             return;
         }
 
-        _expression.EmitTo(scope);
+        expression.EmitTo(scope);
         var processor = scope.Method.Body.GetILProcessor();
         processor.Emit(OpCodes.Pop);
     }

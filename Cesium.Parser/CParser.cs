@@ -136,7 +136,7 @@ public partial class CParser
     [Rule("postfix_expression: postfix_expression '--'")]
     private static Expression MakePostfixIncrementDecrementExpression(
         Expression target,
-        ICToken operation) => new PostfixIncrementDecrementExpression(operation, target);
+        ICToken operation) => new PostfixIncrementDecrementExpression(target, operation);
 
     // TODO[#207]:
     // postfix-expression:

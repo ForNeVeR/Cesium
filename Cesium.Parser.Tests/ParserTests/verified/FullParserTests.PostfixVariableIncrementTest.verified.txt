@@ -64,16 +64,16 @@
             "$type": "Cesium.Ast.ExpressionStatement, Cesium.Ast",
             "Expression": {
               "$type": "Cesium.Ast.PostfixIncrementDecrementExpression, Cesium.Ast",
-              "PrefixOperator": {
-                "Kind": "Increment",
-                "Text": "++"
-              },
               "Target": {
                 "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
                 "Constant": {
                   "Kind": "Identifier",
                   "Text": "x"
                 }
+              },
+              "PostfixOperator": {
+                "Kind": "Increment",
+                "Text": "++"
               }
             }
           },
