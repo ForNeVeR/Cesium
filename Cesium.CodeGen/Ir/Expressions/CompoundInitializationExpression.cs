@@ -107,5 +107,5 @@ internal sealed class CompoundInitializationExpression : IExpression
 
     public IType GetExpressionType(IDeclarationScope scope) => _type;
 
-    public IExpression Lower(IDeclarationScope scope) => new CompoundInitializationExpression(scope.ResolveType(_type), _arrayInitializer);
+    public IExpression Lower(IDeclarationScope scope) => new CompoundInitializationExpression(scope.ResolveType(_type), _arrayInitializer.InlineConstantExpressions(scope));
 }

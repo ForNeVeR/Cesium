@@ -216,6 +216,17 @@ int main() {
 }");
 
     [Fact]
+    public Task ArrayInitializerConstExpression() => DoTest(@"
+int main() {
+    int a[] = { -2, 99, 0, -743, 1+1, 2, 4 };
+    if (a[1] != 99) {
+        return 0;
+    }
+
+    return 1;
+}");
+
+    [Fact]
     public Task ConstExpressionSizeArrayTest() => DoTest(@"
 int main() {
     const char a[1 + 1] = { 255 };
