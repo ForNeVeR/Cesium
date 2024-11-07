@@ -32,7 +32,6 @@ internal sealed class ControlFlowChecker
         {
             case ExpressionStatement:
             case AmbiguousBlockItem:
-            case InitializationBlockItem:
                 return Atom();
             case LabelStatement label:
             {
@@ -207,7 +206,6 @@ internal sealed class ControlFlowChecker
             case AmbiguousBlockItem:
             case BreakStatement:
             case ContinueStatement:
-            case InitializationBlockItem:
             case TagBlockItem:
             case TypeDefBlockItem:
             case ReturnStatement:

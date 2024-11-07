@@ -8,6 +8,7 @@ using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -234,7 +235,7 @@ internal static class BlockItemLowering
             case DeclarationBlockItem d:
                 {
                     var (storageClass, items) = d.Declaration;
-                    var newItems = new List<InitializerPart>();
+                    var newItems = new List<IBlockItem>();
 
                     foreach (var (declaration, initializer) in items)
                     {
@@ -263,33 +264,53 @@ internal static class BlockItemLowering
                             }
                         }
 
-                        if (initializerExpression != null)
+                        IExpression? primaryInitializerExpression = null;
+                        if (type is InPlaceArrayType i)
+                        {
+                            primaryInitializerExpression = 
+                                new AssignmentExpression(new IdentifierExpression(identifier),
+                                    AssignmentOperator.Assign,
+                                    new LocalAllocationExpression(i)
+                            );
+                            newItems.Add(Lower(scope, new ExpressionStatement(primaryInitializerExpression)));
+                            if (initializerExpression != null)
+                            {
+                                // String array.
+                                if (i.Base.EraseConstType() is PointerType pointerType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression)
+                                {
+                                    if (pointerType.Base.EraseConstType() is PrimitiveType { Kind: PrimitiveTypeKind.Char })
+                                    {
+                                        int index = 0;
+                                        foreach (var arrayItem in compoundInitializationExpression.ArrayInitializer.Initializers)
+                                        {
+                                            if (arrayItem is null)
+                                            {
+                                                index++;
+                                                continue;
+                                            }
+
+                                            var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)));
+                                            var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem);
+                                            newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
+                                            index++;
+                                        }
+
+                                        initializerExpression = null;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (initializerExpression is not null)
                         {
                             initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier),
                                 AssignmentOperator.Assign, initializerExpression);
 
-                            if (initializerExpression.GetExpressionType(scope) is not PrimitiveType
-                                {
-                                    Kind: PrimitiveTypeKind.Void
-                                })
-                                initializerExpression = new ConsumeExpression(initializerExpression);
+                            newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
                         }
-
-                        IExpression? primaryInitializerExpression = null;
-                        if (type is InPlaceArrayType i)
-                        {
-                            primaryInitializerExpression = new ConsumeExpression(
-                                new AssignmentExpression(new IdentifierExpression(identifier), AssignmentOperator.Assign,
-                                    new LocalAllocationExpression(i))
-                            );
-                        }
-
-                        var initializableDeclaration = new InitializerPart(primaryInitializerExpression?.Lower(scope),
-                            initializerExpression?.Lower(scope));
-                        newItems.Add(initializableDeclaration);
                     }
 
-                    return new InitializationBlockItem(newItems);
+                    return new CompoundStatement(newItems, (IEmitScope)scope);
                 }
             case DoWhileStatement s:
                 {
@@ -416,11 +437,6 @@ internal static class BlockItemLowering
                     var falseBranch = s.FalseBranch != null ? Lower(scope, s.FalseBranch) : null;
 
                     return new IfElseStatement(s.Expression.Lower(scope), Lower(scope, s.TrueBranch), falseBranch);
-                }
-            case InitializationBlockItem:
-                {
-                    // already lowered
-                    return blockItem;
                 }
             case LabelStatement s:
                 {
