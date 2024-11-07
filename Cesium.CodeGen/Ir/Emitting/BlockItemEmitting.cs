@@ -150,16 +150,6 @@ internal static class BlockItemEmitting
 
                 return;
             }
-            case InitializationBlockItem i:
-            {
-                foreach (var (primInt, secInt) in i.Items)
-                {
-                    primInt?.EmitTo(scope);
-                    secInt?.EmitTo(scope);
-                }
-
-                return;
-            }
             case LabelStatement s:
             {
                 var instruction = scope.ResolveLabel(s.Identifier);

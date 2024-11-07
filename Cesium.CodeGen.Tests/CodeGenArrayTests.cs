@@ -227,6 +227,17 @@ int main() {
 }");
 
     [Fact]
+    public Task ArrayStringComparison() => DoTest(@"
+int main() {
+    const char* a[1] = { ""A"" };
+    if (a[0]) {
+        return 0;
+    }
+
+    return 1;
+}"); 
+    
+    [Fact]
     public Task ConstExpressionSizeArrayTest() => DoTest(@"
 int main() {
     const char a[1 + 1] = { 255 };

@@ -9,18 +9,19 @@ namespace Cesium.CodeGen.Ir.Expressions;
 internal sealed class CompoundInitializationExpression : IExpression
 {
     private readonly IType _type;
-    private readonly ArrayInitializerExpression _arrayInitializer;
+
+    internal ArrayInitializerExpression ArrayInitializer { get; }
 
     public CompoundInitializationExpression(IType type, ArrayInitializerExpression arrayInitializer)
     {
         _type = type;
-        _arrayInitializer = arrayInitializer;
+        ArrayInitializer = arrayInitializer;
     }
 
     public void EmitTo(IEmitScope scope)
     {
         using var stream = new MemoryStream();
-        foreach (var i in _arrayInitializer.Initializers)
+        foreach (var i in ArrayInitializer.Initializers)
         {
             if (i is null)
                 throw new NotImplementedException("Empty initializer item reached");
@@ -107,5 +108,5 @@ internal sealed class CompoundInitializationExpression : IExpression
 
     public IType GetExpressionType(IDeclarationScope scope) => _type;
 
-    public IExpression Lower(IDeclarationScope scope) => new CompoundInitializationExpression(scope.ResolveType(_type), _arrayInitializer.InlineConstantExpressions(scope));
+    public IExpression Lower(IDeclarationScope scope) => new CompoundInitializationExpression(scope.ResolveType(_type), ArrayInitializer.InlineConstantExpressions(scope));
 }

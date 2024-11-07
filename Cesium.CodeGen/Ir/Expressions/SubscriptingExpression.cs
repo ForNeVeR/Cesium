@@ -19,7 +19,7 @@ internal sealed class SubscriptingExpression : IValueExpression
         _index = index.ToIntermediate();
     }
 
-    private SubscriptingExpression(IExpression expression, IExpression index)
+    public SubscriptingExpression(IExpression expression, IExpression index)
     {
         _expression = expression;
         _index = index;
