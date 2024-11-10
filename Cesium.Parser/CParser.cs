@@ -138,12 +138,17 @@ public partial class CParser
         Expression target,
         ICToken operation) => new PostfixIncrementDecrementExpression(target, operation);
 
-    // TODO[#207]:
-    // postfix-expression:
-    //     postfix-expression ++
-    //     postfix-expression --
-    //     ( type-name ) { initializer-list }
-    //     ( type-name ) { initializer-list , }
+    [Rule("postfix_expression: compound_literal")]
+    private static Expression MakePostfixCompoundLiteralExpression(
+        Expression compound_literal) => compound_literal;
+
+    [Rule("compound_literal: '(' storage_class_specifier* type_name ')' braced_initializer")]
+    private static Expression MakeCompoundLiteralExpression(
+        ICToken openParen,
+        IReadOnlyList<StorageClassSpecifier> storageClassSpecifiers,
+        TypeName typeName,
+        ICToken closeParen,
+        ImmutableArray<Initializer> initializers) => new CompoundLiteralExpression(storageClassSpecifiers, typeName, initializers);
 
     [Rule("argument_expression_list: assignment_expression")]
     private static ArgumentExpressionList MakeArgumentExpressionList(Expression expression) =>
@@ -175,7 +180,7 @@ public partial class CParser
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
         new IndirectionExpression(target);
 
-    [Rule("unary_expression: unary_operator unary_expression")]
+    [Rule("unary_expression: unary_operator cast_expression")]
     private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
         @operator.Kind == CTokenType.Subtract && target is ConstantLiteralExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
         ? new ConstantLiteralExpression(MergeTokens(@operator, constantExpression.Constant))
@@ -385,12 +390,10 @@ public partial class CParser
     private static InitDeclaratorList MakeInitDeclaratorList(InitDeclaratorList prev, ICToken _, InitDeclarator newDeclarator) =>
         prev.Add(newDeclarator);
 
-    [Rule("init_declarator: declarator")]
-    private static InitDeclarator MakeInitDeclarator(Declarator declarator) => new(declarator);
+    [Rule("init_declarator: declarator ('=' initializer)?")]
+    private static InitDeclarator MakeInitDeclarator(Declarator declarator, (IToken _, Initializer initializer)? optional) =>
+        new(declarator, optional?.initializer);
 
-    [Rule("init_declarator: declarator '=' initializer")]
-    private static InitDeclarator MakeInitDeclarator(Declarator declarator, IToken _, Initializer initializer) =>
-        new(declarator, initializer);
 
     // 6.7.1 Storage-class specifiers
     [Rule("storage_class_specifier: 'typedef'")]
@@ -736,17 +739,19 @@ public partial class CParser
     private static Initializer MakeInitializer(Expression assignmentExpression) =>
         new AssignmentInitializer(assignmentExpression);
 
-    [Rule("initializer: '{' '}' ")]
-    private static Initializer MakeInitializer(IToken _, IToken __) =>
-        new ArrayInitializer(ImmutableArray<Initializer>.Empty);
+    [Rule("initializer: braced_initializer ")]
+    private static Initializer MakeInitializer(ImmutableArray<Initializer> initializerParts) =>
+        new ArrayInitializer(initializerParts);
 
-    [Rule("initializer: '{' initializer_list '}' ")]
-    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) =>
-        new ArrayInitializer(initializers);
+    [Rule("braced_initializer: '{' '}' ")]
+    private static ImmutableArray<Initializer> MakeBracedInitializer(IToken _, IToken __) =>
+        ImmutableArray<Initializer>.Empty;
 
-    [Rule("initializer: '{' initializer_list ',' '}' ")]
-    private static Initializer MakeInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __, IToken ___) =>
-        new ArrayInitializer(initializers);
+    [Rule("braced_initializer: '{' initializer_list '}' ")]
+    private static ImmutableArray<Initializer> MakeBracedInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __) => initializers;
+
+    [Rule("braced_initializer: '{' initializer_list ',' '}' ")]
+    private static ImmutableArray<Initializer> MakeBracedInitializer(IToken _, ImmutableArray<Initializer> initializers, IToken __, IToken ___) => initializers;
 
     [Rule("initializer_list: designation? initializer")]
     private static ImmutableArray<Initializer> MakeInitializerList(Designation? designation, Initializer initializer) =>

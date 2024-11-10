@@ -1,0 +1,66 @@
+﻿{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.StructOrUnionSpecifier, Cesium.Ast",
+      "TypeKind": "Struct",
+      "Identifier": "Type",
+      "StructDeclarations": []
+    }
+  ],
+  "InitDeclarators": [
+    {
+      "$type": "Cesium.Ast.InitDeclarator, Cesium.Ast",
+      "Declarator": {
+        "$type": "Cesium.Ast.Declarator, Cesium.Ast",
+        "Pointer": {
+          "$type": "Cesium.Ast.Pointer, Cesium.Ast",
+          "TypeQualifiers": null,
+          "ChildPointer": null
+        },
+        "DirectDeclarator": {
+          "$type": "Cesium.Ast.IdentifierDirectDeclarator, Cesium.Ast",
+          "Identifier": "ty_int",
+          "Base": null
+        }
+      },
+      "Initializer": {
+        "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+        "Expression": {
+          "$type": "Cesium.Ast.UnaryOperatorExpression, Cesium.Ast",
+          "Operator": "&",
+          "Target": {
+            "$type": "Cesium.Ast.CompoundLiteralExpression, Cesium.Ast",
+            "StorageClassSpecifiers": [],
+            "TypeName": {
+              "$type": "Cesium.Ast.TypeName, Cesium.Ast",
+              "SpecifierQualifierList": [
+                {
+                  "$type": "Cesium.Ast.StructOrUnionSpecifier, Cesium.Ast",
+                  "TypeKind": "Struct",
+                  "Identifier": "Type",
+                  "StructDeclarations": []
+                }
+              ],
+              "AbstractDeclarator": null
+            },
+            "Initializers": [
+              {
+                "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
+                "Expression": {
+                  "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+                  "Constant": {
+                    "Kind": "Identifier",
+                    "Text": "TY_INT"
+                  }
+                },
+                "Designation": null
+              }
+            ]
+          }
+        },
+        "Designation": null
+      }
+    }
+  ]
+}

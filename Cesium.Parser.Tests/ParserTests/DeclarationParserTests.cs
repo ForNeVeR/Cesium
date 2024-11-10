@@ -42,6 +42,15 @@ public class DeclarationParserTests : ParserTestBase
     public Task StructTypeVariableDeclaration() => DoDeclarationParserTest("struct Foo x;");
 
     [Fact]
+    public Task CompoundStructInitializer() => DoDeclarationParserTest("struct Type ty_int = {TY_INT};");
+
+    [Fact]
+    public Task InitializerWithCast() => DoDeclarationParserTest("struct Type ty_int = (struct Type){TY_INT};");
+
+    [Fact]
+    public Task InitializerWithCastAddAddress() => DoDeclarationParserTest("struct Type *ty_int = &(struct Type){TY_INT};");
+
+    [Fact]
     public Task CliImport() => DoDeclarationParserTest(@"__cli_import(""System.Runtime.InteropServices.Marshal::AllocHGlobal"")
 void *malloc(size_t);");
 
