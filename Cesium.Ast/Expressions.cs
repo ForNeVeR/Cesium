@@ -21,6 +21,7 @@ public sealed record TypeCastOrNamedFunctionCallExpression(string TypeOrFunction
 public sealed record MemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public sealed record PointerMemberAccessExpression(Expression Target, IdentifierExpression Identifier) : Expression;
 public sealed record PostfixIncrementDecrementExpression(Expression Target, IToken<CTokenType> PostfixOperator) : Expression;
+public sealed record CompoundLiteralExpression(IReadOnlyList<StorageClassSpecifier> StorageClassSpecifiers, TypeName TypeName, ImmutableArray<Initializer> Initializers) : Expression;
 
 // 6.5.3 Unary operators
 public sealed record PrefixIncrementDecrementExpression(IToken<CTokenType> PrefixOperator, Expression Target) : Expression;
