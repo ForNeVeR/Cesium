@@ -411,7 +411,7 @@ internal static class BlockItemLowering
                     var newDeclaration = new FunctionInfo(parameters, returnType, d.StorageClass, IsDefined: true);
                     scope.DeclareFunction(d.Name, newDeclaration);
 
-                    return new FunctionDefinition(d.Name, d.StorageClass, resolvedFunctionType, d.Statement);
+                    return new FunctionDefinition(d.Name, d.StorageClass, resolvedFunctionType, d.Statement, d.Inline, d.NoReturn);
                 }
             case GlobalVariableDefinition d:
                 {

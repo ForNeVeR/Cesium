@@ -557,4 +557,7 @@ int main()
         return 1;
     }
 }");
+
+    [Fact]
+    public Task InlineFunction() => DoTest(@"inline int test () {return 1;} int main() { return 0; }");
 }
