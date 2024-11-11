@@ -31,7 +31,7 @@ public class StdIoFunctionTests
 
         int exitCode;
         using var buffer = new MemoryStream();
-        var handleIndex = StdIoFunctions.Handles.Count;
+        var streamptr = IntPtr.Zero;
         try
         {
             using var writer = new StreamWriter(buffer);
@@ -42,15 +42,15 @@ public class StdIoFunctionTests
                 Writer = () => writer
             };
 
-            StdIoFunctions.Handles.Add(handle);
+            streamptr = StdIoFunctions.AddStream(handle);
             fixed (byte* formatPtr = formatEncoded)
             {
-                exitCode = StdIoFunctions.FPrintF((void*)handleIndex, formatPtr, &input);
+                exitCode = StdIoFunctions.FPrintF((void*)streamptr, formatPtr, &input);
             }
         }
         finally
         {
-            StdIoFunctions.Handles.RemoveAt(handleIndex);
+            StdIoFunctions.RemoveStream(streamptr);
         }
 
         return (exitCode, Encoding.UTF8.GetString(buffer.ToArray()));

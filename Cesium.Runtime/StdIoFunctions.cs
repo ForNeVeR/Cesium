@@ -1,5 +1,6 @@
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 #if !NETSTANDARD
 using System.Runtime.InteropServices;
@@ -21,7 +22,8 @@ public unsafe static class StdIoFunctions
         public int ErrNo { get; set; }
     }
 
-    internal static List<StreamHandle?> Handles = new();
+    private static object _locker = new();
+    internal static readonly List<StreamHandle> Handles = [];
 
     private const int StdIn = 0;
 
@@ -69,7 +71,7 @@ public unsafe static class StdIoFunctions
 
     public static int FPutS(byte* str, void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return -1;
@@ -113,7 +115,7 @@ public unsafe static class StdIoFunctions
     {
         try
         {
-            var streamDescriptor = GetStreamHandle(stream);
+            var streamDescriptor = GetStream((IntPtr)stream);
             if (streamDescriptor == null)
             {
                 return -1;
@@ -142,7 +144,7 @@ public unsafe static class StdIoFunctions
             return -1;
         }
 
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return -1;
@@ -475,7 +477,7 @@ public unsafe static class StdIoFunctions
         return consumedBytes + remainderString.Length;
     }
 
-    public unsafe static void* FOpen(byte* filename, byte* mode)
+    public static unsafe void* FOpen(byte* filename, byte* mode)
     {
         void* streamptr;
         var errorCode = FOpenS(&streamptr, filename, mode);
@@ -534,28 +536,25 @@ public unsafe static class StdIoFunctions
             handle.Writer = () => new StreamWriter(stream);
         }
 
-        Handles.Add(handle);
-        *streamptr = GetLastStream();
+        *streamptr = (void*)AddStream(handle);
         return 0;
     }
 
     public static int FClose(void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
         }
 
         streamHandle.Stream!.Close();
-        var handleIndex = (int)(IntPtr)stream;
-        Handles[handleIndex] = null;
-        return 0;
+        return RemoveStream((IntPtr)stream) ? 0 : ErrNo.EBADF;
     }
 
     public static int FGetC(void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -582,7 +581,7 @@ public unsafe static class StdIoFunctions
 
     public static byte* FGetS(byte* str, int count, void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return null;
@@ -612,7 +611,7 @@ public unsafe static class StdIoFunctions
 
     public static int FEof(void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -623,7 +622,7 @@ public unsafe static class StdIoFunctions
 
     public static int FSeek(void* stream, long offset, int origin)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -635,7 +634,7 @@ public unsafe static class StdIoFunctions
 
     public static int FError(void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -646,7 +645,7 @@ public unsafe static class StdIoFunctions
 
     public static int Rewind(void* stream)
     {
-        var streamHandle = GetStreamHandle(stream);
+        var streamHandle = GetStream((IntPtr)stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -668,15 +667,62 @@ public unsafe static class StdIoFunctions
         return 0;
     }
 
-    private static unsafe void* GetLastStream()
+    internal static StreamHandle? GetStream(IntPtr handle)
     {
-        return (void*)(IntPtr)(Handles.Count - 1);
+        var handleValue = handle.ToInt64();
+        if (handleValue is StdIn or StdOut or StdErr)
+        {
+            return Handles[(int)handleValue];
+        }
+
+        try
+        {
+            lock (_locker)
+            {
+                var gchAddr = Marshal.ReadIntPtr(handle);
+                var gch = GCHandle.FromIntPtr(gchAddr);
+
+                return gch.Target as StreamHandle;
+            }
+        }
+        catch (AccessViolationException)
+        {
+            return null;
+        }
     }
 
-    private static StreamHandle? GetStreamHandle(void* stream)
+    internal static IntPtr AddStream(StreamHandle stream)
     {
-        var handleIndex = (int)(IntPtr)stream;
-        var result = Handles.ElementAtOrDefault(handleIndex);
-        return result;
+        lock (_locker)
+        {
+            var gch = GCHandle.Alloc(stream);
+            var handel = GCHandle.ToIntPtr(gch);
+
+            var ptr = Marshal.AllocHGlobal(sizeof(GCHandle));
+            Marshal.WriteIntPtr(ptr, handel);
+            return ptr;
+        }
+    }
+
+    internal static bool RemoveStream(IntPtr handle)
+    {
+        try
+        {
+            lock (_locker)
+            {
+                var gchAddr = Marshal.ReadIntPtr(handle);
+                var gch = GCHandle.FromIntPtr(gchAddr);
+
+                if (gch.Target is not StreamHandle) return false;
+
+                gch.Free();
+                Marshal.FreeHGlobal(handle);
+                return true;
+            }
+        }
+        catch (AccessViolationException)
+        {
+            return false;
+        }
     }
 }
