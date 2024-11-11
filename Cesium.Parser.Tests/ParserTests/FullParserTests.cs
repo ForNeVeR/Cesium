@@ -192,4 +192,10 @@ int main(void) { foo x; x.x = 42; return 0; }");
 
     [Fact]
     public Task StaticFunction() => DoTest(@"static int foo() { return 123; }");
+
+    [Fact]
+    public Task InlineFunction() => DoTest(@"inline int foo() { return 123; }");
+
+    [Fact]
+    public Task NoReturnFunction() => DoTest(@"_Noreturn void foo() { }");
 }

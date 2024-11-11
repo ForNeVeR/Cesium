@@ -162,19 +162,11 @@ public partial class CParser
 
     // TODO[#207]: 6.5.3 Unary operators
     // unary-expression:
-    //    postfix-expression
+    //    _Alignof ( type-name )
     [Rule("unary_expression: '++' unary_expression")]
     [Rule("unary_expression: '--' unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
         new PrefixIncrementDecrementExpression(prefixOperator, target);
-
-    // TODO[#207]:
-    // unary-expression:
-    //    * unary-expression
-    //    unary-operator cast-expression
-    //    sizeof unary-expression
-    //    sizeof ( type-name )
-    //    _Alignof ( type-name )
 
     [Rule("unary_expression: '*' cast_expression")]
     private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
@@ -377,9 +369,13 @@ public partial class CParser
     [Rule("declaration_specifier: storage_class_specifier")]
     [Rule("declaration_specifier: type_specifier")]
     [Rule("declaration_specifier: type_qualifier")]
+    [Rule("declaration_specifier: function_specifier")]
     private static IDeclarationSpecifier MakeDeclarationSpecifier(IDeclarationSpecifier specifier) => specifier;
 
-    // TODO[#207]: [Rule("declaration_specifier: function_specifier")]
+    [Rule("function_specifier: KeywordInline")]
+    [Rule("function_specifier: KeywordNoReturn")]
+    private static IDeclarationSpecifier MakeFunctionSpecifier(ICToken token) => new FunctionSpecifier(token.Text);
+
     // TODO[#207]: [Rule("declaration_specifier: alignment_specifier")]
 
     [Rule("init_declarator_list: init_declarator")]
