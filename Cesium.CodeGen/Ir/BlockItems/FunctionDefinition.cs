@@ -26,6 +26,10 @@ internal sealed class FunctionDefinition : IBlockItem
 
     public bool IsMain => Name == MainFunctionName;
 
+    public bool Inline { get; private set; }
+
+    public bool NoReturn { get; private set; }
+
     public FunctionDefinition(Ast.FunctionDefinition function)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
@@ -35,6 +39,18 @@ internal sealed class FunctionDefinition : IBlockItem
         {
             StorageClass = StorageClass.Static;
             specifiers = specifiers.Remove(staticMarker);
+        }
+
+        var functionSpecifiers = specifiers.OfType<FunctionSpecifier>().ToList();
+        specifiers = specifiers.RemoveAll(_ => _ is FunctionSpecifier);
+        if (functionSpecifiers.Any(_ => _.SpecifierType == "inline"))
+        {
+            Inline = true;
+        }
+
+        if (functionSpecifiers.Any(_ => _.SpecifierType == "_Noreturn"))
+        {
+            NoReturn = true;
         }
 
         var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
@@ -52,12 +68,14 @@ internal sealed class FunctionDefinition : IBlockItem
         Statement = astStatement.ToIntermediate();
     }
 
-    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, IBlockItem statement)
+    public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, IBlockItem statement, bool inline, bool noreturn)
     {
         StorageClass = storageClass;
         Name = name;
         FunctionType = functionType;
         Statement = statement;
+        Inline = inline;
+        NoReturn = noreturn;
     }
 
     public void EmitCode(IEmitScope scope)
