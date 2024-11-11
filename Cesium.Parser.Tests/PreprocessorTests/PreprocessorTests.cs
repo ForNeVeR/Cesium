@@ -1076,4 +1076,13 @@ MACRO(1
 2
 3)
 """);
+
+    [Fact]
+    public Task IgnoreComments() => DoTest("""
+#define VAL 1 // Some commentInDefine
+enum test {
+    Value1 = VAL,
+    Value2 = 346,
+}
+""");
 }
