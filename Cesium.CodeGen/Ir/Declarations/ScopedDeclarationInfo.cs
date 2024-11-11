@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 
@@ -126,6 +127,13 @@ internal interface IScopedDeclarationInfo
             {
                 var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i)).ToImmutableArray();
                 return new CompoundObjectInitializationExpression(type, expr);
+            }
+
+            if (type is PrimitiveType primitiveType)
+            {
+                if (arrayInitializer.Initializers.Length == 0) return new Expressions.ConstantLiteralExpression(new IntegerConstant(0));
+                if (arrayInitializer.Initializers.Length == 1) return ConvertInitializer(type, arrayInitializer.Initializers[0]);
+                throw new CompilationException($"Primitive types cannot be initialized using more then one initializer list.");
             }
 
             if (arrayInitializer.Initializers.Length == 0)
