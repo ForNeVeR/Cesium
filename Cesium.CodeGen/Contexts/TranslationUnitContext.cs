@@ -178,7 +178,17 @@ public class TranslationUnitContext
                 .ToList();
             if (structType.Members.Count != 0 && structType.Identifier is not null)
             {
-                if (_types.TryGetValue(structType.Identifier, out var existingType))
+                IType? existingType;
+                if (_types.TryGetValue(structType.Identifier, out existingType))
+                {
+                    if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
+                    {
+                        existingStructType.Members = members;
+                        return existingType;
+                    }
+                }
+
+                if (_tags.TryGetValue(structType.Identifier, out existingType))
                 {
                     if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
                     {
