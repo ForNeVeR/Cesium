@@ -411,6 +411,10 @@ int main() {
 }
 ");
 
+    [Fact]
+    public Task StructForwardDeclaration() => DoTest(@"struct foo;
+struct foo { int x; };");
+
     [Fact(Skip = "TODO[#552]: Support local struct types")]
     public Task LocalStructTest() => DoTest("""
 int main(void) {
