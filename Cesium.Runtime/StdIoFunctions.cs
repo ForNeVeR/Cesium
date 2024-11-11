@@ -698,7 +698,7 @@ public unsafe static class StdIoFunctions
             var gch = GCHandle.Alloc(stream);
             var handel = GCHandle.ToIntPtr(gch);
 
-            var ptr = Marshal.AllocHGlobal(sizeof(GCHandle));
+            var ptr = Marshal.AllocHGlobal(sizeof(IntPtr));
             Marshal.WriteIntPtr(ptr, handel);
             return ptr;
         }
