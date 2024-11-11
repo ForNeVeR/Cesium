@@ -1,0 +1,4 @@
+enum test {
+    Value1 = 1 ,
+    Value2 = 346,
+}

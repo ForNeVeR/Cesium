@@ -336,7 +336,7 @@ internal class CPreprocessorParser(TransactionalLexer lexer)
                     define,
                     identifier.Ok.Value,
                     parameters,
-                    replacementList.Ok.Value.ToImmutableArray())));
+                    replacementList.Ok.Value.Where(_ => _.Kind != CPreprocessorTokenType.Comment).ToImmutableArray())));
     }
 
     private ParseResult<MacroParameters> ParseMacroParameters()
