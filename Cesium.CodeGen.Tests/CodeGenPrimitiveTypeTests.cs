@@ -2,12 +2,22 @@ using Cesium.Ast;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Parser;
+using JetBrains.Annotations;
 using Yoakke.SynKit.C.Syntax;
 
 namespace Cesium.CodeGen.Tests;
 
-public class CodeGenPrimitiveTypeTests
+public class CodeGenPrimitiveTypeTests : CodeGenTestBase
 {
+    [MustUseReturnValue]
+    private static Task DoTest(string source)
+    {
+        var assembly = GenerateAssembly(default, source);
+
+        var moduleType = assembly.Modules.Single().GetType("<Module>");
+        return VerifyMethods(moduleType);
+    }
+
     [Theory]
     [InlineData("char", PrimitiveTypeKind.Char)]
     [InlineData("int", PrimitiveTypeKind.Int)]
@@ -24,4 +34,16 @@ public class CodeGenPrimitiveTypeTests
         var type = (PrimitiveType)item.Declaration.Type;
         Assert.Equal(expectedKind, type.Kind);
     }
+
+    [Fact]
+    public Task PrimitiveInitializer() => DoTest(@"int main() {
+    int a = { 10 };
+    return 0;
+ }");
+
+    [Fact]
+    public Task PrimitiveEmptyInitializer() => DoTest(@"int main() {
+    int a = { };
+    return 0;
+ }");
 }
