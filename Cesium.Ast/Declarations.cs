@@ -49,6 +49,9 @@ public sealed record EnumDeclaration(string Identifier, Expression? Constant);
 // 6.7.3 Type qualifiers
 public sealed record TypeQualifier(string Name) : ISpecifierQualifierListItem;
 
+// 6.7.4 Function specifiers
+public sealed record FunctionSpecifier(string SpecifierType) : IDeclarationSpecifier;
+
 // 6.7.7 Type names
 public sealed record TypeName(SpecifierQualifierList SpecifierQualifierList, AbstractDeclarator? AbstractDeclarator = null);
 public sealed record AbstractDeclarator(Pointer? Pointer = null, IDirectAbstractDeclarator? DirectAbstractDeclarator = null);
