@@ -30,8 +30,8 @@ public class StdIoFunctionTests
         var formatEncoded = Encoding.UTF8.GetBytes(format);
 
         int exitCode;
+        var streamptr = (void*)IntPtr.Zero;
         using var buffer = new MemoryStream();
-        var streamptr = IntPtr.Zero;
         try
         {
             using var writer = new StreamWriter(buffer);
@@ -50,7 +50,7 @@ public class StdIoFunctionTests
         }
         finally
         {
-            StdIoFunctions.RemoveStream(streamptr);
+            StdIoFunctions.FreeStream(streamptr);
         }
 
         return (exitCode, Encoding.UTF8.GetString(buffer.ToArray()));

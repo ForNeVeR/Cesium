@@ -71,7 +71,7 @@ public unsafe static class StdIoFunctions
 
     public static int FPutS(byte* str, void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return -1;
@@ -115,7 +115,7 @@ public unsafe static class StdIoFunctions
     {
         try
         {
-            var streamDescriptor = GetStream((IntPtr)stream);
+            var streamDescriptor = GetStream(stream);
             if (streamDescriptor == null)
             {
                 return -1;
@@ -133,7 +133,7 @@ public unsafe static class StdIoFunctions
 
     public static int PrintF(byte* str, void* varargs)
     {
-        return FPrintF((void*)(IntPtr)StdOut, str, varargs);
+        return FPrintF((void*)StdOut, str, varargs);
     }
 
     public static int FPrintF(void* stream, byte* str, void* varargs)
@@ -144,7 +144,7 @@ public unsafe static class StdIoFunctions
             return -1;
         }
 
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return -1;
@@ -536,25 +536,25 @@ public unsafe static class StdIoFunctions
             handle.Writer = () => new StreamWriter(stream);
         }
 
-        *streamptr = (void*)AddStream(handle);
+        *streamptr = AddStream(handle);
         return 0;
     }
 
     public static int FClose(void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
         }
 
         streamHandle.Stream!.Close();
-        return RemoveStream((IntPtr)stream) ? 0 : ErrNo.EBADF;
+        return FreeStream(stream) ? 0 : ErrNo.EBADF;
     }
 
     public static int FGetC(void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -581,7 +581,7 @@ public unsafe static class StdIoFunctions
 
     public static byte* FGetS(byte* str, int count, void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return null;
@@ -611,7 +611,7 @@ public unsafe static class StdIoFunctions
 
     public static int FEof(void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -622,7 +622,7 @@ public unsafe static class StdIoFunctions
 
     public static int FSeek(void* stream, long offset, int origin)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -634,7 +634,7 @@ public unsafe static class StdIoFunctions
 
     public static int FError(void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -645,7 +645,7 @@ public unsafe static class StdIoFunctions
 
     public static int Rewind(void* stream)
     {
-        var streamHandle = GetStream((IntPtr)stream);
+        var streamHandle = GetStream(stream);
         if (streamHandle == null)
         {
             return ErrNo.EBADF;
@@ -667,8 +667,10 @@ public unsafe static class StdIoFunctions
         return 0;
     }
 
-    internal static StreamHandle? GetStream(IntPtr handle)
+    internal static StreamHandle? GetStream(void* filePtr)
     {
+        var handle = (IntPtr)filePtr;
+
         var handleValue = handle.ToInt64();
         if (handleValue is StdIn or StdOut or StdErr)
         {
@@ -685,31 +687,33 @@ public unsafe static class StdIoFunctions
                 return gch.Target as StreamHandle;
             }
         }
-        catch (AccessViolationException)
+        catch (InvalidOperationException)
         {
             return null;
         }
     }
 
-    internal static IntPtr AddStream(StreamHandle stream)
+    internal static void* AddStream(StreamHandle stream)
     {
         lock (_locker)
         {
             var gch = GCHandle.Alloc(stream);
-            var handel = GCHandle.ToIntPtr(gch);
+            var handle = GCHandle.ToIntPtr(gch);
 
             var ptr = Marshal.AllocHGlobal(sizeof(IntPtr));
-            Marshal.WriteIntPtr(ptr, handel);
-            return ptr;
+            Marshal.WriteIntPtr(ptr, handle);
+            return (void*)ptr;
         }
     }
 
-    internal static bool RemoveStream(IntPtr handle)
+    internal static bool FreeStream(void* filePtr)
     {
         try
         {
             lock (_locker)
             {
+                var handle = (IntPtr)filePtr;
+
                 var gchAddr = Marshal.ReadIntPtr(handle);
                 var gch = GCHandle.FromIntPtr(gchAddr);
 
@@ -720,7 +724,7 @@ public unsafe static class StdIoFunctions
                 return true;
             }
         }
-        catch (AccessViolationException)
+        catch (InvalidOperationException)
         {
             return false;
         }
