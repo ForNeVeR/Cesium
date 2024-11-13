@@ -217,7 +217,7 @@ internal static class BlockItemLowering
                 }
             case CompoundStatement c:
                 {
-                    var blockScope = new BlockScope((IEmitScope)scope, null, null);
+                    var blockScope = c.InheritScope ? scope : new BlockScope((IEmitScope)scope, null, null);
 
                     var newNestedStatements = new List<IBlockItem>();
                     foreach (var stmt in c.Statements)
@@ -225,7 +225,7 @@ internal static class BlockItemLowering
                         newNestedStatements.Add(Lower(blockScope, stmt));
                     }
 
-                    return new CompoundStatement(newNestedStatements, blockScope);
+                    return new CompoundStatement(newNestedStatements, (IEmitScope)blockScope);
                 }
             case ContinueStatement:
                 {
@@ -234,10 +234,9 @@ internal static class BlockItemLowering
                 }
             case DeclarationBlockItem d:
                 {
-                    var (storageClass, items) = d.Declaration;
+                    var (storageClass, declaration, initializer) = d.Declaration;
                     var newItems = new List<IBlockItem>();
 
-                    foreach (var (declaration, initializer) in items)
                     {
                         var (type, identifier, cliImportMemberName) = declaration;
 
@@ -486,11 +485,9 @@ internal static class BlockItemLowering
                     var dbi = new DeclarationBlockItem(
                         new ScopedIdentifierDeclaration(
                             StorageClass.Auto,
-                            new List<InitializableDeclarationInfo>
-                            {
-                                new(new LocalDeclarationInfo(testExpression.GetExpressionType(scope), "$switch_tmp", null),
-                                testExpression)
-                            }));
+                            new LocalDeclarationInfo(testExpression.GetExpressionType(scope), "$switch_tmp", null),
+                            testExpression
+                        ));
 
                     targetStmts.Add(Lower(switchScope, dbi));
 

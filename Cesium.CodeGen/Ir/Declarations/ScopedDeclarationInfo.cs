@@ -14,7 +14,7 @@ namespace Cesium.CodeGen.Ir.Declarations;
 /// </summary>
 internal interface IScopedDeclarationInfo
 {
-    public static IScopedDeclarationInfo Of(Declaration declaration)
+    public static IScopedDeclarationInfo[] Of(Declaration declaration)
     {
         var (specifiers, initDeclarators) = declaration;
 
@@ -23,7 +23,7 @@ internal interface IScopedDeclarationInfo
             if (initDeclarators == null)
                 throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
-            return TypeDefOf(specifiers.RemoveAt(0), initDeclarators);
+            return [TypeDefOf(specifiers.RemoveAt(0), initDeclarators)];
         }
 
         var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
@@ -31,27 +31,25 @@ internal interface IScopedDeclarationInfo
         {
             if (initDeclarators == null)
             {
-                Declarator? declarator = null;
-                return new ScopedIdentifierDeclaration(storageClass,
-                    declarationSpecifiers.Select(_ =>
-                    {
-                        var ld = LocalDeclarationInfo.Of(new[] { _ }, declarator);
-                        return new InitializableDeclarationInfo(ld, null);
-                    }).ToImmutableArray());
+                return declarationSpecifiers.Select(_ =>
+                {
+                    var ld = LocalDeclarationInfo.Of(new[] { _ }, (Declarator?)null);
+                    return new ScopedIdentifierDeclaration(storageClass, ld, null);
+                }).ToArray();
             }
 
             var initializationDeclarators = initDeclarators.Value.SelectMany(id => declarationSpecifiers.Select(_ =>
             {
                 var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
                 if (id.Initializer is AssignmentInitializer assignmentInitializer)
-                    return new InitializableDeclarationInfo(ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression));
+                    return new ScopedIdentifierDeclaration(storageClass, ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression));
 
                 if (id.Initializer is null)
-                    return new InitializableDeclarationInfo(ld, null);
+                    return new ScopedIdentifierDeclaration(storageClass, ld, null);
 
                 throw new CompilationException($"Struct initializers are not supported.");
-            })).ToImmutableArray();
-            return new ScopedIdentifierDeclaration(storageClass, initializationDeclarators);
+            })).ToArray();
+            return initializationDeclarators;
         }
 
         if (initDeclarators == null)
@@ -76,17 +74,24 @@ internal interface IScopedDeclarationInfo
         return new TypeDefDeclaration(declarations);
     }
 
-    private static ScopedIdentifierDeclaration IdentifierOf(
+    private static ScopedIdentifierDeclaration[] IdentifierOf(
         IReadOnlyList<IDeclarationSpecifier> specifiers,
         IEnumerable<InitDeclarator> initDeclarators)
     {
         var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
 
         var declarations = initDeclarators
-            .Select(id => IdentifierOf(declarationSpecifiers, id))
-            .ToList();
-
-        return new ScopedIdentifierDeclaration(storageClass, declarations);
+            .Select(id =>
+            {
+                //return IdentifierOf(declarationSpecifiers, id);
+                var (declarator, initializer) = id;
+                var declarationInfo = LocalDeclarationInfo.Of(declarationSpecifiers, declarator, initializer);
+                var (type, _, _) = declarationInfo;
+                var expression = ConvertInitializer(type, initializer);
+                return new ScopedIdentifierDeclaration(storageClass, declarationInfo, expression);
+            })
+            .ToArray();
+        return declarations;
     }
 
     private static InitializableDeclarationInfo IdentifierOf(
@@ -186,8 +191,10 @@ internal interface IScopedDeclarationInfo
 internal record TypeDefDeclaration(ICollection<LocalDeclarationInfo> Types) : IScopedDeclarationInfo;
 internal record ScopedIdentifierDeclaration(
     StorageClass StorageClass,
-    ICollection<InitializableDeclarationInfo> Items
+    LocalDeclarationInfo Declaration,
+    IExpression? Initializer
 ) : IScopedDeclarationInfo;
+
 internal record InitializableDeclarationInfo(LocalDeclarationInfo Declaration, IExpression? Initializer);
 
 internal enum StorageClass
