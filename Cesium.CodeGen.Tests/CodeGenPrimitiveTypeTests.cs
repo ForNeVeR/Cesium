@@ -29,10 +29,10 @@ public class CodeGenPrimitiveTypeTests : CodeGenTestBase
         var source = $"{typeString} x;";
         var parser = new CParser(new CLexer(source));
         var ast = parser.ParseDeclaration().Ok.Value;
-        var declarationInfo = (ScopedIdentifierDeclaration)IScopedDeclarationInfo.Of((Declaration)ast);
-        var item = declarationInfo.Items.Single();
+        var item = (ScopedIdentifierDeclaration)IScopedDeclarationInfo.Of((Declaration)ast).Single();
         var type = (PrimitiveType)item.Declaration.Type;
         Assert.Equal(expectedKind, type.Kind);
+        Assert.Equal(StorageClass.Auto, item.StorageClass);
     }
 
     [Fact]

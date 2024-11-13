@@ -20,81 +20,82 @@ internal static class TranslationUnitEx
     private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym)
     {
         sym.Deconstruct(out var astDeclaration);
-        var wholeDeclaration = IScopedDeclarationInfo.Of(astDeclaration);
-        switch (wholeDeclaration)
+        foreach (var wholeDeclaration in IScopedDeclarationInfo.Of(astDeclaration))
         {
-            case ScopedIdentifierDeclaration scopedDeclaration:
-                var (storageClass, items) = scopedDeclaration;
-
-                foreach (var (declaration, initializer) in items)
-                {
-                    var (type, identifier, cliImportMemberName) = declaration;
-                    if (identifier == null)
-                        throw new CompilationException($"Unnamed global symbol of type {type} is not supported.");
-
-                    if (type is FunctionType functionType)
+            switch (wholeDeclaration)
+            {
+                case ScopedIdentifierDeclaration scopedDeclaration:
                     {
-                        if (initializer != null)
-                            throw new CompilationException(
-                                $"Initializer expression for a function declaration isn't supported: {initializer}.");
-
-                        var functionDeclaration = new FunctionDeclaration(identifier, storageClass, functionType, cliImportMemberName);
-                        yield return functionDeclaration;
-                        continue;
-                    }
-
-                    if (cliImportMemberName != null)
-                    {
-                        throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
-                    }
-
-                    if (type is PrimitiveType or PointerType or InPlaceArrayType
-                        || (type is StructType varStructType && varStructType.Identifier != identifier))
-                    {
-                        var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
-                        yield return variable;
-                        continue;
-                    }
-
-                    if (type is EnumType enumType)
-                    {
-                        yield return new TagBlockItem(new[] { declaration });
-                        foreach(var d in FindEnumConstants(enumType))
-                        {
-                            yield return d;
-                        }
-                        continue;
-                    }
-
-                    if (type is StructType structType)
-                    {
-                        yield return new TagBlockItem(new[] { declaration });
-                        continue;
-                    }
-
-                    throw new WipException(75, $"Declaration not supported, yet: {declaration}.");
-                }
-                break;
-            case TypeDefDeclaration typeDefDeclaration:
-                {
-                    var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
-                    yield return typeDefBlockItem;
-                    foreach (var declaration in typeDefDeclaration.Types)
-                    {
+                        var (storageClass, declaration, initializer) = scopedDeclaration;
                         var (type, identifier, cliImportMemberName) = declaration;
+                        if (identifier == null)
+                            throw new CompilationException($"Unnamed global symbol of type {type} is not supported.");
+
+                        if (type is FunctionType functionType)
+                        {
+                            if (initializer != null)
+                                throw new CompilationException(
+                                    $"Initializer expression for a function declaration isn't supported: {initializer}.");
+
+                            var functionDeclaration = new FunctionDeclaration(identifier, storageClass, functionType, cliImportMemberName);
+                            yield return functionDeclaration;
+                            continue;
+                        }
+
+                        if (cliImportMemberName != null)
+                        {
+                            throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
+                        }
+
+                        if (type is PrimitiveType or PointerType or InPlaceArrayType
+                            || (type is StructType varStructType && varStructType.Identifier != identifier)
+                            || type is NamedType)
+                        {
+                            var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
+                            yield return variable;
+                            continue;
+                        }
+
                         if (type is EnumType enumType)
                         {
+                            yield return new TagBlockItem(new[] { declaration });
                             foreach (var d in FindEnumConstants(enumType))
                             {
                                 yield return d;
                             }
                             continue;
                         }
+
+                        if (type is StructType structType)
+                        {
+                            yield return new TagBlockItem(new[] { declaration });
+                            continue;
+                        }
+
+                        throw new WipException(75, $"Declaration not supported, yet: {declaration}.");
                     }
-                }
-                break;
-            default:
-                throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
+                    break;
+                case TypeDefDeclaration typeDefDeclaration:
+                    {
+                        var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
+                        yield return typeDefBlockItem;
+                        foreach (var declaration in typeDefDeclaration.Types)
+                        {
+                            var (type, identifier, cliImportMemberName) = declaration;
+                            if (type is EnumType enumType)
+                            {
+                                foreach (var d in FindEnumConstants(enumType))
+                                {
+                                    yield return d;
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
+            }
         }
     }
 

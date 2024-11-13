@@ -7,6 +7,8 @@ internal record CompoundStatement : IBlockItem
 {
     public IEmitScope? EmitScope { get; }
 
+    public bool InheritScope { get; set; }
+
     public CompoundStatement(List<IBlockItem> items, IEmitScope? emitScope = null)
     {
         EmitScope = emitScope;
