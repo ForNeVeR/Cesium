@@ -82,7 +82,7 @@ internal abstract class LValueField : ILValue
                 throw new CompilationException("Compound initialization is only supported for in-place arrays.");
             }
 
-            scope.AddInstruction(OpCodes.Ldflda, field);
+            scope.LdSFld(field);
             var expression = type.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
             expression.EmitTo(scope);
             scope.AddInstruction(OpCodes.Conv_U);

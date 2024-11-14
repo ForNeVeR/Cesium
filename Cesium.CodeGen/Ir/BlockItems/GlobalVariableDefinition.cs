@@ -1,5 +1,4 @@
 using Cesium.CodeGen.Ir.Declarations;
-using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -8,7 +7,6 @@ namespace Cesium.CodeGen.Ir.BlockItems;
 internal sealed record GlobalVariableDefinition(
     StorageClass StorageClass,
     IType Type,
-    string Identifier,
-    IExpression? Initializer) : IBlockItem
+    string Identifier) : IBlockItem
 {
 }

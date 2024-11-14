@@ -417,7 +417,7 @@ internal static class BlockItemLowering
                     var resolvedType = scope.ResolveType(d.Type);
                     scope.AddVariable(d.StorageClass, d.Identifier, resolvedType, null);
 
-                    return d with { Initializer = d.Initializer?.Lower(scope) };
+                    return d;
                 }
             case EnumConstantDefinition d:
                 {

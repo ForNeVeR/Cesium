@@ -74,31 +74,10 @@ internal static class BlockItemEmitting
             case GlobalVariableDefinition d:
             {
                 var field = scope.ResolveGlobalField(d.Identifier);
-                if (d.Initializer != null)
+                // Declaration of the empty variable.
+                if (d.Type is InPlaceArrayType declredArrayType)
                 {
-                    if (d is { Type: InPlaceArrayType arrayType, Initializer: CompoundInitializationExpression })
-                    {
-                        arrayType.EmitInitializer(scope);
-                        scope.StSFld(field);
-                        d.Initializer.EmitTo(scope);
-                        // for compound initialization copy memory.
-                        scope.LdSFld(field);
-                        var expression = arrayType.GetSizeInBytesExpression(scope.AssemblyContext.ArchitectureSet);
-                        expression.EmitTo(scope);
-                        scope.AddInstruction(OpCodes.Conv_U);
-
-                        var initializeCompoundMethod = scope.Context.GetRuntimeHelperMethod("InitializeCompound");
-                        scope.AddInstruction(OpCodes.Call, initializeCompoundMethod);
-                    }
-                    else
-                    {
-                        d.Initializer.EmitTo(scope);
-                        scope.StSFld(field);
-                    }
-                }
-                else if (d.Type is InPlaceArrayType arrayType)
-                {
-                    arrayType.EmitInitializer(scope);
+                    declredArrayType.EmitInitializer(scope);
                     scope.StSFld(field);
                 }
 
