@@ -22,7 +22,6 @@ public unsafe static class StdIoFunctions
         public int ErrNo { get; set; }
     }
 
-    private static object _locker = new();
     internal static readonly List<StreamHandle> Handles = [];
 
     private const int StdIn = 0;
@@ -677,56 +676,33 @@ public unsafe static class StdIoFunctions
             return Handles[(int)handleValue];
         }
 
-        try
-        {
-            lock (_locker)
-            {
-                var gchAddr = Marshal.ReadIntPtr(handle);
-                var gch = GCHandle.FromIntPtr(gchAddr);
+        var gchAddr = Marshal.ReadIntPtr(handle);
+        var gch = GCHandle.FromIntPtr(gchAddr);
 
-                return gch.Target as StreamHandle;
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
+        return gch.Target as StreamHandle;
     }
 
     internal static void* AddStream(StreamHandle stream)
     {
-        lock (_locker)
-        {
-            var gch = GCHandle.Alloc(stream);
-            var handle = GCHandle.ToIntPtr(gch);
+        var gch = GCHandle.Alloc(stream);
+        var handle = GCHandle.ToIntPtr(gch);
 
-            var ptr = Marshal.AllocHGlobal(sizeof(IntPtr));
-            Marshal.WriteIntPtr(ptr, handle);
-            return (void*)ptr;
-        }
+        var ptr = Marshal.AllocHGlobal(sizeof(IntPtr));
+        Marshal.WriteIntPtr(ptr, handle);
+        return (void*)ptr;
     }
 
     internal static bool FreeStream(void* filePtr)
     {
-        try
-        {
-            lock (_locker)
-            {
-                var handle = (IntPtr)filePtr;
+        var handle = (IntPtr)filePtr;
 
-                var gchAddr = Marshal.ReadIntPtr(handle);
-                var gch = GCHandle.FromIntPtr(gchAddr);
+        var gchAddr = Marshal.ReadIntPtr(handle);
+        var gch = GCHandle.FromIntPtr(gchAddr);
 
-                if (gch.Target is not StreamHandle) return false;
+        if (gch.Target is not StreamHandle) return false;
 
-                gch.Free();
-                Marshal.FreeHGlobal(handle);
-                return true;
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
+        gch.Free();
+        Marshal.FreeHGlobal(handle);
+        return true;
     }
 }
