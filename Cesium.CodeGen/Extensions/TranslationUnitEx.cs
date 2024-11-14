@@ -1,5 +1,6 @@
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -51,8 +52,14 @@ internal static class TranslationUnitEx
                             || (type is StructType varStructType && varStructType.Identifier != identifier)
                             || type is NamedType)
                         {
-                            var variable = new GlobalVariableDefinition(storageClass, type, identifier, initializer);
+                            var variable = new GlobalVariableDefinition(storageClass, type, identifier);
                             yield return variable;
+                            if (initializer != null)
+                            {
+                                var variableIdentifier = new IdentifierExpression(identifier);
+                                yield return new ExpressionStatement(new AssignmentExpression(variableIdentifier, AssignmentOperator.Assign, initializer, false));
+                            }
+
                             continue;
                         }
 
