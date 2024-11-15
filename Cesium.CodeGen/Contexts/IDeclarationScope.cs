@@ -64,4 +64,10 @@ internal interface IDeclarationScope
     void RemovePragma<T>(Predicate<T> predicate) where T : IPragma;
 
     List<SwitchCase>? SwitchCases { get; }
+
+    /// <summary>
+    /// Gets name of the new temp variable.
+    /// </summary>
+    /// <returns>Name of the new temporary variable, unique to the scope</returns>
+    string GetTmpVariable();
 }

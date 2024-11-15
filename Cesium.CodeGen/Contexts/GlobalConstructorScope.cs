@@ -100,4 +100,12 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
             }
         }
     }
+
+    private int tempLocalIndex = 0;
+
+    /// <inheritdoc />
+    public string GetTmpVariable()
+    {
+        return "global_tmp_" + tempLocalIndex++;
+    }
 }

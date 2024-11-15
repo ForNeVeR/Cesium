@@ -114,4 +114,7 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
 
     /// <inheritdoc />
     public void RemovePragma<T>(Predicate<T> predicate) where T : IPragma { }
+
+    /// <inheritdoc />
+    public string GetTmpVariable() => ((IDeclarationScope)Parent).GetTmpVariable();
 }

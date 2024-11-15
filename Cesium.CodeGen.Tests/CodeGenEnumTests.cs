@@ -100,4 +100,11 @@ int x[] = {Green};
 enum Colour { Red, Green, Blue = Green + 10 };
 int x = {Blue};
 ");
+
+    [Fact]
+    public Task EnumUseValuesInStructPointerDeclaration() => DoTest(@"
+enum Colour { Red, Green, Blue = Green + 10 };
+typedef struct  { int x; } TestStruct;
+TestStruct *x = &(TestStruct){Blue};
+");
 }

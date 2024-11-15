@@ -56,7 +56,7 @@ internal sealed record LocalDeclarationInfo(
         return new LocalDeclarationInfo(type, Identifier: null, cliImportMemberName);
     }
 
-    private static (IType, string? CliImportMemberName) ProcessSpecifiers(
+    public static (IType, string? CliImportMemberName) ProcessSpecifiers(
         IReadOnlyList<IDeclarationSpecifier> specifiers)
     {
         IType? type = null;

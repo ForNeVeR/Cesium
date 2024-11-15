@@ -138,4 +138,12 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
             _variableDefinition.Add(variableName, variableDefinition);
         }
     }
+
+    private int tempLocalIndex = 0;
+
+    /// <inheritdoc />
+    public string GetTmpVariable()
+    {
+        return "local_" + tempLocalIndex++;
+    }
 }
