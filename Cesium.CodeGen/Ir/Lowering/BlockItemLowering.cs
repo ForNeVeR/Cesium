@@ -194,7 +194,7 @@ internal static class BlockItemLowering
                         {
                             if (caseStatement.Expression != null)
                             {
-                                var constValue = ConstantEvaluator.GetConstantValue(caseStatement.Expression.Lower(switchBlock));
+                                var constValue = ConstantEvaluator.GetConstantValue(caseStatement.Expression.Lower(switchBlock), scope);
                                 switchBlock.SwitchCases.Add(new SwitchCase(new ConstantLiteralExpression(constValue), label));
                             }
                             else

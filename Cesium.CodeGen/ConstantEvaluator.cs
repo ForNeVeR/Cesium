@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
@@ -8,9 +9,9 @@ namespace Cesium.CodeGen;
 
 internal static class ConstantEvaluator
 {
-    public static IConstant GetConstantValue(IExpression expression)
+    public static IConstant GetConstantValue(IExpression expression, IDeclarationScope? scope)
     {
-        var result = TryGetConstantValue(expression);
+        var result = TryGetConstantValue(expression, scope);
         if (result.ErrorMessage is not null)
         {
             throw new CompilationException(result.ErrorMessage);
@@ -20,7 +21,7 @@ internal static class ConstantEvaluator
         return result.Constant;
     }
 
-    public static (string? ErrorMessage, IConstant? Constant) TryGetConstantValue(IExpression expression)
+    public static (string? ErrorMessage, IConstant? Constant) TryGetConstantValue(IExpression expression, IDeclarationScope? scope)
     {
         switch (expression)
         {
@@ -29,7 +30,7 @@ internal static class ConstantEvaluator
 
             case UnaryOperatorExpression unOp:
                 {
-                    var constant = GetConstantValue(unOp.Target);
+                    var constant = GetConstantValue(unOp.Target, scope);
 
                     if (constant is not IntegerConstant constInt)
                         return ("Evaluated constant is not an integer", null);
@@ -46,8 +47,8 @@ internal static class ConstantEvaluator
 
             case BinaryOperatorExpression binOp:
                 {
-                    var leftConstant = GetConstantValue(binOp.Left);
-                    var rightConstant = GetConstantValue(binOp.Right);
+                    var leftConstant = GetConstantValue(binOp.Left, scope);
+                    var rightConstant = GetConstantValue(binOp.Right, scope);
 
                     if (leftConstant is not IntegerConstant leftInt ||
                         rightConstant is not IntegerConstant rightInt)
@@ -76,6 +77,21 @@ internal static class ConstantEvaluator
                         BinaryOperator.LogicalOr => (null, new IntegerConstant((leftInt.Value != 0) || (rightInt.Value != 0) ? 1 : 0)),
                         _ => throw new ArgumentOutOfRangeException($"Invalid binary operator {binOp.Operator}"),
                     };
+                }
+
+            case IdentifierExpression identifierExpression:
+                {
+                    if (scope != null)
+                    {
+                        var existingVariable = scope.GetVariable(identifierExpression.Identifier);
+                        var constantValue = existingVariable?.Constant;
+                        if (constantValue is not null)
+                        {
+                            return TryGetConstantValue(constantValue, scope);
+                        }
+                    }
+
+                    return ($"Expression {expression} cannot be evaluated as constant expression.", null);
                 }
 
             default:

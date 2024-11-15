@@ -48,9 +48,9 @@ public class AssemblyContext
 
     public void EmitTranslationUnit(string name, TranslationUnit translationUnit)
     {
-        var nodes = translationUnit.ToIntermediate();
         var context = new TranslationUnitContext(this, name);
         var scope = context.GetInitializerScope();
+        var nodes = translationUnit.ToIntermediate(scope);
         nodes = nodes.Select(node => BlockItemLowering.LowerDeclaration(scope, node)).ToList();
         foreach (var node in nodes)
             BlockItemEmitting.EmitCode(scope, node);
