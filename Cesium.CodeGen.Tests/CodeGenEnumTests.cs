@@ -73,4 +73,31 @@ void test()
             break;
     }
 }");
+
+    [Fact]
+    public Task EnumValueInInitializer() => DoTest(@"
+enum Colour { Red, Green, Blue };
+
+void test()
+{
+    int x = {Green};
+}");
+
+    [Fact]
+    public Task GlobalEnumValueInInitializer() => DoTest(@"
+enum Colour { Red, Green, Blue };
+int x = {Green};
+");
+
+    [Fact]
+    public Task GlobalEnumValueInArrayInitializer() => DoTest(@"
+enum Colour { Red, Green, Blue };
+int x[] = {Green};
+");
+
+    [Fact]
+    public Task EnumUseValuesInDeclaration() => DoTest(@"
+enum Colour { Red, Green, Blue = Green + 10 };
+int x = {Blue};
+");
 }

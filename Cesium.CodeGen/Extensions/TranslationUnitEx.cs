@@ -9,16 +9,16 @@ namespace Cesium.CodeGen.Extensions;
 
 internal static class TranslationUnitEx
 {
-    public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit) =>
+    public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit, Contexts.IDeclarationScope scope) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
             Ast.FunctionDefinition func => [new FunctionDefinition(func)],
-            Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym),
+            Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym, scope),
             Ast.PInvokeDeclaration pinvoke => [new PInvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
             _ => throw new WipException(212, $"Declaration not supported: {x}.")
         }));
 
-    private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym)
+    private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym, Contexts.IDeclarationScope scope)
     {
         sym.Deconstruct(out var astDeclaration);
         foreach (var wholeDeclaration in IScopedDeclarationInfo.Of(astDeclaration))
@@ -66,7 +66,7 @@ internal static class TranslationUnitEx
                         if (type is EnumType enumType)
                         {
                             yield return new TagBlockItem(new[] { declaration });
-                            foreach (var d in FindEnumConstants(enumType))
+                            foreach (var d in FindEnumConstants(enumType, scope))
                             {
                                 yield return d;
                             }
@@ -81,7 +81,6 @@ internal static class TranslationUnitEx
 
                         throw new WipException(75, $"Declaration not supported, yet: {declaration}.");
                     }
-                    break;
                 case TypeDefDeclaration typeDefDeclaration:
                     {
                         var typeDefBlockItem = new TypeDefBlockItem(typeDefDeclaration);
@@ -91,7 +90,7 @@ internal static class TranslationUnitEx
                             var (type, identifier, cliImportMemberName) = declaration;
                             if (type is EnumType enumType)
                             {
-                                foreach (var d in FindEnumConstants(enumType))
+                                foreach (var d in FindEnumConstants(enumType, scope))
                                 {
                                     yield return d;
                                 }
@@ -106,7 +105,7 @@ internal static class TranslationUnitEx
         }
     }
 
-    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType)
+    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType, Contexts.IDeclarationScope scope)
     {
         long currentValue = -1;
         foreach (var enumeratorDeclaration in enumType.Members)
@@ -119,7 +118,7 @@ internal static class TranslationUnitEx
             }
             else
             {
-                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer);
+                var constantValue = ConstantEvaluator.GetConstantValue(enumeratorDeclaration.Initializer, scope);
                 if (constantValue is not IntegerConstant intConstant)
                 {
                     throw new CompilationException(
@@ -129,7 +128,7 @@ internal static class TranslationUnitEx
                 currentValue = intConstant.Value;
             }
 
-            var variable = new EnumConstantDefinition(enumeratorName, enumType, new Ir.Expressions.ConstantLiteralExpression(new IntegerConstant(currentValue)));
+            var variable = new EnumConstantDefinition(enumeratorName, enumType, new ConstantLiteralExpression(new IntegerConstant(currentValue)));
             yield return variable;
         }
     }

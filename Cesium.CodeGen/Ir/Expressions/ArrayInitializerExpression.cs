@@ -39,7 +39,7 @@ internal sealed class ArrayInitializerExpression : IExpression
                 continue;
             }
 
-            var (errorMessage, constant) = ConstantEvaluator.TryGetConstantValue(initializer);
+            var (errorMessage, constant) = ConstantEvaluator.TryGetConstantValue(initializer, scope);
             if (constant != null)
             {
                 expressions.Add(new ConstantLiteralExpression(constant));

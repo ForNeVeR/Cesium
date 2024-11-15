@@ -231,7 +231,7 @@ internal sealed record LocalDeclarationInfo(
                     }
                     else
                     {
-                        var constantResult = ConstantEvaluator.TryGetConstantValue(sizeExpr.ToIntermediate());
+                        var constantResult = ConstantEvaluator.TryGetConstantValue(sizeExpr.ToIntermediate(), scope: null);
                         if (constantResult.Constant is { } constant
                             && constant is IntegerConstant integerConstant)
                         {
