@@ -139,9 +139,6 @@ public unsafe static class StdIoFunctions
 
     public static int FPrintF(void* stream, byte* str, void* varargs)
     {
-        // TODO: Remove when locales are supported
-        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-
         var formatString = RuntimeHelpers.Unmarshal(str);
         if (formatString == null)
         {
@@ -678,9 +675,6 @@ public unsafe static class StdIoFunctions
 
     public static int FScanF(void* stream, byte* format, void* varargs)
     {
-        // TODO: Remove when locales are supported
-        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-
         var formatString = RuntimeHelpers.Unmarshal(format);
         if (formatString is null)
             return -1;
@@ -1094,7 +1088,7 @@ public unsafe static class StdIoFunctions
                     exponent = ParseInteger(10);
                 }
 
-                return float.Parse($"{integer}.{fraction}E{exponent}");
+                return float.Parse($"{integer}.{fraction}E{exponent}", CultureInfo.InvariantCulture);
             }
         }
 
