@@ -3,10 +3,10 @@
 int main(void)
 {
     FILE* tmpf = fopen("example_unique_name", "w+");
-    fputs("A B\tC", tmpf);
+    fputs("  A B\tC", tmpf);
     fputs("name [DATA_EXPUNGED] ", tmpf);
     fputs("25 54.32E-1 56789 ", tmpf);
-    fputs("0xFFFFFFFF 123ABC 123 ", tmpf);
+    fputs("0xFFFD 123ABC 123 ", tmpf);
 
     rewind(tmpf);
 
@@ -18,7 +18,7 @@ int main(void)
     char symbols[6], str1[5], str2[20];
     symbols[5] = 0;
 
-    int result = fscanf(tmpf, "%5c %5s %s %d %f %*2d %d %p %x %o", symbols, str1, str2, &i, &exp, &j, &ptr, &hex, &oct);
+    int result = fscanf(tmpf, " %5c %5s %s %d %f %*2d %d %p %x %o", symbols, str1, str2, &i, &exp, &j, &ptr, &hex, &oct);
 
     if (result != expectedArgsConsumed) return result;
 
@@ -28,7 +28,7 @@ int main(void)
             "i = %d\n"
             "exp = %E\n"
             "j = %d\n"
-            "ptr = %p\n"
+            "ptr = %ld\n"
             "hex = %x\n"
             "oct = %o\n", result, symbols, str1, str2, i, exp, j, ptr, hex, oct);
 

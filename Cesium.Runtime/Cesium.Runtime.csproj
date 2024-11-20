@@ -12,9 +12,4 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Cesium.Runtime.Tests" />
     </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
-    </ItemGroup>
-
 </Project>

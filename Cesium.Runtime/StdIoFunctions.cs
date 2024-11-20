@@ -689,12 +689,21 @@ public unsafe static class StdIoFunctions
 
         int argsConsumed = 0;
         int bytesConsumed = 0;
+        bool whitespacePrefix = false;
+
         int specifierPosition = formatString.IndexOf("%", 0, StringComparison.Ordinal);
+
+        if (specifierPosition > 0 &&
+            char.IsWhiteSpace(formatString[specifierPosition - 1]))
+        {
+            whitespacePrefix = true;
+        }
 
         while (specifierPosition >= 0 && specifierPosition < formatString.Length)
         {
-            if (formatString[specifierPosition] == ' ')
+            if (char.IsWhiteSpace(formatString[specifierPosition]))
             {
+                whitespacePrefix = true;
                 specifierPosition++;
                 continue;
             }
@@ -750,6 +759,14 @@ public unsafe static class StdIoFunctions
                     if (width == -1) width = 1;
 
                     var charPtr = (byte*)((long*)varargs)[argsConsumed];
+
+                    if (whitespacePrefix)
+                    {
+                        while (char.IsWhiteSpace((char)streamReader.Peek()))
+                        {
+                            streamReader.Read();
+                        }
+                    }
 
                     while (charsConsumed < width)
                     {
@@ -1012,6 +1029,7 @@ public unsafe static class StdIoFunctions
             else if (!ignore) break;
 
             specifierPosition += offset;
+            whitespacePrefix = false;
 
             long ParseInteger(int radix)
             {

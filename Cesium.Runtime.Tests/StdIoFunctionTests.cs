@@ -62,6 +62,7 @@ public class StdIoFunctionTests
     [InlineData("a", "%c", 1, 'a')]
     [InlineData(" a\n", "%3c", 1, ' ', 'a', '\n')]
     [InlineData("a", "%*c", 0)]
+    [InlineData("123     a", "%*d %c", 1, 'a')]
     [InlineData(" abc", "%*4c", 0)]
     public unsafe void FScanFChar(string input, string format, int expectedExitCode, params char[] expectedResult)
     {
