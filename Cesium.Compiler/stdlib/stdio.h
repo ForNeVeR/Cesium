@@ -73,3 +73,12 @@ void perror(const char* s);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::Remove")
 int remove(const char* pathname);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::ScanF")
+int scanf(char* format, ...);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FScanF")
+int fscanf(FILE* stream, char* format, ...);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FScanF")
+int vfscanf(FILE* stream, const char* format, va_list vlist);
