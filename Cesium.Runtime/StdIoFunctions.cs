@@ -241,11 +241,28 @@ public unsafe static class StdIoFunctions
                 }
             }
 
-            string formatSpecifier = formatString[formatStartPosition + addition].ToString();
-            if (formatString[formatStartPosition + addition] == 'l' || formatString[formatStartPosition + addition] == 'z')
+            string formatSpecifier = char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+            if (char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'z'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'u')
             {
-                addition++;
-                formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                if (formatStartPosition + addition < formatString.Length - 1
+                    && (formatSpecifier[0] != 'u' || char.ToLowerInvariant(formatString[formatStartPosition + addition + 1]) == 'l'))
+                {                    
+                    addition++;
+                    formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+                    if (formatSpecifier == "ll")
+                    {
+                        addition++;
+                        formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+                    }
+
+                    if (formatSpecifier == "ul" && char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l')
+                    {
+                        addition++;
+                        formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+                    }
+                }
             }
 
             int padding = -1;
@@ -330,6 +347,7 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "li":
+                case "lld":
                     long longValue = ((long*)varargs)[consumedArgs];
                     var longValueString = longValue.ToString();
                     if (alwaysSign && longValue > 0)
@@ -359,7 +377,10 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 }
+                case "llu":
+                case "ull":
                 case "lu":
+                case "ul":
                 case "zu":
                     {
                     ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
