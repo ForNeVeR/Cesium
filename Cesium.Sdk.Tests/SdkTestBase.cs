@@ -148,6 +148,11 @@ public abstract class SdkTestBase : IDisposable
     {
         File.WriteAllText(globalJsonPath, $$"""
             {
+                "sdk": {
+                    "version": "8.0.0",
+                    "rollForward": "latestFeature",
+                    "allowPrerelease": false
+                },
                 "msbuild-sdks": {
                     "Cesium.Sdk" : "{{packageVersion}}"
                 }
