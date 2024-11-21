@@ -12,4 +12,5 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Cesium.Runtime.Tests" />
     </ItemGroup>
+
 </Project>

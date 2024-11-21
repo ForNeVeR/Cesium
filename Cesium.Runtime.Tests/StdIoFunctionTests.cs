@@ -140,6 +140,14 @@ public class StdIoFunctionTests
         => FScanFStruct(input, format, expectedExitCode, expectedResult);
 
     [Theory]
+    [InlineData("18446744073709551615", "%llu", 1, 18446744073709551615UL)]
+    [InlineData("18446744073709551615:00", "%1000llu", 1, 18446744073709551615UL)]
+    [InlineData("18446744073709551615", "%*llu", 0)]
+    [InlineData("abc", "%llu", 0)]
+    public void FScanFUnsignedLongLong(string input, string format, int expectedExitCode, params ulong[] expectedResult)
+        => FScanFStruct(input, format, expectedExitCode, expectedResult);
+
+    [Theory]
     [InlineData("AB4C", "%x", 1, 43852)]
     [InlineData("ABBA", "%2x%x", 2, 171, 186)]
     [InlineData("FF:00", "%5x", 1, 255)]

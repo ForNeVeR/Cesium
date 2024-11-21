@@ -851,7 +851,7 @@ public unsafe static class StdIoFunctions
 
                     try
                     {
-                        var numLongLong = ParseInteger(10);
+                        var numLongLong = (long)ParseInteger(10);
                         if (!ignore) *longLongPtr = numLongLong;
                     }
                     catch (EndOfStreamException) { return -1; }
@@ -916,7 +916,7 @@ public unsafe static class StdIoFunctions
 
                     try
                     {
-                        var numULongLong = (ulong)ParseInteger(10);
+                        var numULongLong = ParseInteger(10);
                         if (!ignore) *uLongLongPtr = numULongLong;
                     }
                     catch (EndOfStreamException) { return -1; }
@@ -1031,7 +1031,7 @@ public unsafe static class StdIoFunctions
             specifierPosition += offset;
             whitespacePrefix = false;
 
-            long ParseInteger(int radix)
+            ulong ParseInteger(int radix)
             {
                 while (char.IsWhiteSpace((char)streamReader.Peek()))
                 {
@@ -1053,7 +1053,7 @@ public unsafe static class StdIoFunctions
                 if (!((char)streamReader.Peek()).IsHexDigit())
                     throw new FormatException($"No digit symbol");
 
-                long num = 0;
+                ulong num = 0;
                 while (charsConsumed < width || width == -1)
                 {
                     if (streamReader.Peek() == -1 &&
@@ -1077,18 +1077,18 @@ public unsafe static class StdIoFunctions
                     }
                     else throw new FormatException($"Radix {radix} is not supported");
 
-                    num = num * radix + ((char)streamReader.Read()).Num();
+                    num = num * (ulong)radix + (ulong)((char)streamReader.Read()).Num();
                     charsConsumed++;
                 }
 
                 if (charsConsumed == 0) throw new FormatException("Invalid integer");
 
-                return isNegative ? num * -1 : num;
+                return isNegative ? (ulong)((long)num * -1) : num;
             }
 
             float ParseFloat()
             {
-                var integer = ParseInteger(10);
+                var integer = (long)ParseInteger(10);
                 if ((char)streamReader.Peek() != '.')
                     return integer;
 
@@ -1097,13 +1097,13 @@ public unsafe static class StdIoFunctions
                 if (char.IsWhiteSpace((char)next) || next == -1) return integer;
                 if (!((char)next).IsAsciiDigit()) throw new FormatException();
 
-                var fraction = ParseInteger(10);
+                var fraction = (long)ParseInteger(10);
 
                 var exponent = 0L;
                 if ((char)streamReader.Peek() is 'e' or 'E')
                 {
                     streamReader.Read();
-                    exponent = ParseInteger(10);
+                    exponent = (long)ParseInteger(10);
                 }
 
                 return float.Parse($"{integer}.{fraction}E{exponent}", CultureInfo.InvariantCulture);
