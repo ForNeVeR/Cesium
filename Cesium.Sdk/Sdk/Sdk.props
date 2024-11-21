@@ -21,11 +21,6 @@
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
 
-    <ItemGroup Label="DefaultItems">
-        <!-- .c files are included by the Microsoft.NET.Sdk using DefaultLanguageSourceExtension, but .h ones are not -->
-        <Compile Include="**/*.h" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition="$(EnableDefaultCompileItems) == 'true'" />
-    </ItemGroup>
-
     <ItemGroup Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <PackageReference Include="$(CesiumCompilerPackageName)"
                           Version="$(CesiumCompilerPackageVersion)"
