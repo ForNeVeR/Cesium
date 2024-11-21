@@ -5,11 +5,13 @@ namespace Cesium.Runtime.Tests;
 public class StdIoFunctionTests
 {
     [Theory]
-    [InlineData(9, "0x09")]
-    [InlineData(32, "0x20")]
-    public void FPrintFHex(long input, string expectedResult)
+    [InlineData(9, "0x%02x", "0x09")]
+    [InlineData(32, "0x%02x", "0x20")]
+    [InlineData(10, "0x%02X", "0x0A")]
+    [InlineData(10, "0x%02x", "0x0a")]
+    public void FPrintFHex(long input, string format, string expectedResult)
     {
-        var (exitCode, result) = TestFPrintF("0x%02x", input);
+        var (exitCode, result) = TestFPrintF(format, input);
         Assert.Equal(expectedResult, result);
         Assert.Equal(4, exitCode);
     }

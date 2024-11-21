@@ -2,10 +2,6 @@ using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-#if !NETSTANDARD
-using System.Runtime.InteropServices;
-#endif
-
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -241,26 +237,26 @@ public unsafe static class StdIoFunctions
                 }
             }
 
-            string formatSpecifier = char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+            string formatSpecifier = formatString[formatStartPosition + addition].ToString();
             if (char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l'
                 || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'z'
                 || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'u')
             {
                 if (formatStartPosition + addition < formatString.Length - 1
-                    && (formatSpecifier[0] != 'u' || char.ToLowerInvariant(formatString[formatStartPosition + addition + 1]) == 'l'))
-                {                    
+                    && (char.ToLowerInvariant(formatSpecifier[0]) != 'u' || char.ToLowerInvariant(formatString[formatStartPosition + addition + 1]) == 'l'))
+                {
                     addition++;
-                    formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
-                    if (formatSpecifier == "ll")
+                    formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    if (string.Equals(formatSpecifier, "ll", StringComparison.InvariantCultureIgnoreCase))
                     {
                         addition++;
-                        formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
                     }
 
-                    if (formatSpecifier == "ul" && char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l')
+                    if (string.Equals(formatSpecifier, "ul", StringComparison.InvariantCultureIgnoreCase) && char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l')
                     {
                         addition++;
-                        formatSpecifier += char.ToLowerInvariant(formatString[formatStartPosition + addition]).ToString();
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
                     }
                 }
             }
@@ -378,8 +374,16 @@ public unsafe static class StdIoFunctions
                     break;
                 }
                 case "llu":
+                case "LLu":
+                case "LLU":
                 case "ull":
+                case "Ull":
+                case "ULL":
                 case "lu":
+                case "Lu":
+                case "LU":
+                case "UL":
+                case "Ul":
                 case "ul":
                 case "zu":
                     {
