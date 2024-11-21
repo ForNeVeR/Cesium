@@ -12,7 +12,7 @@ public class EvaluationTests(ITestOutputHelper testOutputHelper) : SdkTestBase(t
     [InlineData("SimpleCoreLibraryWithHeader")]
     public async Task Evaluation_EnableDefaultCompileItems(string projectName)
     {
-        HashSet<string> expectedCompileItems = ["library.c", "library.h"];
+        HashSet<string> expectedCompileItems = ["library.c"];
 
         var items = await ListItems(projectName, "Compile");
 
