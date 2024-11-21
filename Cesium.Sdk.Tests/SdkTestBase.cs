@@ -50,7 +50,6 @@ public abstract class SdkTestBase : IDisposable
 
         var startInfo = new ProcessStartInfo
         {
-            WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
             ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", "/restore", $"/bl:{binLogFile}" },
             RedirectStandardOutput = true,
