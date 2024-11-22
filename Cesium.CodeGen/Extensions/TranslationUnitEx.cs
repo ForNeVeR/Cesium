@@ -52,36 +52,8 @@ internal static class TranslationUnitEx
                             || (type is StructType varStructType && varStructType.Identifier != identifier)
                             || type is NamedType)
                         {
-                            if (initializer != null)
-                            {
-                                if (initializer is UnaryOperatorExpression { Operator : UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
-                                {
-                                    var variableIdentifier = new IdentifierExpression(identifier);
-                                    var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), null));
-                                    yield return variable;
-                                    var tempVariableName = scope.GetTmpVariable();
-                                    var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
-                                    if (type is PointerType pointerType)
-                                    {
-                                        type = pointerType.Base;
-                                    }
-
-                                    var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
-                                    yield return tempVariable;
-                                    yield return new ExpressionStatement(new AssignmentExpression(variableIdentifier, AssignmentOperator.Assign, new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier), false));
-                                }
-                                else
-                                {
-                                    var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), initializer));
-                                    yield return variable;
-                                }
-                            }
-                            else
-                            {
-                                var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), null));
-                                yield return variable;
-                            }
-
+                            var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), initializer));
+                            yield return variable;
                             continue;
                         }
 

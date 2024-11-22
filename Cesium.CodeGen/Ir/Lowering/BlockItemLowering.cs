@@ -259,6 +259,20 @@ internal static class BlockItemLowering
                         var initializerExpression = initializer;
                         if (initializerExpression != null)
                         {
+                            if (initializerExpression is UnaryOperatorExpression { Operator: UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
+                            {
+                                var tempVariableName = scope.GetTmpVariable();
+                                var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
+                                if (type is PointerType pointerType)
+                                {
+                                    type = pointerType.Base;
+                                }
+
+                                var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
+                                newItems.Add(Lower(scope, tempVariable));
+                                initializerExpression = new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier);
+                            }
+
                             var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
                             if (CTypeSystem.IsConversionAvailable(initializerType, type)
                                 && CTypeSystem.IsConversionRequired(initializerType, type))
@@ -307,7 +321,7 @@ internal static class BlockItemLowering
                         if (initializerExpression is not null)
                         {
                             initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier),
-                                AssignmentOperator.Assign, initializerExpression);
+    AssignmentOperator.Assign, initializerExpression);
 
                             newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
                         }
