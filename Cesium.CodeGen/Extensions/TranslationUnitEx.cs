@@ -52,13 +52,13 @@ internal static class TranslationUnitEx
                             || (type is StructType varStructType && varStructType.Identifier != identifier)
                             || type is NamedType)
                         {
-                            var variable = new GlobalVariableDefinition(storageClass, type, identifier);
-                            yield return variable;
                             if (initializer != null)
                             {
-                                var variableIdentifier = new IdentifierExpression(identifier);
                                 if (initializer is UnaryOperatorExpression { Operator : UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
                                 {
+                                    var variableIdentifier = new IdentifierExpression(identifier);
+                                    var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), null));
+                                    yield return variable;
                                     var tempVariableName = scope.GetTmpVariable();
                                     var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
                                     if (type is PointerType pointerType)
@@ -66,15 +66,20 @@ internal static class TranslationUnitEx
                                         type = pointerType.Base;
                                     }
 
-                                    var tempVariable = new GlobalVariableDefinition(storageClass, type, tempVariableName);
+                                    var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
                                     yield return tempVariable;
-                                    yield return new ExpressionStatement(new AssignmentExpression(tempVariableIdentifier, AssignmentOperator.Assign, compoundInitializationExpression, false));
                                     yield return new ExpressionStatement(new AssignmentExpression(variableIdentifier, AssignmentOperator.Assign, new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier), false));
                                 }
                                 else
                                 {
-                                    yield return new ExpressionStatement(new AssignmentExpression(variableIdentifier, AssignmentOperator.Assign, initializer, false));
+                                    var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), initializer));
+                                    yield return variable;
                                 }
+                            }
+                            else
+                            {
+                                var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), null));
+                                yield return variable;
                             }
 
                             continue;

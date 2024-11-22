@@ -251,6 +251,10 @@ internal static class BlockItemLowering
 
                         type = scope.ResolveType(type);
                         scope.AddVariable(storageClass, identifier, type, null);
+                        if (scope is GlobalConstructorScope)
+                        {
+                            newItems.Add(new GlobalVariableDefinition(storageClass, type, identifier));
+                        }
 
                         var initializerExpression = initializer;
                         if (initializerExpression != null)
@@ -412,13 +416,6 @@ internal static class BlockItemLowering
 
                     return new FunctionDefinition(d.Name, d.StorageClass, resolvedFunctionType, d.Statement, d.Inline, d.NoReturn);
                 }
-            case GlobalVariableDefinition d:
-                {
-                    var resolvedType = scope.ResolveType(d.Type);
-                    scope.AddVariable(d.StorageClass, d.Identifier, resolvedType, null);
-
-                    return d;
-                }
             case EnumConstantDefinition d:
                 {
                     var resolvedType = scope.ResolveType(d.Type);
@@ -426,6 +423,7 @@ internal static class BlockItemLowering
 
                     return d;
                 }
+            case GlobalVariableDefinition:
             case GoToStatement:
                 {
                     // already lowered

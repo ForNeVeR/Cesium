@@ -73,14 +73,7 @@ internal static class BlockItemEmitting
             }
             case GlobalVariableDefinition d:
             {
-                var field = scope.ResolveGlobalField(d.Identifier);
-                // Declaration of the empty variable.
-                if (d.Type is InPlaceArrayType declredArrayType)
-                {
-                    declredArrayType.EmitInitializer(scope);
-                    scope.StSFld(field);
-                }
-
+                scope.ResolveGlobalField(d.Identifier);
                 return;
             }
             case EnumConstantDefinition:

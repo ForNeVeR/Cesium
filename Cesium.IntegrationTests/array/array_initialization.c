@@ -61,6 +61,10 @@ int testGlobalIntArray() {
     return 1;
 }
 
+char* global_c[10] = { "string", "other" };
+
+static char* static_c[] = { "string", "other" };
+
 int main(int argc, char *argv[])
 {
     if (!testIntArray()) {

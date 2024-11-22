@@ -1,0 +1,16 @@
+﻿System.Void <Module>::.cctor()
+  IL_0000: sizeof System.Byte*
+  IL_0006: ldc.i4.1
+  IL_0007: mul
+  IL_0008: conv.u
+  IL_0009: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
+  IL_000e: stsfld System.Byte** testInput<Statics>::a
+  IL_0013: ldsfld System.Byte** testInput<Statics>::a
+  IL_0018: ldc.i4.0
+  IL_0019: conv.i
+  IL_001a: sizeof System.Byte*
+  IL_0020: mul
+  IL_0021: add
+  IL_0022: ldsflda <ConstantPool>/<ConstantPoolItemType3> <ConstantPool>::ConstDataBuffer0
+  IL_0027: stind.i
+  IL_0028: ret
