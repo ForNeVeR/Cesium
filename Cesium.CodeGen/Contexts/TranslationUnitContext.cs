@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
@@ -143,6 +144,11 @@ public class TranslationUnitContext
     /// <exception cref="CompilationException">Throws a <see cref="CompilationException"/> if it's not possible to resolve some of the types.</exception>
     internal IType ResolveType(IType type)
     {
+        return ResolveType(type, ImmutableArray<IType>.Empty);
+    }
+
+    internal IType ResolveType(IType type, ImmutableArray<IType> resolutionStack)
+    {
         if (type is NamedType namedType)
         {
             return _types.GetValueOrDefault(namedType.TypeName) ?? throw new CompilationException($"Cannot resolve type {namedType.TypeName}");
@@ -150,17 +156,17 @@ public class TranslationUnitContext
 
         if (type is PointerType pointerType)
         {
-            return new PointerType(ResolveType(pointerType.Base));
+            return new PointerType(ResolveType(pointerType.Base, resolutionStack));
         }
 
         if (type is ConstType constType)
         {
-            return new ConstType(ResolveType(constType.Base));
+            return new ConstType(ResolveType(constType.Base, resolutionStack));
         }
 
         if (type is InPlaceArrayType arrayType)
         {
-            return new InPlaceArrayType(ResolveType(arrayType.Base), arrayType.Size);
+            return new InPlaceArrayType(ResolveType(arrayType.Base, resolutionStack), arrayType.Size);
         }
 
         if (type is StructType structType)
@@ -173,9 +179,6 @@ public class TranslationUnitContext
                 }
             }
 
-            var members = structType.Members
-                .Select(structMember => structMember with { Type = ResolveType(structMember.Type) })
-                .ToList();
             if (structType.Members.Count != 0 && structType.Identifier is not null)
             {
                 IType? existingType;
@@ -183,7 +186,7 @@ public class TranslationUnitContext
                 {
                     if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
                     {
-                        existingStructType.Members = members;
+                        existingStructType.Members = ResolveStructMembers(structType);
                         return existingType;
                     }
                 }
@@ -192,13 +195,13 @@ public class TranslationUnitContext
                 {
                     if (existingType is StructType existingStructType && existingStructType.Members.Count == 0)
                     {
-                        existingStructType.Members = members;
+                        existingStructType.Members = ResolveStructMembers(structType);
                         return existingType;
                     }
                 }
             }
 
-            return new StructType(members, structType.IsUnion, structType.Identifier);
+            return new StructType(ResolveStructMembers(structType), structType.IsUnion, structType.Identifier);
         }
 
         if (type is FunctionType functionType)
@@ -215,6 +218,21 @@ public class TranslationUnitContext
         }
 
         return type;
+
+        List<LocalDeclarationInfo> ResolveStructMembers(StructType structType)
+        {
+            if (resolutionStack.Contains(structType))
+                return structType.Members.ToList();
+
+            var newStack = resolutionStack.Add(structType);
+            return structType.Members
+                .Select(structMember =>
+                {
+                    var resolvedType = structMember.Type == structType ? structType : ResolveType(structMember.Type, newStack);
+                    return structMember with { Type = resolvedType };
+                })
+                .ToList();
+        }
     }
 
     internal TypeReference? GetTypeReference(IGeneratedType type) => AssemblyContext.GetTypeReference(type);
