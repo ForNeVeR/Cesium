@@ -13,6 +13,7 @@ public enum AssignmentOperator
     AddAndAssign, // +=
     SubtractAndAssign, // -=
     MultiplyAndAssign, // *=
+    DivideAndAssign, // /=
 
     BitwiseLeftShiftAndAssign, // <<=
     BitwiseRightShiftAndAssign, // >>=
@@ -54,6 +55,7 @@ internal sealed class AssignmentExpression : IExpression
             AssignmentOperator.AddAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Add, Right),
             AssignmentOperator.SubtractAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Subtract, Right),
             AssignmentOperator.MultiplyAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Multiply, Right),
+            AssignmentOperator.DivideAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.Divide, Right),
             AssignmentOperator.BitwiseLeftShiftAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseLeftShift, Right),
             AssignmentOperator.BitwiseRightShiftAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseRightShift, Right),
             AssignmentOperator.BitwiseOrAndAssign => new BinaryOperatorExpression(Left, BinaryOperator.BitwiseOr, Right),
@@ -94,6 +96,7 @@ internal sealed class AssignmentExpression : IExpression
         "+=" => AssignmentOperator.AddAndAssign,
         "-=" => AssignmentOperator.SubtractAndAssign,
         "*=" => AssignmentOperator.MultiplyAndAssign,
+        "/=" => AssignmentOperator.DivideAndAssign,
         "<<=" => AssignmentOperator.BitwiseLeftShiftAndAssign,
         ">>=" => AssignmentOperator.BitwiseRightShiftAndAssign,
         "|=" => AssignmentOperator.BitwiseOrAndAssign,
