@@ -560,4 +560,29 @@ int main()
 
     [Fact]
     public Task InlineFunction() => DoTest(@"inline int test () {return 1;} int main() { return 0; }");
+
+    [NoVerifyAttribute]
+    [Fact]
+    public void ParentFunctionScopeVariableCannotOverrideParameter() => DoesNotCompile(@"
+void worker(int x)
+{
+    int x = 3;
+}", "Variable x is both available as a local and as a function parameter.");
+
+    [Fact]
+    public Task LocalScopeVariableOverride() => DoTest(@"
+void worker(int x)
+{
+    {
+        int x = 3;
+    }
+}");
+
+    [Fact]
+    public Task ParameterOverrideGlobalVariable() => DoTest(@"
+int x;
+void worker(int x)
+{
+    x = 2;
+}");
 }
