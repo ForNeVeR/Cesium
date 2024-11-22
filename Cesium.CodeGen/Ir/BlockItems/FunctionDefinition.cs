@@ -30,7 +30,7 @@ internal sealed class FunctionDefinition : IBlockItem
 
     public bool NoReturn { get; private set; }
 
-    public FunctionDefinition(Ast.FunctionDefinition function)
+    public FunctionDefinition(Ast.FunctionDefinition function, IDeclarationScope scope)
     {
         var (specifiers, declarator, declarations, astStatement) = function;
         StorageClass = StorageClass.Auto;
@@ -53,7 +53,7 @@ internal sealed class FunctionDefinition : IBlockItem
             NoReturn = true;
         }
 
-        var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator);
+        var (type, name, cliImportMemberName) = LocalDeclarationInfo.Of(specifiers, declarator, null, scope);
         FunctionType = type as FunctionType
                         ?? throw new AssertException($"Function of not a function type: {type}.");
         Name = name ?? throw new AssertException($"Function without name: {function}.");
@@ -65,7 +65,7 @@ internal sealed class FunctionDefinition : IBlockItem
 
         if (cliImportMemberName != null)
             throw new CompilationException($"CLI import specifier on a function declaration: {function}.");
-        Statement = astStatement.ToIntermediate();
+        Statement = astStatement.ToIntermediate(scope);
     }
 
     public FunctionDefinition(string name, StorageClass storageClass, FunctionType functionType, IBlockItem statement, bool inline, bool noreturn)

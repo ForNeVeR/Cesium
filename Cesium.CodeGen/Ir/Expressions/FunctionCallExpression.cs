@@ -5,7 +5,6 @@ using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using System.Diagnostics.Metrics;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 
@@ -22,15 +21,15 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
         _callee = callee;
     }
 
-    public FunctionCallExpression(Ast.FunctionCallExpression expression)
+    public FunctionCallExpression(Ast.FunctionCallExpression expression, IDeclarationScope scope)
     {
         var (function, arguments) = expression;
-        var functionExpression = function.ToIntermediate();
+        var functionExpression = function.ToIntermediate(scope);
         _function = functionExpression as IdentifierExpression
                     ?? throw new WipException(
                         229,
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
-        _arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate()).ToList()
+        _arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate(scope)).ToList()
                      ?? Array.Empty<IExpression>();
         _callee = null;
     }

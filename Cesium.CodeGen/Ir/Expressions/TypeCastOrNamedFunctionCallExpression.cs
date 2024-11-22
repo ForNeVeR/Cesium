@@ -10,10 +10,10 @@ internal sealed class TypeCastOrNamedFunctionCallExpression : IExpression
     private readonly string _typeOrFunctionName;
     private readonly IReadOnlyList<IExpression> _arguments;
 
-    public TypeCastOrNamedFunctionCallExpression(Ast.TypeCastOrNamedFunctionCallExpression expression)
+    public TypeCastOrNamedFunctionCallExpression(Ast.TypeCastOrNamedFunctionCallExpression expression, IDeclarationScope scope)
     {
         _typeOrFunctionName = expression.TypeOrFunctionName;
-        _arguments = expression.Arguments.Select(e => e.ToIntermediate()).ToList();
+        _arguments = expression.Arguments.Select(e => e.ToIntermediate(scope)).ToList();
     }
 
     private static IExpression AggregateCommaExpression(IReadOnlyList<IExpression> arguments)

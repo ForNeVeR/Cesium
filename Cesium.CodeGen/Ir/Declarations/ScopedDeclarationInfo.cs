@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
@@ -14,7 +15,7 @@ namespace Cesium.CodeGen.Ir.Declarations;
 /// </summary>
 internal interface IScopedDeclarationInfo
 {
-    public static IScopedDeclarationInfo[] Of(Declaration declaration)
+    public static IScopedDeclarationInfo[] Of(Declaration declaration, IDeclarationScope scope)
     {
         var (specifiers, initDeclarators) = declaration;
 
@@ -23,7 +24,7 @@ internal interface IScopedDeclarationInfo
             if (initDeclarators == null)
                 throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
-            return [TypeDefOf(specifiers.RemoveAt(0), initDeclarators)];
+            return [TypeDefOf(specifiers.RemoveAt(0), initDeclarators, scope)];
         }
 
         var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
@@ -33,16 +34,16 @@ internal interface IScopedDeclarationInfo
             {
                 return declarationSpecifiers.Select(_ =>
                 {
-                    var ld = LocalDeclarationInfo.Of(new[] { _ }, (Declarator?)null);
+                    var ld = LocalDeclarationInfo.Of(new[] { _ }, (Declarator?)null, null, scope);
                     return new ScopedIdentifierDeclaration(storageClass, ld, null);
                 }).ToArray();
             }
 
             var initializationDeclarators = initDeclarators.Value.SelectMany(id => declarationSpecifiers.Select(_ =>
             {
-                var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator);
+                var ld = LocalDeclarationInfo.Of(new[] { _ }, id.Declarator, null, scope);
                 if (id.Initializer is AssignmentInitializer assignmentInitializer)
-                    return new ScopedIdentifierDeclaration(storageClass, ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression));
+                    return new ScopedIdentifierDeclaration(storageClass, ld, ExpressionEx.ToIntermediate(assignmentInitializer.Expression, scope));
 
                 if (id.Initializer is null)
                     return new ScopedIdentifierDeclaration(storageClass, ld, null);
@@ -55,12 +56,13 @@ internal interface IScopedDeclarationInfo
         if (initDeclarators == null)
             throw new CompilationException($"Symbol declaration has no init declarators: {declaration}.");
 
-        return IdentifierOf(specifiers, initDeclarators);
+        return IdentifierOf(specifiers, initDeclarators, scope);
     }
 
     private static TypeDefDeclaration TypeDefOf(
         IReadOnlyList<IDeclarationSpecifier> specifiers,
-        IEnumerable<InitDeclarator> initDeclarators)
+        IEnumerable<InitDeclarator> initDeclarators,
+        IDeclarationScope scope)
     {
         var declarations = initDeclarators.Select(d =>
         {
@@ -68,7 +70,7 @@ internal interface IScopedDeclarationInfo
             if (initializer != null)
                 throw new CompilationException($"Initializer is not supported for a typedef.");
 
-            return LocalDeclarationInfo.Of(specifiers, declarator);
+            return LocalDeclarationInfo.Of(specifiers, declarator, null, scope);
         }).ToList();
 
         return new TypeDefDeclaration(declarations);
@@ -76,7 +78,8 @@ internal interface IScopedDeclarationInfo
 
     private static ScopedIdentifierDeclaration[] IdentifierOf(
         IReadOnlyList<IDeclarationSpecifier> specifiers,
-        IEnumerable<InitDeclarator> initDeclarators)
+        IEnumerable<InitDeclarator> initDeclarators,
+        IDeclarationScope scope)
     {
         var (storageClass, declarationSpecifiers) = ExtractStorageClass(specifiers);
 
@@ -84,16 +87,16 @@ internal interface IScopedDeclarationInfo
             .Select(id =>
             {
                 var (declarator, initializer) = id;
-                var declarationInfo = LocalDeclarationInfo.Of(declarationSpecifiers, declarator, initializer);
+                var declarationInfo = LocalDeclarationInfo.Of(declarationSpecifiers, declarator, initializer, scope);
                 var (type, _, _) = declarationInfo;
-                var expression = ConvertInitializer(type, initializer);
+                var expression = ConvertInitializer(type, initializer, scope);
                 return new ScopedIdentifierDeclaration(storageClass, declarationInfo, expression);
             })
             .ToArray();
         return declarations;
     }
 
-    public static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer)
+    public static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer, IDeclarationScope scope)
     {
         if (initializer is null)
         {
@@ -103,29 +106,29 @@ internal interface IScopedDeclarationInfo
         if (initializer is AssignmentInitializer ai)
         {
             if (ai.Designation != null)
-                return new CompoundObjectFieldInitializer(ai);
+                return new CompoundObjectFieldInitializer(ai, scope);
             else
-                return ai.Expression.ToIntermediate();
+                return ai.Expression.ToIntermediate(scope);
         }
 
         if (initializer is ArrayInitializer arrayInitializer)
         {
             if (type is null)
             {
-                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i)).ToImmutableArray();
+                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i, scope)).ToImmutableArray();
                 return new CompoundObjectInitializationExpression(expr);
             }
 
             if (type.TypeKind is TypeKind.Struct or TypeKind.Unresolved)
             {
-                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i)).ToImmutableArray();
+                var expr = arrayInitializer.Initializers.Select(i => ConvertInitializer(null, i, scope)).ToImmutableArray();
                 return new CompoundObjectInitializationExpression(type, expr);
             }
 
             if (type is PrimitiveType primitiveType)
             {
                 if (arrayInitializer.Initializers.Length == 0) return new Expressions.ConstantLiteralExpression(new IntegerConstant(0));
-                if (arrayInitializer.Initializers.Length == 1) return ConvertInitializer(type, arrayInitializer.Initializers[0]);
+                if (arrayInitializer.Initializers.Length == 1) return ConvertInitializer(type, arrayInitializer.Initializers[0], scope);
                 throw new CompilationException($"Primitive types cannot be initialized using more then one initializer list.");
             }
 
@@ -139,7 +142,7 @@ internal interface IScopedDeclarationInfo
                 throw new CompilationException($"Only in-place array types are supported.");
             }
 
-            var nestedInitializers = arrayInitializer.Initializers.Select(i => ConvertInitializer(inPlaceArrayType.Base, i)).ToImmutableArray();
+            var nestedInitializers = arrayInitializer.Initializers.Select(i => ConvertInitializer(inPlaceArrayType.Base, i, scope)).ToImmutableArray();
             var expression = new ArrayInitializerExpression(nestedInitializers);
             return new CompoundInitializationExpression(type, expression);
         }

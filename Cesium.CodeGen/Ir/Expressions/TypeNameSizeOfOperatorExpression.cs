@@ -10,13 +10,13 @@ internal sealed class TypeNameSizeOfOperatorExpression : IExpression
 {
     private readonly IType _type;
 
-    public TypeNameSizeOfOperatorExpression(Ast.TypeNameSizeOfOperatorExpression expression)
+    public TypeNameSizeOfOperatorExpression(Ast.TypeNameSizeOfOperatorExpression expression, IDeclarationScope scope)
     {
         var (specifiers, abstractDeclarator) = expression.TypeName;
         _type = (specifiers, abstractDeclarator) switch
         {
-            ({ }, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator).Type,
-            ({ }, null) => LocalDeclarationInfo.Of(specifiers, (Declarator?)null).Type
+            ({ }, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator, scope).Type,
+            ({ }, null) => LocalDeclarationInfo.Of(specifiers, (Declarator?)null, null, scope).Type
         };
     }
 

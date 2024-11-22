@@ -1,5 +1,6 @@
 using System.Globalization;
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
@@ -18,9 +19,9 @@ internal sealed record LocalDeclarationInfo(
     string? Identifier,
     string? CliImportMemberName)
 {
-    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator, Initializer? initializer = null)
+    public static LocalDeclarationInfo Of(IReadOnlyList<IDeclarationSpecifier> specifiers, Declarator? declarator, Initializer? initializer, IDeclarationScope scope)
     {
-        var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
+        var (type, cliImportMemberName) = ProcessSpecifiers(specifiers, scope);
         if (declarator == null)
         {
             if (type is StructType structType)
@@ -38,16 +39,17 @@ internal sealed record LocalDeclarationInfo(
 
         var (pointer, directDeclarator) = declarator;
         type = ProcessPointer(pointer, type);
-        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type, initializer);
+        (type, var identifier) = ProcessDirectDeclarator(directDeclarator, type, initializer, scope);
 
         return new LocalDeclarationInfo(type, identifier, cliImportMemberName);
     }
 
     public static LocalDeclarationInfo Of(
         IReadOnlyList<IDeclarationSpecifier> specifiers,
-        AbstractDeclarator abstractDeclarator)
+        AbstractDeclarator abstractDeclarator,
+        IDeclarationScope scope)
     {
-        var (type, cliImportMemberName) = ProcessSpecifiers(specifiers);
+        var (type, cliImportMemberName) = ProcessSpecifiers(specifiers, scope);
 
         var (pointer, directAbstractDeclarator) = abstractDeclarator;
         type = ProcessPointer(pointer, type);
@@ -57,7 +59,8 @@ internal sealed record LocalDeclarationInfo(
     }
 
     public static (IType, string? CliImportMemberName) ProcessSpecifiers(
-        IReadOnlyList<IDeclarationSpecifier> specifiers)
+        IReadOnlyList<IDeclarationSpecifier> specifiers,
+        IDeclarationScope scope)
     {
         IType? type = null;
         var isConst = false;
@@ -121,7 +124,7 @@ internal sealed record LocalDeclarationInfo(
 
                     var (complexTypeKind, identifier, structDeclarations) = typeSpecifier;
                     if (complexTypeKind is ComplexTypeKind.Struct or ComplexTypeKind.Union)
-                        type = new StructType(GetTypeMemberDeclarations(structDeclarations).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
+                        type = new StructType(GetTypeMemberDeclarations(structDeclarations, scope).ToList(), complexTypeKind == ComplexTypeKind.Union, identifier);
                     else
                         throw new AssertException($"Unknown complex type kind: {complexTypeKind}.");
 
@@ -139,7 +142,7 @@ internal sealed record LocalDeclarationInfo(
                         throw new CompilationException(
                             $"Incomplete enum specifier {enumTypeSpecifier}.");
 
-                    type = new EnumType(GetEnumMemberDeclarations(enumDeclarations).ToList(), identifier);
+                    type = new EnumType(GetEnumMemberDeclarations(enumDeclarations, scope).ToList(), identifier);
                     break;
                 }
 
@@ -171,7 +174,11 @@ internal sealed record LocalDeclarationInfo(
         return type;
     }
 
-    private static (IType, string? Identifier) ProcessDirectDeclarator(IDirectDeclarator directDeclarator, IType type, Initializer? initializer = null)
+    private static (IType, string? Identifier) ProcessDirectDeclarator(
+        IDirectDeclarator directDeclarator,
+        IType type,
+        Initializer? initializer,
+        IDeclarationScope scope)
     {
         string? identifier = null;
 
@@ -191,7 +198,7 @@ internal sealed record LocalDeclarationInfo(
 
                     // An absent identifier list is `()` in a declaration like `int main()`. It means that there's an
                     // empty parameter list, actually.
-                    type = ProcessFunctionParameters(type, null);
+                    type = ProcessFunctionParameters(type, null, scope);
 
                     break;
                 }
@@ -205,7 +212,7 @@ internal sealed record LocalDeclarationInfo(
 
                 case ParameterListDirectDeclarator parametersD:
                     var (_ /* base */, parameters) = parametersD;
-                    type = ProcessFunctionParameters(type, parameters);
+                    type = ProcessFunctionParameters(type, parameters, scope);
                     break;
 
                 case ArrayDirectDeclarator array:
@@ -231,7 +238,7 @@ internal sealed record LocalDeclarationInfo(
                     }
                     else
                     {
-                        var constantResult = ConstantEvaluator.TryGetConstantValue(sizeExpr.ToIntermediate(), scope: null);
+                        var constantResult = ConstantEvaluator.TryGetConstantValue(sizeExpr.ToIntermediate(scope), scope);
                         if (constantResult.Constant is { } constant
                             && constant is IntegerConstant integerConstant)
                         {
@@ -331,7 +338,7 @@ internal sealed record LocalDeclarationInfo(
     }
 
     private static IEnumerable<LocalDeclarationInfo> GetTypeMemberDeclarations(
-        IEnumerable<StructDeclaration> structDeclarations)
+        IEnumerable<StructDeclaration> structDeclarations, IDeclarationScope scope)
     {
         return structDeclarations.SelectMany(memberDeclarator =>
         {
@@ -344,7 +351,7 @@ internal sealed record LocalDeclarationInfo(
             if (declarators == null) // maybe its anon structure or anon union?
             {
                 if (collection.Any(s => s is StructOrUnionSpecifier structOrUnion)) // yes, its anon structure or union
-                    return [Of(collection, null, null)];
+                    return [Of(collection, null, null, scope)];
                 else // nope
                     throw new CompilationException(
                        "Empty declarator list on a struct member declaration:" +
@@ -354,13 +361,13 @@ internal sealed record LocalDeclarationInfo(
             return declarators.Select<StructDeclarator, LocalDeclarationInfo>(d =>
             {
                 d.Deconstruct(out var declarator);
-                return Of(collection, declarator);
+                return Of(collection, declarator, null, scope);
             });
         });
     }
 
     private static IEnumerable<InitializableDeclarationInfo> GetEnumMemberDeclarations(
-        IEnumerable<EnumDeclaration>? structDeclarations)
+        IEnumerable<EnumDeclaration>? structDeclarations, IDeclarationScope scope)
     {
         if (structDeclarations is null)
         {
@@ -372,7 +379,7 @@ internal sealed record LocalDeclarationInfo(
             var (identifier, declarators) = memberDeclarator;
             return new InitializableDeclarationInfo(
                 new LocalDeclarationInfo(null!, identifier, null),
-                declarators?.ToIntermediate());
+                declarators?.ToIntermediate(scope));
         });
     }
 
@@ -436,6 +443,6 @@ internal sealed record LocalDeclarationInfo(
             });
     }
 
-    private static IType ProcessFunctionParameters(IType returnType, ParameterTypeList? parameters) =>
-        new FunctionType(ParametersInfo.Of(parameters), returnType);
+    private static IType ProcessFunctionParameters(IType returnType, ParameterTypeList? parameters, IDeclarationScope scope) =>
+        new FunctionType(ParametersInfo.Of(parameters, scope), returnType);
 }

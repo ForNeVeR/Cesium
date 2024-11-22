@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Parser;
@@ -29,7 +30,7 @@ public class CodeGenPrimitiveTypeTests : CodeGenTestBase
         var source = $"{typeString} x;";
         var parser = new CParser(new CLexer(source));
         var ast = parser.ParseDeclaration().Ok.Value;
-        var item = (ScopedIdentifierDeclaration)IScopedDeclarationInfo.Of((Declaration)ast).Single();
+        var item = (ScopedIdentifierDeclaration)IScopedDeclarationInfo.Of((Declaration)ast, null!).Single();
         var type = (PrimitiveType)item.Declaration.Type;
         Assert.Equal(expectedKind, type.Kind);
         Assert.Equal(StorageClass.Auto, item.StorageClass);

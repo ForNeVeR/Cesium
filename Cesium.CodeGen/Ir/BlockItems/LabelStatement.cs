@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 
 namespace Cesium.CodeGen.Ir.BlockItems;
@@ -8,9 +9,9 @@ internal record LabelStatement : IBlockItem
     public bool DidLowered { get; }
     public string Identifier { get; }
 
-    public LabelStatement(Ast.LabelStatement statement)
+    public LabelStatement(Ast.LabelStatement statement, IDeclarationScope scope)
     {
-        Expression = statement.Body.ToIntermediate();
+        Expression = statement.Body.ToIntermediate(scope);
         Identifier = statement.Identifier;
     }
 

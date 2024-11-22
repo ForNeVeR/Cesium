@@ -14,9 +14,9 @@ internal sealed class CompoundObjectFieldInitializer : IExpression
     internal IExpression Inner;
     internal Designation Designation;
 
-    internal CompoundObjectFieldInitializer(AssignmentInitializer initializer)
+    internal CompoundObjectFieldInitializer(AssignmentInitializer initializer, IDeclarationScope scope)
     {
-        Inner = initializer.Expression.ToIntermediate();
+        Inner = initializer.Expression.ToIntermediate(scope);
         Designation = initializer.Designation!;
     }
 
