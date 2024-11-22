@@ -242,4 +242,14 @@ int main() {
 int main() {
     const char a[1 + 1] = { 255 };
 }");
+
+    [Fact]
+    public Task StringArrayTest() => DoTest(@"
+const char* a[] = { ""13"" };
+");
+
+    [Fact]
+    public Task StaticStringArrayTest() => DoTest(@"
+static const char* a[] = { ""13"" };
+");
 }

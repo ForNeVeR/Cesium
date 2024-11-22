@@ -251,10 +251,28 @@ internal static class BlockItemLowering
 
                         type = scope.ResolveType(type);
                         scope.AddVariable(storageClass, identifier, type, null);
+                        if (scope is GlobalConstructorScope)
+                        {
+                            newItems.Add(new GlobalVariableDefinition(storageClass, type, identifier));
+                        }
 
                         var initializerExpression = initializer;
                         if (initializerExpression != null)
                         {
+                            if (initializerExpression is UnaryOperatorExpression { Operator: UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
+                            {
+                                var tempVariableName = scope.GetTmpVariable();
+                                var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
+                                if (type is PointerType pointerType)
+                                {
+                                    type = pointerType.Base;
+                                }
+
+                                var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
+                                newItems.Add(Lower(scope, tempVariable));
+                                initializerExpression = new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier);
+                            }
+
                             var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
                             if (CTypeSystem.IsConversionAvailable(initializerType, type)
                                 && CTypeSystem.IsConversionRequired(initializerType, type))
@@ -303,7 +321,7 @@ internal static class BlockItemLowering
                         if (initializerExpression is not null)
                         {
                             initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier),
-                                AssignmentOperator.Assign, initializerExpression);
+    AssignmentOperator.Assign, initializerExpression);
 
                             newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
                         }
@@ -412,13 +430,6 @@ internal static class BlockItemLowering
 
                     return new FunctionDefinition(d.Name, d.StorageClass, resolvedFunctionType, d.Statement, d.Inline, d.NoReturn);
                 }
-            case GlobalVariableDefinition d:
-                {
-                    var resolvedType = scope.ResolveType(d.Type);
-                    scope.AddVariable(d.StorageClass, d.Identifier, resolvedType, null);
-
-                    return d;
-                }
             case EnumConstantDefinition d:
                 {
                     var resolvedType = scope.ResolveType(d.Type);
@@ -426,6 +437,7 @@ internal static class BlockItemLowering
 
                     return d;
                 }
+            case GlobalVariableDefinition:
             case GoToStatement:
                 {
                     // already lowered
