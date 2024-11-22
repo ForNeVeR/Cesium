@@ -1,4 +1,5 @@
 using Cesium.Ast;
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -7,7 +8,7 @@ namespace Cesium.CodeGen.Ir;
 
 internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, bool IsVarArg)
 {
-    public static ParametersInfo? Of(ParameterTypeList? parameters)
+    public static ParametersInfo? Of(ParameterTypeList? parameters, IDeclarationScope scope)
     {
         if (parameters == null) return null;
         var (parameterList, hasEllipsis) = parameters;
@@ -33,7 +34,7 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
             throw new AssertException($"Impossible: empty parameter list: {parameters}.");
 
         return new ParametersInfo(
-            isVoid ? Array.Empty<ParameterInfo>() : parameterList.Select(ParameterInfo.Of).ToList(),
+            isVoid ? Array.Empty<ParameterInfo>() : parameterList.Select((declaration, index) => ParameterInfo.Of(declaration, index, scope)).ToList(),
             isVoid,
             hasEllipsis);
     }
@@ -41,13 +42,13 @@ internal record ParametersInfo(IList<ParameterInfo> Parameters, bool IsVoid, boo
 
 internal record ParameterInfo(IType Type, string? Name, int Index)
 {
-    public static ParameterInfo Of(ParameterDeclaration declaration, int index)
+    public static ParameterInfo Of(ParameterDeclaration declaration, int index, IDeclarationScope scope)
     {
         var (specifiers, declarator, abstractDeclarator) = declaration;
         var (type, identifier, cliImportMemberName) = (declarator, abstractDeclarator) switch
         {
-            (null, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator),
-            (_, null) => LocalDeclarationInfo.Of(specifiers, declarator),
+            (null, { }) => LocalDeclarationInfo.Of(specifiers, abstractDeclarator, scope),
+            (_, null) => LocalDeclarationInfo.Of(specifiers, declarator, null, scope),
             _ => throw new AssertException(
                 $"Both declarator and abstract declarator found for declaration {declaration}.")
         };

@@ -18,11 +18,11 @@ internal sealed class UnaryOperatorExpression : IExpression
         Target = target;
     }
 
-    public UnaryOperatorExpression(Ast.UnaryOperatorExpression expression)
+    public UnaryOperatorExpression(Ast.UnaryOperatorExpression expression, IDeclarationScope scope)
     {
         var (@operator, target) = expression;
         Operator = GetOperatorKind(@operator);
-        Target = target.ToIntermediate();
+        Target = target.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope)

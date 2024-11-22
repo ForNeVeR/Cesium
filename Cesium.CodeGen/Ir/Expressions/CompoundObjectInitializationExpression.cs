@@ -28,11 +28,11 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         _initializers = initializers;
     }
 
-    public CompoundObjectInitializationExpression(Ast.CompoundLiteralExpression expression)
+    public CompoundObjectInitializationExpression(Ast.CompoundLiteralExpression expression, IDeclarationScope scope)
     {
-        var (type, cliDescription) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList);
+        var (type, cliDescription) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList, scope);
         _type = type;
-        _initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer)).ToImmutableArray();
+        _initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer, scope)).ToImmutableArray();
     }
 
     public void Hint(FieldDefinition type, Action prefixAction, Action postfixAction)
@@ -183,7 +183,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 var element = arrayType.Fields[0].FieldType;
 
 
-                b.Expression.ToIntermediate().EmitTo(scope); // element id
+                b.Expression.ToIntermediate((IDeclarationScope)scope).EmitTo(scope); // element id
                 instructions.Add(Instruction.Create(OpCodes.Sizeof, element)); // size = sizeof(array element)
                 instructions.Add(Instruction.Create(OpCodes.Mul)); // offset = id * size
 

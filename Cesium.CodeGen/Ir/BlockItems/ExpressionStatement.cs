@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
@@ -16,7 +17,7 @@ internal sealed class ExpressionStatement : IBlockItem
         };
     }
 
-    public ExpressionStatement(Ast.ExpressionStatement statement) : this(statement.Expression?.ToIntermediate())
+    public ExpressionStatement(Ast.ExpressionStatement statement, IDeclarationScope scope) : this(statement.Expression?.ToIntermediate(scope))
     {
     }
 }

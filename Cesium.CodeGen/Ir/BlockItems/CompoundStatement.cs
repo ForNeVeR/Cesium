@@ -15,8 +15,8 @@ internal record CompoundStatement : IBlockItem
         Statements = items;
     }
 
-    public CompoundStatement(Ast.CompoundStatement statement)
-        : this(statement.Block.Select(x => x.ToIntermediate()).ToList(), null)
+    public CompoundStatement(Ast.CompoundStatement statement, IDeclarationScope scope)
+        : this(statement.Block.Select(x => x.ToIntermediate(scope)).ToList(), null)
     {
     }
 

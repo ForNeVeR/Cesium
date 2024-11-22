@@ -22,13 +22,13 @@ internal sealed class TypeCastExpression : IExpression
         Expression = expression;
     }
 
-    public TypeCastExpression(CastExpression castExpression)
+    public TypeCastExpression(CastExpression castExpression, IDeclarationScope scope)
     {
         var ls = castExpression.TypeName.AbstractDeclarator is null
-            ? Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, (Declarator?)null)
-            : Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, castExpression.TypeName.AbstractDeclarator);
+            ? Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, (Declarator?)null, initializer: null, scope)
+            : Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, castExpression.TypeName.AbstractDeclarator, scope);
         TargetType = ls.Type;
-        Expression = ExpressionEx.ToIntermediate(castExpression.Target);
+        Expression = ExpressionEx.ToIntermediate(castExpression.Target, scope);
     }
 
     public void EmitTo(IEmitScope scope)

@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
@@ -8,11 +9,11 @@ internal sealed class SwitchStatement : IBlockItem
     public IExpression Expression { get; }
     public IBlockItem Body { get; }
 
-    public SwitchStatement(Ast.SwitchStatement statement)
+    public SwitchStatement(Ast.SwitchStatement statement, IDeclarationScope scope)
     {
         var (expression, body) = statement;
 
-        Expression = expression.ToIntermediate();
-        Body = body.ToIntermediate();
+        Expression = expression.ToIntermediate(scope);
+        Body = body.ToIntermediate(scope);
     }
 }

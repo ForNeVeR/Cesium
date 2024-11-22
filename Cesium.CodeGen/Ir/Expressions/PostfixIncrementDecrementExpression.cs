@@ -16,10 +16,10 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
     private readonly IExpression _target;
     private readonly BinaryOperator _operator;
     private readonly IToken<CTokenType> _postfixOperator;
-    public PostfixIncrementDecrementExpression(Ast.PostfixIncrementDecrementExpression expression)
+    public PostfixIncrementDecrementExpression(Ast.PostfixIncrementDecrementExpression expression, IDeclarationScope scope)
     {
         expression.Deconstruct(out var target, out var postfixOperator);
-        _target = target.ToIntermediate();
+        _target = target.ToIntermediate(scope);
         _operator = GetOperator(postfixOperator);
         _postfixOperator = postfixOperator;
     }

@@ -15,10 +15,10 @@ internal sealed class IndirectionExpression : IExpression, IValueExpression
         Target = target;
     }
 
-    internal IndirectionExpression(Ast.IndirectionExpression expression)
+    internal IndirectionExpression(Ast.IndirectionExpression expression, IDeclarationScope scope)
     {
         expression.Deconstruct(out var target);
-        Target = target.ToIntermediate();
+        Target = target.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope)

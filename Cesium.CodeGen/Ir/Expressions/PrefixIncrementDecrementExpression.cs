@@ -14,10 +14,10 @@ internal sealed class PrefixIncrementDecrementExpression : IExpression
     private readonly IExpression _target;
     private readonly BinaryOperator _operator;
     private readonly IToken<CTokenType> _prefixOperator;
-    public PrefixIncrementDecrementExpression(Ast.PrefixIncrementDecrementExpression expression)
+    public PrefixIncrementDecrementExpression(Ast.PrefixIncrementDecrementExpression expression, IDeclarationScope scope)
     {
         expression.Deconstruct(out var prefixOperator, out var target);
-        _target = target.ToIntermediate();
+        _target = target.ToIntermediate(scope);
         _operator = GetOperator(prefixOperator);
         _prefixOperator = prefixOperator;
     }
@@ -39,7 +39,8 @@ internal sealed class PrefixIncrementDecrementExpression : IExpression
         return new AssignmentExpression(
             valueTarget,
             AssignmentOperator.Assign,
-            newValueExpression
+            newValueExpression,
+            true
         ).Lower(scope);
     }
 

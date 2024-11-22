@@ -29,16 +29,16 @@ internal sealed class AssignmentExpression : IExpression
     public IExpression Right{ get; }
     public AssignmentOperator Operator { get; }
 
-    public AssignmentExpression(Ast.AssignmentExpression expression, bool doReturn = true)
+    public AssignmentExpression(Ast.AssignmentExpression expression, bool doReturn, IDeclarationScope scope)
     {
         Operator = GetOperatorKind(expression.Operator);
-        Left = expression.Left.ToIntermediate() as IValueExpression
+        Left = expression.Left.ToIntermediate(scope) as IValueExpression
                ?? throw new AssertException($"Not a value expression: {expression.Left}.");
-        Right = expression.Right.ToIntermediate();
+        Right = expression.Right.ToIntermediate(scope);
         _doReturn = doReturn;
     }
 
-    public AssignmentExpression(IValueExpression left, AssignmentOperator @operator, IExpression right, bool doReturn = true)
+    public AssignmentExpression(IValueExpression left, AssignmentOperator @operator, IExpression right, bool doReturn)
     {
         Left = left;
         Operator = @operator;
