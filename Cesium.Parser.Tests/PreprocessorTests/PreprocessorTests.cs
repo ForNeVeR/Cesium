@@ -627,6 +627,15 @@ int foo() { return 0; }
 #endif
 ");
 
+    // Have stack overflow
+    [Fact]
+        public Task IfExpressionNotDefinedInsideComplexExpressionFunction() => DoTest(
+@"#if !defined(__SVR4)  && !defined(_AIX)    && !defined(__sgi) && \
+    !defined(__sun__) && !defined(__linux)
+typedef unsigned int uint;
+#endif
+");
+
     [Fact]
     public Task IfExpressionNotDefined() => DoTest(
 @"#define mycondition
