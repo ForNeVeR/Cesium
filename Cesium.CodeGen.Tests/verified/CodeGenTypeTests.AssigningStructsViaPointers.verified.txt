@@ -1,0 +1,13 @@
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::foo(<typedef>foo* p1, <typedef>foo* p2)
+      IL_0000: ldarg.0
+      IL_0001: ldarg.1
+      IL_0002: ldobj <typedef>foo
+      IL_0007: stobj <typedef>foo
+      IL_000c: ret
+
+  Type: <typedef>foo
+  Fields:
+    System.Int32 <typedef>foo::x

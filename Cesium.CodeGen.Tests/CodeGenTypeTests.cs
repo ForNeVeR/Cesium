@@ -434,4 +434,14 @@ struct Node {
 };
 Node *root = &(Node){0};
 ");
+
+    [Fact]
+    public Task AssigningStructsViaPointers() => DoTest("""
+typedef struct {
+    int x;
+} foo;
+void foo(foo* p1, foo* p2) {
+    *p1 = *p2;
+}
+""");
 }
