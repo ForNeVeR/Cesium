@@ -425,4 +425,13 @@ int main(void) {
     return bar.x;
 }
 """);
+
+    [Fact]
+    public Task ResolutionOfRecursiveTypes() => DoTest(@"
+typedef struct Node Node;
+struct Node {
+    Node *parent;
+};
+Node *root = &(Node){0};
+");
 }
