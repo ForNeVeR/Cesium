@@ -50,9 +50,6 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
         var par = scope.GetParameterInfo(Identifier);
         var globalType = scope.GetGlobalField(Identifier);
 
-        if (var is not null && par is not null)
-            throw new CompilationException($"Variable {Identifier} is both available as a local and as a function parameter.");
-
         if (var is not null)
         {
             if (var.StorageClass == Declarations.StorageClass.Auto)

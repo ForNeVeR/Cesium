@@ -250,6 +250,11 @@ internal static class BlockItemLowering
                                 $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
                         type = scope.ResolveType(type);
+                        if (scope is BlockScope { Parent: FunctionScope } && scope.GetParameterInfo(identifier) is not null)
+                        {
+                            throw new CompilationException($"Variable {identifier} is both available as a local and as a function parameter.");
+                        }
+
                         scope.AddVariable(storageClass, identifier, type, null);
                         if (scope is GlobalConstructorScope)
                         {
