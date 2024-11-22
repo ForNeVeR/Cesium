@@ -39,6 +39,7 @@ internal static class ExpressionEx
         Ast.MemberAccessExpression e => new MemberAccessExpression(e),
         Ast.PointerMemberAccessExpression e => new PointerMemberAccessExpression(e),
         Ast.PostfixIncrementDecrementExpression e => new PostfixIncrementDecrementExpression(e),
+        Ast.CompoundLiteralExpression e => new CompoundObjectInitializationExpression(e),
 
         Ast.CommaExpression e => new CommaExpression(e),
 

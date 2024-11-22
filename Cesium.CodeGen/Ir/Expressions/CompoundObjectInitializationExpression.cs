@@ -1,6 +1,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
@@ -15,7 +16,6 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     private Action? _prefixAction;
     private Action? _postfixAction;
     private readonly ImmutableArray<IExpression?> _initializers;
-    private IDeclarationScope? _scope;
 
     public CompoundObjectInitializationExpression(IType type, ImmutableArray<IExpression?> initializers)
     {
@@ -26,6 +26,13 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     public CompoundObjectInitializationExpression(ImmutableArray<IExpression?> initializers)
     {
         _initializers = initializers;
+    }
+
+    public CompoundObjectInitializationExpression(Ast.CompoundLiteralExpression expression)
+    {
+        var (type, cliDescription) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList);
+        _type = type;
+        _initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer)).ToImmutableArray();
     }
 
     public void Hint(FieldDefinition type, Action prefixAction, Action postfixAction)
@@ -271,14 +278,8 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        _scope = scope;
-        if (_type != null) CheckIfResolved(scope);
-        return this;
-    }
-
-    private void CheckIfResolved(IDeclarationScope scope)
-    {
-        if (_type!.TypeKind == TypeKind.Unresolved)
-            _type = scope.ResolveType(_type);
+        var resolvedType = _type?.TypeKind == TypeKind.Unresolved ? scope.ResolveType(_type) : _type;
+        var initializers = _initializers.Select(_ => _?.Lower(scope)).ToImmutableArray();
+        return resolvedType == null ? new CompoundObjectInitializationExpression(initializers) : new CompoundObjectInitializationExpression(resolvedType, initializers);
     }
 }

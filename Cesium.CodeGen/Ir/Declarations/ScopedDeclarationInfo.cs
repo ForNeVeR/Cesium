@@ -83,7 +83,6 @@ internal interface IScopedDeclarationInfo
         var declarations = initDeclarators
             .Select(id =>
             {
-                //return IdentifierOf(declarationSpecifiers, id);
                 var (declarator, initializer) = id;
                 var declarationInfo = LocalDeclarationInfo.Of(declarationSpecifiers, declarator, initializer);
                 var (type, _, _) = declarationInfo;
@@ -94,18 +93,7 @@ internal interface IScopedDeclarationInfo
         return declarations;
     }
 
-    private static InitializableDeclarationInfo IdentifierOf(
-        IReadOnlyList<IDeclarationSpecifier> specifiers,
-        InitDeclarator initDeclarator)
-    {
-        var (declarator, initializer) = initDeclarator;
-        var declarationInfo = LocalDeclarationInfo.Of(specifiers, declarator, initializer);
-        var (type, _, _) = declarationInfo;
-        var expression = ConvertInitializer(type, initializer);
-        return new InitializableDeclarationInfo(declarationInfo, expression);
-    }
-
-    private static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer)
+    public static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer)
     {
         if (initializer is null)
         {
