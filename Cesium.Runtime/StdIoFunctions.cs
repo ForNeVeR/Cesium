@@ -156,7 +156,23 @@ public unsafe static class StdIoFunctions
         }
 
         var streamWriter = streamWriterAccessor();
+        return StreamPrintF(streamWriter, formatString, varargs);
+    }
 
+    public static int SPrintF(byte* buffer, byte* str, void* varargs)
+    {
+        var formatString = RuntimeHelpers.Unmarshal(str);
+        if (formatString == null)
+        {
+            return -1;
+        }
+
+        var streamWriter = new BytePtrTextWriter(buffer);
+        return StreamPrintF(streamWriter, formatString, varargs);
+    }
+
+    private static int StreamPrintF(TextWriter streamWriter, string formatString, void* varargs)
+    {
         int currentPosition = 0;
         var formatStartPosition = formatString.IndexOf('%', currentPosition);
         int consumedArgs = 0;
@@ -351,24 +367,24 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "u":
-                {
-                    uint uintValue = (uint)((long*)varargs)[consumedArgs];
-                    var uintValueString = uintValue.ToString();
-                    streamWriter.Write(uintValueString);
-                    consumedBytes += uintValueString.Length;
-                    consumedArgs++;
-                    break;
-                }
+                    {
+                        uint uintValue = (uint)((long*)varargs)[consumedArgs];
+                        var uintValueString = uintValue.ToString();
+                        streamWriter.Write(uintValueString);
+                        consumedBytes += uintValueString.Length;
+                        consumedArgs++;
+                        break;
+                    }
                 case "lu":
                 case "zu":
                     {
-                    ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
-                    var ulongValueString = ulongValue.ToString();
-                    streamWriter.Write(ulongValueString);
-                    consumedBytes += ulongValueString.Length;
-                    consumedArgs++;
-                    break;
-                }
+                        ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
+                        var ulongValueString = ulongValue.ToString();
+                        streamWriter.Write(ulongValueString);
+                        consumedBytes += ulongValueString.Length;
+                        consumedArgs++;
+                        break;
+                    }
                 case "f":
                     {
                         var floatNumber = ((double*)varargs)[consumedArgs];
@@ -704,5 +720,33 @@ public unsafe static class StdIoFunctions
         gch.Free();
         Marshal.FreeHGlobal(handle);
         return true;
+    }
+
+    class BytePtrTextWriter : TextWriter
+    {
+        private byte* _ptr;
+
+        public BytePtrTextWriter(byte* ptr)
+        {
+            _ptr = ptr;
+        }
+
+        public override Encoding Encoding => throw new NotImplementedException();
+
+        public override void Write(char value)
+        {
+            *_ptr = (byte)value;
+            _ptr++;
+        }
+
+        public override void Write(string? value)
+        {
+            if (value is null) return;
+
+            foreach (var c in value)
+            {
+                Write(c);
+            }
+        }
     }
 }
