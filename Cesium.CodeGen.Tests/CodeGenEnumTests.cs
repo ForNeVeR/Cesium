@@ -107,4 +107,17 @@ enum Colour { Red, Green, Blue = Green + 10 };
 typedef struct  { int x; } TestStruct;
 TestStruct *x = &(TestStruct){Blue};
 ");
+
+    [Fact]
+    public Task EnumUseValuesInStructDeclaration() => DoTest(@"
+enum Colour { Red, Green, Blue = Green + 10 };
+typedef struct  { int x; } TestStruct;
+TestStruct x = {Blue};
+");
+
+    [Fact]
+    public Task EnumInsideStructDeclaration() => DoTest(@"
+typedef struct { enum Colour { Red, Green, Blue = Green + 10 } x; } TestStruct;
+TestStruct x = {Blue};
+");
 }

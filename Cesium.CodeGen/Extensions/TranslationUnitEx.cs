@@ -1,9 +1,11 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Cesium.CodeGen.Extensions;
 
@@ -57,19 +59,13 @@ internal static class TranslationUnitEx
                             continue;
                         }
 
-                        if (type is EnumType enumType)
+                        if (type is EnumType enumType || type is StructType structType)
                         {
-                            yield return new TagBlockItem(new[] { declaration });
-                            foreach (var d in FindEnumConstants(enumType, scope))
+                            yield return new TagBlockItem([declaration]);
+                            foreach (var d in GetEnumDeclarations(type, scope))
                             {
                                 yield return d;
                             }
-                            continue;
-                        }
-
-                        if (type is StructType structType)
-                        {
-                            yield return new TagBlockItem(new[] { declaration });
                             continue;
                         }
 
@@ -82,19 +78,45 @@ internal static class TranslationUnitEx
                         foreach (var declaration in typeDefDeclaration.Types)
                         {
                             var (type, identifier, cliImportMemberName) = declaration;
-                            if (type is EnumType enumType)
+                            foreach (var d in GetEnumDeclarations(type, scope))
                             {
-                                foreach (var d in FindEnumConstants(enumType, scope))
-                                {
-                                    yield return d;
-                                }
-                                continue;
+                                yield return d;
                             }
                         }
                     }
                     break;
                 default:
                     throw new WipException(212, $"Unknown kind of declaration: {wholeDeclaration}.");
+            }
+        }
+    }
+
+    private static IEnumerable<IBlockItem> GetEnumDeclarations(IType type, IDeclarationScope scope)
+    {
+        if (type is EnumType enumType2)
+        {
+            foreach (var d in FindEnumConstants(enumType2, scope))
+            {
+                yield return d;
+            }
+        }
+
+        if (type is StructType nestedStructType)
+        {
+            foreach (var nd in GetStructEnums(nestedStructType, scope))
+            {
+                yield return nd;
+            }
+        }
+    }
+
+    private static IEnumerable<IBlockItem> GetStructEnums(StructType structType, IDeclarationScope scope)
+    {
+        foreach (var md in structType.Members)
+        {
+            foreach (var nd in GetEnumDeclarations(md.Type, scope))
+            {
+                yield return nd;
             }
         }
     }
