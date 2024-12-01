@@ -5,7 +5,8 @@
 int main(int argc, char* argv[])
 {
     printf("CHAR_BIT       = %d\n", CHAR_BIT);
-    printf("MB_LEN_MAX     = %d\n\n", MB_LEN_MAX);
+    // GCC use different value then MSVC
+    //printf("MB_LEN_MAX     = %d\n\n", MB_LEN_MAX);
 
     printf("CHAR_MIN       = %+d\n", CHAR_MIN);
     printf("CHAR_MAX       = %+d\n", CHAR_MAX);
