@@ -83,6 +83,54 @@ internal sealed class IntegerConstant : IConstant
             textSpan = textSpan[..^1];
         }
 
+        if (textSpan.EndsWith("i64", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^3];
+        }
+
+        if (textSpan.EndsWith("i32", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^3];
+        }
+
+        if (textSpan.EndsWith("i16", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^3];
+        }
+
+        if (textSpan.EndsWith("i8", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^2];
+        }
+
+        if (textSpan.EndsWith("ui64", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^4];
+        }
+
+        if (textSpan.EndsWith("ui32", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^4];
+        }
+
+        if (textSpan.EndsWith("ui16", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^4];
+        }
+
+        if (textSpan.EndsWith("ui8", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^3];
+        }
+
         if (textSpan.EndsWith("u", StringComparison.InvariantCultureIgnoreCase))
         {
             unsignedParse = true;
