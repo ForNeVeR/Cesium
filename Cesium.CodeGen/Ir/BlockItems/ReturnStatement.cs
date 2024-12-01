@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
@@ -7,9 +8,9 @@ internal sealed class ReturnStatement : IBlockItem
 {
     public IExpression? Expression { get; }
 
-    public ReturnStatement(Ast.ReturnStatement statement)
+    public ReturnStatement(Ast.ReturnStatement statement, IDeclarationScope scope)
     {
-        Expression = statement.Expression?.ToIntermediate();
+        Expression = statement.Expression?.ToIntermediate(scope);
     }
 
     public ReturnStatement(IExpression? expression)

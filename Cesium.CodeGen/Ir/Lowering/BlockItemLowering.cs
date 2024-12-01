@@ -290,9 +290,11 @@ internal static class BlockItemLowering
                         if (type is InPlaceArrayType i)
                         {
                             primaryInitializerExpression = 
-                                new AssignmentExpression(new IdentifierExpression(identifier),
+                                new AssignmentExpression(
+                                    new IdentifierExpression(identifier),
                                     AssignmentOperator.Assign,
-                                    new LocalAllocationExpression(i)
+                                    new LocalAllocationExpression(i),
+                                    true
                             );
                             newItems.Add(Lower(scope, new ExpressionStatement(primaryInitializerExpression)));
                             if (initializerExpression != null)
@@ -312,7 +314,7 @@ internal static class BlockItemLowering
                                             }
 
                                             var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)));
-                                            var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem);
+                                            var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem, true);
                                             newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
                                             index++;
                                         }
@@ -325,8 +327,11 @@ internal static class BlockItemLowering
 
                         if (initializerExpression is not null)
                         {
-                            initializerExpression = new AssignmentExpression(new IdentifierExpression(identifier),
-    AssignmentOperator.Assign, initializerExpression);
+                            initializerExpression = new AssignmentExpression(
+                                new IdentifierExpression(identifier),
+                                AssignmentOperator.Assign,
+                                initializerExpression,
+                                true);
 
                             newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
                         }

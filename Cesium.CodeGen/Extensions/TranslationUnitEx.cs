@@ -12,7 +12,7 @@ internal static class TranslationUnitEx
     public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit, Contexts.IDeclarationScope scope) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
-            Ast.FunctionDefinition func => [new FunctionDefinition(func)],
+            Ast.FunctionDefinition func => [new FunctionDefinition(func, scope)],
             Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym, scope),
             Ast.PInvokeDeclaration pinvoke => [new PInvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
             _ => throw new WipException(212, $"Declaration not supported: {x}.")
@@ -21,7 +21,7 @@ internal static class TranslationUnitEx
     private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym, Contexts.IDeclarationScope scope)
     {
         sym.Deconstruct(out var astDeclaration);
-        foreach (var wholeDeclaration in IScopedDeclarationInfo.Of(astDeclaration))
+        foreach (var wholeDeclaration in IScopedDeclarationInfo.Of(astDeclaration, scope))
         {
             switch (wholeDeclaration)
             {

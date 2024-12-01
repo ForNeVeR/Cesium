@@ -20,6 +20,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
+      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     </ItemGroup>
-
 </Project>

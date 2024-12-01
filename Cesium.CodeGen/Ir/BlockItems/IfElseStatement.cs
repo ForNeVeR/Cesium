@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 
@@ -18,11 +19,11 @@ internal record IfElseStatement : IBlockItem
         FalseBranch = falseBranch;
     }
 
-    public IfElseStatement(Ast.IfElseStatement statement)
+    public IfElseStatement(Ast.IfElseStatement statement, IDeclarationScope scope)
     {
         var (expression, trueBranch, falseBranch) = statement;
-        Expression = expression.ToIntermediate();
-        TrueBranch = trueBranch.ToIntermediate();
-        FalseBranch = falseBranch?.ToIntermediate();
+        Expression = expression.ToIntermediate(scope);
+        TrueBranch = trueBranch.ToIntermediate(scope);
+        FalseBranch = falseBranch?.ToIntermediate(scope);
     }
 }

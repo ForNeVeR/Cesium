@@ -20,12 +20,12 @@ internal sealed class BinaryOperatorExpression : IExpression
         Right = right;
     }
 
-    internal BinaryOperatorExpression(Ast.BinaryOperatorExpression expression)
+    internal BinaryOperatorExpression(Ast.BinaryOperatorExpression expression, IDeclarationScope scope)
     {
         var (left, @operator, right) = expression;
-        Left = left.ToIntermediate();
+        Left = left.ToIntermediate(scope);
         Operator = GetOperatorKind(@operator);
-        Right = right.ToIntermediate();
+        Right = right.ToIntermediate(scope);
     }
 
 

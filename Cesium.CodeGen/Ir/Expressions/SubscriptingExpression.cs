@@ -12,11 +12,11 @@ internal sealed class SubscriptingExpression : IValueExpression
     private readonly IExpression _expression;
     private readonly IExpression _index;
 
-    public SubscriptingExpression(Ast.SubscriptingExpression subscriptingExpression)
+    public SubscriptingExpression(Ast.SubscriptingExpression subscriptingExpression, IDeclarationScope scope)
     {
         var (expression, index) = subscriptingExpression;
-        _expression = expression.ToIntermediate();
-        _index = index.ToIntermediate();
+        _expression = expression.ToIntermediate(scope);
+        _index = index.ToIntermediate(scope);
     }
 
     public SubscriptingExpression(IExpression expression, IExpression index)

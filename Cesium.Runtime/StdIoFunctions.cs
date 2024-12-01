@@ -1,10 +1,8 @@
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-#if !NETSTANDARD
-using System.Runtime.InteropServices;
-#endif
 
 namespace Cesium.Runtime;
 
@@ -217,7 +215,7 @@ public unsafe static class StdIoFunctions
                 addition++;
             }
 
-            while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+            while (formatString[formatStartPosition + addition].IsAsciiDigit())
             {
                 width = width * 10 + (formatString[formatStartPosition + addition] - '0');
                 addition++;
@@ -239,7 +237,7 @@ public unsafe static class StdIoFunctions
                     precision = -2;
                     addition++;
 
-                    while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+                    while (formatString[formatStartPosition + addition].IsAsciiDigit())
                     {
                         if (precision == -2) precision = 0;
                         precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
@@ -248,7 +246,7 @@ public unsafe static class StdIoFunctions
                 }
                 else
                 {
-                    while (formatString[formatStartPosition + addition] >= '0' && formatString[formatStartPosition + addition] <= '9')
+                    while (formatString[formatStartPosition + addition].IsAsciiDigit())
                     {
                         if (precision == -1) precision = 0;
                         precision = precision * 10 + (formatString[formatStartPosition + addition] - '0');
@@ -258,10 +256,27 @@ public unsafe static class StdIoFunctions
             }
 
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
-            if (formatString[formatStartPosition + addition] == 'l' || formatString[formatStartPosition + addition] == 'z')
+            if (char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'z'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'u')
             {
-                addition++;
-                formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                if (formatStartPosition + addition < formatString.Length - 1
+                    && (char.ToLowerInvariant(formatSpecifier[0]) != 'u' || char.ToLowerInvariant(formatString[formatStartPosition + addition + 1]) == 'l'))
+                {
+                    addition++;
+                    formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    if (string.Equals(formatSpecifier, "ll", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        addition++;
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    }
+
+                    if (string.Equals(formatSpecifier, "ul", StringComparison.InvariantCultureIgnoreCase) && char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l')
+                    {
+                        addition++;
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    }
+                }
             }
 
             int padding = -1;
@@ -346,6 +361,7 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "li":
+                case "lld":
                     long longValue = ((long*)varargs)[consumedArgs];
                     var longValueString = longValue.ToString();
                     if (alwaysSign && longValue > 0)
@@ -375,7 +391,18 @@ public unsafe static class StdIoFunctions
                         consumedArgs++;
                         break;
                     }
+                case "llu":
+                case "LLu":
+                case "LLU":
+                case "ull":
+                case "Ull":
+                case "ULL":
                 case "lu":
+                case "Lu":
+                case "LU":
+                case "UL":
+                case "Ul":
+                case "ul":
                 case "zu":
                     {
                         ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];
@@ -682,6 +709,451 @@ public unsafe static class StdIoFunctions
         return 0;
     }
 
+    public static int ScanF(byte* format, void* varargs)
+    {
+        return FScanF((void*)StdIn, format, varargs);
+    }
+
+    public static int FScanF(void* stream, byte* format, void* varargs)
+    {
+        var formatString = RuntimeHelpers.Unmarshal(format);
+        if (formatString is null)
+            return -1;
+
+        var streamHandle = GetStream(stream);
+
+        var getStreamReader = streamHandle?.Reader;
+        if (getStreamReader is null)
+            return -1;
+
+        var streamReader = getStreamReader();
+
+        int argsConsumed = 0;
+        int bytesConsumed = 0;
+        bool whitespacePrefix = false;
+
+        int specifierPosition = formatString.IndexOf("%", 0, StringComparison.Ordinal);
+
+        if (specifierPosition > 0 &&
+            char.IsWhiteSpace(formatString[specifierPosition - 1]))
+        {
+            whitespacePrefix = true;
+        }
+
+        while (specifierPosition >= 0 && specifierPosition < formatString.Length)
+        {
+            if (char.IsWhiteSpace(formatString[specifierPosition]))
+            {
+                whitespacePrefix = true;
+                specifierPosition++;
+                continue;
+            }
+            if (formatString[specifierPosition] != '%') break;
+
+            int offset = 1;
+            bool ignore = false;
+            long width = -1;
+
+            if (formatString[specifierPosition + offset] == '*')
+            {
+                ignore = true;
+                offset++;
+            }
+
+            while (formatString[specifierPosition + offset].IsAsciiDigit())
+            {
+                if (width == -1) width = 0;
+
+                width = width * 10 + (formatString[specifierPosition + offset] - '0');
+                offset++;
+            }
+
+            bool isConsumed = false;
+
+            if (formatString[specifierPosition + offset] == '[')
+            {
+                // TODO: Add set support
+                throw new FormatException("Sets are not supported in current version");
+            }
+
+            var sb = new StringBuilder();
+
+            if (formatString[specifierPosition + offset] == 'l')
+            {
+                sb.Append(formatString[specifierPosition + offset]);
+                offset++;
+            }
+            if (formatString[specifierPosition + offset].IsSizeAttribute())
+            {
+                sb.Append(formatString[specifierPosition + offset]);
+                offset++;
+            }
+
+            sb.Append(formatString[specifierPosition + offset]);
+
+            string formatSpecifier = sb.ToString();
+            int charsConsumed = 0;
+            switch (formatSpecifier)
+            {
+                case "c":
+                case "lc":
+                    if (width == -1) width = 1;
+
+                    var charPtr = (byte*)((long*)varargs)[argsConsumed];
+
+                    if (whitespacePrefix)
+                    {
+                        while (char.IsWhiteSpace((char)streamReader.Peek()))
+                        {
+                            streamReader.Read();
+                        }
+                    }
+
+                    while (charsConsumed < width)
+                    {
+                        char c = (char)streamReader.Read();
+
+                        if (!ignore) charPtr[charsConsumed] = (byte)c;
+                        charsConsumed++;
+                    }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "s":
+                case "ls":
+                    var stringPtr = (byte*)((long*)varargs)[argsConsumed];
+
+                    while (char.IsWhiteSpace((char)streamReader.Peek()))
+                    {
+                        streamReader.Read();
+                    }
+
+                    while (charsConsumed < width || width == -1)
+                    {
+                        if (streamReader.Peek() == -1 &&
+                            charsConsumed == 0 &&
+                            argsConsumed == 0) return -1;
+
+                        if (streamReader.Peek() == -1 ||
+                            char.IsWhiteSpace((char)streamReader.Peek())) break;
+
+                        char c = (char)streamReader.Read();
+                        if (!ignore) stringPtr[charsConsumed] = (byte)c;
+                        charsConsumed++;
+                    }
+
+                    stringPtr[charsConsumed] = 0;
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "d":
+                case "i":
+                    var intPtr = (int*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numInt = (int)ParseInteger(10);
+                        if (!ignore) *intPtr = numInt;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "ld":
+                case "li":
+                    var longPtr = (nint*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numLong = (nint)ParseInteger(10);
+                        if (!ignore) *longPtr = numLong;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "lld":
+                case "lli":
+                    var longLongPtr = (long*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numLongLong = (long)ParseInteger(10);
+                        if (!ignore) *longLongPtr = numLongLong;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "hd":
+                case "hi":
+                    var shortPtr = (short*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numShort = (short)ParseInteger(10);
+                        if (!ignore) *shortPtr = numShort;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "u":
+                    var uintPtr = (uint*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numUInt = (uint)ParseInteger(10);
+                        if (!ignore) *uintPtr = numUInt;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "lu":
+                    var uLongPtr = (nuint*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numULong = (nuint)ParseInteger(10);
+                        if (!ignore) *uLongPtr = numULong;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "llu":
+                    var uLongLongPtr = (ulong*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numULongLong = ParseInteger(10);
+                        if (!ignore) *uLongLongPtr = numULongLong;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "hu":
+                    var uShortPtr = (ushort*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var numUShort = (ushort)ParseInteger(10);
+                        if (!ignore) *uShortPtr = numUShort;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+                    break;
+
+                case "f":
+                case "F":
+                case "e":
+                case "E":
+                case "a":
+                case "A":
+                case "g":
+                case "G":
+                    var floatPtr = (float*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var floatNum = ParseFloat();
+                        if (!ignore) *floatPtr = floatNum;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "o":
+                    var octalPtr = (int*)((long*)varargs)[argsConsumed];
+
+                    try
+                    {
+                        var num = (int)ParseInteger(8);
+                        if (!ignore) *octalPtr = num;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "x":
+                case "X":
+                case "p":
+                    var hexPtr = (int*)((long*)varargs)[argsConsumed];
+
+                    while (char.IsWhiteSpace((char)streamReader.Peek()))
+                    {
+                        streamReader.Read();
+                    }
+
+                    try
+                    {
+                        if (formatSpecifier.ToLower() == "p")
+                        {
+                            if ((char)streamReader.Peek() == '0')
+                                streamReader.Read();
+                            if ((char)streamReader.Peek() is 'x' or 'X')
+                                streamReader.Read();
+                            if (!((char)streamReader.Peek()).IsHexDigit())
+                                throw new FormatException();
+                        }
+
+                        var num = (int)ParseInteger(16);
+                        if (!ignore) *hexPtr = num;
+                    }
+                    catch (EndOfStreamException) { return -1; }
+                    catch (FormatException) { return argsConsumed; }
+
+                    isConsumed = !ignore;
+                    offset++;
+
+                    break;
+
+                case "n":
+                    var consumedPtr = (int*)((long*)varargs)[argsConsumed];
+                    *consumedPtr = argsConsumed;
+
+                    offset++;
+                    break;
+
+                default:
+                    throw new FormatException($"Format specifier {formatSpecifier} is not supported");
+            }
+
+            if (isConsumed) argsConsumed++;
+            else if (!ignore) break;
+
+            specifierPosition += offset;
+            whitespacePrefix = false;
+
+            ulong ParseInteger(int radix)
+            {
+                while (char.IsWhiteSpace((char)streamReader.Peek()))
+                {
+                    streamReader.Read();
+                }
+
+                char first = (char)streamReader.Peek();
+
+                bool isNegative = false;
+
+                if (first is '+' or '-')
+                {
+                    isNegative = first == '-';
+                    streamReader.Read();
+                }
+
+                if (!((char)streamReader.Peek()).IsAsciiDigit() && radix <= 10)
+                    throw new FormatException($"No digit symbol");
+                if (!((char)streamReader.Peek()).IsHexDigit())
+                    throw new FormatException($"No digit symbol");
+
+                ulong num = 0;
+                while (charsConsumed < width || width == -1)
+                {
+                    if (streamReader.Peek() == -1 &&
+                        charsConsumed == 0 &&
+                        argsConsumed == 0) throw new EndOfStreamException();
+
+                    if (radix == 8)
+                    {
+                        if (streamReader.Peek() == -1 ||
+                            !((char)streamReader.Peek()).IsOctalDigit()) break;
+                    }
+                    else if (radix == 10)
+                    {
+                        if (streamReader.Peek() == -1 ||
+                            !((char)streamReader.Peek()).IsAsciiDigit()) break;
+                    }
+                    else if (radix == 16)
+                    {
+                        if (streamReader.Peek() == -1 ||
+                            !((char)streamReader.Peek()).IsHexDigit()) break;
+                    }
+                    else throw new FormatException($"Radix {radix} is not supported");
+
+                    num = num * (ulong)radix + (ulong)((char)streamReader.Read()).Num();
+                    charsConsumed++;
+                }
+
+                if (charsConsumed == 0) throw new FormatException("Invalid integer");
+
+                return isNegative ? (ulong)((long)num * -1) : num;
+            }
+
+            float ParseFloat()
+            {
+                var integer = (long)ParseInteger(10);
+                if ((char)streamReader.Peek() != '.')
+                    return integer;
+
+                streamReader.Read();
+                int next = streamReader.Peek();
+                if (char.IsWhiteSpace((char)next) || next == -1) return integer;
+                if (!((char)next).IsAsciiDigit()) throw new FormatException();
+
+                var fraction = (long)ParseInteger(10);
+
+                var exponent = 0L;
+                if ((char)streamReader.Peek() is 'e' or 'E')
+                {
+                    streamReader.Read();
+                    exponent = (long)ParseInteger(10);
+                }
+
+                return float.Parse($"{integer}.{fraction}E{exponent}", CultureInfo.InvariantCulture);
+            }
+        }
+
+        return argsConsumed;
+    }
+
     internal static StreamHandle? GetStream(void* filePtr)
     {
         var handle = (IntPtr)filePtr;
@@ -748,5 +1220,36 @@ public unsafe static class StdIoFunctions
                 Write(c);
             }
         }
+    }
+}
+
+internal static class FormattingExtensions
+{
+    public static bool IsIn(this char c, char start, char end) =>
+        c >= start && c <= end;
+
+    public static bool IsAscii(this char c) =>
+        c.IsIn((char)0, (char)255);
+
+    public static bool IsAsciiDigit(this char c) =>
+        c.IsIn('0', '9');
+
+    public static bool IsOctalDigit(this char c) =>
+        c.IsAsciiDigit() && c <= '7';
+
+    public static bool IsHexDigit(this char c) =>
+        c.IsAsciiDigit() || c.IsIn('A', 'F') || c.IsIn('a', 'f');
+
+    public static bool IsSizeAttribute(this char c) =>
+        c is 'h' or 'l' or 'j';
+
+    public static int Num(this char c)
+    {
+        if (c.IsAsciiDigit())
+            return c - '0';
+        if (c.IsHexDigit())
+            return c - 'A' + 10;
+
+        return c;
     }
 }

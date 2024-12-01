@@ -199,6 +199,16 @@ int main(void)
 """);
 
     [Fact]
+    public Task EnumArraySizeTest() => DoTest(@"
+enum ValueSize {
+    Zero,
+    One
+};
+
+char a[One];
+");
+
+    [Fact]
     public Task ConstByteArrayTest() => DoTest(@"
 int main() {
     const char a[1] = { 255 };

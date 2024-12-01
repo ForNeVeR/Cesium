@@ -1,3 +1,4 @@
+using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
@@ -12,17 +13,17 @@ internal sealed class ForStatement : IBlockItem
     public IExpression? UpdateExpression { get; }
     public IBlockItem Body { get; }
 
-    public ForStatement(Ast.ForStatement statement)
+    public ForStatement(Ast.ForStatement statement, IDeclarationScope scope)
     {
         var (initDeclaration, initExpression, testExpression, updateExpression, body) = statement;
-        InitDeclaration = initDeclaration?.ToIntermediate();
-        InitExpression = initExpression?.ToIntermediate();
+        InitDeclaration = initDeclaration?.ToIntermediate(scope);
+        InitExpression = initExpression?.ToIntermediate(scope);
 
         if (InitDeclaration != null && InitExpression != null)
             throw new CompilationException("for statement: can't have both init declaration and expression");
 
-        TestExpression = testExpression?.ToIntermediate();
-        UpdateExpression = updateExpression?.ToIntermediate();
-        Body = body.ToIntermediate();
+        TestExpression = testExpression?.ToIntermediate(scope);
+        UpdateExpression = updateExpression?.ToIntermediate(scope);
+        Body = body.ToIntermediate(scope);
     }
 }

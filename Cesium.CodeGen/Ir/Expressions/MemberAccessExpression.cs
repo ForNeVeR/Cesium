@@ -11,11 +11,11 @@ internal sealed class MemberAccessExpression : IExpression, IValueExpression
     private readonly IExpression _target;
     private readonly IdentifierExpression _memberIdentifier;
 
-    public MemberAccessExpression(Ast.MemberAccessExpression accessExpression)
+    public MemberAccessExpression(Ast.MemberAccessExpression accessExpression, IDeclarationScope scope)
     {
         var (expression, memberAst) = accessExpression;
-        _target = expression.ToIntermediate();
-        if (memberAst.ToIntermediate() is not IdentifierExpression memberIdentifier)
+        _target = expression.ToIntermediate(scope);
+        if (memberAst.ToIntermediate(scope) is not IdentifierExpression memberIdentifier)
             throw new CompilationException($"\"{_memberIdentifier}\" is not a valid identifier");
         _memberIdentifier = memberIdentifier;
     }

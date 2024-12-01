@@ -16,10 +16,10 @@ internal sealed class CommaExpression : IExpression
         _right = right;
     }
 
-    public CommaExpression(Ast.CommaExpression expression)
+    public CommaExpression(Ast.CommaExpression expression, IDeclarationScope scope)
     {
-        _left = expression.Left.ToIntermediate();
-        _right = expression.Right.ToIntermediate();
+        _left = expression.Left.ToIntermediate(scope);
+        _right = expression.Right.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope) => new CommaExpression(_left.Lower(scope), _right.Lower(scope));

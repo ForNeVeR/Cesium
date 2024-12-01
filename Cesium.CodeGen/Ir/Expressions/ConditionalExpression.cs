@@ -19,11 +19,11 @@ internal sealed class ConditionalExpression : IExpression
         _falseExpression = falseExpression;
     }
 
-    public ConditionalExpression(Ast.ConditionalExpression expression)
+    public ConditionalExpression(Ast.ConditionalExpression expression, IDeclarationScope scope)
     {
-        _condition = expression.Condition.ToIntermediate();
-        _trueExpression = expression.TrueExpression.ToIntermediate();
-        _falseExpression = expression.FalseExpression.ToIntermediate();
+        _condition = expression.Condition.ToIntermediate(scope);
+        _trueExpression = expression.TrueExpression.ToIntermediate(scope);
+        _falseExpression = expression.FalseExpression.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope)
