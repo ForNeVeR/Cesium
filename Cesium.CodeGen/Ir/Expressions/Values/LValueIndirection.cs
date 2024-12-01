@@ -20,8 +20,8 @@ internal sealed class LValueIndirection : ILValue
     public void EmitGetValue(IEmitScope scope)
     {
         _pointerExpression.EmitTo(scope);
-        var (load, _) = GetOpcodes(_pointerType);
-        scope.Method.Body.Instructions.Add(Instruction.Create(load));
+        var (load, _) = GetOpcodes(_pointerType, scope.Context);
+        scope.Method.Body.Instructions.Add(load);
     }
 
     public void EmitGetAddress(IEmitScope scope) => _pointerExpression.EmitTo(scope);
@@ -30,22 +30,27 @@ internal sealed class LValueIndirection : ILValue
     {
         _pointerExpression.EmitTo(scope);
         value.EmitTo(scope);
-        var (_, maybeStore) = GetOpcodes(_pointerType);
+        var (_, maybeStore) = GetOpcodes(_pointerType, scope.Context);
         if (maybeStore is not {} store)
             throw new CompilationException($"Type {_pointerType} doesn't support the store operation.");
 
-        scope.Method.Body.Instructions.Add(Instruction.Create(store));
+        scope.Method.Body.Instructions.Add(maybeStore);
     }
 
     public IType GetValueType() => _pointerType.Base;
 
-    internal static (OpCode load, OpCode? store) GetOpcodes(PointerType pointerType) => SimplifyBaseType(pointerType.Base) switch
+    internal static (Instruction load, Instruction? store) GetOpcodes(PointerType pointerType, TranslationUnitContext context)
     {
-        PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
-        PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
-        InPlaceArrayType => (OpCodes.Ldind_I, null),
-        _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
+        var baseType = SimplifyBaseType(pointerType.Base);
+        return baseType switch
+        {
+            PrimitiveType primitiveType => (Instruction.Create(PrimitiveTypeInfo.Opcodes[primitiveType.Kind].load), Instruction.Create(PrimitiveTypeInfo.Opcodes[primitiveType.Kind].store)),
+            PointerType => (Instruction.Create(OpCodes.Ldind_I), Instruction.Create(OpCodes.Stind_I)),
+            InPlaceArrayType => (Instruction.Create(OpCodes.Ldind_I), null),
+            StructType => (Instruction.Create(OpCodes.Ldobj, baseType.Resolve(context)), Instruction.Create(OpCodes.Stobj, baseType.Resolve(context))),
+            _ => throw new WipException(256, $"Unsupported type for indirection operator: {pointerType}")
     };
+    }
 
     private static IType SimplifyBaseType(IType type) => type switch
     {
