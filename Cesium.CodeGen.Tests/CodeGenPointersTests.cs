@@ -110,6 +110,12 @@ public class CodeGenPointersTests : CodeGenTestBase
         "__builtin_offsetof_instance: struct type \"undeclared\" has no members - is it declared?"
     );
 
+    [Fact]
+    public Task RestrictPointerDeclaration() => DoTest(@"
+int * restrict a;
+int m(int * restrict a, int * restrict b) { return 0; }
+");
+
     /* TODO[#390]: Tests below rely on preprocessor, which is not supported in tests now
 
     [Fact]
