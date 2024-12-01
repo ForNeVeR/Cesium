@@ -163,11 +163,31 @@ internal sealed record LocalDeclarationInfo(
         if (pointer == null) return type;
 
         var (typeQualifiers, childPointer) = pointer;
+        var processed = 0;
+        bool? isConst = null;
+        bool? isRestrict = null;
         if (typeQualifiers != null)
-            if (typeQualifiers.Value.Length == 1 && typeQualifiers.Value[0].Name != "const")
-                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
+        {
+            foreach (var tq in typeQualifiers.Value)
+            {
+                if (tq.Name == "const")
+                {
+                    isConst = true;
+                    processed++;
+                }
 
-        type = new PointerType(type);
+                if (tq.Name == "restrict")
+                {
+                    isRestrict = true;
+                    processed++;
+                }
+            }
+
+            if (typeQualifiers.Value.Length != processed)
+                throw new WipException(215, $"Complex pointer type is not supported, yet: {pointer}.");
+        }
+
+        type = new PointerType(type) { IsConst = isConst ?? false, IsRestricted = isRestrict ?? false };
         if (childPointer != null)
             type = ProcessPointer(childPointer, type);
 

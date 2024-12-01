@@ -13,6 +13,10 @@ internal sealed class PointerType : IType, IEquatable<PointerType>
 
     public IType Base { get; }
 
+    public bool IsRestricted { get; set; }
+
+    public bool IsConst { get; set; }
+
     public PointerType(IType @base)
     {
         this.Base = @base;
