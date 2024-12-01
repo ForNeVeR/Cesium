@@ -4,10 +4,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#if !NETSTANDARD
-using System.Runtime.InteropServices;
-#endif
-
 namespace Cesium.Runtime;
 
 /// <summary>
@@ -244,10 +240,27 @@ public unsafe static class StdIoFunctions
             }
 
             string formatSpecifier = formatString[formatStartPosition + addition].ToString();
-            if (formatString[formatStartPosition + addition] == 'l' || formatString[formatStartPosition + addition] == 'z')
+            if (char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'z'
+                || char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'u')
             {
-                addition++;
-                formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                if (formatStartPosition + addition < formatString.Length - 1
+                    && (char.ToLowerInvariant(formatSpecifier[0]) != 'u' || char.ToLowerInvariant(formatString[formatStartPosition + addition + 1]) == 'l'))
+                {
+                    addition++;
+                    formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    if (string.Equals(formatSpecifier, "ll", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        addition++;
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    }
+
+                    if (string.Equals(formatSpecifier, "ul", StringComparison.InvariantCultureIgnoreCase) && char.ToLowerInvariant(formatString[formatStartPosition + addition]) == 'l')
+                    {
+                        addition++;
+                        formatSpecifier += formatString[formatStartPosition + addition].ToString();
+                    }
+                }
             }
 
             int padding = -1;
@@ -332,6 +345,7 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 case "li":
+                case "lld":
                     long longValue = ((long*)varargs)[consumedArgs];
                     var longValueString = longValue.ToString();
                     if (alwaysSign && longValue > 0)
@@ -361,7 +375,18 @@ public unsafe static class StdIoFunctions
                     consumedArgs++;
                     break;
                 }
+                case "llu":
+                case "LLu":
+                case "LLU":
+                case "ull":
+                case "Ull":
+                case "ULL":
                 case "lu":
+                case "Lu":
+                case "LU":
+                case "UL":
+                case "Ul":
+                case "ul":
                 case "zu":
                     {
                     ulong ulongValue = (ulong)((long*)varargs)[consumedArgs];

@@ -55,13 +55,51 @@ internal sealed class IntegerConstant : IConstant
     private static bool TryParse(string text, out long value)
     {
         var textSpan = text.AsSpan();
-        if (textSpan.EndsWith("L"))
+        bool unsignedParse = false;
+        bool i64Parse = false;
+        if (textSpan.EndsWith("ull", StringComparison.InvariantCultureIgnoreCase))
         {
+            i64Parse = true;
+            unsignedParse = true;
+            textSpan = textSpan[..^3];
+        }
+
+        if (textSpan.EndsWith("ll", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^2];
+        }
+
+        if (textSpan.EndsWith("ul", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            unsignedParse = true;
+            textSpan = textSpan[..^2];
+        }
+
+        if (textSpan.EndsWith("l", StringComparison.InvariantCultureIgnoreCase))
+        {
+            i64Parse = true;
+            textSpan = textSpan[..^1];
+        }
+
+        if (textSpan.EndsWith("u", StringComparison.InvariantCultureIgnoreCase))
+        {
+            unsignedParse = true;
             textSpan = textSpan[..^1];
         }
 
         if (textSpan.StartsWith("0x"))
         {
+            if (unsignedParse)
+            {
+                if (ulong.TryParse(textSpan[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var uvalue))
+                {
+                    value = unchecked((long)uvalue);
+                    return true;
+                }
+            }
+
             if (long.TryParse(textSpan[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
             {
                 return true;
@@ -86,6 +124,15 @@ internal sealed class IntegerConstant : IConstant
             }
 
             return true;
+        }
+
+        if (unsignedParse)
+        {
+            if (ulong.TryParse(textSpan, CultureInfo.InvariantCulture, out var uvalue))
+            {
+                value = unchecked((long)uvalue);
+                return true;
+            }
         }
 
         if (long.TryParse(textSpan, CultureInfo.InvariantCulture, out value))
