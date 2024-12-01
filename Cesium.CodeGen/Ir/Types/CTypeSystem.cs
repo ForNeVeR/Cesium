@@ -16,6 +16,7 @@ internal static class CTypeSystem
     public static IType UnsignedInt { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedInt);
     public static IType Unsigned { get; } = new PrimitiveType(PrimitiveTypeKind.Unsigned);
     public static IType Long { get; } = new PrimitiveType(PrimitiveTypeKind.Long);
+    public static IType LongLong { get; } = new PrimitiveType(PrimitiveTypeKind.LongLong);
     public static IType UnsignedLong { get; } = new PrimitiveType(PrimitiveTypeKind.UnsignedLong);
     public static IType CharPtr { get; } = new PrimitiveType(PrimitiveTypeKind.Char).MakePointerType();
     public static IType Float { get; } = new PrimitiveType(PrimitiveTypeKind.Float);

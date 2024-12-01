@@ -52,7 +52,7 @@ internal sealed class TypeCastExpression : IExpression
             Add(OpCodes.Conv_I2);
         else if (TargetType.Equals(C.Int))
             Add(OpCodes.Conv_I4);
-        else if (TargetType.Equals(C.Long))
+        else if (TargetType.Equals(C.Long) || TargetType.Equals(C.LongLong))
             Add(OpCodes.Conv_I8);
         else if (TargetType.Equals(C.Char))
             Add(OpCodes.Conv_U1);
