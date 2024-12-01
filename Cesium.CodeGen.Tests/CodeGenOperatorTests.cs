@@ -5,12 +5,12 @@ namespace Cesium.CodeGen.Tests;
 public class CodeGenOperatorTests: CodeGenTestBase
 {
     [MustUseReturnValue]
-    private static Task DoTest(string source)
+    private static Task DoTest(string source, params object[] parameters)
     {
         var assembly = GenerateAssembly(default, source);
 
         var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        return VerifyMethods(moduleType, parameters);
     }
 
     [Fact]
@@ -48,4 +48,9 @@ public class CodeGenOperatorTests: CodeGenTestBase
 
     [Fact]
     public Task IncrementAsValue() => DoTest(@"int main() { int i = 0; i = i++; }");
+
+    [Theory]
+    [InlineData("int", "__nuint")]
+    [InlineData("__nuint", "int")]
+    public Task ImplicitConversions(string fromType, string toType) => DoTest($@"int main() {{ {fromType} i = 22; {toType} j = 51; i = j; }}", fromType, toType);
 }

@@ -55,6 +55,10 @@ internal static class CTypeSystem
             return true;
         else if (targetType.Equals(Double))
             return true;
+        else if (targetType.Equals(NativeUInt))
+            return true;
+        else if (targetType.Equals(NativeInt))
+            return true;
         else
             return false;
     }
@@ -89,7 +93,7 @@ internal static class CTypeSystem
             return true;
         else if (targetType.Equals(Double))
             return true;
-        else if (targetType.Equals(NativeInt) || targetType is PointerType)
+        else if (targetType.Equals(NativeInt) || targetType.Equals(NativeUInt) || targetType is PointerType)
             return true;
         else if (targetType.Equals(Bool))
             return false;
