@@ -262,4 +262,28 @@ const char* a[] = { ""13"" };
     public Task StaticStringArrayTest() => DoTest(@"
 static const char* a[] = { ""13"" };
 ");
+
+    [Fact]
+    public Task StaticStructArrayTest() => DoTest(@"
+static struct { int code; char *name; } a[];
+");
+
+    [Fact]
+    public Task StaticStructArrayFixedSizeTest() => DoTest(@"
+static struct { int code; char *name; } a[3];
+");
+
+    [Fact]
+    public Task StructArrayTest() => DoTest(@"
+void test() {
+    struct { int code; char *name; } a[];
+}
+");
+
+    [Fact]
+    public Task StructArrayFixedSizeTest() => DoTest(@"
+void test() {
+    struct { int code; char *name; } a[4];
+}
+");
 }

@@ -259,8 +259,29 @@ public class TranslationUnitContext
         var type = _translationUnitLevelFieldTypes.GetValueOrDefault(name);
         if (type == null) return null;
 
+        EnsureAnonymousTypeGenerated(type);
+
         var containingType = GetOrCreateTranslationUnitType();
         return containingType.GetOrAddField(this, type, name);
+    }
+
+    internal void EnsureAnonymousTypeGenerated(IType? type)
+    {
+        if (type is InPlaceArrayType inPlaceArrayType && inPlaceArrayType.Base.EraseConstType() is StructType structType)
+        {
+            if (structType.IsAnon)
+            {
+                structType.EmitType(this);
+            }
+        }
+
+        if (type is PointerType pointerType && pointerType.Base.EraseConstType() is StructType structTypePtr)
+        {
+            if (structTypePtr.IsAnon)
+            {
+                structTypePtr.EmitType(this);
+            }
+        }
     }
 
     private TypeDefinition GetOrCreateTranslationUnitType()
