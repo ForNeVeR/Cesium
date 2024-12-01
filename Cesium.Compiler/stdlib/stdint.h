@@ -40,6 +40,24 @@
 #define UINT_FAST32_MAX  UINT32_MAX
 #define UINT_FAST64_MAX  UINT64_MAX
 
+#define INTPTR_MIN   INT64_MIN
+#define INTPTR_MAX   INT64_MAX
+#define UINTPTR_MAX  UINT64_MAX
+
+#define PTRDIFF_MIN      INTPTR_MIN
+#define PTRDIFF_MAX      INTPTR_MAX
+
+#define SIZE_MAX 0xffffffffffffffffui64
+
+#define SIG_ATOMIC_MIN   INT32_MIN
+#define SIG_ATOMIC_MAX   INT32_MAX
+
+#define WCHAR_MIN        0x0000
+#define WCHAR_MAX        0xffff
+
+#define WINT_MIN         0x0000
+#define WINT_MAX         0xffff
+
 typedef signed char        int8_t;
 typedef short              int16_t;
 typedef int                int32_t;
