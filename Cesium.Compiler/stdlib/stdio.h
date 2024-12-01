@@ -23,6 +23,9 @@ int printf(char* s, ...);
 __cli_import("Cesium.Runtime.StdIoFunctions::FPrintF")
 int fprintf(FILE* stream, char* s, ...);
 
+__cli_import("Cesium.Runtime.StdIoFunctions::SPrintF")
+int sprintf(char* buffer, const char* format, ...);
+
 __cli_import("Cesium.Runtime.StdIoFunctions::FPrintF")
 int vfprintf(FILE* stream, const char* format, va_list vlist);
 
