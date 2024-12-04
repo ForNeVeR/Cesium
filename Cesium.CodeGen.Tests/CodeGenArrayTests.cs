@@ -286,4 +286,9 @@ void test() {
     struct { int code; char *name; } a[4];
 }
 ");
+
+    [Fact]
+    public Task StructArrayTestWithInitializer() => DoTest(@"
+struct { int code; char *name; } a[] = { { 1, ""1"" }, { 2, ""2"" }, };
+");
 }
