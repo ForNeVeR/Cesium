@@ -242,6 +242,7 @@ public class AssemblyContext
             return null;
         }
 
+        context.EnsureAnonymousTypeGenerated(type.Type);
         return GlobalType.GetOrAddField(context, type.Type, name);
     }
 

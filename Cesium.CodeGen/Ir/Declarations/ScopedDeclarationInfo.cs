@@ -48,7 +48,7 @@ internal interface IScopedDeclarationInfo
                 if (id.Initializer is null)
                     return new ScopedIdentifierDeclaration(storageClass, ld, null);
 
-                throw new CompilationException($"Struct initializers are not supported.");
+                return new ScopedIdentifierDeclaration(storageClass, LocalDeclarationInfo.Of(new[] { _ }, id.Declarator, id.Initializer, scope), null);
             })).ToArray();
             return initializationDeclarators;
         }
