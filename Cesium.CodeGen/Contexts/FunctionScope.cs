@@ -56,6 +56,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 
         if (!_variableDefinition.TryGetValue(varIndex, out var variableDefinition))
         {
+            Context.EnsureAnonymousTypeGenerated(variableType.Type);
             var typeReference = variableType.Type.Resolve(Context);
             variableDefinition = new VariableDefinition(typeReference);
             Method.Body.Variables.Add(variableDefinition);

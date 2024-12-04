@@ -1,0 +1,2 @@
+﻿System.Void <Module>::test()
+  IL_0000: ret
