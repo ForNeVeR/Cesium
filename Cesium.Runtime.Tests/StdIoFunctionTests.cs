@@ -21,6 +21,8 @@ public class StdIoFunctionTests
     [Theory]
     [InlineData(-1L, "%li", 2, "-1")]
     [InlineData(-1L, "%lu", 20, "18446744073709551615")]
+    [InlineData(-9223372036854775808L, "%li", 20, "-9223372036854775808")]
+    [InlineData(2147483647L, "%ld", 10, "2147483647")]
     [InlineData(-1L, "%llu", 20, "18446744073709551615")]
     [InlineData(-1L, "%ull", 20, "18446744073709551615")]
     [InlineData(-1L, "%zu", 20, "18446744073709551615")]
