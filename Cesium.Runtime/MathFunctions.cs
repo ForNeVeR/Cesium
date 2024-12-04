@@ -5,7 +5,7 @@ public unsafe static class MathFunctions
     public static float SqrtF(float value)
     {
 #if NETSTANDARD2_0
-        throw new NotImplementedException();
+        return (float)Math.Sqrt(value);
 #else
         return MathF.Sqrt(value);
 #endif
@@ -17,7 +17,7 @@ public unsafe static class MathFunctions
     public static float LogF(float value)
     {
 #if NETSTANDARD2_0
-        throw new NotImplementedException();
+        return (float)Math.Log(value);
 #else
         return MathF.Log(value);
 #endif
@@ -29,7 +29,7 @@ public unsafe static class MathFunctions
     public static float CosF(float value)
     {
 #if NETSTANDARD2_0
-        throw new NotImplementedException();
+        return (float)Math.Cos(value);
 #else
         return MathF.Cos(value);
 #endif
@@ -41,7 +41,7 @@ public unsafe static class MathFunctions
     public static float SinF(float value)
     {
 #if NETSTANDARD2_0
-        throw new NotImplementedException();
+        return (float)Math.Sin(value);
 #else
         return MathF.Sin(value);
 #endif
