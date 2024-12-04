@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Cesium.Runtime;
 
 public static unsafe class TimeFunctions
@@ -11,5 +13,15 @@ public static unsafe class TimeFunctions
         }
 
         return (long)result;
+    }
+
+    public static long Clock()
+    {
+        return Stopwatch.GetTimestamp();
+    }
+
+    public static long GetClocksPerSec()
+    {
+        return Stopwatch.Frequency;
     }
 }
