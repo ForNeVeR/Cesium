@@ -2,7 +2,7 @@
   Type: <Module>
   Fields:
     Node* <Module>::root
-    Node <Module>::global_tmp_0
+    Node <Module>::__global_tmp_0
   Methods:
     System.Void <Module>::.cctor()
       Locals:
@@ -13,8 +13,8 @@
       IL_000e: ldc.i4.0
       IL_000f: stfld Node* Node::parent
       IL_0014: ldloc V_0
-      IL_0018: stsfld Node <Module>::global_tmp_0
-      IL_001d: ldsflda Node <Module>::global_tmp_0
+      IL_0018: stsfld Node <Module>::__global_tmp_0
+      IL_001d: ldsflda Node <Module>::__global_tmp_0
       IL_0022: stsfld Node* <Module>::root
       IL_0027: ret
 

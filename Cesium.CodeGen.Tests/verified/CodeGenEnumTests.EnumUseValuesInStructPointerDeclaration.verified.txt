@@ -7,7 +7,7 @@
   IL_000e: ldc.i4.s 11
   IL_0010: stfld System.Int32 <typedef>TestStruct::x
   IL_0015: ldloc V_0
-  IL_0019: stsfld <typedef>TestStruct <Module>::global_tmp_0
-  IL_001e: ldsflda <typedef>TestStruct <Module>::global_tmp_0
+  IL_0019: stsfld <typedef>TestStruct <Module>::__global_tmp_0
+  IL_001e: ldsflda <typedef>TestStruct <Module>::__global_tmp_0
   IL_0023: stsfld <typedef>TestStruct* <Module>::x
   IL_0028: ret

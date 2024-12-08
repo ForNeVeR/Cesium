@@ -145,6 +145,6 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     /// <inheritdoc />
     public string GetTmpVariable()
     {
-        return "local_" + tempLocalIndex++;
+        return "__local_" + tempLocalIndex++;
     }
 }

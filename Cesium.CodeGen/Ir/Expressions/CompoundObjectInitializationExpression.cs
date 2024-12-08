@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
@@ -6,31 +7,30 @@ using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Collections.Immutable;
 
 namespace Cesium.CodeGen.Ir.Expressions;
 internal sealed class CompoundObjectInitializationExpression : IExpression
 {
-    private IType? _type;
+    private readonly IType? _type;
     private FieldDefinition? _typeDef;
     private Action? _prefixAction;
     private Action? _postfixAction;
     private readonly ImmutableArray<IExpression?> _initializers;
 
-    public CompoundObjectInitializationExpression(IType type, ImmutableArray<IExpression?> initializers)
+    public CompoundObjectInitializationExpression(IType? type, ImmutableArray<IExpression?> initializers)
     {
         _type = type;
         _initializers = initializers;
     }
 
     public CompoundObjectInitializationExpression(ImmutableArray<IExpression?> initializers)
+        : this(null, initializers)
     {
-        _initializers = initializers;
     }
 
-    public CompoundObjectInitializationExpression(Ast.CompoundLiteralExpression expression, IDeclarationScope scope)
+    public CompoundObjectInitializationExpression(CompoundLiteralExpression expression, IDeclarationScope scope)
     {
-        var (type, cliDescription) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList, scope);
+        var (type, _) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList, scope);
         _type = type;
         _initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer, scope)).ToImmutableArray();
     }
@@ -62,7 +62,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 if (expr == null)
                     throw new CompilationException($"Retrieved null initializer!");
 
-                
+
                 if (_prefixAction is not null)
                 {
                     _prefixAction();
@@ -97,7 +97,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 instructions.Add(Instruction.Create(OpCodes.Ldflda, _typeDef));
             }
             return;
-        }    
+        }
 
         for (int i = 0; i < initializers.Length; i++)
         {
@@ -118,8 +118,9 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                 EmitPathToField(scope, typeDef, f);
             }
             else if (init is CompoundObjectInitializationExpression objInit)
-            {                
+            {
                 // UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE UNSAFE
+                var index = i;
                 objInit.Hint(
                     fieldsDefs[i],
                     () =>
@@ -128,7 +129,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
                     },
                     () =>
                     {
-                        instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[i]));
+                        instructions.Add(Instruction.Create(OpCodes.Stfld, fieldsDefs[index]));
                     });
                 objInit.EmitTo(scope);
             }
@@ -155,7 +156,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             var p = path[i];
             if (p is IdentifierDesignator id)
             {
-                field = type.Fields.FirstOrDefault(_ => _.Name == id.FieldName)!;
+                field = type.Fields.FirstOrDefault(d => d.Name == id.FieldName)!;
                 if (field == null) // maybe anon?
                 {
                     List<FieldDefinition> list = new(1);
@@ -270,7 +271,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             case MetadataType.ByReference:
                 return Instruction.Create(OpCodes.Stind_I);
             default:
-                throw new CompilationException($"This array type isnt supported: {type}");
+                throw new CompilationException($"This array type isn't supported: {type}");
         }
     }
 
@@ -279,7 +280,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var resolvedType = _type?.TypeKind == TypeKind.Unresolved ? scope.ResolveType(_type) : _type;
-        var initializers = _initializers.Select(_ => _?.Lower(scope)).ToImmutableArray();
+        var initializers = _initializers.Select(e => e?.Lower(scope)).ToImmutableArray();
         return resolvedType == null ? new CompoundObjectInitializationExpression(initializers) : new CompoundObjectInitializationExpression(resolvedType, initializers);
     }
 }

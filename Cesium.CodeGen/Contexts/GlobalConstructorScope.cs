@@ -106,6 +106,6 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
     /// <inheritdoc />
     public string GetTmpVariable()
     {
-        return "global_tmp_" + tempLocalIndex++;
+        return "__global_tmp_" + tempLocalIndex++;
     }
 }
