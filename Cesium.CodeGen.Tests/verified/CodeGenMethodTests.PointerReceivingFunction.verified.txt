@@ -1,2 +1,2 @@
-﻿System.Void <Module>::foo(System.Int32* ptr)
+System.Void <Module>::foo(System.Int32* ptr)
   IL_0000: ret

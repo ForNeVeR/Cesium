@@ -1,4 +1,4 @@
-﻿namespace Cesium.TestFramework;
+namespace Cesium.TestFramework;
 
 public abstract class VerifyTestBase
 {

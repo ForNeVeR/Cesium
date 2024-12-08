@@ -1,4 +1,4 @@
-﻿System.Void <Module>::.cctor()
+System.Void <Module>::.cctor()
   IL_0000: ldc.i4.1
   IL_0001: stsfld System.Int32 <Module>::a
   IL_0006: ret

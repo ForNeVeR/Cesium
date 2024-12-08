@@ -1,4 +1,4 @@
-﻿Hash: "#"
+Hash: "#"
 PreprocessingToken: "pragma"
 WhiteSpace: " "
 PreprocessingToken: "include"

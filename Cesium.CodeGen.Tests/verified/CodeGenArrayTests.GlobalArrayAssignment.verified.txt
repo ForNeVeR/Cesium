@@ -1,4 +1,4 @@
-﻿System.Void <Module>::.cctor()
+System.Void <Module>::.cctor()
   IL_0000: ldc.i4.s 40
   IL_0002: conv.u
   IL_0003: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)

@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::main()
+System.Int32 <Module>::main()
   IL_0000: nop
   IL_0001: br IL_000c
   IL_0006: nop

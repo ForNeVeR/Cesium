@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::main()
+System.Int32 <Module>::main()
   Locals:
     System.Byte* V_0
   IL_0000: ldc.i4.1
