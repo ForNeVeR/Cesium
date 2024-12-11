@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
 using Xunit.Abstractions;
@@ -146,18 +147,14 @@ public abstract class SdkTestBase : IDisposable
 
     private static void EmitGlobalJson(string globalJsonPath, string packageVersion)
     {
-        File.WriteAllText(globalJsonPath, $$"""
-            {
-                "sdk": {
-                    "version": "9.0.0",
-                    "rollForward": "latestFeature",
-                    "allowPrerelease": false
-                },
-                "msbuild-sdks": {
-                    "Cesium.Sdk" : "{{packageVersion}}"
-                }
-            }
-            """);
+        var actualGlobalJson = Path.Combine(SolutionMetadata.SourceRoot, "global.json");
+        var globalConfig = JsonNode.Parse(File.ReadAllText(actualGlobalJson))!;
+        globalConfig["msbuild-sdks"] = new JsonObject([new KeyValuePair<string, JsonNode?>("Cesium.Sdk", packageVersion)]);
+        var content = globalConfig.ToJsonString(new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        });
+        File.WriteAllText(globalJsonPath, content);
     }
 
     private static void CopyDirectoryRecursive(string source, string target)
