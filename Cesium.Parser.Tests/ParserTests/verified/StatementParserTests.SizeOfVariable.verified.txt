@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.CompoundStatement, Cesium.Ast",
   "Block": [
     {

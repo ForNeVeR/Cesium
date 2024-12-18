@@ -1,1 +1,1 @@
-﻿int elifndefFunc() {}
+int elifndefFunc() {}

@@ -1,4 +1,4 @@
-﻿{
+{
   "$type": "Cesium.Ast.TranslationUnit, Cesium.Ast",
   "Declarations": [
     {

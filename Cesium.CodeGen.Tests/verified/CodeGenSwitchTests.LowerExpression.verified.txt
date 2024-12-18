@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::my_condition()
+System.Int32 <Module>::my_condition()
   IL_0000: ldc.i4.0
   IL_0001: ret
 

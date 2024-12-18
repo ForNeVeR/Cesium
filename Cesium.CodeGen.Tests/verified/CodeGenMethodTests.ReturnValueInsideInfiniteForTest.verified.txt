@@ -1,4 +1,4 @@
-﻿System.Int32 <Module>::test()
+System.Int32 <Module>::test()
   IL_0000: nop
   IL_0001: ldc.i4.5
   IL_0002: ret
