@@ -1,8 +1,20 @@
-﻿System.Void <Module>::.cctor()
-  IL_0000: sizeof <typedef>_Anon_Int_code_Pointer_name
-  IL_0006: ldc.i4.3
-  IL_0007: mul
-  IL_0008: conv.u
-  IL_0009: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
-  IL_000e: stsfld <typedef>_Anon_Int_code_Pointer_name* testInput<Statics>::a
-  IL_0013: ret
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::.cctor()
+      IL_0000: sizeof <typedef>_Anon_Int_code_Pointer_name
+      IL_0006: ldc.i4.3
+      IL_0007: mul
+      IL_0008: conv.u
+      IL_0009: call System.Void* Cesium.Runtime.RuntimeHelpers::AllocateGlobalField(System.UInt32)
+      IL_000e: stsfld <typedef>_Anon_Int_code_Pointer_name* testInput<Statics>::a
+      IL_0013: ret
+
+  Type: <typedef>_Anon_Int_code_Pointer_name
+  Fields:
+    System.Int32 <typedef>_Anon_Int_code_Pointer_name::code
+    System.Byte* <typedef>_Anon_Int_code_Pointer_name::name
+
+  Type: testInput<Statics>
+  Fields:
+    <typedef>_Anon_Int_code_Pointer_name* testInput<Statics>::a

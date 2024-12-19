@@ -1,2 +1,5 @@
-﻿System.Void <Module>::test()
-  IL_0000: ret
+﻿Module: Primary
+  Type: <Module>
+  Methods:
+    System.Void <Module>::test()
+      IL_0000: ret

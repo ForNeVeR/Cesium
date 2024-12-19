@@ -3,6 +3,7 @@ using System.Text;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
+using Cesium.Runtime;
 using Cesium.TestFramework;
 using JetBrains.Annotations;
 using Mono.Cecil;
@@ -87,7 +88,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             targetArchitectureSet,
             ModuleKind.Console,
             typeof(Math).Assembly.Location,
-            typeof(Runtime.RuntimeHelpers).Assembly.Location,
+            typeof(RuntimeHelpers).Assembly.Location,
             allReferences,
             @namespace,
             globalTypeFqn,
@@ -212,8 +213,18 @@ public abstract class CodeGenTestBase : VerifyTestBase
                                 ? initialValue.Length - 1
                                 : initialValue.Length;
                             var value = Encoding.UTF8.GetString(initialValue, 0, length);
-                            result.AppendLine(
-                                $"{Indent(indent + 2)}Init with (UTF-8 x {initialValue.Length} bytes): \"{value}\"");
+                            result.Append(
+                                $"{Indent(indent + 2)}Init with (UTF-8 x {initialValue.Length} bytes): \"");
+                            foreach (var c in value)
+                            {
+                                result.Append(c switch
+                                {
+                                    _ when Char.IsControl(c) => $"\\{(int)c:X}",
+                                    _ => c
+                                });
+                            }
+
+                            result.AppendLine("\"");
                         }
                         else
                         {

@@ -1,1 +1,11 @@
-﻿emptyString
+﻿Module: Primary
+  Type: <Module>
+
+  Type: <typedef>_Anon_Int_code_Pointer_name
+  Fields:
+    System.Int32 <typedef>_Anon_Int_code_Pointer_name::code
+    System.Byte* <typedef>_Anon_Int_code_Pointer_name::name
+
+  Type: testInput<Statics>
+  Fields:
+    <typedef>_Anon_Int_code_Pointer_name* testInput<Statics>::a

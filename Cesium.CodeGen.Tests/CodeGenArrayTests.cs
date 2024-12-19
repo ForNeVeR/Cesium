@@ -9,9 +9,7 @@ public class CodeGenArrayTests : CodeGenTestBase
     private static Task DoTest([StringSyntax("cpp")] string source)
     {
         var assembly = GenerateAssembly(default, source);
-
-        var moduleType = assembly.Modules.Single().GetType("<Module>");
-        return VerifyMethods(moduleType);
+        return VerifyTypes(assembly);
     }
 
     [Fact]
@@ -245,8 +243,8 @@ int main() {
     }
 
     return 1;
-}"); 
-    
+}");
+
     [Fact]
     public Task ConstExpressionSizeArrayTest() => DoTest(@"
 int main() {
