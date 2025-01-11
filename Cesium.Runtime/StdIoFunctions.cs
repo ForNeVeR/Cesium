@@ -415,7 +415,7 @@ public unsafe static class StdIoFunctions
                 case "f":
                     {
                         var floatNumber = ((double*)varargs)[consumedArgs];
-                        string floatNumberString = floatNumber.ToString("F" + (trim == -1 ? 6 : trim));
+                        string floatNumberString = floatNumber.ToString("F" + (trim == -1 ? 6 : trim), CultureInfo.InvariantCulture.NumberFormat);
                         if (alwaysSign && floatNumber > 0)
                         {
                             streamWriter.Write('+');
@@ -436,7 +436,7 @@ public unsafe static class StdIoFunctions
                     {
                         var floatNumber = ((double*)varargs)[consumedArgs];
                         //streamWriter.Write($"!padding {padding} trim {trim} precision {precision} ");
-                        string floatNumberString = floatNumber.ToString("0." + new string('0', trim == -1 ? 6 : trim) + formatSpecifier + "+00");
+                        string floatNumberString = floatNumber.ToString("0." + new string('0', trim == -1 ? 6 : trim) + formatSpecifier + "+00", CultureInfo.InvariantCulture.NumberFormat);
                         if (alwaysSign && floatNumber > 0)
                         {
                             streamWriter.Write('+');
