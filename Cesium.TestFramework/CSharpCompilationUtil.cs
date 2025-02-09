@@ -12,7 +12,7 @@ public static class CSharpCompilationUtil
 {
     public static readonly TargetRuntimeDescriptor DefaultRuntime = TargetRuntimeDescriptor.Net60;
     private const string _configuration = "Debug";
-    private const string _targetRuntime = "net8.0";
+    private const string _targetRuntime = "net9.0";
     private const string _cesiumRuntimeLibTargetRuntime = "net6.0";
     private const string _projectName = "TestProject";
 

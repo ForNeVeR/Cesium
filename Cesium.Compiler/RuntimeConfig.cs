@@ -15,14 +15,14 @@ internal static class RuntimeConfig
     }
     """.ReplaceLineEndings("\n");
 
-    public static string EmitNet8() => """
+    public static string EmitNet9() => """
     {
       "runtimeOptions": {
-        "tfm": "net8.0",
+        "tfm": "net9.0",
         "rollForward": "Major",
         "framework": {
           "name": "Microsoft.NETCore.App",
-          "version": "8.0.0"
+          "version": "9.0.0"
         }
       }
     }
