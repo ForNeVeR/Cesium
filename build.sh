@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2023 Maintainers of NUKE
+#
+# SPDX-License-Identifier: MIT
+
 bash --version 2>&1 | head -n 1
 
 set -eo pipefail

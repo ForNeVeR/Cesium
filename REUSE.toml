@@ -1,0 +1,16 @@
+version = 1
+SPDX-PackageName = "Cesium"
+SPDX-PackageSupplier = "Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-PackageDownloadLocation = "https://github.com/ForNeVeR/Cesium"
+
+[[annotations]]
+path = ".idea/**/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2022 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ".vscode/**/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2021 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Maintainers of NUKE
+#
+# SPDX-License-Identifier: MIT
+
 [CmdletBinding()]
 Param(
     [Parameter(Position=0,Mandatory=$false,ValueFromRemainingArguments=$true)]

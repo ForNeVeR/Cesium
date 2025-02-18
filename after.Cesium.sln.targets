@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+
+SPDX-License-Identifier: MIT
+-->
+
 <Project InitialTargets="WorkAroundMSBuild2064">
     <Target Name="WorkAroundMSBuild2064">
         <!-- Work around https://github.com/Microsoft/msbuild/issues/2064 by

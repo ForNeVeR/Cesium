@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+#
+# SPDX-License-Identifier: MIT
+
 [*.cs]
 dotnet_style_qualification_for_field = false:warning
 dotnet_style_qualification_for_property = false:warning
