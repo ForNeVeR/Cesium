@@ -1,3 +1,3 @@
-﻿System.Int32 <Module>::m(System.Int32* a, System.Int32* b)
+System.Int32 <Module>::m(System.Int32* a, System.Int32* b)
   IL_0000: ldc.i4.0
   IL_0001: ret

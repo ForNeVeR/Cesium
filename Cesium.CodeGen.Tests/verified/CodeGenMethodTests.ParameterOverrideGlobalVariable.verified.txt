@@ -1,4 +1,4 @@
-﻿System.Void <Module>::worker(System.Int32 x)
+System.Void <Module>::worker(System.Int32 x)
   IL_0000: ldc.i4.2
   IL_0001: starg.s x
   IL_0003: ret

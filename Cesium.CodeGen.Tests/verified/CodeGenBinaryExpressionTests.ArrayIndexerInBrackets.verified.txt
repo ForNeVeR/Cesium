@@ -1,4 +1,4 @@
-﻿System.Void <Module>::test()
+System.Void <Module>::test()
   Locals:
     System.Byte* V_0
     System.Byte V_1

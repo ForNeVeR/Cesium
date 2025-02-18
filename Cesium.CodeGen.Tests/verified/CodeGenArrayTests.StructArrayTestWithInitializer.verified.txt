@@ -1,4 +1,4 @@
-﻿Module: Primary
+Module: Primary
   Type: <Module>
   Fields:
     <typedef>_Anon_Int_code_Pointer_name* <Module>::a
