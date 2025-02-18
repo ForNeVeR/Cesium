@@ -111,7 +111,7 @@ License
 -------
 The project is distributed under the terms of [the MIT license][docs.license].
 
-The license indication in the project's sources is compliant with the [REUSE specification v3.2][reuse.spec].
+The license indication in the project's sources is compliant with the [REUSE specification v3.][reuse.spec].3
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
@@ -142,6 +142,6 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
 [issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
-[reuse.spec]: https://reuse.software/spec-3.2/
+[reuse.spec]: https://reuse.software/spec-3.3/
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
 [stdlib]: Cesium.Compiler/stdlib
