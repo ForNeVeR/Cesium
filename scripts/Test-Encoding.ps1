@@ -1,59 +1,81 @@
-# SPDX-FileCopyrightText: 2024 Friedrich von Never <friedrich@fornever.me>
+# SPDX-FileCopyrightText: 2020-2025 Friedrich von Never <friedrich@fornever.me>
 #
 # SPDX-License-Identifier: MIT
 
 <#
 .SYNOPSIS
+    encoding-verifier v2.0.0.
+
     This script will verify that there's no UTF-8 BOM or CRLF line endings in the files inside of the project.
+
+    https://github.com/ForNeVeR/encoding-verifier
 #>
 param (
     # Path to the repository root. All text files under the root will be checked for UTF-8 BOM and CRLF.
-    $SourceRoot = "$PSScriptRoot/..",
+    #
+    # By default (if nothing's passed), the script will try auto-detecting the nearest Git root.
+    [string] $SourceRoot,
 
     # Makes the script to perform file modifications to bring them to the standard.
-    [switch] $Autofix
+    [switch] $Autofix,
+
+    # List of file extensions (with leading dots) to ignore. Case-insensitive.
+    [string[]] $ExcludeExtensions = @(
+        '.dotsettings'
+    )
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+if (!$SourceRoot) {
+    $SourceRoot = git rev-parse --show-toplevel
+    if (!$?) {
+        throw "Cannot call `"git rev-parse`": exit code $LASTEXITCODE."
+    }
+}
+
 # For PowerShell to properly process the UTF-8 output from git ls-tree we need to set up the output encoding:
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 
-$allFiles = git -c core.quotepath=off ls-tree -r HEAD --name-only
-Write-Output "Total files in the repository: $($allFiles.Length)"
-
-# Split all the files into chunks, to not generate too long command line on Windows.
-$counter = [pscustomobject] @{ Value = 0 }
-$groupSize = 50
-$chunks = $allFiles | Group-Object -Property { [math]::Floor($counter.Value++ / $groupSize) }
-Write-Output "Split into $($chunks.Count) chunks."
-
-# https://stackoverflow.com/questions/6119956/how-to-determine-if-git-handles-a-file-as-binary-or-as-text#comment15281840_6134127
-$nullHash = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
-$textFiles = $chunks | ForEach-Object {
-    $chunk = $_.Group
-    git -c core.quotepath=off diff --numstat $nullHash HEAD -- @chunk |
-        Where-Object { -not $_.StartsWith('-') } |
-        ForEach-Object { [Regex]::Unescape($_.Split("`t", 3)[2]) }
-}
-Write-Output "Text files in the repository: $($textFiles.Length)"
-
-$bom = @(0xEF, 0xBB, 0xBF)
-$bomErrors = @()
-$lineEndingErrors = @()
-[array] $excludeExtensions = @('.dotsettings')
-
 try {
     Push-Location $SourceRoot
+    $allFiles = git -c core.quotepath=off ls-tree -r HEAD --name-only
+    if (!$?) {
+        throw "Cannot call `"git ls-tree`": exit code $LASTEXITCODE."
+    }
+    Write-Output "Total files in the repository: $($allFiles.Length)"
+
+    $counter = [pscustomobject] @{ Value = 0 }
+    $groupSize = 50
+    [array] $chunks = $allFiles | Group-Object -Property { [math]::Floor($counter.Value++ / $groupSize) }
+    Write-Output "Split into $($chunks.Count) chunks."
+
+    # https://stackoverflow.com/questions/6119956/how-to-determine-if-git-handles-a-file-as-binary-or-as-text#comment15281840_6134127
+    $nullHash = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+    $textFiles = $chunks | ForEach-Object {
+        $chunk = $_.Group
+        $filePaths = git -c core.quotepath=off diff --numstat $nullHash HEAD -- @chunk
+        if (!$?) {
+            throw "Cannot call `"git diff`": exit code $LASTEXITCODE."
+        }
+        $filePaths |
+            Where-Object { -not $_.StartsWith('-') } |
+            ForEach-Object { [Regex]::Unescape($_.Split("`t", 3)[2]) }
+    }
+
+    Write-Output "Text files in the repository: $($textFiles.Length)"
+
+    $bom = @(0xEF, 0xBB, 0xBF)
+    $bomErrors = @()
+    $lineEndingErrors = @()
+
     foreach ($file in $textFiles) {
-        if ($excludeExtensions -contains [IO.Path]::GetExtension($file).ToLowerInvariant()) {
+        if ($ExcludeExtensions -contains [IO.Path]::GetExtension($file).ToLowerInvariant()) {
             continue
         }
 
         $fullPath = Resolve-Path -LiteralPath $file
-        if ((Get-Item -Force -LiteralPath $file).Length -eq 0) { continue }
-
         $bytes = [IO.File]::ReadAllBytes($fullPath) | Select-Object -First $bom.Length
         $bytesEqualsBom = @(Compare-Object $bytes $bom -SyncWindow 0).Length -eq 0
         if ($bytesEqualsBom -and $Autofix) {
