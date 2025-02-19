@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Flynn Owen <https://github.com/FlynnOwen>
+//
+// SPDX-License-Identifier: MIT
+
 // From https://github.com/FlynnOwen/GOL-C/blob/master/GOL.c
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +59,7 @@ void initBoard(int boardInitState){
             board[i][j] = ' ';
             }
         }
-        
+
         board[1][25] = cellAscii;
         board[2][23] = cellAscii;
         board[2][25] = cellAscii;
@@ -150,7 +154,7 @@ int _countCellNeighbours(int i, int j){
 }
 
 void _evolveCell(int i, int j, int counter) {
-    
+
     if (board[i][j] == cellAscii) {
         if (counter < 2) {
             blankBoard[i][j] = ' ';
@@ -204,35 +208,35 @@ void printBoardState(int evolution) {
 
 int main(int argc, char *argv[]) {
     int e;
-    int opt; 
+    int opt;
     printf("\033c"); // clears the terminal
     printf("\033[?25l"); // makes cursor invisible
 
     /*while ((opt = getopt(argc, argv, ":ge:c:t:s:x")) != -1)
-    { 
-        switch(opt) 
-        {   case 'g': 
+    {
+        switch(opt)
+        {   case 'g':
                 boardInitState = 'g';
-                break; 
-            case 't': 
+                break;
+            case 't':
                 timeBetweenEvolutions = atoi(optarg);
                 break;
-            case 'c': 
+            case 'c':
                 cellAscii = optarg[0];
-                break; 
-            case 'e': 
+                break;
+            case 'e':
                 evolutions = atoi(optarg);
-                break; 
-            case 's': 
+                break;
+            case 's':
                 randomSeed = atoi(optarg);
-                break; 
-            case ':': 
-                printf("option needs a value\n"); 
-                break; 
-            case '?': 
+                break;
+            case ':':
+                printf("option needs a value\n");
+                break;
+            case '?':
                 printf("unknown option: %c\n", optopt);
-                break; 
-        } 
+                break;
+        }
     } */
 
     initBoard(boardInitState);
