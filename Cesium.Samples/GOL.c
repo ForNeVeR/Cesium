@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2025 Flynn Owen <https://github.com/FlynnOwen>
+// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
