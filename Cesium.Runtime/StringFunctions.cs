@@ -2,12 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-#if NETSTANDARD
-#else
-using System.Collections.Specialized;
-using System.Runtime.InteropServices;
-#endif
-
 namespace Cesium.Runtime;
 
 /// <summary>
