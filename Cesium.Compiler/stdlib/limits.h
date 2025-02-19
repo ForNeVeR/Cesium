@@ -1,4 +1,10 @@
 #pragma once
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #define CHAR_BIT      8
 #define CHAR_MIN   (-128)
 #define CHAR_MAX     127

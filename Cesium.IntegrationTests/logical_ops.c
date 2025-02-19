@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 int global = 0;
 
 int side_effect()

@@ -1,4 +1,10 @@
 #pragma once
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 typedef __nint ptrdiff_t;
 typedef __nuint size_t;
 typedef __nuint intptr_t;

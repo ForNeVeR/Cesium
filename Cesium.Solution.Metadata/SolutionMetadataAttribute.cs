@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+//
+// SPDX-License-Identifier: MIT
+
 namespace Cesium.Solution.Metadata;
 
 /// <summary>This attribute is only used by the Cesium test infrastructure.</summary>

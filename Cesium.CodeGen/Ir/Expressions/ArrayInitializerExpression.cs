@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+//
+// SPDX-License-Identifier: MIT
+
 using System.Collections.Immutable;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;

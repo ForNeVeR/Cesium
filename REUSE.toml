@@ -4,13 +4,43 @@ SPDX-PackageSupplier = "Cesium contributors <https://github.com/ForNeVeR/Cesium>
 SPDX-PackageDownloadLocation = "https://github.com/ForNeVeR/Cesium"
 
 [[annotations]]
-path = ".idea/**/**"
+path = ".idea/**/*"
 precedence = "override"
 SPDX-FileCopyrightText = "2022 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
-path = ".vscode/**/**"
+path = ".vscode/**/*"
 precedence = "override"
 SPDX-FileCopyrightText = "2021 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "**/*.DotSettings"
+precedence = "override"
+SPDX-FileCopyrightText = "2022 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "Cesium.CodeGen.Tests/verified/*.txt"
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "Cesium.Parser.Tests/**/verified/*.txt"
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]] # TODO[#682]: Update to CC-0 in the future.
+path = "Cesium.Templates.CSharp/**/*"
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "Cesium.TestFramework.Tests/verified/*.txt"
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"

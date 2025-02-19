@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: .NET Foundation and Contributors
+//
+// SPDX-License-Identifier: MIT
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // Taken from https://github.com/dotnet/runtime/blob/cca022b6212f33adc982630ab91469882250256c/src/libraries/System.Private.CoreLib/src/System/CodeDom/Compiler/IndentedTextWriter.cs

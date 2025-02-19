@@ -1,4 +1,10 @@
 #pragma once
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <stdlib.h>
 #include <float.h>
 
@@ -8,8 +14,8 @@
 #endif
 
 #if FLT_EVAL_METHOD == 1
-#define float_t double 
-#define double_t double 
+#define float_t double
+#define double_t double
 #endif
 
 #if FLT_EVAL_METHOD == 2

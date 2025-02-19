@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 int testIntArray() {
     int a[10] = { 99, 0, 22, 17, 2, 0, };

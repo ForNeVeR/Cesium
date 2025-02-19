@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+
+SPDX-License-Identifier: MIT
+-->
+
 Cesium Design Notes
 ===================
 This document contains assorted design notes on various aspects of Cesium's behavior and implementation, decisions and motivation behind them.

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <stdio.h>
 
 // function to print numbers from 1 to 10

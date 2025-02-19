@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifdef __CESIUM__
 #include <cesium.h>
 #endif

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+//
+// SPDX-License-Identifier: MIT
+
 namespace Cesium.CodeGen;
 
 /// <summary>Describes the set of system architectures targeted by the assembly.</summary>

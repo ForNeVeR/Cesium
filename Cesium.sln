@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Packages.props = Directory.Packages.props
 		README.md = README.md
 		global.json = global.json
+		REUSE.toml = REUSE.toml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F6830-E724-4B3A-BFDC-3FA1301A59D0}"
@@ -47,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cesium.Samples", "Cesium.Sa
 		Cesium.Samples\minimal.c = Cesium.Samples\minimal.c
 		Cesium.Samples\quine.c = Cesium.Samples\quine.c
 		Cesium.Samples\snake.c = Cesium.Samples\snake.c
+		Cesium.Samples\structs.c = Cesium.Samples\structs.c
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.TestFramework", "Cesium.TestFramework\Cesium.TestFramework.csproj", "{C7BA2E2A-BEAB-4EC8-84CC-2F23B3D6FA82}"

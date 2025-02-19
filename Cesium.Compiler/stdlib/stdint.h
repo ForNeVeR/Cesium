@@ -1,4 +1,10 @@
 #pragma once
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <stddef.h>
 
 #define INT8_MIN         (-127i8 - 1)

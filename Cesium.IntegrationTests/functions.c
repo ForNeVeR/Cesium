@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 void forward_declaration_void_1();
 void forward_declaration_void_2(void);
 
