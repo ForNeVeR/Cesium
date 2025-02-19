@@ -54,9 +54,9 @@ License Automation
 If the CI asks you to update the file licenses, follow one of these:
 1. Update the headers manually (look at the existing files), something like this:
    ```
-   # SPDX-FileCopyrightText: %year% %your name% <%your contact info, e.g. email%>
-   #
-   # SPDX-License-Identifier: MIT
+   // SPDX-FileCopyrightText: %year% %your name% <%your contact info, e.g. email%>
+   //
+   // SPDX-License-Identifier: MIT
    ```
    (accommodate to the file's comment style if required).
 2. Alternately, use [REUSE][reuse] tool:
