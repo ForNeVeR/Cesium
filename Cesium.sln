@@ -47,7 +47,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cesium.Samples", "Cesium.Sa
 		Cesium.Samples\hello.c = Cesium.Samples\hello.c
 		Cesium.Samples\minimal.c = Cesium.Samples\minimal.c
 		Cesium.Samples\quine.c = Cesium.Samples\quine.c
-		Cesium.Samples\snake.c = Cesium.Samples\snake.c
 		Cesium.Samples\structs.c = Cesium.Samples\structs.c
 	EndProjectSection
 EndProject
