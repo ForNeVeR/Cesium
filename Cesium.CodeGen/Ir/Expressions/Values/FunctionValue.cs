@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -14,9 +15,9 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal sealed class FunctionValue : AddressableValue
 {
     private readonly MethodReference _methodReference;
-    private readonly Contexts.Meta.FunctionInfo _functionInfo;
+    private readonly FunctionInfo _functionInfo;
 
-    public FunctionValue(Contexts.Meta.FunctionInfo functionInfo, MethodReference methodReference)
+    public FunctionValue(FunctionInfo functionInfo, MethodReference methodReference)
     {
         _functionInfo = functionInfo;
         _methodReference = methodReference;

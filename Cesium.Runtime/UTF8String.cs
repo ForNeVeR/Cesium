@@ -2,10 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Cesium.Runtime.Attributes;
-using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Cesium.Runtime.Attributes;
 
 namespace Cesium.Runtime;
 

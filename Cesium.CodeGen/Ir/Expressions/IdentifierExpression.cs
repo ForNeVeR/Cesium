@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions.Values;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -56,10 +57,10 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
 
         if (var is not null)
         {
-            if (var.StorageClass == Declarations.StorageClass.Auto)
+            if (var.StorageClass == StorageClass.Auto)
                 return new LValueLocalVariable(var.Type, var.Index);
 
-            if (var.StorageClass == Declarations.StorageClass.Static)
+            if (var.StorageClass == StorageClass.Static)
                 return new LValueGlobalVariable(var.Type, Identifier);
 
             throw new CompilationException($"Identifier {Identifier} has unsupported storage class {var.StorageClass}.");

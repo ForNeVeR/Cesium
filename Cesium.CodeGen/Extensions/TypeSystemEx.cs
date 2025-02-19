@@ -125,7 +125,7 @@ internal static class TypeSystemEx
             }
 
             var lastSrcParam = methodParameters.Last();
-            if (lastSrcParam.ParameterType is not Mono.Cecil.PointerType pointerType)
+            if (lastSrcParam.ParameterType is not PointerType pointerType)
             {
                 similarMethods.Add((method, $"Signature does not match: accepts variadic arguments in declaration, but not in source. Last parameter is not an pointer type."));
                 return false;

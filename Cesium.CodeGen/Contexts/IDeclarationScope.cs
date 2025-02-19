@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Ir;
 using Cesium.CodeGen.Ir.BlockItems;

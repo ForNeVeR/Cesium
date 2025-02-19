@@ -6,6 +6,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
@@ -16,7 +17,7 @@ internal sealed class LValueInstanceField : LValueField
     private readonly string _name;
     private FieldReference? _field;
 
-    public LValueInstanceField(IExpression expression, Types.PointerType structPointerType, string name)
+    public LValueInstanceField(IExpression expression, PointerType structPointerType, string name)
     {
         _expression = expression;
         if (structPointerType.Base is ConstType constType)

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Cesium.TestFramework;
-using JetBrains.Annotations;
 using AsyncKeyedLock;
 using Cesium.Solution.Metadata;
+using Cesium.TestFramework;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;

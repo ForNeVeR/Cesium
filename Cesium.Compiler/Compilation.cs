@@ -14,6 +14,8 @@ using Mono.Cecil;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Text;
+using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Compiler;
 
@@ -39,7 +41,7 @@ internal static class Compilation
         {
             foreach (var inputFilePath in inputFilePaths)
             {
-                Ast.TranslationUnit translationUnit = await CreateAst(compilationOptions, inputFilePath);
+                TranslationUnit translationUnit = await CreateAst(compilationOptions, inputFilePath);
                 DumpAst(translationUnit);
             }
 
@@ -85,9 +87,9 @@ internal static class Compilation
             .Concat(compilationOptions.AdditionalIncludeDirectories)
             .ToImmutableArray();
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
-        var preprocessorLexer = new CPreprocessorLexer(new Yoakke.SynKit.Text.SourceFile(compilationSourcePath, reader));
+        var preprocessorLexer = new CPreprocessorLexer(new SourceFile(compilationSourcePath, reader));
         var definesContext = new InMemoryDefinesContext();
-        var outOfFileRange = new Yoakke.SynKit.Text.Range();
+        var outOfFileRange = new Range();
         foreach (var define in compilationOptions.DefineConstants)
         {
             definesContext.DefineMacro(
@@ -121,13 +123,13 @@ internal static class Compilation
 
     private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
     {
-        Ast.TranslationUnit translationUnit = await CreateAst(context.CompilationOptions, inputFilePath);
+        TranslationUnit translationUnit = await CreateAst(context.CompilationOptions, inputFilePath);
 
         var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
         context.EmitTranslationUnit(translationUnitName, translationUnit);
     }
 
-    private static async Task<Ast.TranslationUnit> CreateAst(CompilationOptions compilationOptions, string inputFilePath)
+    private static async Task<TranslationUnit> CreateAst(CompilationOptions compilationOptions, string inputFilePath)
     {
         var content = await Preprocess(inputFilePath, compilationOptions);
         var lexer = new CLexer(content);

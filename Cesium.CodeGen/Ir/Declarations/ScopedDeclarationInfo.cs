@@ -10,6 +10,7 @@ using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using ConstantLiteralExpression = Cesium.CodeGen.Ir.Expressions.ConstantLiteralExpression;
 
 namespace Cesium.CodeGen.Ir.Declarations;
 
@@ -100,7 +101,7 @@ internal interface IScopedDeclarationInfo
         return declarations;
     }
 
-    public static IExpression? ConvertInitializer(Types.IType? type, Initializer? initializer, IDeclarationScope scope)
+    public static IExpression? ConvertInitializer(IType? type, Initializer? initializer, IDeclarationScope scope)
     {
         if (initializer is null)
         {
@@ -131,7 +132,7 @@ internal interface IScopedDeclarationInfo
 
             if (type is PrimitiveType primitiveType)
             {
-                if (arrayInitializer.Initializers.Length == 0) return new Expressions.ConstantLiteralExpression(new IntegerConstant(0));
+                if (arrayInitializer.Initializers.Length == 0) return new ConstantLiteralExpression(new IntegerConstant(0));
                 if (arrayInitializer.Initializers.Length == 1) return ConvertInitializer(type, arrayInitializer.Initializers[0], scope);
                 throw new CompilationException($"Primitive types cannot be initialized using more then one initializer list.");
             }

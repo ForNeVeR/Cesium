@@ -5,12 +5,13 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Extensions;
+using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
-using System.Linq.Expressions;
+using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
 using C = Cesium.CodeGen.Ir.Types.CTypeSystem;
 
 namespace Cesium.CodeGen.Ir.Expressions;
@@ -29,8 +30,8 @@ internal sealed class TypeCastExpression : IExpression
     public TypeCastExpression(CastExpression castExpression, IDeclarationScope scope)
     {
         var ls = castExpression.TypeName.AbstractDeclarator is null
-            ? Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, (Declarator?)null, initializer: null, scope)
-            : Declarations.LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, castExpression.TypeName.AbstractDeclarator, scope);
+            ? LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, (Declarator?)null, initializer: null, scope)
+            : LocalDeclarationInfo.Of(castExpression.TypeName.SpecifierQualifierList, castExpression.TypeName.AbstractDeclarator, scope);
         TargetType = ls.Type;
         Expression = ExpressionEx.ToIntermediate(castExpression.Target, scope);
     }
@@ -93,7 +94,7 @@ internal sealed class TypeCastExpression : IExpression
             {
                 if (Expression is UnaryOperatorExpression { Operator: UnaryOperator.Promotion } unaryExpression)
                 {
-                    return new BinaryOperators.BinaryOperatorExpression(new IdentifierExpression(namedType.TypeName), BinaryOperator.Add, unaryExpression.Target).Lower(scope);
+                    return new BinaryOperatorExpression(new IdentifierExpression(namedType.TypeName), BinaryOperator.Add, unaryExpression.Target).Lower(scope);
                 }
             }
         }
@@ -105,7 +106,7 @@ internal sealed class TypeCastExpression : IExpression
             {
                 if (Expression is UnaryOperatorExpression { Operator: UnaryOperator.Promotion } unaryExpression)
                 {
-                    return new BinaryOperators.BinaryOperatorExpression(
+                    return new BinaryOperatorExpression(
                         new SubscriptingExpression(
                             new IdentifierExpression(namedType1.TypeName),
                             new ConstantLiteralExpression(new IntegerConstant(inPlaceArrayType.Size))),

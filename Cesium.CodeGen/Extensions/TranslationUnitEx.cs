@@ -2,29 +2,31 @@
 //
 // SPDX-License-Identifier: MIT
 
+using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
-using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using static System.Formats.Asn1.AsnWriter;
+using ConstantLiteralExpression = Cesium.CodeGen.Ir.Expressions.ConstantLiteralExpression;
+using FunctionDefinition = Cesium.Ast.FunctionDefinition;
+using IBlockItem = Cesium.CodeGen.Ir.BlockItems.IBlockItem;
 
 namespace Cesium.CodeGen.Extensions;
 
 internal static class TranslationUnitEx
 {
-    public static IEnumerable<IBlockItem> ToIntermediate(this Ast.TranslationUnit translationUnit, Contexts.IDeclarationScope scope) =>
+    public static IEnumerable<IBlockItem> ToIntermediate(this TranslationUnit translationUnit, IDeclarationScope scope) =>
         translationUnit.Declarations.SelectMany(x => (x switch
         {
-            Ast.FunctionDefinition func => [new FunctionDefinition(func, scope)],
-            Ast.SymbolDeclaration sym => GetTopLevelDeclarations(sym, scope),
-            Ast.PInvokeDeclaration pinvoke => [new PInvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
+            FunctionDefinition func => [new Ir.BlockItems.FunctionDefinition(func, scope)],
+            SymbolDeclaration sym => GetTopLevelDeclarations(sym, scope),
+            PInvokeDeclaration pinvoke => [new PInvokeDefinition(pinvoke.Declaration, pinvoke.Prefix)],
             _ => throw new WipException(212, $"Declaration not supported: {x}.")
         }));
 
-    private static IEnumerable<IBlockItem> GetTopLevelDeclarations(Ast.SymbolDeclaration sym, Contexts.IDeclarationScope scope)
+    private static IEnumerable<IBlockItem> GetTopLevelDeclarations(SymbolDeclaration sym, IDeclarationScope scope)
     {
         sym.Deconstruct(out var astDeclaration);
         foreach (var wholeDeclaration in IScopedDeclarationInfo.Of(astDeclaration, scope))
@@ -125,7 +127,7 @@ internal static class TranslationUnitEx
         }
     }
 
-    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType, Contexts.IDeclarationScope scope)
+    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType, IDeclarationScope scope)
     {
         long currentValue = -1;
         foreach (var enumeratorDeclaration in enumType.Members)

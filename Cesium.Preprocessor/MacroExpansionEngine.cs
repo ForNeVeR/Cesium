@@ -9,6 +9,7 @@ using Cesium.Core.Warnings;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
 using Yoakke.SynKit.Text;
+using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
@@ -331,7 +332,7 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
                         else
                         {
                             yield return new Token<CPreprocessorTokenType>(
-                                new Yoakke.SynKit.Text.Range(),
+                                new Range(),
                                 new Location(),
                                 ",",
                                 CPreprocessorTokenType.Separator);

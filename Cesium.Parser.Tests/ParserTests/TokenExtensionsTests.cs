@@ -4,6 +4,8 @@
 
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
+using Yoakke.SynKit.Text;
+using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Parser.Tests.ParserTests;
 
@@ -21,7 +23,7 @@ public class TokenExtensionsTests
     [InlineData("\"\\x\"", "\\x")]
     public void Test(string tokenText, string expected)
     {
-        var token = new Token<CTokenType>(new Yoakke.SynKit.Text.Range(), new Yoakke.SynKit.Text.Location(), tokenText, CTokenType.StringLiteral);
+        var token = new Token<CTokenType>(new Range(), new Location(), tokenText, CTokenType.StringLiteral);
 
         var actual = token.UnwrapStringLiteral();
 

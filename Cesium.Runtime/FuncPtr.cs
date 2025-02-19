@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Runtime.InteropServices;
-
 namespace Cesium.Runtime;
 
 /// <summary>A class encapsulating a C function pointer.</summary>

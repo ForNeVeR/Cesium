@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.InteropServices;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
-using System.Runtime.InteropServices;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;

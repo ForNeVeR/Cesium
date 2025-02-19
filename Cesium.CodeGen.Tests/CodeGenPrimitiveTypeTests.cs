@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.Ast;
-using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Parser;

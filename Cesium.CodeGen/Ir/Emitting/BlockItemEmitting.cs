@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.CodeGen.Contexts;
-using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir.BlockItems;
-using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;

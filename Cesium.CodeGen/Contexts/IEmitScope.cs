@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

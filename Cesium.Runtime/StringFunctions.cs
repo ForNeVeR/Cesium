@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 #if NETSTANDARD
-using System.Drawing;
-using System.Text;
 #else
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;

@@ -17,6 +17,7 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
@@ -348,7 +349,7 @@ public class AssemblyContext
                     structType.EmitType(context);
                 }
 
-                if (member.Type is Ir.Types.PointerType { Base: StructType structTypePtr })
+                if (member.Type is PointerType { Base: StructType structTypePtr })
                 {
                     structTypePtr.EmitType(context);
                 }
