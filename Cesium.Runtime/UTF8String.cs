@@ -4,6 +4,9 @@
 
 using System.Runtime.InteropServices;
 using Cesium.Runtime.Attributes;
+#if !NETSTANDARD
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Cesium.Runtime;
 
