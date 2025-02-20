@@ -4,6 +4,7 @@
         <Description>Templates to use when creating a Cesium applications or libraries.</Description>
         <PackageType>Template</PackageType>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageLicenseExpression>CC0-1.0</PackageLicenseExpression>
         <IncludeContentInPack>true</IncludeContentInPack>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <ContentTargetFolders>content</ContentTargetFolders>

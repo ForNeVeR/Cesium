@@ -33,11 +33,11 @@ precedence = "override"
 SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"
 
-[[annotations]] # TODO[#682]: Update to CC-0 in the future.
+[[annotations]]
 path = "Cesium.Templates.CSharp/**/*"
 precedence = "override"
 SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
-SPDX-License-Identifier = "MIT"
+SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
 path = "Cesium.TestFramework.Tests/verified/*.txt"

@@ -115,9 +115,11 @@ If you're interested in certain project areas, check the per-area issue labels:
 
 License
 -------
-The project is distributed under the terms of [the MIT license][docs.license].
+The project's sources, except the project templates, are distributed under the terms of [the MIT license][docs.license.mit].
 
-The license indication in the project's sources is compliant with the [REUSE specification v3.][reuse.spec].3
+The project templates (from the directory `Cesium.Templates.CSharp`) are distributed under the terms of [the CC-0 license][docs.license.cc0].
+
+The license indication in the project's sources is compliant with the [REUSE specification v3.3][reuse.spec].
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
 [c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
@@ -128,7 +130,8 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [docs.design-notes]: docs/design-notes.md
 [docs.exceptions]: docs/exceptions.md
 [docs.language-extensions]: docs/language-extensions.md
-[docs.license]: LICENSE.md
+[docs.license.cc0]: LICENSES/CC0-1.0.txt
+[docs.license.mit]: LICENSE.md
 [docs.msbuild-sdk]: docs/msbuild-sdk.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
