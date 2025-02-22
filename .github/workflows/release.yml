@@ -45,7 +45,9 @@ jobs:
 
       - name: ✅ Upload Compiler ✅
         uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
+          if-no-files-found: 'error'
           path: |-
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
@@ -60,21 +62,27 @@ jobs:
 
       - name: ✅ Upload Runtime ✅
         uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
+          if-no-files-found: 'error'
           path: |-
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload SDK ✅
         uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
+          if-no-files-found: 'error'
           path: |-
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload Templates ✅
         uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
+          if-no-files-found: 'error'
           path: |-
             ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.snupkg
