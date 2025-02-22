@@ -38,12 +38,46 @@ jobs:
         shell: bash
         run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerNuPkg PackSdk PackTemplates
 
-      - name: ✅ Upload Artifacts ✅
-        # TODO
-        # - Compiler
-        # - Runtime
-        # - SDK
-        # - Templates
+      - id: version
+        name: Get version
+        shell: pwsh
+        run: echo "version=$(scripts/Get-Version.ps1 -RefName $env:GITHUB_REF)" >> $env:GITHUB_OUTPUT
 
-      - name: ✅ Publish to NuGet ✅
-        # TODO
+      - name: ✅ Upload Compiler ✅
+        uses: actions/upload-artifact@v4
+        with:
+          path: |-
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
+
+            ./artifacts/package/release/Cesium.Compiler.linux-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.linux-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.osx-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.osx-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.win-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.win-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.win-x86.${{ steps.version.outputs.version }}.zip
+
+      - name: ✅ Upload Runtime ✅
+        uses: actions/upload-artifact@v4
+        with:
+          path: |-
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
+
+      - name: ✅ Upload SDK ✅
+        uses: actions/upload-artifact@v4
+        with:
+          path: |-
+            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.snupkg
+
+      - name: ✅ Upload Templates ✅
+        uses: actions/upload-artifact@v4
+        with:
+          path: |-
+            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.snupkg
+
+      #- name: ✅ Publish to NuGet ✅
+      #  # TODO
