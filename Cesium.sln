@@ -56,6 +56,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB
 	ProjectSection(SolutionItems) = preProject
 		scripts\approve-all.ps1 = scripts\approve-all.ps1
 		scripts\Test-Encoding.ps1 = scripts\Test-Encoding.ps1
+		scripts\Get-Version.ps1 = scripts\Get-Version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
