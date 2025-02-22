@@ -36,7 +36,7 @@ jobs:
 
       - name: 📦 Pack Everything 📦
         shell: bash
-        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerNuPkg PackSdk PackTemplates
+        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerNuPkg PackSdk PackTemplates --configuration Release
 
       - id: version
         name: Get version
