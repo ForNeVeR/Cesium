@@ -48,6 +48,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
+          name: Compiler
           path: |-
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
@@ -65,6 +66,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
+          name: Runtime
           path: |-
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
@@ -74,6 +76,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
+          name: SDK
           path: |-
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.snupkg
@@ -83,6 +86,7 @@ jobs:
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
+          name: Templates
           path: |-
             ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.snupkg
