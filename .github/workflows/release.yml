@@ -36,7 +36,7 @@ jobs:
 
       - name: 📦 Pack Everything 📦
         shell: bash
-        run: dotnet nuke PackCompilerBundle PackSdk PackTemplates
+        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerNuPkg PackSdk PackTemplates
 
       - name: ✅ Upload Artifacts ✅
         # TODO
