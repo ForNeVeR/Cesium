@@ -16,7 +16,7 @@ partial class Build
             DotNetPack(_ => _
                 .Apply(settings => !string.IsNullOrEmpty(RuntimeId) ? settings.SetRuntime(RuntimeId) : settings)
                 .SetConfiguration(Configuration)
-                .SetProject(Solution.Templates.Cesium_Templates_CSharp)
+                .SetProject(Solution.Templates.Cesium_Templates)
                 .EnableNoRestore());
         });
 }

@@ -10,7 +10,6 @@
         <ContentTargetFolders>content</ContentTargetFolders>
         <!-- https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu5128#scenario-2 -->
         <NoWarn>$(NoWarn);NU5128</NoWarn>
-        <RootNamespace>Cesium.Templates.CSharp</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

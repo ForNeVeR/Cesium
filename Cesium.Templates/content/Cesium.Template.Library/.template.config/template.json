@@ -2,7 +2,7 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "Cesium Team",
     "classifications": [ "Console" ],
-    "identity": "Cesium.Template.Library.CSharp",
+    "identity": "Cesium.Template.Library",
     "name": "Cesium Library",
     "shortName": "cesiumlib",
     "tags": {

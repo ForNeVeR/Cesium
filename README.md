@@ -117,7 +117,7 @@ License
 -------
 The project's sources, except the project templates, are distributed under the terms of [the MIT license][docs.license.mit].
 
-The project templates (from the directory `Cesium.Templates.CSharp`) are distributed under the terms of [the CC-0 license][docs.license.cc0].
+The project templates (from the directory `Cesium.Templates`) are distributed under the terms of [the CC-0 license][docs.license.cc0].
 
 The license indication in the project's sources is compliant with the [REUSE specification v3.3][reuse.spec].
 

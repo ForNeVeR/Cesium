@@ -99,7 +99,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.cspr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{F59EF607-B888-4FC2-8148-43B019F33C7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Templates.CSharp", "Cesium.Templates.CSharp\Cesium.Templates.CSharp.csproj", "{D26ED37B-1F41-4001-8755-47026763A32A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cesium.Templates", "Cesium.Templates\Cesium.Templates.csproj", "{D26ED37B-1F41-4001-8755-47026763A32A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
