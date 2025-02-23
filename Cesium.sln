@@ -26,6 +26,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Parser", "Cesium.Parser\Cesium.Parser.csproj", "{537F83F5-67B1-4863-A557-CF08149A99CB}"
@@ -56,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB
 	ProjectSection(SolutionItems) = preProject
 		scripts\approve-all.ps1 = scripts\approve-all.ps1
 		scripts\Test-Encoding.ps1 = scripts\Test-Encoding.ps1
+		scripts\Get-Version.ps1 = scripts\Get-Version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2973-4405-BA3C-452512152835}"
