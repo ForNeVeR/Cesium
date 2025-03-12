@@ -80,14 +80,15 @@ public partial class Build
     void PublishCompiler(string runtimeId)
     {
         var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+        var runtimeIdDisplayName = runtimeId == "" ? "<no runtime>" : runtimeId;
 
         if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
         {
-            Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
+            Log.Information($"Skipping {runtimeIdDisplayName} because it was already published. Use '--skip-caches true' to re-publish.");
             return;
         }
 
-        Log.Information($"Publishing for {runtimeId}, AOT {(PublishAot ? "enabled" : "disabled")}...");
+        Log.Information($"Publishing for {runtimeIdDisplayName}, AOT {(PublishAot ? "enabled" : "disabled")}...");
         DotNetPublish(o => o
             .SetConfiguration(Configuration)
             .SetProject(compilerProject.ProjectFileLocation.File)
