@@ -31,6 +31,6 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Yoakke.SynKit.Text" Version="2024.12.4-18.22.20-nightly" />
     <PackageVersion Include="Nuke.Common" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.13.9" />
-    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.1" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
   </ItemGroup>
 </Project>
