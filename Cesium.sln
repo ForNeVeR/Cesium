@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
@@ -13,8 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CONTRIBUTING.md = CONTRIBUTING.md
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
-		README.md = README.md
 		global.json = global.json
+		README.md = README.md
 		REUSE.toml = REUSE.toml
 	EndProjectSection
 EndProject
@@ -62,12 +61,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2
 	ProjectSection(SolutionItems) = preProject
 		docs\architecture-sets.md = docs\architecture-sets.md
 		docs\builtins.md = docs\builtins.md
+		docs\design-notes.md = docs\design-notes.md
 		docs\exceptions.md = docs\exceptions.md
 		docs\language-extensions.md = docs\language-extensions.md
+		docs\msbuild-sdk.md = docs\msbuild-sdk.md
 		docs\tests.md = docs\tests.md
 		docs\type-system.md = docs\type-system.md
-		docs\design-notes.md = docs\design-notes.md
-		docs\msbuild-sdk.md = docs\msbuild-sdk.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Preprocessor", "Cesium.Preprocessor\Cesium.Preprocessor.csproj", "{0CDF730D-2A2A-437F-B27F-2BB04770C709}"
@@ -107,8 +106,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{05416E66-3615-4ABB-A130-F37EC18785A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{05416E66-3615-4ABB-A130-F37EC18785A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B85C397C-1F36-4A27-AB36-D03F55AE1A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -153,6 +150,10 @@ Global
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C83A5A9A-5667-4574-B75C-EFF38FA0FE79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{526D8E61-6143-490F-BB9D-E7CD78512E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -165,10 +166,6 @@ Global
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AF6A395-8B9C-4E97-9036-B7C03A62EC9D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{736A7F26-F507-48C5-BF48-3726EA2399CB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02C764E4-41C6-4E73-AD93-F3DD3E1E9630}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -177,6 +174,8 @@ Global
 		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B59ADD9-5C9D-482C-B238-F5EFD5E1F7CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05416E66-3615-4ABB-A130-F37EC18785A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05416E66-3615-4ABB-A130-F37EC18785A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D26ED37B-1F41-4001-8755-47026763A32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D26ED37B-1F41-4001-8755-47026763A32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D26ED37B-1F41-4001-8755-47026763A32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
