@@ -159,7 +159,10 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
         }
     }
 
-    /// <remarks>ISO C Standard, section 6.10.4.1 Argument substitution.</remarks>
+    /// <remarks>
+    /// ISO C Standard, section 6.10.4.1 Argument substitution.
+    /// Also contains personal indentifier macro.
+    /// </remarks>
     private IEnumerable<IToken<CPreprocessorTokenType>> SubstituteMacroArguments(
         IToken macroNameToken,
         MacroArguments arguments,
@@ -185,6 +188,15 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
                     macroNameToken.Range,
                     macroNameToken.Location,
                     line.ToString(CultureInfo.InvariantCulture),
+                    CPreprocessorTokenType.PreprocessingToken);
+                yield break;
+            }
+            case "__cesium__":
+            {
+                yield return new Token<CPreprocessorTokenType> (
+                    macroNameToken.Range,
+                    macroNameToken.Location,
+                    "1",
                     CPreprocessorTokenType.PreprocessingToken);
                 yield break;
             }
