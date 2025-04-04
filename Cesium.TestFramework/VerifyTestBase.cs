@@ -11,6 +11,9 @@ public abstract class VerifyTestBase
         // To disable Visual Studio popping up on every test execution.
         Environment.SetEnvironmentVariable("DiffEngine_Disabled", "true");
         Environment.SetEnvironmentVariable("Verify_DisableClipboard", "true");
+
+        // To prevent from adding UTF-8 BOM to generated test data:
+        VerifierSettings.UseUtf8NoBom();
     }
 
     protected static VerifySettings GetSettings(params object?[] parameters)
