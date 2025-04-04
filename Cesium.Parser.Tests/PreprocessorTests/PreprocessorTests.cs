@@ -1098,4 +1098,7 @@ enum test {
     Value2 = 346,
 }
 """);
+
+    [Fact]
+    public Task CesiumMacro() => DoTest("__CESIUM__");
 }

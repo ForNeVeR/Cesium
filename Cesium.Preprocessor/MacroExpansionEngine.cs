@@ -159,47 +159,37 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
         }
     }
 
+    private static readonly IReadOnlyDictionary<string, Func<IToken, string>> _simpleSubstitutors = new Dictionary<string, Func<IToken, string>> {
+        ["__FILE__"] = token =>  "\"" + token
+            .Location
+            .File?
+            .Path
+            .Replace("\\", "\\\\") + "\"",
+        ["__LINE__"] = token =>
+        {
+            var line = token.Location.Range.Start.Line + 1;
+            return line.ToString(CultureInfo.InvariantCulture);
+        },
+        ["__CESIUM__"] = _ => "1"
+    };
+
     /// <remarks>
-    /// ISO C Standard, section 6.10.4.1 Argument substitution.
-    /// Also contains personal indentifier macro.
+    /// <para>ISO C Standard, section 6.10.4.1 Argument substitution.</para>
+    /// <para>Additionally, contains some extensions described in <c>docs/language-extensions.md</c>.</para>
     /// </remarks>
     private IEnumerable<IToken<CPreprocessorTokenType>> SubstituteMacroArguments(
         IToken macroNameToken,
         MacroArguments arguments,
         IEnumerable<IToken<CPreprocessorTokenType>> replacement)
     {
-        switch (macroNameToken.Text)
+        if (_simpleSubstitutors.TryGetValue(macroNameToken.Text, out var substitutor))
         {
-            case "__FILE__":
-                yield return new Token<CPreprocessorTokenType>(
-                    macroNameToken.Range,
-                    macroNameToken.Location,
-                    "\"" + macroNameToken
-                        .Location
-                        .File?
-                        .Path
-                        .Replace("\\", "\\\\") + "\"",
-                    CPreprocessorTokenType.PreprocessingToken);
-                yield break;
-            case "__LINE__":
-            {
-                var line = macroNameToken.Location.Range.Start.Line + 1;
-                yield return new Token<CPreprocessorTokenType>(
-                    macroNameToken.Range,
-                    macroNameToken.Location,
-                    line.ToString(CultureInfo.InvariantCulture),
-                    CPreprocessorTokenType.PreprocessingToken);
-                yield break;
-            }
-            case "__cesium__":
-            {
-                yield return new Token<CPreprocessorTokenType> (
-                    macroNameToken.Range,
-                    macroNameToken.Location,
-                    "1",
-                    CPreprocessorTokenType.PreprocessingToken);
-                yield break;
-            }
+            yield return new Token<CPreprocessorTokenType>(
+                macroNameToken.Range,
+                macroNameToken.Location,
+                substitutor(macroNameToken),
+                CPreprocessorTokenType.PreprocessingToken);
+            yield break;
         }
 
         using var lexer = new TransactionalLexer(replacement, warningProcessor);
