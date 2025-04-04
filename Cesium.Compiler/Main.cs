@@ -29,7 +29,7 @@ public static class Program
 #pragma warning disable IL3000 // Automatic discovery of corelib is fallback option, if tooling do not pass that parameter
             var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
 #pragma warning restore IL3000
-            var moduleKind = (args.ProducePreprocessedFile || args.DumpAst) ? ModuleKind.Console : args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
+            var moduleKind = (args.ProducePreprocessedFile || args.DumpAst || args.CompileOnly) ? ModuleKind.Console : args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
             {
                 ".exe" => ModuleKind.Console,
                 ".dll" => ModuleKind.Dll,
@@ -48,6 +48,11 @@ public static class Program
                 args.IncludeDirectories.ToList(),
                 args.ProducePreprocessedFile,
                 args.DumpAst);
+
+            if (args.CompileOnly)
+            {
+                return await Compilation.DumpToObjectJson(args.InputFilePaths, args.OutputFilePath, compilationOptions);
+            }
             return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
         });
     }

@@ -3,13 +3,18 @@
 // SPDX-License-Identifier: MIT
 
 using System.Collections.Immutable;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Cesium.Ast;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
+using CommandLine.Text;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
@@ -21,6 +26,69 @@ namespace Cesium.Compiler;
 
 internal static class Compilation
 {
+    public class CompiledObjectJson
+    {
+        public required IEnumerable<string> inputFilePaths;
+        public required CompilationOptions compilationOptions;
+    }
+
+    internal class CompiledObjectJsonTypeInfoResolver : IJsonTypeInfoResolver
+    {
+ 
+        public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            if (type.Name == typeof(CompiledObjectJson).Name)
+            {
+               // return new JsonTypeInfo;
+            }
+            throw new NotImplementedException();
+        }
+    }
+
+    public static IJsonTypeInfoResolver GetResolver(this CompiledObjectJson json)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool IsObjectFileName(string filename)
+    {
+        return filename.EndsWith(".json.obj") || filename.EndsWith(".obj");
+    }
+    public static async Task<int> DumpToObjectJson(
+        IEnumerable<string> inputFilePaths,
+        string outputFilePath,
+        CompilationOptions compilationOptions
+        )
+    {
+        CompiledObjectJson compiledObjectJson = new CompiledObjectJson()
+        {
+            inputFilePaths = inputFilePaths,
+            compilationOptions = compilationOptions
+        };
+
+        if (!outputFilePath.EndsWith(".obj"))
+        {
+            outputFilePath += ".json.obj";
+        }
+
+        StreamWriter outObjectWriter = new StreamWriter(outputFilePath);
+        await outObjectWriter.WriteAsync(JsonSerializer.Serialize(compiledObjectJson));
+        return 0;
+    }
+
+    public static async Task<CompiledObjectJson> UndumpObjectJson(string inputObjectJsonFilePath)
+    {
+        StreamReader inObjectJsonReader = new StreamReader(inputObjectJsonFilePath);
+
+        var inObjectJsonStr = await inObjectJsonReader.ReadToEndAsync();
+        var result = JsonSerializer.Deserialize<CompiledObjectJson>(inObjectJsonStr);
+        if (result == null)
+        {
+            throw new Exception($"Invalid json from file {inputObjectJsonFilePath}");
+        }
+        return result;
+    }
+
     public static async Task<int> Compile(
         IEnumerable<string> inputFilePaths,
         string outputFilePath,
@@ -54,7 +122,21 @@ internal static class Compilation
 
         foreach (var inputFilePath in inputFilePaths)
         {
-            Console.WriteLine($"Processing input file \"{inputFilePath}\".");
+            bool isObjectFile = IsObjectFileName(inputFilePath);
+            Console.WriteLine($"Processing input {(isObjectFile ? "Cesium JSON object ": "")} file \"{inputFilePath}\".");
+            if (isObjectFile)
+            {
+                var result = UndumpObjectJson(inputFilePath);
+                if (result != null)
+                {
+                    var newFiles = inputFilePaths.Intersect<string>(result.Result.inputFilePaths);
+                    foreach (var newFile in newFiles)
+                    {
+                        Console.WriteLine($"Processing input file (from Cesium JSON object file \"{inputFilePath}\") \"{newFile}\".");
+                        await GenerateCode(assemblyContext, newFile);
+                    }
+                }
+            }
             await GenerateCode(assemblyContext, inputFilePath);
         }
 
