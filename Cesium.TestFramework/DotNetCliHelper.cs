@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using Medallion.Shell;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.TestFramework;
@@ -13,27 +14,19 @@ public static class DotNetCliHelper
 {
     public static async Task ShutdownBuildServer()
     {
-        await RunToSuccess(null, "dotnet", Environment.CurrentDirectory, new[]
-        {
+        await RunToSuccess(null, ExecUtil.DotNetHost, AbsolutePath.CurrentWorkingDirectory, [
             "build-server",
             "shutdown"
-        });
+        ]);
     }
 
-    public static async Task BuildDotNetProject(ITestOutputHelper output, string configuration, string projectFilePath)
+    public static async Task BuildDotNetProject(ITestOutputHelper output, string configuration, AbsolutePath projectFile)
     {
-        await RunToSuccess(output, "dotnet", Path.GetDirectoryName(projectFilePath)!, new[]
-        {
+        await RunToSuccess(output, ExecUtil.DotNetHost, projectFile.Parent!.Value, [
             "build",
             "--configuration", configuration,
-            projectFilePath
-        });
-    }
-
-    public static async Task<string> EvaluateMSBuildProperty(ITestOutputHelper output, string projectPath, string propertyName)
-    {
-        var result = await ExecUtil.Run(output, "dotnet", Environment.CurrentDirectory, [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{propertyName}" ]);
-        return result.StandardOutput;
+            projectFile.Value
+        ]);
     }
 
     public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(
@@ -47,8 +40,8 @@ public static class DotNetCliHelper
 
         var result = await ExecUtil.Run(
             output,
-            "dotnet",
-            Environment.CurrentDirectory,
+            ExecUtil.DotNetHost,
+            AbsolutePath.CurrentWorkingDirectory,
             [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ],
             env);
         var resultString = result.StandardOutput;
@@ -70,8 +63,8 @@ public static class DotNetCliHelper
     {
         var result = await ExecUtil.Run(
             output,
-            "dotnet",
-            Environment.CurrentDirectory,
+            ExecUtil.DotNetHost,
+            AbsolutePath.CurrentWorkingDirectory,
             [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ],
             env);
         var resultString = result.StandardOutput;
@@ -84,14 +77,14 @@ public static class DotNetCliHelper
 
     public static Task<CommandResult> RunDotNetDll(
         ITestOutputHelper output,
-        string workingDirectoryPath,
-        string dllPath) =>
-        ExecUtil.Run(output, "dotnet", workingDirectoryPath, new[] { dllPath });
+        AbsolutePath workingDirectoryPath,
+        AbsolutePath dllPath) =>
+        ExecUtil.Run(output, ExecUtil.DotNetHost, workingDirectoryPath, [ dllPath.Value ]);
 
     public static Task RunToSuccess(
         ITestOutputHelper? output,
-        string executable,
-        string workingDirectory,
+        LocalPath executable,
+        AbsolutePath workingDirectory,
         string[] args) => ExecUtil.RunToSuccess(output, executable, workingDirectory, args,
         new Dictionary<string, string>
         {

@@ -21,4 +21,8 @@ SPDX-License-Identifier: MIT
         </AssemblyAttribute>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="TruePath" />
+    </ItemGroup>
+
 </Project>

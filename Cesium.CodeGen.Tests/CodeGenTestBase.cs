@@ -28,7 +28,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
             runtime,
             @namespace: "",
             globalTypeFqn: "",
-            referencePaths: Array.Empty<string>());
+            referencePaths: []);
         return assembly;
     }
 
@@ -38,7 +38,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         string @namespace = "",
         string globalTypeFqn = "", params string[] sources)
     {
-        var (assembly, _) = GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, Array.Empty<string>());
+        var (assembly, _) = GenerateAssembly(sources, runtime, arch, @namespace, globalTypeFqn, []);
         return assembly;
     }
 
@@ -48,7 +48,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
         string @namespace = "",
         string globalTypeFqn = "",
-        string[]? referencePaths = null)
+        AbsolutePath[]? referencePaths = null)
     {
         var context = CreateAssembly(
             runtime,

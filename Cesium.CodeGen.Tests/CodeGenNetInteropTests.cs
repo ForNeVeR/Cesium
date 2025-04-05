@@ -5,61 +5,57 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Compiler;
 using Cesium.TestFramework;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
 
 // TODO[#488]: Make them run in parallel, as all the integration tests
-public class CodeGenNetInteropTests : CodeGenTestBase
+public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
 {
-    private readonly ITestOutputHelper _output;
-    public CodeGenNetInteropTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
     private async Task DoTest(
         TargetArchitectureSet architecture,
         [StringSyntax("csharp")] string cSharpCode,
         [StringSyntax("cpp")] string cCode)
     {
         var cSharpAssemblyPath = await CSharpCompilationUtil.CompileCSharpAssembly(
-            _output,
+            output,
             CSharpCompilationUtil.DefaultRuntime,
             cSharpCode);
-        var (cesiumAssembly, assemblyContents) = GenerateAssembly(runtime: null, arch: architecture, sources: new[]{cCode}, referencePaths: new[] { cSharpAssemblyPath });
+        var (cesiumAssembly, assemblyContents) = GenerateAssembly(
+            runtime: null,
+            arch: architecture,
+            sources: [cCode],
+            referencePaths: [cSharpAssemblyPath]);
         await VerifyTypes(cesiumAssembly, architecture);
         await VerifyAssemblyRuns(assemblyContents.ToArray(), cSharpAssemblyPath);
     }
 
-    private async Task VerifyAssemblyRuns(byte[] assemblyContentToRun, string referencePath)
+    private async Task VerifyAssemblyRuns(byte[] assemblyContentToRun, AbsolutePath referencePath)
     {
-        var testDirectoryPath = Path.GetTempFileName();
-        File.Delete(testDirectoryPath);
-        Directory.CreateDirectory(testDirectoryPath);
-
+        var testDirectory = Temporary.CreateTempFolder();
         try
         {
-            var assemblyPath = Path.Combine(testDirectoryPath, "EntryPoint.dll");
-            var runtimeConfigPath = Path.ChangeExtension(assemblyPath, ".runtimeconfig.json");
+            var assemblyPath = testDirectory / "EntryPoint.dll";
+            var runtimeConfigPath = Path.ChangeExtension(assemblyPath.Value, ".runtimeconfig.json");
 
-            await File.WriteAllBytesAsync(assemblyPath, assemblyContentToRun);
+            await File.WriteAllBytesAsync(assemblyPath.Value, assemblyContentToRun);
             await File.WriteAllTextAsync(runtimeConfigPath, RuntimeConfig.EmitNet9());
 
             DeployReferenceAssembly(CSharpCompilationUtil.CesiumRuntimeLibraryPath);
             DeployReferenceAssembly(referencePath);
 
-            await ExecUtil.RunToSuccess(_output, "dotnet", testDirectoryPath, new[] { assemblyPath });
+            await ExecUtil.RunToSuccess(output, new LocalPath("dotnet"), testDirectory, [assemblyPath.Value]);
         }
         finally
         {
-            Directory.Delete(testDirectoryPath, recursive: true);
+            Directory.Delete(testDirectory.Value, recursive: true);
         }
 
-        void DeployReferenceAssembly(string assemblyPath)
+        void DeployReferenceAssembly(AbsolutePath assemblyPath)
         {
-            var targetFilePath = Path.Combine(testDirectoryPath, Path.GetFileName(assemblyPath));
-            File.Copy(assemblyPath, targetFilePath);
+            var targetFilePath = testDirectory / assemblyPath.FileName;
+            File.Copy(assemblyPath.Value, targetFilePath.Value);
         }
     }
 

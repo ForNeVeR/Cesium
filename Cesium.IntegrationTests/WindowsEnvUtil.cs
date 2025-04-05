@@ -5,45 +5,45 @@
 using System.Runtime.Versioning;
 using Cesium.TestFramework;
 using Microsoft.Win32;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
 
 internal static class WindowsEnvUtil
 {
-    public const string MsCorLibPath = @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll";
+    public static readonly AbsolutePath MsCorLibPath =
+        new(@"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll");
 
-    public static async Task<string> FindVCCompilerInstallationFolder(ITestOutputHelper output)
+    public static async Task<AbsolutePath> FindVcCompilerInstallationFolder(ITestOutputHelper output)
     {
-        var vswhereLocation =
-            Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe");
+        var vsWhereLocation = new AbsolutePath(
+            Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"));
         var installationPath = (await ExecUtil.Run(
             output,
-            vswhereLocation,
-            ".",
-            new[]
-            {
+            vsWhereLocation,
+            AbsolutePath.CurrentWorkingDirectory,
+            [
                 "-latest",
                 "-format", "value",
                 "-property", "installationPath",
                 "-nologo",
                 "-nocolor"
-            })).StandardOutput;
+            ])).StandardOutput;
         if (string.IsNullOrWhiteSpace(installationPath))
         {
             installationPath = (await ExecUtil.Run(
                 output,
-                vswhereLocation,
-                ".",
-                new[]
-                {
+                vsWhereLocation,
+                AbsolutePath.CurrentWorkingDirectory,
+                [
                     "-latest",
                     "-format", "value",
                     "-property", "installationPath",
                     "-nologo",
                     "-nocolor",
                     "-prerelease"
-                })).StandardOutput;
+                ])).StandardOutput;
         }
 
         if (string.IsNullOrWhiteSpace(installationPath))
@@ -57,27 +57,28 @@ internal static class WindowsEnvUtil
             throw new InvalidOperationException($"Visual Studio Installation does not have VC++ compiler installed at {vcRootLocation}|{installationPath}");
         }
 
-        string? pathToCL = null;
-        foreach (var folder in Directory.EnumerateDirectories(vcRootLocation, "14.*", SearchOption.TopDirectoryOnly))
+        AbsolutePath? pathToCL = null;
+        foreach (var folder in Directory.EnumerateDirectories(vcRootLocation, "14.*", SearchOption.TopDirectoryOnly)
+                     .Select(x => new AbsolutePath(x)))
         {
-            var clPath = Path.Combine(folder, @"bin\Hostx86\x86\cl.exe");
-            if (File.Exists(clPath))
+            var clPath = folder / @"bin\Hostx86\x86\cl.exe";
+            if (clPath.ReadKind() == FileEntryKind.File)
                 pathToCL = folder;
         }
 
-        if (pathToCL is null)
+        if (pathToCL is not {} result)
         {
             throw new InvalidOperationException(
                 "Visual Studio Installation does not have VC++ compiler installed, or it is corrupted");
         }
 
-        return pathToCL;
+        return result;
     }
 
     [SupportedOSPlatform("windows")]
-    public static string FindWin10Sdk()
+    public static AbsolutePath FindWin10Sdk()
     {
-        string? path = FindWin10SdkHelper(Registry.LocalMachine, @"SOFTWARE\\Wow6432Node");
+        var path = FindWin10SdkHelper(Registry.LocalMachine, @"SOFTWARE\\Wow6432Node");
         path ??= FindWin10SdkHelper(Registry.CurrentUser, @"SOFTWARE\\Wow6432Node");
         path ??= FindWin10SdkHelper(Registry.LocalMachine, @"SOFTWARE");
         path ??= FindWin10SdkHelper(Registry.CurrentUser, @"SOFTWARE");
@@ -85,44 +86,47 @@ internal static class WindowsEnvUtil
     }
 
     [SupportedOSPlatform("windows")]
-    public static string? FindWin10SdkHelper(RegistryKey hive, string searchLocation)
+    public static AbsolutePath? FindWin10SdkHelper(RegistryKey hive, string searchLocation)
     {
-        return (string?)hive.OpenSubKey($@"{searchLocation}\Microsoft\Microsoft SDKs\Windows\v10.0")?.GetValue("InstallationFolder");
+        var value = (string?)hive.OpenSubKey($@"{searchLocation}\Microsoft\Microsoft SDKs\Windows\v10.0")?.GetValue("InstallationFolder");
+        return value == null ? null : new(value);
     }
 
-    public static string FindLibsFolder(string win10SdkPath)
+    public static AbsolutePath FindLibsFolder(AbsolutePath win10SdkPath)
     {
-        string? win10Libs = null;
-        foreach (var versionFolder in Directory.EnumerateDirectories(Path.Combine(win10SdkPath, "Lib")))
+        AbsolutePath? win10Libs = null;
+        foreach (var versionFolder in Directory.EnumerateDirectories((win10SdkPath / "Lib").Value)
+                     .Select(x => new AbsolutePath(x)))
         {
-            var win10LibPathCandidate = Path.Combine(versionFolder, @"um\x86");
-            if (Directory.Exists(win10LibPathCandidate))
+            var win10LibPathCandidate = new AbsolutePath(versionFolder) / @"um\x86";
+            if (win10LibPathCandidate.ReadKind() == FileEntryKind.Directory)
                 win10Libs = versionFolder;
         }
 
-        if (win10Libs is null)
+        if (win10Libs is not {} result)
         {
             throw new InvalidOperationException("Windows libs files was not found");
         }
 
-        return win10Libs;
+        return result;
     }
 
-    public static string FindIncludeFolder(string win10SdkPath)
+    public static AbsolutePath FindIncludeFolder(AbsolutePath win10SdkPath)
     {
-        string? win10Libs = null;
-        foreach (var versionFolder in Directory.EnumerateDirectories(Path.Combine(win10SdkPath, "Include")))
+        AbsolutePath? win10Libs = null;
+        foreach (var versionFolder in Directory.EnumerateDirectories((win10SdkPath / "Include").Value)
+                     .Select(x => new AbsolutePath(x)))
         {
-            var win10LibPathCandidate = Path.Combine(versionFolder, @"um");
-            if (Directory.Exists(win10LibPathCandidate))
+            var win10LibPathCandidate = versionFolder / "um";
+            if (win10LibPathCandidate.ReadKind() == FileEntryKind.Directory)
                 win10Libs = versionFolder;
         }
 
-        if (win10Libs is null)
+        if (win10Libs is not {} result)
         {
             throw new InvalidOperationException("Windows libs files was not found");
         }
 
-        return win10Libs;
+        return result;
     }
 }

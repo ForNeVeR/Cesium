@@ -15,7 +15,4 @@ public class JsonObjectFileTests
 
     [Fact]
     public void ObjectFileGetsReadCorrectly() => Assert.Fail();
-
-    [Fact]
-    public void CompilationSucceedsForObjectFile() => Assert.Fail("Migrate me to the integration tests");
 }

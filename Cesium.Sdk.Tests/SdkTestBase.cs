@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
@@ -36,7 +37,7 @@ public abstract class SdkTestBase : IDisposable
         _testOutputHelper.WriteLine($"Copying TestProjects to {_temporaryPath}...");
         CopyDirectoryRecursive(testDataPath, _temporaryPath);
 
-        var nupkgPath = Path.GetFullPath(Path.Combine(SolutionMetadata.SourceRoot, "artifacts", "package", "debug"));
+        var nupkgPath = (SolutionMetadata.SourceRoot / "artifacts/package/debug").Canonicalize();
         _testOutputHelper.WriteLine($"Local NuGet feed: {nupkgPath}.");
         EmitNuGetConfig(NuGetConfigPath, nupkgPath);
         EmitGlobalJson(GlobalJsonPath, $"{SolutionMetadata.VersionPrefix}");
@@ -138,12 +139,12 @@ public abstract class SdkTestBase : IDisposable
         return items.Select(i => i.identity);
     }
 
-    private static void EmitNuGetConfig(string configFilePath, string packageSourcePath)
+    private static void EmitNuGetConfig(string configFilePath, AbsolutePath packageSourcePath)
     {
         File.WriteAllText(configFilePath, $"""
             <configuration>
                 <packageSources>
-                    <add key="local" value="{packageSourcePath}" />
+                    <add key="local" value="{packageSourcePath.Value}" />
                </packageSources>
             </configuration>
             """);
@@ -151,10 +152,10 @@ public abstract class SdkTestBase : IDisposable
 
     private static void EmitGlobalJson(string globalJsonPath, string packageVersion)
     {
-        var actualGlobalJson = Path.Combine(SolutionMetadata.SourceRoot, "global.json");
-        var globalConfig = JsonNode.Parse(File.ReadAllText(actualGlobalJson))!;
+        var actualGlobalJson = SolutionMetadata.SourceRoot / "global.json";
+        var globalConfig = JsonNode.Parse(File.ReadAllText(actualGlobalJson.Value))!;
         globalConfig["msbuild-sdks"] = new JsonObject([new KeyValuePair<string, JsonNode?>("Cesium.Sdk", packageVersion)]);
-        var content = globalConfig.ToJsonString(new JsonSerializerOptions()
+        var content = globalConfig.ToJsonString(new JsonSerializerOptions
         {
             WriteIndented = true
         });

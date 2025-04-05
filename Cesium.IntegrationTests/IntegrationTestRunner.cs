@@ -5,12 +5,15 @@
 using System.Runtime.InteropServices;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
 
 public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsyncLifetime
 {
+    private static readonly AbsolutePath _thisProjectSourceDirectory = SolutionMetadata.SourceRoot / "Cesium.IntegrationTests";
+
     private readonly ITestOutputHelper _output;
     private readonly IntegrationTestContext _context;
     public IntegrationTestRunner(IntegrationTestContext context, ITestOutputHelper output)
@@ -26,17 +29,22 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     public static IEnumerable<object[]> TestCaseProvider()
     {
-        var testCaseDirectory = Path.Combine(SolutionMetadata.SourceRoot, "Cesium.IntegrationTests");
-        var cFiles = Directory.EnumerateFileSystemEntries(testCaseDirectory, "*.c", SearchOption.AllDirectories);
+        var cFiles = Directory.EnumerateFileSystemEntries(
+            _thisProjectSourceDirectory.Value,
+            "*.c",
+            SearchOption.AllDirectories).Select(x => new AbsolutePath(x));
         return cFiles
-            .Where(IsFileValid)
-            .Select(file => Path.GetRelativePath(testCaseDirectory, file))
+            .Where(IsValidForCommonTestRun)
+            .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
             .Select(path => new object[] { path });
     }
 
-    private static bool IsFileValid(string file)
+    private static bool IsValidForCommonTestRun(AbsolutePath file)
     {
-        return !file.EndsWith(".ignore.c") && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && file.EndsWith(".msvc_ignore.c"));
+        if (file.Parent?.FileName == "multi-file") return false;
+        var fileName = file.FileName;
+        return !fileName.EndsWith(".ignore.c")
+               && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && fileName.EndsWith(".msvc_ignore.c"));
     }
 
     private enum TargetFramework
@@ -51,60 +59,113 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     {
         if (OperatingSystem.IsWindows())
         {
-            await _context.WrapTestBody(() => DoTest(relativeSourcePath, TargetFramework.NetFramework));
+            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, new LocalPath(relativeSourcePath)));
         }
     }
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public Task TestNet(string relativeSourcePath) => _context.WrapTestBody(() => DoTest(relativeSourcePath, TargetFramework.Net));
+    public Task TestNet(string relativeSourcePath) =>
+        _context.WrapTestBody(() => DoTest(TargetFramework.Net, new LocalPath(relativeSourcePath)));
 
-    private async Task DoTest(string relativeSourcePath, TargetFramework targetFramework)
+    [Fact]
+    public Task MultiFileApplicationCompiles() =>
+        _context.WrapTestBody(() => DoTest(
+            TargetFramework.Net, new("multi-file/program.c"), new("multi-file/function.c")));
+
+    [Fact]
+    public Task CompilerAcceptsAnObjFileAsInput() =>
+        _context.WrapTestBody(async () =>
+        {
+            var outRoot = Temporary.CreateTempFolder();
+            try
+            {
+                var binDir = outRoot / "bin";
+                var objDir = outRoot / "obj";
+                Directory.CreateDirectory(binDir.Value);
+                Directory.CreateDirectory(objDir.Value);
+
+                var functionSource = _thisProjectSourceDirectory / "multi-file/function.c";
+                var programSource = _thisProjectSourceDirectory / "multi-file/program.c";
+                var functionObject = await GenerateJsonObjectFile(objDir, functionSource, TargetFramework.Net);
+                var programObject = await GenerateJsonObjectFile(objDir, programSource, TargetFramework.Net);
+
+                var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, [functionSource, programSource]);
+                var cesiumResult = await CompileAndRunWithCesium(
+                    binDir,
+                    objDir,
+                    outRoot,
+                    TargetFramework.Net,
+                    [functionObject, programObject]);
+
+                Assert.Equal(nativeResult.ReplaceLineEndings("\n"), cesiumResult.ReplaceLineEndings("\n"));
+            }
+            finally
+            {
+                Directory.Delete(outRoot.Value, recursive: true);
+            }
+        });
+
+    private async Task DoTest(TargetFramework targetFramework, params LocalPath[] relativeSourcePaths)
     {
-        var outRootPath = CreateTempDir();
+        var outRoot = Temporary.CreateTempFolder();
         try
         {
-            _output.WriteLine($"Testing file \"{relativeSourcePath}\" in directory \"{outRootPath}\".");
+            var paths = "[" + string.Join(", ", relativeSourcePaths.Select(x => $"\"{x.Value}\"")) + "]";
+            _output.WriteLine($"Building source files {paths} in directory \"{outRoot}\".");
 
-            var binDirPath = Path.Combine(outRootPath, "bin");
-            var objDirPath = Path.Combine(outRootPath, "obj");
-            Directory.CreateDirectory(binDirPath);
-            Directory.CreateDirectory(objDirPath);
+            var binDir = outRoot / "bin";
+            var objDir = outRoot / "obj";
+            Directory.CreateDirectory(binDir.Value);
+            Directory.CreateDirectory(objDir.Value);
 
-            var sourceFilePath = Path.Combine(
-                SolutionMetadata.SourceRoot,
-                "Cesium.IntegrationTests",
-                relativeSourcePath);
+            var sourceFiles = relativeSourcePaths
+                .Select(x => SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / x)
+                .ToList();
 
-            var nativeExecutable = await BuildExecutableWithNativeCompiler(binDirPath, objDirPath, sourceFilePath);
-            var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRootPath, Array.Empty<string>());
-            Assert.Equal(42, nativeResult.ExitCode);
-
-            var managedExecutable = await BuildExecutableWithCesium(
-                binDirPath,
-                objDirPath,
-                sourceFilePath,
-                targetFramework);
-            var managedResult = await (targetFramework switch
-            {
-                TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRootPath, managedExecutable),
-                TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRootPath,
-                    Array.Empty<string>()),
-                _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
-            });
-
-            Assert.Equal(42, managedResult.ExitCode);
-
-            Assert.Equal(
-                nativeResult.StandardOutput.ReplaceLineEndings("\n"),
-                managedResult.StandardOutput.ReplaceLineEndings("\n"));
-            Assert.Empty(nativeResult.StandardError);
-            Assert.Empty(managedResult.StandardError);
+            await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles);
+            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, sourceFiles);
         }
         finally
         {
-            Directory.Delete(outRootPath, recursive: true);
+            Directory.Delete(outRoot.Value, recursive: true);
         }
+    }
+
+    private async Task<string> CompileAndRunWithNative(
+        AbsolutePath binDir,
+        AbsolutePath objDir,
+        AbsolutePath outRoot,
+        IList<AbsolutePath> sources)
+    {
+        var nativeExecutable = await BuildExecutableWithNativeCompiler(binDir, objDir, sources);
+        var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRoot, []);
+        Assert.Equal(42, nativeResult.ExitCode);
+        Assert.Empty(nativeResult.StandardError);
+        return nativeResult.StandardOutput;
+    }
+
+    private async Task<string> CompileAndRunWithCesium(
+        AbsolutePath binDir,
+        AbsolutePath objDir,
+        AbsolutePath outRoot,
+        TargetFramework targetFramework,
+        IList<AbsolutePath> inputFiles)
+    {
+        var managedExecutable = await BuildExecutableWithCesium(
+            binDir,
+            objDir,
+            inputFiles,
+            targetFramework);
+        var managedResult = await (targetFramework switch
+        {
+            TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable),
+            TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRoot, []),
+            _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
+        });
+        Assert.Equal(42, managedResult.ExitCode);
+        Assert.Empty(managedResult.StandardError);
+        return managedResult.StandardOutput;
     }
 
     private static readonly object _tempDirCreator = new();
@@ -119,104 +180,131 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         }
     }
 
-    private async Task<string> BuildExecutableWithNativeCompiler(
-        string binDirPath,
-        string objDirPath,
-        string sourceFilePath)
+    private async Task<AbsolutePath> BuildExecutableWithNativeCompiler(
+        AbsolutePath binDir,
+        AbsolutePath objDir,
+        IList<AbsolutePath> sourceFiles)
     {
-        var executableFilePath = Path.Combine(binDirPath, "out_native.exe");
+        var executableFile = binDir / "out_native.exe";
         if (OperatingSystem.IsWindows())
         {
-            _output.WriteLine($"Compiling \"{sourceFilePath}\" with cl.exe.");
+            var paths = "[" + string.Join(", ", sourceFiles.Select(x => $"\"{x.Value}\"")) + "]";
+            _output.WriteLine($"Compiling {paths} with cl.exe.");
 
             var vcInstallationFolder = _context.VisualStudioPath;
-            Assert.NotNull(vcInstallationFolder);
+            Assert.True(vcInstallationFolder.HasValue);
 
-            var clExePath = Path.Combine(vcInstallationFolder, @"bin\Hostx86\x86\cl.exe");
-            var pathToLibs = Path.Combine(vcInstallationFolder, @"lib\x86");
-            var pathToIncludes = Path.Combine(vcInstallationFolder, "include");
+            var clExePath = vcInstallationFolder.Value / @"bin\Hostx86\x86\cl.exe";
+            var pathToLibs = vcInstallationFolder.Value / @"lib\x86";
+            var pathToIncludes = vcInstallationFolder.Value / "include";
             var win10SdkPath = WindowsEnvUtil.FindWin10Sdk();
-            string win10Libs = WindowsEnvUtil.FindLibsFolder(win10SdkPath);
-            string win10Include = WindowsEnvUtil.FindIncludeFolder(win10SdkPath);
+            var win10Libs = WindowsEnvUtil.FindLibsFolder(win10SdkPath);
+            var win10Include = WindowsEnvUtil.FindIncludeFolder(win10SdkPath);
             await ExecUtil.RunToSuccess(
                 _output,
                 clExePath,
-                objDirPath,
-                new[]
-                {
+                objDir,
+                [
                     "/nologo",
-                    sourceFilePath,
+                    ..sourceFiles.Select(x => x.Value),
                     "-D__TEST_DEFINE",
-                    $"/Fo:{objDirPath}/",
-                    $"/Fe:{executableFilePath}",
-                    $"/I{pathToIncludes}",
-                    $@"/I{win10Include}\ucrt",
+                    $"/Fo:{objDir.Value}/",
+                    $"/Fe:{executableFile.Value}",
+                    $"/I{pathToIncludes.Value}",
+                    $@"/I{win10Include.Value}\ucrt",
                     "/link",
-                    $"/LIBPATH:{pathToLibs}",
-                    $@"/LIBPATH:{win10Libs}\um\x86",
-                    $@"/LIBPATH:{win10Libs}\ucrt\x86"
-                });
+                    $"/LIBPATH:{pathToLibs.Value}",
+                    $@"/LIBPATH:{win10Libs.Value}\um\x86",
+                    $@"/LIBPATH:{win10Libs.Value}\ucrt\x86"
+                ]);
         }
         else
         {
-            _output.WriteLine($"Compiling \"{sourceFilePath}\" with GCC.");
+            _output.WriteLine($"Compiling \"{sourceFiles}\" with GCC.");
             await ExecUtil.RunToSuccess(
                 _output,
-                "gcc",
-                objDirPath,
-                new[]
-                {
-                    sourceFilePath,
-                    "-o", executableFilePath,
+                new("gcc"),
+                objDir,
+                [
+                    ..sourceFiles.Select(x => x.Value),
+                    "-o", executableFile.Value,
                     "-D__TEST_DEFINE"
-                });
+                ]);
         }
+
+        return executableFile;
+    }
+
+    private async Task<AbsolutePath> BuildExecutableWithCesium(
+        AbsolutePath binDir,
+        AbsolutePath objDir,
+        IList<AbsolutePath> inputFiles,
+        TargetFramework targetFramework)
+    {
+        var paths = "[" + string.Join(", ", inputFiles.Select(x => $"\"{x.Value}\"")) + "]";
+        _output.WriteLine($"Compiling input files {paths} with Cesium.");
+
+        var executableFilePath = binDir / "out_cs.exe";
+
+        var args = new List<string>([
+            "run",
+            "--no-build",
+            "--configuration", IntegrationTestContext.BuildConfiguration,
+            "--project", (SolutionMetadata.SourceRoot / "Cesium.Compiler").Value,
+            "--",
+            "--nologo",
+            ..inputFiles.Select(x => x.Value),
+            "--out", executableFilePath.Value,
+            "-D__TEST_DEFINE",
+            "--framework", targetFramework.ToString()
+        ]);
+
+        if (targetFramework == TargetFramework.NetFramework)
+        {
+            var coreLibPath = WindowsEnvUtil.MsCorLibPath;
+            var runtimeLibPath =
+                SolutionMetadata.ArtifactsRoot /
+                "bin/Cesium.Runtime" /
+                $"{IntegrationTestContext.BuildConfiguration.ToLower()}_netstandard2.0" /
+                "Cesium.Runtime.dll";
+            args.AddRange(new[]
+            {
+                "--corelib", coreLibPath.Value,
+                "--runtime", runtimeLibPath.Value
+            });
+        }
+
+        await DotNetCliHelper.RunToSuccess(_output, new LocalPath("dotnet"), objDir, args.ToArray());
 
         return executableFilePath;
     }
 
-    private async Task<string> BuildExecutableWithCesium(
-        string binDirPath,
-        string objDirPath,
-        string sourceFilePath,
+    private async Task<AbsolutePath> GenerateJsonObjectFile(
+        AbsolutePath objDirPath,
+        AbsolutePath sourceFile,
         TargetFramework targetFramework)
     {
-        _output.WriteLine($"Compiling \"{sourceFilePath}\" with Cesium.");
+        _output.WriteLine($"Generating object file \"{sourceFile.Value}\" with Cesium.");
 
-        var executableFilePath = Path.Combine(binDirPath, "out_cs.exe");
+        var objectFile = objDirPath / Path.ChangeExtension(sourceFile.FileName, ".obj");
 
         var args = new List<string>
         {
             "run",
             "--no-build",
             "--configuration", IntegrationTestContext.BuildConfiguration,
-            "--project", Path.Combine(SolutionMetadata.SourceRoot, "Cesium.Compiler"),
+            "--project", (SolutionMetadata.SourceRoot / "Cesium.Compiler").Value,
             "--",
             "--nologo",
-            sourceFilePath,
-            "--out", executableFilePath,
+            "-c",
+            sourceFile.Value,
+            "--out", objectFile.Value,
             "-D__TEST_DEFINE",
             "--framework", targetFramework.ToString()
         };
 
-        if (targetFramework == TargetFramework.NetFramework)
-        {
-            var coreLibPath = WindowsEnvUtil.MsCorLibPath;
-            var runtimeLibPath = Path.Combine(
-                SolutionMetadata.ArtifactsRoot,
-                "bin/Cesium.Runtime",
-                $"{IntegrationTestContext.BuildConfiguration.ToLower()}_netstandard2.0",
-                "Cesium.Runtime.dll"
-            );
-            args.AddRange(new[]
-            {
-                "--corelib", coreLibPath,
-                "--runtime", runtimeLibPath
-            });
-        }
+        await DotNetCliHelper.RunToSuccess(_output, new LocalPath("dotnet"), objDirPath, args.ToArray());
 
-        await DotNetCliHelper.RunToSuccess(_output, "dotnet", objDirPath, args.ToArray());
-
-        return executableFilePath;
+        return objectFile;
     }
 }

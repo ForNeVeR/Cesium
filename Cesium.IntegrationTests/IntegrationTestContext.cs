@@ -6,6 +6,7 @@ using AsyncKeyedLock;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
 using JetBrains.Annotations;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.IntegrationTests;
@@ -22,7 +23,7 @@ public class IntegrationTestContext : IAsyncDisposable
     private bool _initialized;
     private Exception? _initializationException;
 
-    public string? VisualStudioPath { get; private set; }
+    public AbsolutePath? VisualStudioPath { get; private set; }
 
     public async Task WrapTestBody(Func<Task> testBody)
     {
@@ -62,7 +63,7 @@ public class IntegrationTestContext : IAsyncDisposable
     {
         if (OperatingSystem.IsWindows())
         {
-            VisualStudioPath = await WindowsEnvUtil.FindVCCompilerInstallationFolder(output);
+            VisualStudioPath = await WindowsEnvUtil.FindVcCompilerInstallationFolder(output);
         }
 
         await BuildRuntime(output);
@@ -76,17 +77,13 @@ public class IntegrationTestContext : IAsyncDisposable
 
     private static async Task BuildRuntime(ITestOutputHelper output)
     {
-        var runtimeProjectFile = Path.Combine(
-            SolutionMetadata.SourceRoot,
-            "Cesium.Runtime/Cesium.Runtime.csproj");
+        var runtimeProjectFile = SolutionMetadata.SourceRoot / "Cesium.Runtime/Cesium.Runtime.csproj";
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, runtimeProjectFile);
     }
 
     private static async Task BuildCompiler(ITestOutputHelper output)
     {
-        var compilerProjectFile = Path.Combine(
-            SolutionMetadata.SourceRoot,
-            "Cesium.Compiler/Cesium.Compiler.csproj");
+        var compilerProjectFile = SolutionMetadata.SourceRoot / "Cesium.Compiler/Cesium.Compiler.csproj";
         await DotNetCliHelper.BuildDotNetProject(output, BuildConfiguration, compilerProjectFile);
     }
 }

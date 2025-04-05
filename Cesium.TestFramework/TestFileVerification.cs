@@ -5,6 +5,7 @@
 using System.Reflection;
 using System.Text;
 using Cesium.Solution.Metadata;
+using TruePath;
 
 namespace Cesium.TestFramework;
 
@@ -27,8 +28,8 @@ public static class TestFileVerification
             missingFiles,
             types.Select(x => x.FullName!));
 
-        List<string> Relativize(IEnumerable<string> paths) =>
-            paths.Select(p => Path.GetRelativePath(testProjectSourceDirectory, p))
+        List<LocalPath> Relativize(IEnumerable<AbsolutePath> paths) =>
+            paths.Select(p => p.RelativeTo(testProjectSourceDirectory))
                 .ToList();
     }
 
@@ -49,10 +50,10 @@ public static class TestFileVerification
         }
 
         Assert.NotNull(assembly);
-        return assembly!;
+        return assembly;
     }
 
-    private static string GetTestProjectSourceDirectory(Assembly assembly)
+    private static AbsolutePath GetTestProjectSourceDirectory(Assembly assembly)
     {
         // Assuming that output assembly name (AssemblyName MSBuild property) is equal to the project name
         var projectName = assembly.GetName().Name;
@@ -60,35 +61,37 @@ public static class TestFileVerification
             throw new InvalidOperationException(
                 $"Name is missing for an assembly at location \"{assembly.Location}\".");
 
-        var fullProjectFolderPath = Path.Combine(SolutionMetadata.SourceRoot, projectName);
-        var fullProjectFilePath = Path.Combine(fullProjectFolderPath, $"{projectName}.csproj");
-        if (!File.Exists(fullProjectFilePath))
+        var projectFolder = SolutionMetadata.SourceRoot / projectName;
+        var projectFile = projectFolder /  $"{projectName}.csproj";
+        if (projectFile.ReadKind() != FileEntryKind.File)
             throw new InvalidOperationException(
                 $"Could not find the test project source directory for assembly \"{assembly.Location}\".");
 
-        return fullProjectFolderPath;
+        return projectFolder;
     }
 
-    private static IReadOnlySet<string> GetAcceptedFilePaths(string sourceDirectory)
+    private static IReadOnlySet<AbsolutePath> GetAcceptedFilePaths(AbsolutePath sourceDirectory)
     {
-        return Directory.EnumerateFiles(sourceDirectory, "*.verified.txt", SearchOption.AllDirectories).ToHashSet();
+        return Directory.EnumerateFiles(sourceDirectory.Value, "*.verified.txt", SearchOption.AllDirectories)
+            .Select(x => new AbsolutePath(x))
+            .ToHashSet();
     }
 
-    private static IReadOnlySet<string> GetExpectedFilePaths(
+    private static IReadOnlySet<AbsolutePath> GetExpectedFilePaths(
         Assembly assembly,
-        string sourcePath,
+        AbsolutePath projectDir,
         IEnumerable<Type> types)
     {
         var assemblyName = assembly.GetName().Name!;
         return types.SelectMany(GetTestFilesFromTest).ToHashSet();
 
-        IEnumerable<string> GetTestFilesFromTest(Type type)
+        IEnumerable<AbsolutePath> GetTestFilesFromTest(Type type)
         {
             Assert.StartsWith(assemblyName, type.FullName!);
             var subNamespace = type.FullName![assemblyName.Length..^type.Name.Length].Trim('.');
             var verifiedDirectory = subNamespace.Length == 0
-                ? Path.Combine(sourcePath, "verified")
-                : Path.Combine(sourcePath, subNamespace, "verified");
+                ? projectDir / "verified"
+                : projectDir / subNamespace / "verified";
 
             var noVerifyMethods = type.GetMethods().Where(m => m.GetCustomAttributes<NoVerifyAttribute>().Any())
                 .ToList();
@@ -100,7 +103,7 @@ public static class TestFileVerification
                 .Except(theoryMethods);
             return factMethods.Select(GetFileNameFromFactMethod)
                 .Concat(theoryMethods.SelectMany(GetTestFilesFromTheoryMethod))
-                .Select(f => Path.Combine(verifiedDirectory, f));
+                .Select(f => verifiedDirectory / f);
         }
 
         string GetFileNameFromFactMethod(MethodInfo method) =>
@@ -124,7 +127,10 @@ public static class TestFileVerification
 
 public class TestFileVerificationException : Exception
 {
-    internal TestFileVerificationException(IReadOnlyList<string> unusedFiles, IReadOnlyList<string> missingFiles, IEnumerable<string> testNames)
+    internal TestFileVerificationException(
+        IReadOnlyList<LocalPath> unusedFiles,
+        IReadOnlyList<LocalPath> missingFiles,
+        IEnumerable<string> testNames)
     {
         var message = new StringBuilder();
         if (unusedFiles.Count > 0)
@@ -143,8 +149,8 @@ public class TestFileVerificationException : Exception
                     """;
         return;
 
-        string Quoted(IEnumerable<string> files) =>
-            string.Join("\n", files.OrderBy(x => x).Select(f => '"' + f + '"'));
+        string Quoted(IEnumerable<LocalPath> files) =>
+            string.Join("\n", files.OrderBy(x => x).Select(f => '"' + f.Value + '"'));
     }
 
     public override string Message { get; }

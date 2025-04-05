@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 using System.Reflection;
+using TruePath;
 
 namespace Cesium.Solution.Metadata;
 
 public static class SolutionMetadata
 {
-    public static string SourceRoot => ResolvedAttribute.SourceRoot;
-    public static string ArtifactsRoot => ResolvedAttribute.ArtifactsRoot;
+    public static AbsolutePath SourceRoot => new(ResolvedAttribute.SourceRoot);
+    public static AbsolutePath ArtifactsRoot => new(ResolvedAttribute.ArtifactsRoot);
     public static string VersionPrefix => ResolvedAttribute.VersionPrefix;
 
     private static SolutionMetadataAttribute ResolvedAttribute =>

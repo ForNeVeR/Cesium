@@ -3,16 +3,19 @@
 // SPDX-License-Identifier: MIT
 
 using Medallion.Shell;
+using TruePath;
 using Xunit.Abstractions;
 
 namespace Cesium.TestFramework;
 
 public static class ExecUtil
 {
+    public static readonly LocalPath DotNetHost = new("dotnet");
+
     public static async Task RunToSuccess(
         ITestOutputHelper? output,
-        string executable,
-        string workingDirectory,
+        LocalPath executable,
+        AbsolutePath workingDirectory,
         string[] args,
         IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
@@ -22,15 +25,15 @@ public static class ExecUtil
 
     public static async Task<CommandResult> Run(
         ITestOutputHelper? output,
-        string executable,
-        string workingDirectory,
+        LocalPath executable,
+        AbsolutePath workingDirectory,
         string[] args,
         IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
         output?.WriteLine($"$ {executable} {string.Join(" ", args)}");
-        var result = await Command.Run(executable, args, o =>
+        var result = await Command.Run(executable.Value, args, o =>
         {
-            o.WorkingDirectory(workingDirectory);
+            o.WorkingDirectory(workingDirectory.Value);
             if (additionalEnvironment != null)
             {
                 foreach (var (key, value) in additionalEnvironment)
