@@ -3,7 +3,6 @@ SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Ce
 
 SPDX-License-Identifier: MIT
 -->
-
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -19,6 +18,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="QuikGraph" Version="2.5.0" />
     <PackageVersion Include="QuikGraph.Graphviz" Version="2.5.0" />
+    <PackageVersion Include="TruePath" Version="1.6.0" />
     <PackageVersion Include="Verify.Xunit" Version="29.1.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />

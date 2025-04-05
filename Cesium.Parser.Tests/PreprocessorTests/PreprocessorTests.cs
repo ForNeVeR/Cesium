@@ -7,6 +7,7 @@ using Cesium.Core;
 using Cesium.Core.Warnings;
 using Cesium.Preprocessor;
 using Cesium.TestFramework;
+using TruePath;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.Parser.Tests.PreprocessorTests;
@@ -20,7 +21,10 @@ public class PreprocessorTests : VerifyTestBase
         Dictionary<string, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
     {
-        var result = await DoPreprocess(source, standardHeaders, defines);
+        var result = await DoPreprocess(
+            source,
+            standardHeaders?.ToDictionary(kvp => new LocalPath(kvp.Key), kvp => kvp.Value),
+            defines);
         if (result.Length == 0) // avoid passing empty string to Verify
             result = "\n";
         await Verify(result, GetSettings());
@@ -28,10 +32,15 @@ public class PreprocessorTests : VerifyTestBase
 
     private static Task<string> DoPreprocess(
         [StringSyntax("cpp")] string source,
-        Dictionary<string, string>? standardHeaders = null,
+        Dictionary<LocalPath, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
         Action<PreprocessorWarning>? onWarning = null) =>
-        PreprocessorUtil.DoPreprocess(_mainMockedFilePath, source, standardHeaders, defines, onWarning);
+        PreprocessorUtil.DoPreprocess(
+            new AbsolutePath(_mainMockedFilePath),
+            source,
+            standardHeaders,
+            defines,
+            onWarning);
 
     [Fact]
     public Task IdentityTest() => DoTest(@"int main(void)

@@ -5,66 +5,69 @@
 using System.Collections.Immutable;
 using System.Text;
 using Cesium.Preprocessor;
+using TruePath;
 
 namespace Cesium.Compiler;
 
-public sealed class FileSystemIncludeContext(string stdLibDirectory, IEnumerable<string> currentDirectory)
-    : IIncludeContext
+public sealed class FileSystemIncludeContext(
+    AbsolutePath stdLibDirectory,
+    IEnumerable<AbsolutePath> currentDirectory) : IIncludeContext
 {
-    private readonly ImmutableArray<string> _userIncludeDirectories = [..currentDirectory];
-    private readonly List<string> _guardedIncludedFiles = new();
+    private readonly ImmutableArray<AbsolutePath> _userIncludeDirectories = [..currentDirectory];
+    private readonly List<AbsolutePath> _guardedIncludedFiles = new();
 
     public override string ToString()
     {
         var result = new StringBuilder();
-        result.AppendLine($"Standard library directory: \"{stdLibDirectory}\"");
+        result.AppendLine($"Standard library directory: \"{stdLibDirectory.Value}\"");
         result.Append("User include directories: [\n");
         foreach (var dir in _userIncludeDirectories)
         {
-            result.Append($"\"{dir}\"\n");
+            result.Append($"\"{dir.Value}\"\n");
         }
         result.Append("]");
         return result.ToString();
     }
 
-    public string LookUpAngleBracedIncludeFile(string filePath)
+    public AbsolutePath LookUpAngleBracedIncludeFile(LocalPath filePath)
     {
-        var path = Path.Combine(stdLibDirectory, filePath);
-        if (File.Exists(path))
-            return Path.GetFullPath(path);
+        var path = stdLibDirectory / filePath;
+        if (path.ReadKind() != null)
+            return path.Canonicalize();
 
         foreach (var userDirectory in _userIncludeDirectories)
         {
-            path = Path.Combine(userDirectory, filePath);
-            if (File.Exists(path))
-                return Path.GetFullPath(path);
+            path = userDirectory / filePath;
+            if (path.ReadKind() != null)
+                return path.Canonicalize();
         }
 
-        return filePath;
+        return filePath.ResolveToCurrentDirectory();
     }
 
-    public string LookUpQuotedIncludeFile(string filePath)
+    public AbsolutePath LookUpQuotedIncludeFile(LocalPath file)
     {
-        string path;
+        AbsolutePath path;
         foreach (var userDirectory in _userIncludeDirectories)
         {
-            path = Path.Combine(userDirectory, filePath);
-            if (File.Exists(path))
-                return Path.GetFullPath(path);
+            path = userDirectory / file;
+            if (path.ReadKind() != null)
+                return path.Canonicalize();
         }
 
-        path = Path.Combine(stdLibDirectory, filePath);
-        return Path.GetFullPath(path);
+        path = stdLibDirectory / file;
+        return path.Canonicalize();
     }
 
-    public TextReader? OpenFileStream(string filePath) => File.Exists(filePath) ? new StreamReader(filePath) : null;
+    public TextReader? OpenFileStream(AbsolutePath file) =>
+        file.ReadKind() != null ? new StreamReader(file.Value) : null;
 
-    public bool ShouldIncludeFile(string filePath)
+    public bool ShouldIncludeFile(AbsolutePath filePath)
     {
-        return !_guardedIncludedFiles.Contains(filePath);
+        return !_guardedIncludedFiles.Contains(filePath.Canonicalize());
     }
 
-    public void RegisterGuardedFileInclude(string filePath)
+    public void RegisterGuardedFileInclude(AbsolutePath filePath)
     {
         _guardedIncludedFiles.Add(filePath);
     }

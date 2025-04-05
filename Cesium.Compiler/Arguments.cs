@@ -23,8 +23,8 @@ public class Arguments
     [Value(0)]
     public IList<string> InputFilePaths { get; init; } = null!;
 
-    [Option('c', HelpText = "Compile only into Cessium Object Format (r) (RFC-8259)")]
-    public bool CompileOnly { get; init; } = false;
+    [Option('c', HelpText = "Produce a JSON-based object file imitation.")]
+    public bool ProduceObjectFileImitation { get; init; } = false;
 
     [Option('o', "out")]
     public string OutputFilePath { get; init; } = null!;

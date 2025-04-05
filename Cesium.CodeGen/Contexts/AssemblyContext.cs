@@ -121,9 +121,12 @@ public class AssemblyContext
         Module = module;
         CompilationOptions = compilationOptions;
 
-        MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly);
-        CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime);
-        ImportAssemblies = compilationOptions.ImportAssemblies.Select(AssemblyDefinition.ReadAssembly).Union(new[] { MscorlibAssembly, CesiumRuntimeAssembly }).Distinct().ToArray();
+        MscorlibAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CorelibAssembly.Value);
+        CesiumRuntimeAssembly = AssemblyDefinition.ReadAssembly(compilationOptions.CesiumRuntime.Value);
+        ImportAssemblies = compilationOptions.ImportAssemblies
+            .Select(x => AssemblyDefinition.ReadAssembly(x.Value))
+            .Union([MscorlibAssembly, CesiumRuntimeAssembly])
+            .Distinct().ToArray();
         _constantPool = new(
             () =>
             {

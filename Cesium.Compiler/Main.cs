@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Cesium.CodeGen;
 using Cesium.Core;
 using Mono.Cecil;
+using TruePath;
 
 namespace Cesium.Compiler;
 
@@ -14,22 +15,22 @@ public static class Program
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Arguments))]
     public static async Task<int> Main(string[] args)
     {
-        return await CommandLineParser.ParseCommandLineArgs(args, new CompilerReporter(), async args =>
+        return await CommandLineParser.ParseCommandLineArgs(args, new CompilerReporter(), async options =>
         {
-            var targetArchitectureSet = args.TargetArchitectureSet;
-            var targetRuntime = args.Framework switch
+            var targetArchitectureSet = options.TargetArchitectureSet;
+            var targetRuntime = options.Framework switch
             {
                 TargetFrameworkKind.NetFramework => TargetRuntimeDescriptor.Net48,
                 TargetFrameworkKind.NetStandard => TargetRuntimeDescriptor.NetStandard20,
                 _ => TargetRuntimeDescriptor.Net60
             };
 
-            var cesiumRuntime = args.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
-            var defaultImportsAssembly = args.DefaultImportAssemblies ?? Array.Empty<string>();
+            var cesiumRuntime = options.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
+            var defaultImportsAssembly = options.DefaultImportAssemblies?.Select(x => new LocalPath(x)) ?? [];
 #pragma warning disable IL3000 // Automatic discovery of corelib is fallback option, if tooling do not pass that parameter
-            var corelibAssembly = args.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
+            var corelibAssembly = options.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
 #pragma warning restore IL3000
-            var moduleKind = (args.ProducePreprocessedFile || args.DumpAst || args.CompileOnly) ? ModuleKind.Console : args.ModuleKind ?? Path.GetExtension(args.OutputFilePath).ToLowerInvariant() switch
+            var moduleKind = (options.ProducePreprocessedFile || options.DumpAst || options.ProduceObjectFileImitation) ? ModuleKind.Console : options.ModuleKind ?? Path.GetExtension(options.OutputFilePath).ToLowerInvariant() switch
             {
                 ".exe" => ModuleKind.Console,
                 ".dll" => ModuleKind.Dll,
@@ -39,21 +40,25 @@ public static class Program
                 targetRuntime,
                 targetArchitectureSet,
                 moduleKind,
-                corelibAssembly,
-                cesiumRuntime,
-                defaultImportsAssembly,
-                args.Namespace,
-                args.GlobalClass,
-                args.DefineConstant.ToList(),
-                args.IncludeDirectories.ToList(),
-                args.ProducePreprocessedFile,
-                args.DumpAst);
+                new LocalPath(corelibAssembly),
+                new LocalPath(cesiumRuntime),
+                defaultImportsAssembly.ToList(),
+                options.Namespace,
+                options.GlobalClass,
+                options.DefineConstant.ToList(),
+                options.IncludeDirectories.Select(x => new LocalPath(x)).ToList(),
+                options.ProducePreprocessedFile,
+                options.DumpAst);
 
-            if (args.CompileOnly)
+            if (options.ProduceObjectFileImitation)
             {
-                return await Compilation.DumpToObjectJson(args.InputFilePaths, args.OutputFilePath, compilationOptions);
+                return await JsonObjectFile.Write(options.InputFilePaths, options.OutputFilePath, compilationOptions);
             }
-            return await Compilation.Compile(args.InputFilePaths, args.OutputFilePath, compilationOptions);
+
+            return await Compilation.Compile(
+                options.InputFilePaths.Select(x => new LocalPath(x)),
+                new LocalPath(options.OutputFilePath),
+                compilationOptions);
         });
     }
 }

@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="TruePath" />
         <PackageReference Include="Yoakke.SynKit.Lexer" />
         <PackageReference Include="Yoakke.SynKit.Lexer.Generator" />
         <PackageReference Include="Yoakke.SynKit.Parser" />

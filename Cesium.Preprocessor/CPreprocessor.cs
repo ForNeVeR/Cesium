@@ -5,6 +5,7 @@
 using System.Text;
 using Cesium.Core;
 using Cesium.Core.Warnings;
+using TruePath;
 using Yoakke.Streams;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Parser;
@@ -15,7 +16,7 @@ using Range = Yoakke.SynKit.Text.Range;
 namespace Cesium.Preprocessor;
 
 public record CPreprocessor(
-    string CompilationUnitPath,
+    AbsolutePath CompilationUnitPath,
     ILexer<IToken<CPreprocessorTokenType>> Lexer,
     IIncludeContext IncludeContext,
     IMacroContext MacroContext,
@@ -279,18 +280,20 @@ public record CPreprocessor(
         return includeTokens;
     }
 
-    private string LookUpIncludeFile(string filePath) => filePath[0] switch
+    private AbsolutePath LookUpIncludeFile(string includeExpression) => includeExpression[0] switch
     {
-        '<' => IncludeContext.LookUpAngleBracedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
-        '"' => IncludeContext.LookUpQuotedIncludeFile(filePath.Substring(1, filePath.Length - 2)),
-        _ => throw new Exception($"Unknown kind of include file path: {filePath}.")
+        '<' => IncludeContext.LookUpAngleBracedIncludeFile(
+            new LocalPath(includeExpression.Substring(1, includeExpression.Length - 2))),
+        '"' => IncludeContext.LookUpQuotedIncludeFile(
+            new LocalPath(includeExpression.Substring(1, includeExpression.Length - 2))),
+        _ => throw new Exception($"Unknown kind of include file path: {includeExpression}.")
     };
 
     private async IAsyncEnumerable<IToken<CPreprocessorTokenType>> ProcessInclude(
-        string compilationUnitPath,
+        AbsolutePath compilationUnitPath,
         TextReader fileReader)
     {
-        var lexer = new CPreprocessorLexer(new SourceFile(compilationUnitPath, fileReader));
+        var lexer = new CPreprocessorLexer(new SourceFile(compilationUnitPath.Value, fileReader));
         var subProcessor = this with { CompilationUnitPath = compilationUnitPath, Lexer = lexer };
         await foreach (var item in subProcessor.GetPreprocessingResults())
         {

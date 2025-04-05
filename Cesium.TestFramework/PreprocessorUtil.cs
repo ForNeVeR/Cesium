@@ -5,6 +5,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.Core.Warnings;
 using Cesium.Preprocessor;
+using TruePath;
 using Yoakke.SynKit.Lexer;
 
 namespace Cesium.TestFramework;
@@ -12,14 +13,14 @@ namespace Cesium.TestFramework;
 public static class PreprocessorUtil
 {
     public static async Task<string> DoPreprocess(
-        string sourceFileName,
+        AbsolutePath sourceFileName,
         [StringSyntax("cpp")] string source,
-        Dictionary<string, string>? standardHeaders = null,
+        Dictionary<LocalPath, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
         Action<PreprocessorWarning>? onWarning = null)
     {
-        var lexer = new CPreprocessorLexer(sourceFileName, source);
-        var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<string, string>());
+        var lexer = new CPreprocessorLexer(sourceFileName.Value, source);
+        var includeContext = new IncludeContextMock(standardHeaders ?? new Dictionary<LocalPath, string>());
         var definesContext = new InMemoryDefinesContext();
         if (defines != null)
         {

@@ -55,7 +55,7 @@ Usage
 -----
 
 ```console
-$ dotnet run --project Cesium.Compiler -- <path to the input .c file> --out <path to the output assembly>
+$ dotnet run --project Cesium.Compiler -- <list of the input files> --out <path to the output assembly>
 ```
 
 For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
@@ -66,6 +66,8 @@ $ dotnet ./out.exe # run with .NET 6
 $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
+
+As inputs, Cesium accepts its own internal `.obj` file format produced by the `-c` option (see below), or standard C source files (normally kept with `.c` file extension, but anything else than `.obj` will be treated as C anyway).
 
 ### Optional Parameters
 
@@ -83,6 +85,7 @@ $ mono ./out.exe # run with Mono
   - `Console`: gets detected from an `.exe` extension
   - `Windows`: doesn't get detected, so it's only possible to select manually
   - `NetModule`: is a rudiment from Cecil, not supported
+- `-c`: will produce a JSON-based object file imitation in the output file. This mode is supposed to be used when using Cesium compiler as a C compiler for an existing toolset.
 
 Implementation Dashboard
 ------------------------

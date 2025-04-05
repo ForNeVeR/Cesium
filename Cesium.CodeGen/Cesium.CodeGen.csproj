@@ -16,6 +16,7 @@ SPDX-License-Identifier: MIT
       <PackageReference Include="Mono.Cecil" />
       <PackageReference Include="QuikGraph" />
       <PackageReference Include="QuikGraph.Graphviz" />
+      <PackageReference Include="TruePath" />
     </ItemGroup>
 
     <ItemGroup>

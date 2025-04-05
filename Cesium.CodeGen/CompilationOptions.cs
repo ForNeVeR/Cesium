@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Mono.Cecil;
+using TruePath;
 
 namespace Cesium.CodeGen;
 
@@ -10,12 +11,12 @@ public record CompilationOptions(
     TargetRuntimeDescriptor TargetRuntime,
     TargetArchitectureSet TargetArchitectureSet,
     ModuleKind ModuleKind,
-    string CorelibAssembly,
-    string CesiumRuntime,
-    IList<string> ImportAssemblies,
+    LocalPath CorelibAssembly,
+    LocalPath CesiumRuntime,
+    IList<LocalPath> ImportAssemblies,
     string Namespace,
     string GlobalClassFqn,
     IList<string> DefineConstants,
-    IList<string> AdditionalIncludeDirectories,
+    IList<LocalPath> AdditionalIncludeDirectories,
     bool ProducePreprocessedFile,
     bool ProduceAstFile);

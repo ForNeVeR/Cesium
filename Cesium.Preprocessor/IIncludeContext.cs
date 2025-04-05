@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: MIT
 
+using TruePath;
+
 namespace Cesium.Preprocessor;
 
 public interface IIncludeContext
 {
-    bool ShouldIncludeFile(string filePath);
-    void RegisterGuardedFileInclude(string filePath);
-    string LookUpAngleBracedIncludeFile(string filePath);
-    string LookUpQuotedIncludeFile(string filePath);
+    bool ShouldIncludeFile(AbsolutePath filePath);
+    void RegisterGuardedFileInclude(AbsolutePath filePath);
+    AbsolutePath LookUpAngleBracedIncludeFile(LocalPath file);
+    AbsolutePath LookUpQuotedIncludeFile(LocalPath file);
     /// <returns><c>null</c> if the target file doesn't exist.</returns>
-    TextReader? OpenFileStream(string filePath);
+    TextReader? OpenFileStream(AbsolutePath file);
 }

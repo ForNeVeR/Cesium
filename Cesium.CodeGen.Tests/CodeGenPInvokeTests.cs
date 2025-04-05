@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.TestFramework;
+using TruePath;
 
 namespace Cesium.CodeGen.Tests;
 
@@ -12,7 +13,7 @@ public class CodeGenPInvokeTests : CodeGenTestBase
 
     private static async Task DoTest(string source)
     {
-        var processed = await PreprocessorUtil.DoPreprocess(_mainMockedFilePath, source);
+        var processed = await PreprocessorUtil.DoPreprocess(new AbsolutePath(_mainMockedFilePath), source);
         var assembly = GenerateAssembly(default, processed);
 
         var moduleType = assembly.Modules.Single().GetType("<Module>");

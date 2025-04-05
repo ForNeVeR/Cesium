@@ -3,35 +3,25 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.Preprocessor;
+using TruePath;
 
 namespace Cesium.TestFramework;
 
-public class IncludeContextMock : IIncludeContext
+public class IncludeContextMock(IReadOnlyDictionary<LocalPath, string> angleBracedFiles) : IIncludeContext
 {
-    private readonly IReadOnlyDictionary<string, string> _angleBracedFiles;
-    private readonly List<string> _guardedIncludedFiles = new();
+    private readonly List<AbsolutePath> _guardedIncludedFiles = new();
 
-    public IncludeContextMock(IReadOnlyDictionary<string, string> angleBracedFiles)
-    {
-        _angleBracedFiles = angleBracedFiles;
-    }
+    public AbsolutePath LookUpAngleBracedIncludeFile(LocalPath file) => file.ResolveToCurrentDirectory();
 
-    public string LookUpAngleBracedIncludeFile(string filePath) => filePath;
+    public AbsolutePath LookUpQuotedIncludeFile(LocalPath file) => file.ResolveToCurrentDirectory();
 
-    public string LookUpQuotedIncludeFile(string filePath) => filePath;
-
-    public TextReader? OpenFileStream(string filePath) =>
-        _angleBracedFiles.TryGetValue(filePath, out var content)
+    public TextReader? OpenFileStream(AbsolutePath file) =>
+        angleBracedFiles.TryGetValue(
+            file.RelativeTo(AbsolutePath.CurrentWorkingDirectory),
+            out var content)
             ? new StringReader(content)
             : null;
 
-    public bool ShouldIncludeFile(string filePath)
-    {
-        return !_guardedIncludedFiles.Contains(filePath);
-    }
-
-    public void RegisterGuardedFileInclude(string filePath)
-    {
-        _guardedIncludedFiles.Add(filePath);
-    }
+    public bool ShouldIncludeFile(AbsolutePath filePath) => !_guardedIncludedFiles.Contains(filePath);
+    public void RegisterGuardedFileInclude(AbsolutePath filePath) => _guardedIncludedFiles.Add(filePath);
 }

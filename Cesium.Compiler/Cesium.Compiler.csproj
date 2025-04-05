@@ -18,6 +18,7 @@ SPDX-License-Identifier: MIT
 
     <ItemGroup>
         <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="TruePath" />
         <PackageReference Include="Yoakke.SynKit.C.Syntax" />
     </ItemGroup>
 

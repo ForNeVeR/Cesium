@@ -3,19 +3,15 @@
 // SPDX-License-Identifier: MIT
 
 using System.Collections.Immutable;
-using System.Runtime.InteropServices.Marshalling;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Cesium.Ast;
 using Cesium.CodeGen;
 using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Cesium.Parser;
 using Cesium.Preprocessor;
-using CommandLine.Text;
-using JetBrains.Annotations;
 using Mono.Cecil;
+using TruePath;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
@@ -26,72 +22,9 @@ namespace Cesium.Compiler;
 
 internal static class Compilation
 {
-    public class CompiledObjectJson
-    {
-        public required IEnumerable<string> inputFilePaths;
-        public required CompilationOptions compilationOptions;
-    }
-
-    internal class CompiledObjectJsonTypeInfoResolver : IJsonTypeInfoResolver
-    {
- 
-        public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
-        {
-            if (type.Name == typeof(CompiledObjectJson).Name)
-            {
-               // return new JsonTypeInfo;
-            }
-            throw new NotImplementedException();
-        }
-    }
-
-    public static IJsonTypeInfoResolver GetResolver(this CompiledObjectJson json)
-    {
-        throw new NotImplementedException();
-    }
-
-    public static bool IsObjectFileName(string filename)
-    {
-        return filename.EndsWith(".json.obj") || filename.EndsWith(".obj");
-    }
-    public static async Task<int> DumpToObjectJson(
-        IEnumerable<string> inputFilePaths,
-        string outputFilePath,
-        CompilationOptions compilationOptions
-        )
-    {
-        CompiledObjectJson compiledObjectJson = new CompiledObjectJson()
-        {
-            inputFilePaths = inputFilePaths,
-            compilationOptions = compilationOptions
-        };
-
-        if (!outputFilePath.EndsWith(".obj"))
-        {
-            outputFilePath += ".json.obj";
-        }
-
-        StreamWriter outObjectWriter = new StreamWriter(outputFilePath);
-        await outObjectWriter.WriteAsync(JsonSerializer.Serialize(compiledObjectJson));
-        return 0;
-    }
-
-    public static async Task<CompiledObjectJson> UndumpObjectJson(string inputObjectJsonFilePath)
-    {
-        StreamReader inObjectJsonReader = new StreamReader(inputObjectJsonFilePath);
-
-        var inObjectJsonStr = await inObjectJsonReader.ReadToEndAsync();
-        var result = JsonSerializer.Deserialize<CompiledObjectJson>(inObjectJsonStr);
-        if (result == null)
-        {
-            throw new Exception($"Invalid json from file {inputObjectJsonFilePath}");
-        }
-        return result;
-    }
-
     public static async Task<int> Compile(
-        IEnumerable<string> inputFilePaths,
-        string outputFilePath,
+        IEnumerable<LocalPath> inputFilePaths,
+        LocalPath outputFile,
         CompilationOptions compilationOptions)
     {
         if (compilationOptions.ProducePreprocessedFile)
@@ -109,38 +42,51 @@ internal static class Compilation
         {
             foreach (var inputFilePath in inputFilePaths)
             {
-                TranslationUnit translationUnit = await CreateAst(compilationOptions, inputFilePath);
+                var translationUnit = await CreateAst(
+                    compilationOptions,
+                    inputFilePath.ResolveToCurrentDirectory());
                 DumpAst(translationUnit);
             }
 
             return 0;
         }
 
-        Console.WriteLine($"Generating assembly {outputFilePath}.");
+        Console.WriteLine($"Generating assembly \"{outputFile.Value}\".");
 
-        var assemblyContext = CreateAssembly(outputFilePath, compilationOptions);
+        var assemblyContext = CreateAssembly(outputFile.ResolveToCurrentDirectory(), compilationOptions);
 
-        foreach (var inputFilePath in inputFilePaths)
+        var inputSources = new List<AbsolutePath>();
+        foreach (var inputFile in inputFilePaths)
         {
-            bool isObjectFile = IsObjectFileName(inputFilePath);
-            Console.WriteLine($"Processing input {(isObjectFile ? "Cesium JSON object ": "")} file \"{inputFilePath}\".");
-            if (isObjectFile)
+            if (JsonObjectFile.IsCorrectExtension(inputFile))
             {
-                var result = UndumpObjectJson(inputFilePath);
-                if (result != null)
+                Console.WriteLine($"Processing object file \"{inputFile}\".");
+                var objectFile = await JsonObjectFile.Read(inputFile.ResolveToCurrentDirectory());
+                if (objectFile.CompilationOptions != compilationOptions)
                 {
-                    var newFiles = inputFilePaths.Intersect<string>(result.Result.inputFilePaths);
-                    foreach (var newFile in newFiles)
-                    {
-                        Console.WriteLine($"Processing input file (from Cesium JSON object file \"{inputFilePath}\") \"{newFile}\".");
-                        await GenerateCode(assemblyContext, newFile);
-                    }
+                    throw new InvalidOperationException(
+                        $"Compilation options differ between the current compilation session and compilation session of file \"{objectFile}\". I will not proceed.");
                 }
+
+                inputSources.AddRange(
+                    objectFile.InputFilePaths.Select(x => new LocalPath(x).ResolveToCurrentDirectory()));
+                continue;
             }
-            await GenerateCode(assemblyContext, inputFilePath);
+
+            inputSources.Add(inputFile.ResolveToCurrentDirectory());
         }
 
-        SaveAssembly(assemblyContext, compilationOptions.TargetRuntime.Kind, outputFilePath, compilationOptions.CesiumRuntime);
+        foreach (var sourceFile in inputSources)
+        {
+            Console.WriteLine($"Processing source file \"{sourceFile.Value}\".");
+            await GenerateCode(assemblyContext, sourceFile);
+        }
+
+        SaveAssembly(
+            assemblyContext,
+            compilationOptions.TargetRuntime.Kind,
+            outputFile.ResolveToCurrentDirectory(),
+            compilationOptions.CesiumRuntime.ResolveToCurrentDirectory());
 
         return 0;
     }
@@ -151,25 +97,25 @@ internal static class Compilation
         astDumper.Dump(translationUnit);
     }
 
-    private static AssemblyContext CreateAssembly(string outputFilePath, CompilationOptions compilationOptions)
+    private static AssemblyContext CreateAssembly(AbsolutePath outputFile, CompilationOptions compilationOptions)
     {
-        var assemblyName = Path.GetFileNameWithoutExtension(outputFilePath);
+        var assemblyName = outputFile.GetFilenameWithoutExtension();
         return AssemblyContext.Create(
             new AssemblyNameDefinition(assemblyName, new Version()),
             compilationOptions);
     }
 
-    private static Task<string> Preprocess(string compilationSourcePath, string compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
+    private static Task<string> Preprocess(AbsolutePath compilationSource, AbsolutePath compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
-        var currentProcessPath = Path.GetDirectoryName(Environment.ProcessPath)
-                                 ?? throw new Exception("Cannot determine path to the compiler executable.");
+        var currentProcessPath = new AbsolutePath(
+            Environment.ProcessPath ?? throw new Exception( "Cannot determine path to the compiler executable."));
 
-        var stdLibDirectory = Path.Combine(currentProcessPath, "stdlib");
+        var stdLibDirectory = currentProcessPath / "stdlib";
         var includeDirectories = new[] { compilationFileDirectory }
-            .Concat(compilationOptions.AdditionalIncludeDirectories)
+            .Concat(compilationOptions.AdditionalIncludeDirectories.Select(x => x.ResolveToCurrentDirectory()))
             .ToImmutableArray();
         var includeContext = new FileSystemIncludeContext(stdLibDirectory, includeDirectories);
-        var preprocessorLexer = new CPreprocessorLexer(new SourceFile(compilationSourcePath, reader));
+        var preprocessorLexer = new CPreprocessorLexer(new SourceFile(compilationSource.Value, reader));
         var definesContext = new InMemoryDefinesContext();
         var outOfFileRange = new Range();
         foreach (var define in compilationOptions.DefineConstants)
@@ -177,14 +123,14 @@ internal static class Compilation
             definesContext.DefineMacro(
                 define,
                 parameters: null,
-                replacement: new IToken<CPreprocessorTokenType>[]
-                {
+                replacement:
+                [
                     new Token<CPreprocessorTokenType>(outOfFileRange, new(), "1", CPreprocessorTokenType.PreprocessingToken)
-                });
+                ]);
         }
 
         var preprocessor = new CPreprocessor(
-            compilationSourcePath,
+            compilationSource,
             preprocessorLexer,
             includeContext,
             definesContext,
@@ -192,28 +138,33 @@ internal static class Compilation
         return preprocessor.ProcessSource();
     }
 
-    private static async Task<string> Preprocess(string inputFilePath, CompilationOptions compilationOptions)
+    private static async Task<string> Preprocess(LocalPath source, CompilationOptions compilationOptions)
     {
-        var compilationFileDirectory = Path.GetDirectoryName(inputFilePath)!;
-        var compilationSourcePath = Path.GetFullPath(inputFilePath);
+        var compilationFileDirectory = source.Parent
+            ?? throw new CompilationException($"Cannot determine parent directory of file \"{source.Value}\".");
+        var compilationSourcePath = source.ResolveToCurrentDirectory().Canonicalize();
 
-        using var reader = new StreamReader(inputFilePath, Encoding.UTF8);
+        using var reader = new StreamReader(source.Value, Encoding.UTF8);
 
-        var content = await Preprocess(compilationSourcePath, compilationFileDirectory, reader, compilationOptions);
+        var content = await Preprocess(
+            compilationSourcePath,
+            compilationFileDirectory.ResolveToCurrentDirectory(),
+            reader,
+            compilationOptions);
         return content;
     }
 
-    private static async Task GenerateCode(AssemblyContext context, string inputFilePath)
+    private static async Task GenerateCode(AssemblyContext context, AbsolutePath inputFile)
     {
-        TranslationUnit translationUnit = await CreateAst(context.CompilationOptions, inputFilePath);
+        TranslationUnit translationUnit = await CreateAst(context.CompilationOptions, inputFile);
 
-        var translationUnitName = Path.GetFileNameWithoutExtension(inputFilePath);
+        var translationUnitName = inputFile.GetFilenameWithoutExtension();
         context.EmitTranslationUnit(translationUnitName, translationUnit);
     }
 
-    private static async Task<TranslationUnit> CreateAst(CompilationOptions compilationOptions, string inputFilePath)
+    private static async Task<TranslationUnit> CreateAst(CompilationOptions compilationOptions, AbsolutePath inputFile)
     {
-        var content = await Preprocess(inputFilePath, compilationOptions);
+        var content = await Preprocess(inputFile, compilationOptions);
         var lexer = new CLexer(content);
         var parser = new CParser(lexer);
         var translationUnitParseError = parser.ParseTranslationUnit();
@@ -221,9 +172,9 @@ internal static class Compilation
         {
             throw translationUnitParseError.Error.Got switch
             {
-                CToken token => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
-                char ch => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
-                _ => new ParseException($"Error during parsing {inputFilePath}. Error at position {translationUnitParseError.Error.Position}."),
+                CToken token => new ParseException($"Error during parsing {inputFile}. Error at position {translationUnitParseError.Error.Position}. Got {token.LogicalText}."),
+                char ch => new ParseException($"Error during parsing {inputFile}. Error at position {translationUnitParseError.Error.Position}. Got {ch}."),
+                _ => new ParseException($"Error during parsing {inputFile}. Error at position {translationUnitParseError.Error.Position}."),
             };
         }
 
@@ -231,32 +182,32 @@ internal static class Compilation
 
         var firstUnprocessedToken = parser.TokenStream.Peek();
         if (firstUnprocessedToken.Kind != CTokenType.End)
-            throw new ParseException($"Excessive output after the end of a translation unit {inputFilePath} at {lexer.Position}. Next token {firstUnprocessedToken.Text}.");
+            throw new ParseException($"Excessive output after the end of a translation unit {inputFile} at {lexer.Position}. Next token {firstUnprocessedToken.Text}.");
         return translationUnit;
     }
 
     private static void SaveAssembly(
         AssemblyContext context,
         SystemAssemblyKind targetFrameworkKind,
-        string outputFilePath,
-        string compilerRuntimeDll)
+        AbsolutePath outputFilePath,
+        AbsolutePath compilerRuntimeDll)
     {
-        context.VerifyAndGetAssembly().Write(outputFilePath);
+        context.VerifyAndGetAssembly().Write(outputFilePath.Value);
 
         // This part should go to Cesium.SDK eventually together with
         // runtimeconfig.json generation
-        var outputExecutablePath = Path.GetDirectoryName(outputFilePath) ?? Environment.CurrentDirectory;
-        var applicationRuntime = Path.Combine(outputExecutablePath, "Cesium.Runtime.dll");
+        var outputExecutablePath = outputFilePath.Parent ?? AbsolutePath.CurrentWorkingDirectory;
+        var applicationRuntime = outputExecutablePath / "Cesium.Runtime.dll";
 
         // Prevent copying of the Cesium.Runtime if compile in same directory as compiler.
-        if (!string.Equals(Path.GetFullPath(compilerRuntimeDll), Path.GetFullPath(applicationRuntime), StringComparison.InvariantCultureIgnoreCase))
+        if (compilerRuntimeDll.Canonicalize() != applicationRuntime.Canonicalize())
         {
-            File.Copy(compilerRuntimeDll, applicationRuntime, true);
+            File.Copy(compilerRuntimeDll.Value, applicationRuntime.Value, overwrite: true);
         }
 
         if (context.Module.Kind == ModuleKind.Console && targetFrameworkKind == SystemAssemblyKind.SystemRuntime)
         {
-            var runtimeConfigFilePath = Path.ChangeExtension(outputFilePath, "runtimeconfig.json");
+            var runtimeConfigFilePath = Path.ChangeExtension(outputFilePath.Value, "runtimeconfig.json");
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
             File.WriteAllText(runtimeConfigFilePath, RuntimeConfig.EmitNet6());
         }

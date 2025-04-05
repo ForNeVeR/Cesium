@@ -12,6 +12,7 @@ using Cesium.TestFramework;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using TruePath;
 using Yoakke.Streams;
 using Yoakke.SynKit.C.Syntax;
 
@@ -49,7 +50,12 @@ public abstract class CodeGenTestBase : VerifyTestBase
         string globalTypeFqn = "",
         string[]? referencePaths = null)
     {
-        var context = CreateAssembly(runtime, arch, @namespace: @namespace, globalTypeFqn: globalTypeFqn, referencePaths);
+        var context = CreateAssembly(
+            runtime,
+            arch,
+            @namespace: @namespace,
+            globalTypeFqn: globalTypeFqn,
+            referencePaths?.Select(x => new LocalPath(x)).ToArray());
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -82,22 +88,22 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
         string @namespace = "",
         string globalTypeFqn = "",
-        string[]? referencePaths = null)
+        LocalPath[]? referencePaths = null)
     {
-        var allReferences = (referencePaths ?? Array.Empty<string>()).ToList();
-        allReferences.Insert(0, typeof(Console).Assembly.Location);
+        var allReferences = (referencePaths ?? []).ToList();
+        allReferences.Insert(0, new LocalPath(typeof(Console).Assembly.Location));
 
         CompilationOptions compilationOptions = new(
             targetRuntime ?? CSharpCompilationUtil.DefaultRuntime,
             targetArchitectureSet,
             ModuleKind.Console,
-            typeof(Math).Assembly.Location,
-            typeof(RuntimeHelpers).Assembly.Location,
+            new LocalPath(typeof(Math).Assembly.Location),
+            new LocalPath(typeof(RuntimeHelpers).Assembly.Location),
             allReferences,
             @namespace,
             globalTypeFqn,
-            Array.Empty<string>(),
-            Array.Empty<string>(),
+            [],
+            [],
             ProducePreprocessedFile: false,
             ProduceAstFile: false);
         return AssemblyContext.Create(
