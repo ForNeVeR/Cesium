@@ -70,11 +70,11 @@ public static class CSharpCompilationUtil
     }
 
     public static readonly AbsolutePath CesiumRuntimeLibraryPath =
-        SolutionMetadata.ArtifactsRoot /
-        "bin" /
-        "Cesium.Runtime" /
-        $"{_configuration.ToLower()}_{_cesiumRuntimeLibTargetRuntime}" /
-        "Cesium.Runtime.dll";
+        SolutionMetadata.ArtifactsRoot
+        / "bin"
+        / "Cesium.Runtime"
+        / $"{_configuration.ToLower()}_{_cesiumRuntimeLibTargetRuntime}"
+        / "Cesium.Runtime.dll";
 
     private static Task CompileCSharpProject(ITestOutputHelper output, AbsolutePath directory, string projectName) =>
         ExecUtil.RunToSuccess(output, ExecUtil.DotNetHost, directory, [
