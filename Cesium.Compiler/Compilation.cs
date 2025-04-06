@@ -107,10 +107,11 @@ internal static class Compilation
 
     private static Task<string> Preprocess(AbsolutePath compilationSource, AbsolutePath compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
-        var currentProcessPath = new AbsolutePath(
-            Environment.ProcessPath ?? throw new Exception( "Cannot determine path to the compiler executable."));
+        var processPath = Environment.ProcessPath;
+        var currentProcessDir = (processPath == null ? null : new AbsolutePath(processPath).Parent)
+            ?? throw new Exception( "Cannot determine path to the compiler executable.");
 
-        var stdLibDirectory = currentProcessPath / "stdlib";
+        var stdLibDirectory = currentProcessDir / "stdlib";
         var includeDirectories = new[] { compilationFileDirectory }
             .Concat(compilationOptions.AdditionalIncludeDirectories.Select(x => x.ResolveToCurrentDirectory()))
             .ToImmutableArray();
