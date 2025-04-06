@@ -9,12 +9,12 @@ namespace Cesium.CodeGen.Tests;
 
 public class CodeGenPInvokeTests : CodeGenTestBase
 {
-    private const string _mainMockedFilePath = @"c:\a\b\c.c";
+    private static readonly string _mainMockedFilePath = OperatingSystem.IsWindows() ? @"C:\a\b\c.c" : "/a/b/c.c";
 
     private static async Task DoTest(string source)
     {
         var processed = await PreprocessorUtil.DoPreprocess(new AbsolutePath(_mainMockedFilePath), source);
-        var assembly = GenerateAssembly(default, processed);
+        var assembly = GenerateAssembly(null, processed);
 
         var moduleType = assembly.Modules.Single().GetType("<Module>");
         await VerifyMethods(moduleType);
