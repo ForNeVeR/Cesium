@@ -14,7 +14,7 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private const string _mainMockedFilePath = @"c:\a\b\c.c";
+    private static readonly string _mainMockedFilePath = OperatingSystem.IsWindows() ? @"c:\a\b\c.c" : "/a/b/c.c";
 
     private static async Task DoTest(
         [StringSyntax("cpp")] string source,
