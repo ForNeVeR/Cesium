@@ -14,7 +14,7 @@ namespace Cesium.Parser.Tests.PreprocessorTests;
 
 public class PreprocessorTests : VerifyTestBase
 {
-    private static readonly string _mainMockedFilePath = OperatingSystem.IsWindows() ? @"c:\a\b\c.c" : "/a/b/c.c";
+    private static readonly string _mainMockedFilePath = OperatingSystem.IsWindows() ? @"C:\a\b\c.c" : "/a/b/c.c";
 
     private static async Task DoTest(
         [StringSyntax("cpp")] string source,
@@ -30,17 +30,20 @@ public class PreprocessorTests : VerifyTestBase
         await Verify(result, GetSettings());
     }
 
-    private static Task<string> DoPreprocess(
+    private static async Task<string> DoPreprocess(
         [StringSyntax("cpp")] string source,
         Dictionary<LocalPath, string>? standardHeaders = null,
         Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null,
-        Action<PreprocessorWarning>? onWarning = null) =>
-        PreprocessorUtil.DoPreprocess(
+        Action<PreprocessorWarning>? onWarning = null)
+    {
+        var result = await PreprocessorUtil.DoPreprocess(
             new AbsolutePath(_mainMockedFilePath),
             source,
             standardHeaders,
             defines,
             onWarning);
+        return result.Replace(@"C:\\", "/").Replace(@"\\", "/");
+    }
 
     [Fact]
     public Task IdentityTest() => DoTest(@"int main(void)

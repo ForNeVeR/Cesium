@@ -1,2 +1,2 @@
 
-char* x = "c:\\a\\b\\c.c";
+char* x = "/a/b/c.c";

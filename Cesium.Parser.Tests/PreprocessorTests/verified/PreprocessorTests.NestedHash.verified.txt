@@ -6,7 +6,7 @@ int main(void)
    printf("This does exists");
 
    printf("x");
-   printf("line: %d file: %s ", 18, "c:\\a\\b\\c.c");
+   printf("line: %d file: %s ", 18, "/a/b/c.c");
 
    return 42;
 }
