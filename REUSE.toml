@@ -22,13 +22,12 @@ SPDX-FileCopyrightText = "2022 Cesium contributors <https://github.com/ForNeVeR/
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
-path = "Cesium.CodeGen.Tests/verified/*.txt"
-precedence = "override"
-SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = "Cesium.Parser.Tests/**/verified/*.txt"
+path = [
+    "Cesium.CodeGen.Tests/verified/*.txt",
+    "Cesium.Compiler.Tests/verified/*.txt",
+    "Cesium.Parser.Tests/**/verified/*.txt",
+    "Cesium.TestFramework.Tests/verified/*.txt"
+]
 precedence = "override"
 SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"
@@ -38,9 +37,3 @@ path = "Cesium.Templates/**/*"
 precedence = "override"
 SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "Cesium.TestFramework.Tests/verified/*.txt"
-precedence = "override"
-SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
-SPDX-License-Identifier = "MIT"

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+//
+// SPDX-License-Identifier: MIT
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Cesium.CodeGen;
