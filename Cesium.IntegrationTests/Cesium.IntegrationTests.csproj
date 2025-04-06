@@ -30,9 +30,4 @@ SPDX-License-Identifier: MIT
       <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ClCompile Include="multi-file\function.c" />
-      <ClCompile Include="multi-file\program.c" />
-    </ItemGroup>
-
 </Project>
