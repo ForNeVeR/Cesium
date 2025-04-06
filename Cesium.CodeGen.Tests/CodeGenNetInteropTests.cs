@@ -45,7 +45,7 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
             DeployReferenceAssembly(CSharpCompilationUtil.CesiumRuntimeLibraryPath);
             DeployReferenceAssembly(referencePath);
 
-            await ExecUtil.RunToSuccess(output, new LocalPath("dotnet"), testDirectory, [assemblyPath.Value]);
+            await ExecUtil.RunToSuccess(output, ExecUtil.DotNetHost, testDirectory, [assemblyPath.Value]);
         }
         finally
         {
