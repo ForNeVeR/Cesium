@@ -1,6 +1,6 @@
 {
   "InputFilePaths": [
-    "/tmp/file1.c",
+    "/nonexistent-folder/file1.c",
     "file2.c"
   ],
   "CompilationOptions": {
@@ -15,7 +15,7 @@
     "CesiumRuntime": "/cesiumRuntime.dll",
     "ImportAssemblies": [
       "ref1.dll",
-      "/tmp/ref2.dll"
+      "/nonexistent-folder/ref2.dll"
     ],
     "Namespace": "My.Namespace",
     "GlobalClassFqn": "My.Global.Class",
@@ -24,7 +24,7 @@
       "CONSTANT2"
     ],
     "AdditionalIncludeDirectories": [
-      "/tmp/include"
+      "/nonexistent-folder/include"
     ],
     "ProducePreprocessedFile": false,
     "ProduceAstFile": true

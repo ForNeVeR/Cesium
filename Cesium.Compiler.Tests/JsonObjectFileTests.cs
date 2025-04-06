@@ -19,7 +19,7 @@ public class JsonObjectFileTests : VerifyTestBase
 
     private readonly LocalPath[] _inputFiles =
     [
-        new("/tmp/file1.c"),
+        new("/nonexistent-folder/file1.c"),
         new("file2.c")
     ];
 
@@ -31,13 +31,13 @@ public class JsonObjectFileTests : VerifyTestBase
         new("/cesiumRuntime.dll"),
         [
             new("ref1.dll"),
-            new("/tmp/ref2.dll")
+            new("/nonexistent-folder/ref2.dll")
         ],
         "My.Namespace",
         "My.Global.Class",
         ["CONSTANT1", "CONSTANT2"],
         [
-            new("/tmp/include")
+            new("/nonexistent-folder/include")
         ],
         ProducePreprocessedFile: false,
         ProduceAstFile: true
