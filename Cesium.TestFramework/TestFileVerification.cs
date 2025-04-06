@@ -150,7 +150,7 @@ public class TestFileVerificationException : Exception
         return;
 
         string Quoted(IEnumerable<LocalPath> files) =>
-            string.Join("\n", files.OrderBy(x => x).Select(f => '"' + f.Value + '"'));
+            string.Join("\n", files.OrderBy(x => x.Value).Select(f => '"' + f.Value + '"'));
     }
 
     public override string Message { get; }

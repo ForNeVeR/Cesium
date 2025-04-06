@@ -60,7 +60,7 @@ internal static class Compilation
         {
             if (JsonObjectFile.IsCorrectExtension(inputFile))
             {
-                Console.WriteLine($"Processing object file \"{inputFile}\".");
+                Console.WriteLine($"Processing object file \"{inputFile.Value}\".");
                 var objectFile = await JsonObjectFile.Read(inputFile.ResolveToCurrentDirectory());
                 if (objectFile.CompilationOptions != compilationOptions)
                 {

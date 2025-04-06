@@ -1,0 +1,32 @@
+{
+  "InputFilePaths": [
+    "/tmp/file1.c",
+    "file2.c"
+  ],
+  "CompilationOptions": {
+    "TargetRuntime": {
+      "Kind": "NetStandard",
+      "SystemLibraryVersion": "2.0",
+      "TargetFrameworkVersion": "2.0"
+    },
+    "TargetArchitectureSet": "Dynamic",
+    "ModuleKind": "Dll",
+    "CorelibAssembly": "/corLib.dll",
+    "CesiumRuntime": "/cesiumRuntime.dll",
+    "ImportAssemblies": [
+      "ref1.dll",
+      "/tmp/ref2.dll"
+    ],
+    "Namespace": "My.Namespace",
+    "GlobalClassFqn": "My.Global.Class",
+    "DefineConstants": [
+      "CONSTANT1",
+      "CONSTANT2"
+    ],
+    "AdditionalIncludeDirectories": [
+      "/tmp/include"
+    ],
+    "ProducePreprocessedFile": false,
+    "ProduceAstFile": true
+  }
+}

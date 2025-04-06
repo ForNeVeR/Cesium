@@ -36,7 +36,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         return cFiles
             .Where(IsValidForCommonTestRun)
             .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
-            .Select(path => new object[] { path });
+            .Select(path => new object[] { path.Value });
     }
 
     private static bool IsValidForCommonTestRun(AbsolutePath file)
@@ -87,10 +87,12 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
                 var functionSource = _thisProjectSourceDirectory / "multi-file/function.c";
                 var programSource = _thisProjectSourceDirectory / "multi-file/program.c";
+
+                var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, [functionSource, programSource]);
+
                 var functionObject = await GenerateJsonObjectFile(objDir, functionSource, TargetFramework.Net);
                 var programObject = await GenerateJsonObjectFile(objDir, programSource, TargetFramework.Net);
 
-                var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, [functionSource, programSource]);
                 var cesiumResult = await CompileAndRunWithCesium(
                     binDir,
                     objDir,

@@ -25,6 +25,7 @@ SPDX-License-Identifier: MIT
 
   <ItemGroup>
     <ProjectReference Include="..\Cesium.Compiler\Cesium.Compiler.csproj" />
+    <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
   </ItemGroup>
 
 </Project>

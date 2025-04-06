@@ -1,50 +1,97 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Cesium.CodeGen;
+using Cesium.Core;
 using TruePath;
 
 namespace Cesium.Compiler;
+
+[JsonSourceGenerationOptions(
+    WriteIndented = true,
+    Converters = [typeof(LocalPathConverter)],
+    UseStringEnumConverter = true)
+]
+[JsonSerializable(typeof(JsonObjectFile.CompiledObjectJson))]
+internal partial class SourceGenerationContext : JsonSerializerContext
+{
+    private class LocalPathConverter : JsonConverter<LocalPath>
+    {
+        public override LocalPath Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var value = reader.GetString() ?? throw new InvalidOperationException("Local path not defined.");
+            return new LocalPath(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, LocalPath value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.Value);
+        }
+    }
+}
 
 public static class JsonObjectFile
 {
     public class CompiledObjectJson
     {
-        public required IEnumerable<string> InputFilePaths;
-        public required CompilationOptions CompilationOptions;
+        public required string[] InputFilePaths { get; init; }
+        public required CompilationOptions CompilationOptions { get; init; }
+
+        protected bool Equals(CompiledObjectJson other)
+        {
+            return InputFilePaths.SequenceEqual(other.InputFilePaths)
+                   && CompilationOptions.Equals(other.CompilationOptions);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((CompiledObjectJson)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            hash.Add(CompilationOptions);
+            foreach (var inputPath in InputFilePaths)
+            {
+                hash.Add(inputPath);
+            }
+
+            return hash.ToHashCode();
+        }
     }
 
     public static bool IsCorrectExtension(LocalPath path) => path.GetExtensionWithDot() == ".obj";
 
-    public static async Task<int> Write(
-        IEnumerable<string> inputFilePaths,
-        string outputFilePath,
-        CompilationOptions compilationOptions
-    )
+    public static async Task Write(
+        IEnumerable<LocalPath> inputFilePaths,
+        CompilationOptions compilationOptions,
+        AbsolutePath outputFile)
     {
-        CompiledObjectJson compiledObjectJson = new CompiledObjectJson()
+        var compiledObjectJson = new CompiledObjectJson
         {
-            InputFilePaths = inputFilePaths,
+            InputFilePaths = inputFilePaths.Select(x => x.Value).ToArray(),
             CompilationOptions = compilationOptions
         };
 
-        if (!outputFilePath.EndsWith(".obj"))
-        {
-            outputFilePath += ".json.obj";
-        }
-
-        StreamWriter outObjectWriter = new StreamWriter(outputFilePath);
-        await outObjectWriter.WriteAsync(JsonSerializer.Serialize(compiledObjectJson));
-        return 0;
+        await using var stream = new FileStream(outputFile.Value, FileMode.Create, FileAccess.Write);
+        await JsonSerializer.SerializeAsync(
+            stream,
+            compiledObjectJson,
+            SourceGenerationContext.Default.CompiledObjectJson);
     }
 
-    public static async Task<CompiledObjectJson> Read(AbsolutePath inputObjectJsonFilePath)
+    public static async Task<CompiledObjectJson> Read(AbsolutePath objectFile)
     {
-        StreamReader inObjectJsonReader = new StreamReader(inputObjectJsonFilePath.Value);
-
-        var inObjectJsonStr = await inObjectJsonReader.ReadToEndAsync();
-        var result = JsonSerializer.Deserialize<CompiledObjectJson>(inObjectJsonStr);
+        await using var stream = new FileStream(objectFile.Value, FileMode.Open, FileAccess.Read);
+        var result = JsonSerializer.Deserialize<CompiledObjectJson>(
+            stream,
+            SourceGenerationContext.Default.CompiledObjectJson);
         if (result == null)
         {
-            throw new Exception($"Invalid json from file {inputObjectJsonFilePath}");
+            throw new CompilationException($"Invalid JSON object file \"{objectFile.Value}\".");
         }
         return result;
     }

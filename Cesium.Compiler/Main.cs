@@ -26,7 +26,7 @@ public static class Program
             };
 
             var cesiumRuntime = options.CesiumCRuntime ?? Path.Combine(AppContext.BaseDirectory, "Cesium.Runtime.dll");
-            var defaultImportsAssembly = options.DefaultImportAssemblies?.Select(x => new LocalPath(x)) ?? [];
+            var defaultImportsAssembly = options.DefaultImportAssemblies.Select(x => new LocalPath(x));
 #pragma warning disable IL3000 // Automatic discovery of corelib is fallback option, if tooling do not pass that parameter
             var corelibAssembly = options.CoreLib ?? typeof(Math).Assembly.Location; // System.Runtime.dll
 #pragma warning restore IL3000
@@ -52,7 +52,11 @@ public static class Program
 
             if (options.ProduceObjectFileImitation)
             {
-                return await JsonObjectFile.Write(options.InputFilePaths, options.OutputFilePath, compilationOptions);
+                await JsonObjectFile.Write(
+                    options.InputFilePaths.Select(x => new LocalPath(x)),
+                    compilationOptions,
+                    AbsolutePath.CurrentWorkingDirectory / options.OutputFilePath);
+                return 0;
             }
 
             return await Compilation.Compile(
