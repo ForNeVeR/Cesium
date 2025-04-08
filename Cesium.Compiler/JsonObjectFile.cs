@@ -67,7 +67,7 @@ public static class JsonObjectFile
         }
     }
 
-    public static bool IsCorrectExtension(LocalPath path) => path.GetExtensionWithDot() == ".obj";
+    public static bool IsCorrectExtension(LocalPath path) => path.GetExtensionWithDot() == ".obj" || path.GetExtensionWithDot() == ".o";
 
     public static async Task Write(
         IEnumerable<LocalPath> inputFilePaths,
