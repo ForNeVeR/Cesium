@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -34,6 +35,7 @@ namespace Cesium.Sdk;
 // ReSharper disable once UnusedType.Global
 public class CesiumCompile : Task
 {
+    [Required] public string CompilerRuntime { get; set; } = null!;
     [Required] public string CompilerExe { get; set; } = null!;
     [Required] public ITaskItem[] InputFiles { get; set; } = null!;
     [Required] public string OutputFile { get; set; } = null!;
@@ -58,12 +60,24 @@ public class CesiumCompile : Task
             return false;
         }
 
+        string executablePath;
+        var arguments = CollectCommandLineArguments(options);
+        if (string.IsNullOrWhiteSpace(options.CompilerRuntime))
+        {
+            executablePath = options.CompilerExe;
+        }
+        else
+        {
+            executablePath = options.CompilerRuntime;
+            arguments.Insert(0, options.CompilerExe);
+        }
+
         var compilerProcess = new Process
         {
             StartInfo =
             {
-                FileName = options.CompilerExe,
-                Arguments = CollectCommandLineArguments(options),
+                FileName = executablePath,
+                Arguments = ArgumentUtil.ToCommandLineString(arguments),
                 UseShellExecute = false,
             }
         };
@@ -113,6 +127,11 @@ public class CesiumCompile : Task
         options = null;
         var success = true;
 
+        if (!string.IsNullOrWhiteSpace(CompilerRuntime) && !ExecutableFileExists(CompilerRuntime))
+        {
+            ReportValidationError("CES1007", $"Compiler runtime doesn't exist under path '{CompilerRuntime}'");
+            success = false;
+        }
 
         if (!string.IsNullOrWhiteSpace(CompilerExe) && !File.Exists(CompilerExe))
         {
@@ -173,6 +192,7 @@ public class CesiumCompile : Task
         if (!success) return false;
 
         options = new ValidatedOptions(
+            CompilerRuntime: CompilerRuntime,
             CompilerExe: CompilerExe,
             InputItems: InputFiles.Select(item => item.ItemSpec).ToArray(),
             OutputFile: OutputFile,
@@ -189,7 +209,7 @@ public class CesiumCompile : Task
         return true;
     }
 
-    private string CollectCommandLineArguments(ValidatedOptions options)
+    private List<string> CollectCommandLineArguments(ValidatedOptions options)
     {
         var args = new List<string>();
 
@@ -251,7 +271,7 @@ public class CesiumCompile : Task
             args.Add(input);
         }
 
-        return ArgumentUtil.ToCommandLineString(args);
+        return args;
     }
 
     private void ReportValidationError(string code, string message) =>
@@ -260,9 +280,40 @@ public class CesiumCompile : Task
     private void ReportValidationWarning(string code, string message) =>
         BuildEngine.LogWarningEvent(new BuildWarningEventArgs(nameof(CesiumCompile), code, string.Empty, -1, -1, -1, -1, message, string.Empty, nameof(CesiumCompile)));
 
-    private string GetResultingCommandLine(string executable, IReadOnlyCollection<string> arguments)
+    private static bool ExecutableFileExists(string path)
     {
-        return $"{executable} {string.Join(" ", arguments)}";
+        var pathExtWithDot = new Lazy<string[]>(() =>
+            Environment.GetEnvironmentVariable("PATHEXT")?.Split(Path.PathSeparator) ?? []);
+
+        if (IsExecutable(path)) return true;
+
+        foreach (var pathEntry in Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? [])
+        {
+            var fullPath = Path.Combine(pathEntry, pathEntry);
+            if (IsExecutable(fullPath)) return true;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                foreach (var dotExtension in pathExtWithDot.Value)
+                {
+                    if (IsExecutable(fullPath + dotExtension)) return true;
+                }
+            }
+        }
+
+        return false;
+
+        bool IsExecutable(string exePath)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var extension = Path.GetExtension(exePath);
+                return pathExtWithDot.Value.Contains(extension);
+            }
+
+            return true; // TODO: Proper executable check for Unix
+
+        }
     }
 
     private enum FrameworkKind
@@ -288,6 +339,7 @@ public class CesiumCompile : Task
     }
 
     private record ValidatedOptions(
+        string CompilerRuntime,
         string CompilerExe,
         string[] InputItems,
         string OutputFile,
