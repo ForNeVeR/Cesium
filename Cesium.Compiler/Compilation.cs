@@ -58,7 +58,7 @@ internal static class Compilation
         var inputSources = new List<AbsolutePath>();
         foreach (var inputFile in inputFilePaths)
         {
-            if (JsonObjectFile.IsCorrectExtension(inputFile))
+            if (JsonObjectFile.IsSupportedExtension(inputFile))
             {
                 Console.WriteLine($"Processing object file \"{inputFile.Value}\".");
                 var objectFile = await JsonObjectFile.Read(inputFile.ResolveToCurrentDirectory());
