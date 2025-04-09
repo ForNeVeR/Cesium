@@ -14,6 +14,7 @@ public class JsonObjectFileTests : VerifyTestBase
     [Theory, NoVerify]
     [InlineData("file.json", false)]
     [InlineData("file.obj", true)]
+    [InlineData("file.o", true)]
     public void CorrectExtensions(string fileName, bool result) =>
         Assert.Equal(result, JsonObjectFile.IsCorrectExtension(new LocalPath(fileName)));
 
