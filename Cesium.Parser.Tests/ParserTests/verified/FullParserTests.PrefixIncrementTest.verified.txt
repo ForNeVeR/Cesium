@@ -69,22 +69,16 @@
                 "Text": "++"
               },
               "Target": {
-                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "x"
-                }
+                "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                "Identifier": "x"
               }
             }
           },
           {
             "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
             "Expression": {
-              "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-              "Constant": {
-                "Kind": "Identifier",
-                "Text": "x"
-              }
+              "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+              "Identifier": "x"
             }
           }
         ]

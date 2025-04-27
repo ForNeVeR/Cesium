@@ -41,11 +41,8 @@
             {
               "$type": "Cesium.Ast.AssignmentInitializer, Cesium.Ast",
               "Expression": {
-                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "TY_INT"
-                }
+                "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                "Identifier": "TY_INT"
               },
               "Designation": null
             }

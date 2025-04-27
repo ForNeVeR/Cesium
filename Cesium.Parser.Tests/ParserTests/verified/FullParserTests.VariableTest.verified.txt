@@ -65,11 +65,8 @@
             "Expression": {
               "$type": "Cesium.Ast.ArithmeticBinaryOperatorExpression, Cesium.Ast",
               "Left": {
-                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "x"
-                }
+                "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                "Identifier": "x"
               },
               "Operator": "+",
               "Right": {
