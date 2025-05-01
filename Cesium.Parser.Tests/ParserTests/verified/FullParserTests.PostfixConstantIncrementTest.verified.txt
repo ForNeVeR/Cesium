@@ -65,11 +65,8 @@
             "Expression": {
               "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
               "Left": {
-                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "x"
-                }
+                "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                "Identifier": "x"
               },
               "Operator": "=",
               "Right": {
@@ -91,11 +88,8 @@
           {
             "$type": "Cesium.Ast.ReturnStatement, Cesium.Ast",
             "Expression": {
-              "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-              "Constant": {
-                "Kind": "Identifier",
-                "Text": "x"
-              }
+              "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+              "Identifier": "x"
             }
           }
         ]

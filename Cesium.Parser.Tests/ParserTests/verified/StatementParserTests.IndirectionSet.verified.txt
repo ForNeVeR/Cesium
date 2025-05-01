@@ -5,11 +5,8 @@
     "Left": {
       "$type": "Cesium.Ast.IndirectionExpression, Cesium.Ast",
       "Target": {
-        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-        "Constant": {
-          "Kind": "Identifier",
-          "Text": "x"
-        }
+        "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+        "Identifier": "x"
       }
     },
     "Operator": "=",
