@@ -10,11 +10,12 @@ SPDX-License-Identifier: MIT
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <RootNamespace></RootNamespace>
-        <NoWarn>CS0649;CS0169</NoWarn>
+        <NoWarn>CS0649;CS0169;nullable</NoWarn>
         <NukeRootDirectory>..</NukeRootDirectory>
         <NukeScriptDirectory>..</NukeScriptDirectory>
         <NukeTelemetryVersion>1</NukeTelemetryVersion>
         <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
