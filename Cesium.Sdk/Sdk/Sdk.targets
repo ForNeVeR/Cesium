@@ -16,8 +16,8 @@ SPDX-License-Identifier: MIT
     <PropertyGroup Label="CompilerInstallationProperties" Condition=" $(SkipCesiumCompilerInstallation) != 'true' ">
         <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
         <_CesiumCompilerPackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</_CesiumCompilerPackagePath>
-        <CesiumCompilerPath Condition="$(OS) != 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)/tools/Cesium.Compiler</CesiumCompilerPath>
-        <CesiumCompilerPath Condition="$(OS) == 'Windows_NT' AND $(CesiumCompilerPath) == '' AND $(_CesiumCompilerPackagePath) != '' AND $(CesiumCompilerPackageName) != ''">$(_CesiumCompilerPackagePath)\tools\Cesium.Compiler.exe</CesiumCompilerPath>
+        <CesiumCompilerRuntime>dotnet</CesiumCompilerRuntime>
+        <CesiumCompilerPath>$(_CesiumCompilerPackagePath)/lib/net9.0/Cesium.Compiler.dll</CesiumCompilerPath>
     </PropertyGroup>
 
     <Target Name="CheckCompilerPath" BeforeTargets="CesiumValidateProperties">
@@ -97,6 +97,7 @@ SPDX-License-Identifier: MIT
         <!-- TODO[seclerp]: Add ability to set DryRun -->
         <!-- TODO[seclerp]: Add import items -->
         <CesiumCompile
+            CompilerRuntime="$(CesiumCompilerRuntime)"
             CompilerExe="$(CesiumCompilerPath)"
             InputFiles="@(Compile)"
             OutputFile="$(_CompilerOutput)"
