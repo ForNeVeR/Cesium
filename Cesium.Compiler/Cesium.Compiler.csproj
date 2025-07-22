@@ -41,6 +41,8 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
+
+      <PackageReference Include="Microsoft.NET.ILLink.Tasks" />
         <RdXmlFile Include="rd.xml" />
     </ItemGroup>
 
