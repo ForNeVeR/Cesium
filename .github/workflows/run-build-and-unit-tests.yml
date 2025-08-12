@@ -29,7 +29,7 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
     steps:
       - name: 📝 Fetch Sources 📝
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 💡 Perform Common Steps 💡
         uses: ./.github/workflows/perform-common-steps
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📝 Fetch Sources 📝
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: ✅ Verify encoding ✅
         shell: pwsh
         run: scripts/Test-Encoding.ps1
@@ -63,6 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📝 Fetch Sources 📝
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: ✅ REUSE license check ✅
         uses: fsfe/reuse-action@v5
