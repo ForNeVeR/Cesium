@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
         <_CesiumCompilerPackageFolderName Condition="$(CesiumCompilerPackagePath) == ''">$(CesiumCompilerPackageName.ToLower())</_CesiumCompilerPackageFolderName>
         <_CesiumCompilerPackagePath>$([System.IO.Path]::Combine($(NuGetPackageRoot), $(_CesiumCompilerPackageFolderName), $(CesiumCompilerPackageVersion)))</_CesiumCompilerPackagePath>
         <CesiumCompilerRuntime>dotnet</CesiumCompilerRuntime>
-        <CesiumCompilerPath>$(_CesiumCompilerPackagePath)/lib/net9.0/Cesium.Compiler.dll</CesiumCompilerPath>
+        <CesiumCompilerPath>$(_CesiumCompilerPackagePath)\tools\Cesium.Compiler.dll</CesiumCompilerPath>
     </PropertyGroup>
 
     <Target Name="CheckCompilerPath" BeforeTargets="CesiumValidateProperties">
