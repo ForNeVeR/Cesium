@@ -62,7 +62,7 @@ Output assembly and additional artifacts will be placed in `bin` folder. Dependi
 - `SkipCesiumCompilerInstallation`: if set to `true`, doesn't automatically install a compiler bundle package. In that case it should be explicitly provided by `CesiumCompilerPackageName` and `CesiumCompilerPackageVersion` properties. Default: `false`
 - `SkipCesiumRuntimeInstallation`: if set to `true`, doesn't automatically install a `Cesium.Runtime` package. In that case it should be explicitly installed. Default: `false`
 - `CesiumCompilerPackageName`: an optional platform-specific compiler bundle package name. Should be specified if `SkipCesiumCompilerInstallation` set to `true`. Default: `Cesium.Compiler.Pack.{RID}`
-- `CesiumCompilerPackageName`: an optional platform-specific compiler bundle package version. Should be specified if `SkipCesiumCompilerInstallation` set to `true`. Default: Cesium SDK version
+- `CesiumCompilerPackageVersion`: an optional platform-specific compiler bundle package version. Should be specified if `SkipCesiumCompilerInstallation` set to `true`. Default: Cesium SDK version
 - `CesiumCompilerPath`: an optional path to compiler executable. Use this property to specify a path to the compiler not coming from a compiler package.
 - `CesiumCoreLibAssemblyPath`: an optional path to .NET runtime assembly: `System.Runtime` or `mscorlib`, depending on the target framework.
 
