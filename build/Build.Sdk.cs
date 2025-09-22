@@ -67,7 +67,7 @@ public partial class Build
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject();
+            var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject(configuration: Configuration);
             if (!SkipCaches && !NeedPackageSdk(sdkProject))
             {
                 Log.Information($"Skipping SDK packing because it was already packed. Use '--skip-caches true' to re-publish.");
@@ -82,7 +82,7 @@ public partial class Build
 
     void PublishCompiler(string? runtimeId)
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
         var runtimeIdDisplayName = runtimeId == "" ? "<no runtime>" : runtimeId;
 
         if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
@@ -105,7 +105,7 @@ public partial class Build
 
     void GenerateCompilerRuntimeSpecificBundle(string runtimeId)
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
 
         if (!SkipCaches && !NeedPackageCompilerRuntimeSpecificBundle(compilerProject, runtimeId))
         {
@@ -138,7 +138,7 @@ public partial class Build
 
     void GenerateCompilerNuPkg()
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
 
         if (!SkipCaches && !NeedPackageCompilerNuPkg(compilerProject))
         {
