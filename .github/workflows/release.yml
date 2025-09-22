@@ -50,8 +50,8 @@ jobs:
           if-no-files-found: 'error'
           name: Compiler
           path: |-
-            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
-            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
+            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.snupkg
 
             ./artifacts/package/release/Cesium.Compiler.linux-arm64.${{ steps.version.outputs.version }}.zip
             ./artifacts/package/release/Cesium.Compiler.linux-x64.${{ steps.version.outputs.version }}.zip
