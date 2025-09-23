@@ -53,13 +53,13 @@ jobs:
             ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.snupkg
 
-            ./artifacts/package/release/Cesium.Compiler.linux-arm64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.linux-x64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.osx-arm64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.osx-x64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.win-arm64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.win-x64.${{ steps.version.outputs.version }}.zip
-            ./artifacts/package/release/Cesium.Compiler.win-x86.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
 
       - name: ✅ Upload Runtime ✅
         uses: actions/upload-artifact@v4
