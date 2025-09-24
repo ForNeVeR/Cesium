@@ -36,7 +36,7 @@ jobs:
 
       - name: 📦 Pack Everything 📦
         shell: bash
-        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerNuPkg PackSdk PackTemplates --configuration Release
+        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerBundleNuPkg PackCompilerTool PackSdk PackTemplates --configuration Release
 
       - id: version
         name: 👀 Get Version 👀
@@ -60,6 +60,8 @@ jobs:
             ./artifacts/package/release/Cesium.Compiler.Bundle.win-arm64.${{ steps.version.outputs.version }}.zip
             ./artifacts/package/release/Cesium.Compiler.Bundle.win-x64.${{ steps.version.outputs.version }}.zip
             ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
+
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
 
       - name: ✅ Upload Runtime ✅
         uses: actions/upload-artifact@v4
