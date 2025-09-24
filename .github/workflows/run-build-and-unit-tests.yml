@@ -44,7 +44,7 @@ jobs:
 
       - name: 📦 Pack Compiler NuPkg 📦
         shell: bash
-        run: dotnet nuke PackCompilerNuPkg
+        run: dotnet nuke PackCompilerBundleNuPkg
 
       - name: ✅ Run Unit Tests ✅
         shell: bash
