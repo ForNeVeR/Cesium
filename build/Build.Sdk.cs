@@ -47,6 +47,24 @@ public partial class Build
             PublishCompiler(null);
         });
 
+    Target PackCompilerTool => _ => _
+        .DependsOn(CompileAll)
+        .Executes(() =>
+        {
+            var project = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+            if (!SkipCaches && !NeedPackageSdk(project))
+            {
+                Log.Information($"Skipping the compiler packing because it was already packed. Use '--skip-caches true' to re-pack.");
+                return;
+            }
+
+            Log.Information("Packing the compiler…");
+            DotNetPack(o => o
+                .SetConfiguration(Configuration)
+                .SetProject(Solution.Cesium_Compiler)
+                .SetProperty("PublishTrimmed", false)); // cannot pack a portable tool trimmed
+        });
+
     Target PackAllCompilerRuntimeSpecificBundles => _ => _
         .DependsOn(PublishAllCompilerRuntimeSpecificBundles)
         .Executes(() =>
@@ -59,7 +77,7 @@ public partial class Build
                 GenerateCompilerRuntimeSpecificBundle(runtimeId);
         });
 
-    Target PackCompilerNuPkg => _ => _
+    Target PackCompilerBundleNuPkg => _ => _
         .DependsOn(PublishCompilerFrameworkDependentBundle)
         .Executes(GenerateCompilerNuPkg);
 

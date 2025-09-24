@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
         <ImplicitUsings>enable</ImplicitUsings>
         <PublishTrimmed>true</PublishTrimmed>
         <RollForward>Major</RollForward>
+        <PackAsTool>true</PackAsTool>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,7 +25,7 @@ SPDX-License-Identifier: MIT
         <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
         <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-            <OutputItemType>Content</OutputItemType>
+            <OutputItemType>None</OutputItemType>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <Targets>Build</Targets>
@@ -35,7 +36,7 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="stdlib/*" CopyToOutputDirectory="Always" />
+        <None Include="stdlib/*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <ItemGroup>
