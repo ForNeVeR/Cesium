@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+#
+# SPDX-License-Identifier: MIT
+
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  main:
+    runs-on: ${{ matrix.environment }}
+    strategy:
+      matrix:
+        environment:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+      fail-fast: false
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
+    steps:
+      - name: 📝 Fetch Sources 📝
+        uses: actions/checkout@v4
+
+      - name: 💡 Perform Common Steps 💡
+        uses: ./.github/workflows/perform-common-steps
+
+      - name: 📦 Pack Everything 📦
+        shell: bash
+        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles PackCompilerBundleNuPkg PackCompilerTool PackSdk PackTemplates --configuration Release
+
+      - id: version
+        name: 👀 Get Version 👀
+        shell: pwsh
+        run: echo "version=$(scripts/Get-Version.ps1 -RefName $env:GITHUB_REF)" >> $env:GITHUB_OUTPUT
+
+      - name: ✅ Upload Compiler ✅
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          if-no-files-found: 'error'
+          name: Compiler
+          path: |-
+            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.snupkg
+
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
+
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
+
+      - name: ✅ Upload Runtime ✅
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          if-no-files-found: 'error'
+          name: Runtime
+          path: |-
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
+
+      - name: ✅ Upload SDK ✅
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          if-no-files-found: 'error'
+          name: SDK
+          path: |-
+            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.snupkg
+
+      - name: ✅ Upload Templates ✅
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          if-no-files-found: 'error'
+          name: Templates
+          path: |-
+            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.snupkg
+
+      #- name: ✅ Publish to NuGet ✅
+      #  # TODO

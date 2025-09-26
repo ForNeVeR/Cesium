@@ -10,10 +10,9 @@ SPDX-License-Identifier: MIT
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
         <RollForward>Major</RollForward>
-        <RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+        <PackAsTool>true</PackAsTool>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,7 +25,7 @@ SPDX-License-Identifier: MIT
         <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
         <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-            <OutputItemType>Content</OutputItemType>
+            <OutputItemType>None</OutputItemType>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             <Targets>Build</Targets>
@@ -37,7 +36,7 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="stdlib/*" CopyToOutputDirectory="Always" />
+        <None Include="stdlib/*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <ItemGroup>

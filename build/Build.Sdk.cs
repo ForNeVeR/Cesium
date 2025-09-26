@@ -7,6 +7,7 @@ using System.IO;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using Nuke.Common;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
@@ -15,15 +16,23 @@ using Project = Microsoft.Build.Evaluation.Project;
 
 public partial class Build
 {
-    const string _compilerBundlePackagePrefix = "Cesium.Compiler.Bundle";
+    private const string _compilerBundlePackageName = "Cesium.Compiler.Bundle";
 
-    Target PublishAllCompilerBundles => _ => _
+    private static readonly string[] _compilerRuntimeSpecificRuntimeIds = [
+        "win-x64",
+        "win-x86",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "osx-x64",
+        "osx-arm64"
+    ];
+
+    Target PublishAllCompilerRuntimeSpecificBundles => _ => _
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
-
-            var runtimeIds = compilerProject.GetEvaluatedProperty("RuntimeIdentifiers").Split(";");
+            var runtimeIds = _compilerRuntimeSpecificRuntimeIds;
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
@@ -31,39 +40,52 @@ public partial class Build
                 PublishCompiler(runtimeId);
         });
 
-    Target PublishCompilerBundle => _ => _
+    Target PublishCompilerFrameworkDependentBundle => _ => _
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            PublishCompiler(EffectiveRuntimeId);
+            PublishCompiler(null);
         });
 
-    Target PackAllCompilerBundles => _ => _
-        .DependsOn(PublishAllCompilerBundles)
+    Target PackCompilerTool => _ => _
+        .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
+            var project = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+            if (!SkipCaches && !NeedPackageSdk(project))
+            {
+                Log.Information($"Skipping the compiler packing because it was already packed. Use '--skip-caches true' to re-pack.");
+                return;
+            }
 
-            var runtimeIds = compilerProject.GetRuntimeIds();
+            Log.Information("Packing the compiler…");
+            DotNetPack(o => o
+                .SetConfiguration(Configuration)
+                .SetProject(Solution.Cesium_Compiler)
+                .SetProperty("PublishTrimmed", false)); // cannot pack a portable tool trimmed
+        });
+
+    Target PackAllCompilerRuntimeSpecificBundles => _ => _
+        .DependsOn(PublishAllCompilerRuntimeSpecificBundles)
+        .Executes(() =>
+        {
+            var runtimeIds = _compilerRuntimeSpecificRuntimeIds;
             Log.Information(
                 $"Runtime identifiers defined in {Solution.Cesium_Compiler.Name}: {string.Join(", ", runtimeIds)}");
 
             foreach (var runtimeId in runtimeIds)
-                PackCompiler(runtimeId);
+                GenerateCompilerRuntimeSpecificBundle(runtimeId);
         });
 
-    Target PackCompilerBundle => _ => _
-        .DependsOn(PublishCompilerBundle)
-        .Executes(() =>
-        {
-            PackCompiler(EffectiveRuntimeId);
-        });
+    Target PackCompilerBundleNuPkg => _ => _
+        .DependsOn(PublishCompilerFrameworkDependentBundle)
+        .Executes(GenerateCompilerNuPkg);
 
     Target PackSdk => _ => _
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject();
+            var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject(configuration: Configuration);
             if (!SkipCaches && !NeedPackageSdk(sdkProject))
             {
                 Log.Information($"Skipping SDK packing because it was already packed. Use '--skip-caches true' to re-publish.");
@@ -76,32 +98,96 @@ public partial class Build
                 .SetProject(Solution.Cesium_Sdk.Path));
         });
 
-    void EmitCompilerBundle(string runtimeId, Project compilerProject)
+    void PublishCompiler(string? runtimeId)
     {
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+        var runtimeIdDisplayName = runtimeId == "" ? "<no runtime>" : runtimeId;
+
+        if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
+        {
+            Log.Information($"Skipping {runtimeIdDisplayName} because it was already published. Use '--skip-caches true' to re-publish.");
+            return;
+        }
+
+        Log.Information($"Publishing for {runtimeIdDisplayName}, AOT {(PublishAot ? "enabled" : "disabled")}...");
+        DotNetPublish(o => o
+            .SetConfiguration(Configuration)
+            .SetProject(compilerProject.ProjectFileLocation.File)
+            .SetRuntime(runtimeId)
+            .SetSelfContained(runtimeId != null) // self-contained for runtime-specific only
+            .SetPublishTrimmed(PublishAot)
+            .SetPublishSingleFile(PublishAot)
+            .SetProperty("PublishAot", PublishAot)
+            .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
+    }
+
+    void GenerateCompilerRuntimeSpecificBundle(string runtimeId)
+    {
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+
+        if (!SkipCaches && !NeedPackageCompilerRuntimeSpecificBundle(compilerProject, runtimeId))
+        {
+            Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
+            return;
+        }
+
+        Log.Information($"Generating compiler runtime specific bundle {runtimeId}...");
+
         var version = compilerProject.GetVersion();
         var runtimePackageId = GetRuntimeBundleId(runtimeId);
-        var packageFile = GetRuntimeBundleFileName(version, runtimeId);
+        var packageFile = GetCompilerRuntimeSpecificBundleFileName(version, runtimeId);
         var publishDirectory = GetCompilerRuntimePublishFolder(compilerProject, runtimeId);
         Directory.CreateDirectory(publishDirectory);
-        var publishedFiles = Directory.GetFiles(publishDirectory, "*.*", SearchOption.AllDirectories);
+
         var packageOutputPath = compilerProject.GetPackageOutputPath();
 
         Log.Debug($"Source publish directory: {publishDirectory}");
         Log.Debug($"Target package ID: {runtimePackageId}");
         Log.Debug($"Target package output directory: {packageOutputPath}");
 
+        var packageFileName = Path.Combine(packageOutputPath, packageFile);
+        Log.Information($"Package is ready, saving to {packageFileName}...");
+        Directory.CreateDirectory(packageOutputPath);
+        publishDirectory.ZipTo(
+            packageFileName,
+            fileMode: FileMode.CreateNew
+        );
+    }
+
+    void GenerateCompilerNuPkg()
+    {
+        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+
+        if (!SkipCaches && !NeedPackageCompilerNuPkg(compilerProject))
+        {
+            Log.Information("Skipping .nupkg because it was already packed. Use '--skip-caches true' to re-pack.");
+            return;
+        }
+
+        var packageId = _compilerBundlePackageName;
+        var version = compilerProject.GetVersion();
+        var packageFile = GetCompilerNuGetPackageFileName(version);
+        var publishDirectory = GetCompilerRuntimePublishFolder(compilerProject, null);
+        var publishedFiles = Directory.GetFiles(publishDirectory, "*.*", SearchOption.AllDirectories);
+        var packageOutputPath = compilerProject.GetPackageOutputPath();
+
+        Log.Debug($"Source publish directory: {publishDirectory}");
+        Log.Debug($"Target package ID: {packageId}");
+        Log.Debug($"Target package output directory: {packageOutputPath}");
+
         var builder = new PackageBuilder
         {
-            Id = runtimePackageId,
+            Id = packageId,
             Version = NuGetVersion.Parse(compilerProject.GetVersion()),
-            Description = $"Cesium compiler native executable pack for {runtimeId} platform.",
+            Description = "Cesium compiler executable bundle.",
             Authors = { "Cesium Team" }
         };
         builder.Files.AddRange(GetPhysicalFiles(publishDirectory, publishedFiles));
 
         var packageFileName = Path.Combine(packageOutputPath, packageFile);
-        Log.Information($"Package is ready, saving to {packageFileName}...");
+        Log.Information($"Package is ready, saving to {packageFileName}…");
         Directory.CreateDirectory(packageOutputPath);
+
         using var outputStream = new FileStream(packageFileName, FileMode.Create);
         builder.Save(outputStream);
         return;
@@ -119,57 +205,24 @@ public partial class Build
         }
     }
 
-    void PublishCompiler(string runtimeId)
-    {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
-
-        if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
-        {
-            Log.Information($"Skipping {runtimeId} because it was already published. Use '--skip-caches true' to re-publish.");
-            return;
-        }
-
-        Log.Information($"Publishing for {runtimeId}, AOT {(PublishAot ? "enabled" : "disabled")}...");
-        DotNetPublish(o => o
-            .SetConfiguration(Configuration)
-            .SetProject(compilerProject.ProjectFileLocation.File)
-            .SetRuntime(runtimeId)
-            .SetSelfContained(true)
-            .SetPublishTrimmed(PublishAot)
-            .SetPublishSingleFile(PublishAot)
-            .SetProperty("PublishAot", PublishAot)
-            .SetOutput(GetCompilerRuntimePublishFolder(compilerProject, runtimeId)));
-    }
-
-    void PackCompiler(string runtimeId)
-    {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject();
-
-        if (!SkipCaches && !NeedPackageCompilerBundle(compilerProject, runtimeId))
-        {
-            Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
-            return;
-        }
-
-        Log.Information($"Packing compiler for {runtimeId}...");
-        EmitCompilerBundle(runtimeId, compilerProject);
-    }
-
-    string GetCompilerRuntimePublishFolder(Project compilerProject, string runtimeId) =>
+    AbsolutePath GetCompilerRuntimePublishFolder(Project compilerProject, string? runtimeId) =>
         Path.Combine(
             compilerProject.GetProperty("ArtifactsPath").EvaluatedValue,
             compilerProject.GetProperty("ArtifactsPublishOutputName").EvaluatedValue,
             Solution.Cesium_Compiler.Name,
             GetRuntimeArtifactFolder(compilerProject.GetVersion(), runtimeId));
 
-    static string GetRuntimeArtifactFolder(string version, string runtimeId) =>
-        $"pack_{version}_{runtimeId}";
+    static string GetRuntimeArtifactFolder(string version, string? runtimeId) =>
+        $"pack_{version}" + (runtimeId == null ? "" : $"_{runtimeId}");
 
     static string GetRuntimeBundleId(string runtimeId) =>
-        $"{_compilerBundlePackagePrefix}.{runtimeId}";
+        $"{_compilerBundlePackageName}.{runtimeId}";
 
-    static string GetRuntimeBundleFileName(string version, string runtimeId) =>
-        $"{_compilerBundlePackagePrefix}.{runtimeId}.{version}.nupkg";
+    static string GetCompilerNuGetPackageFileName(string version) =>
+        $"{_compilerBundlePackageName}.{version}.nupkg";
+
+    static string GetCompilerRuntimeSpecificBundleFileName(string version, string runtimeId) =>
+        $"{_compilerBundlePackageName}.{runtimeId}.{version}.zip";
 
     bool NeedPublishCompilerBundle(Project compiler, string runtimeId)
     {
@@ -179,11 +232,20 @@ public partial class Build
                || Directory.GetFiles(folder, "Cesium.Compiler*").Length == 0;
     }
 
-    bool NeedPackageCompilerBundle(Project compiler, string runtimeId)
+    bool NeedPackageCompilerRuntimeSpecificBundle(Project compiler, string runtimeId)
     {
         var version = compiler.GetVersion();
         var packageDirectory = compiler.GetPackageOutputPath();
-        var packageFileName = GetRuntimeBundleFileName(version, runtimeId);
+        var packageFileName = GetCompilerRuntimeSpecificBundleFileName(version, runtimeId);
+
+        return !File.Exists(Path.Combine(packageDirectory, packageFileName));
+    }
+
+    bool NeedPackageCompilerNuPkg(Project compiler)
+    {
+        var version = compiler.GetVersion();
+        var packageDirectory = compiler.GetPackageOutputPath();
+        var packageFileName = GetCompilerNuGetPackageFileName(version);
 
         return !File.Exists(Path.Combine(packageDirectory, packageFileName));
     }

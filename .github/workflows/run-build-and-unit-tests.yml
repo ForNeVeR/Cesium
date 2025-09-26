@@ -38,13 +38,13 @@ jobs:
         shell: bash
         run: dotnet nuke CompileAll
 
-      - name: 🚚 Publish Compiler Bundle 🚚
+      - name: 🚚 Pack Compiler Runtime-Specific Bundles 🚚
         shell: bash
-        run: dotnet nuke PublishCompilerBundle
+        run: dotnet nuke PackAllCompilerRuntimeSpecificBundles
 
-      - name: 📦 Pack Compiler Bundle 📦
+      - name: 📦 Pack Compiler NuPkg 📦
         shell: bash
-        run: dotnet nuke PackCompilerBundle
+        run: dotnet nuke PackCompilerBundleNuPkg
 
       - name: ✅ Run Unit Tests ✅
         shell: bash
