@@ -50,6 +50,7 @@ Documentation
 - [Built-in Functions][docs.builtins]
 - [Exceptions in the Compiler Code][docs.exceptions]
 - [Design Notes][docs.design-notes]
+- [Maintainer Guide][docs.maintaining]
 
 Usage
 -----
@@ -135,6 +136,7 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [docs.language-extensions]: docs/language-extensions.md
 [docs.license.cc0]: LICENSES/CC0-1.0.txt
 [docs.license.mit]: LICENSE.md
+[docs.maintaining]: MAINTAINING.md
 [docs.msbuild-sdk]: docs/msbuild-sdk.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md

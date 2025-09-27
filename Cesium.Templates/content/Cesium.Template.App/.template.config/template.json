@@ -1,6 +1,6 @@
 {
     "$schema": "http://json.schemastore.org/template",
-    "author": "Cesium Team",
+    "author": "Cesium contributors <https://github.com/ForNeVeR/Cesium>",
     "classifications": [ "Console" ],
     "identity": "Cesium.Template.App",
     "name": "Cesium Console Application",
