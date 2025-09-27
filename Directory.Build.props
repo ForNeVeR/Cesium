@@ -19,4 +19,7 @@ SPDX-License-Identifier: MIT
     <PropertyGroup Label="Navigation">
         <CesiumSourceRoot>$(MSBuildThisFileDirectory)</CesiumSourceRoot>
     </PropertyGroup>
+    <PropertyGroup Condition="$(CI) != ''">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 </Project>
