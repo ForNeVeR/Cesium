@@ -7,6 +7,22 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageLicenseExpression>
+            Apache-2.0 <!-- Yoakke.* --> AND $(PackageLicenseExpression) AND MS-PL <!-- QuickGraph, QuickGraph.Graphviz -->
+        </PackageLicenseExpression>
+        <Copyright>
+            © Microsoft Corporation. All rights reserved. <!-- Microsoft.Bcl.HashCode, Microsoft.Bcl.Memory -->
+            Copyright (c) 2005 - 2015 Giacomo Stelluti Scala &amp; Contributors; <!-- CommandLineParser -->
+            Copyright (c) 2016-2025 JetBrains s.r.o. <!-- JetBrains.Annotations -->
+            Copyright 2019 Bradley Grainger; <!-- IndexRange -->
+            Copyright © 2019, 2020 Alexandre Rabérin; <!-- QuickGraph, QuikGraph.Graphviz -->
+            Copyright (c) 2021 LanguageDev team; <!-- Yoakke.* -->
+            2024-2025 TruePath contributors &lt;https://github.com/ForNeVeR/TruePath&gt;; <!-- TruePath -->
+            $(Copyright)
+        </Copyright>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>

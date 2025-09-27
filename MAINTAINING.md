@@ -13,7 +13,7 @@ Publish a New Version
 2. Update the project's status in the `README.md` file, if required.
 3. Update the copyright statement in the `LICENSE.md` file, if required.
 4. Update the `<Copyright>` statement and `<PackageLicenseExpression>` field in the `Directory.Build.props`, if required.
-5. Update the `Copyright` statement in the `Build.Sdk.cs` file (for the compiler bundle). Make sure all the packed libraries are properly accounted for.
+5. Update the `PackageLicenseExpression` and the `<Copyright>` statement in the `Cesium.Compiler.csproj` file (for the compiler dotnet tool). Make sure all the packed libraries are properly accounted for.
 6. Update the `<Version>` in `Directory.Build.props`.
 7. Prepare a corresponding entry in the `CHANGELOG.md` file (usually by renaming the "Unreleased" section).
 8. Merge the aforementioned changes via a pull request.
