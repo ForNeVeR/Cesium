@@ -2,13 +2,19 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
+using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Licenses;
 using NuGet.Versioning;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -101,7 +107,7 @@ public partial class Build
     void PublishCompiler(string? runtimeId)
     {
         var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
-        var runtimeIdDisplayName = runtimeId == "" ? "<no runtime>" : runtimeId;
+        var runtimeIdDisplayName = runtimeId ?? "<no runtime>";
 
         if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
         {
@@ -180,8 +186,14 @@ public partial class Build
             Id = packageId,
             Version = NuGetVersion.Parse(compilerProject.GetVersion()),
             Description = "Cesium compiler executable bundle. Used by the Cesium SDK.",
+            LicenseMetadata = new LicenseMetadata(
+                LicenseType.Expression,
+                GetCompilerBundleLicenseExpression(compilerProject),
+                null,
+                null,
+                LicenseMetadata.CurrentVersion),
             Authors = { "Cesium contributors" },
-            Copyright = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+            Copyright = string.Join(";\n", GetCompilerBundleCopyrightStatements(compilerProject).Distinct())
         };
         builder.Files.AddRange(GetPhysicalFiles(publishDirectory, publishedFiles));
 
@@ -206,6 +218,151 @@ public partial class Build
         }
     }
 
+    private string? GetNuPkgPath(string packageId, string version)
+    {
+        var v = NuGetVersion.Parse(version);
+
+        var settings = Settings.LoadDefaultSettings(root: Directory.GetCurrentDirectory());
+        var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+        var packagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
+        var nupkgPath = packagePathResolver.GetPackageFilePath(packageId, v);
+
+        if (!File.Exists(nupkgPath))
+            return null;
+
+        return nupkgPath;
+    }
+
+    private string? GetPackageCopyright(string packageId, string version)
+    {
+        var nupkgPath = GetNuPkgPath(packageId, version);
+        if (nupkgPath == null) throw new Exception($"Cannot find .nupkg file for package {packageId} {version}.");
+
+        using var reader = new PackageArchiveReader(nupkgPath);
+        var nuspec = reader.NuspecReader;
+        return nuspec.GetCopyright();
+    }
+
+    private string? GetPackageLicenseExpression(string packageId, string version)
+    {
+        // TODO: These are unused, hopefully will go away after we use dotnet-licenses.
+        switch (packageId)
+        {
+            case "Microsoft.VisualStudio.Setup.Configuration.Interop": return null;
+        }
+
+        switch (packageId, version)
+        {
+            case ("CommandLineParser", "2.9.1"): return "MIT"; // TODO: PR to fix metadata
+        }
+
+        var nupkgPath = GetNuPkgPath(packageId, version);
+        if (nupkgPath == null) throw new Exception($"Cannot find .nupkg file for package {packageId} {version}.");
+
+        using var reader = new PackageArchiveReader(nupkgPath);
+        var nuspec = reader.NuspecReader;
+        var metadata = nuspec.GetLicenseMetadata();
+        if (metadata == null)
+        {
+            var licenseUrl = nuspec.GetLicenseUrl();
+            return licenseUrl switch
+            {
+                "https://github.com/dotnet/corefx/blob/master/LICENSE.TXT" => "MIT",
+                _ => throw new Exception(
+                    $"Cannot find the license metadata for the package {packageId} {version} ({nupkgPath}). License URL: {licenseUrl}.")
+            };
+        }
+
+        var expression = metadata.LicenseExpression;
+        if (expression == null) throw new Exception(
+            $"Cannot read the license expression for the package {packageId} {version} ({nupkgPath})." +
+            $" Metadata: {metadata}.");
+        return expression.ToString();
+    }
+
+    private IEnumerable<(string Id, string Version)> GetCompilerBundlePackages(Project project)
+    {
+        var json = DotNet($"list \"{project.FullPath}\" package --include-transitive --format json", logOutput: false)
+            .StdToText();
+
+        using var doc = JsonDocument.Parse(json);
+        var allPackages =
+            doc.RootElement
+                .GetProperty("projects")[0]
+                .GetProperty("frameworks")[0]
+                .GetProperty("topLevelPackages")
+                .EnumerateArray()
+                .Concat(doc.RootElement
+                    .GetProperty("projects")[0]
+                    .GetProperty("frameworks")[0]
+                    .GetProperty("transitivePackages")
+                    .EnumerateArray())
+                .Select(e => (Id: e.GetProperty("id").GetString()!, Version: e.GetProperty("resolvedVersion").GetString()!))
+                .ToList();
+
+        // TODO: Currently, this yields too many packages that aren't in the bundle (e.g. System.Memory,
+        //       Changelog.Automation). In the future, I hope that dotnet.licenses will generate this better. But for
+        //       now, this will have to work.
+
+        return allPackages;
+    }
+
+    private string GetCompilerBundleLicenseExpression(Project project)
+    {
+        var licenseExpressions = GetLicenseExpressions().Distinct().OrderBy(x => x).ToList();
+        var result = string.Join(" AND ", licenseExpressions);
+        var expectedLicenseExpression = "Apache-2.0 AND BSD-2-Clause AND MIT AND MS-PL";
+        if (result != expectedLicenseExpression)
+        {
+            throw new Exception(
+                $"Expected the combined license expression to be {expectedLicenseExpression}, but was  {result}." +
+                " Please adjust as necessary.");
+        }
+
+        return result;
+
+        IEnumerable<string> GetLicenseExpressions()
+        {
+            yield return "MIT";
+
+            foreach (var package in GetCompilerBundlePackages(project))
+            {
+                var license = GetPackageLicenseExpression(package.Id, package.Version);
+                if (license != null)
+                {
+                    // NOTE: Of all our dependencies, there's only one crazy dep that says "MIT AND BSD-2-Clause", and
+                    // that's ChangelogAutomation.MSBuild. Here goes a very particular workaround for that one:
+                    if (license.Contains(' '))
+                    {
+                        var expression = NuGetLicenseExpression.Parse(license);
+
+                        if (expression is LogicalOperator { LogicalOperatorType: LogicalOperatorType.And } op)
+                        {
+                            yield return op.Left.ToString()!;
+                            yield return op.Right.ToString()!;
+                            continue;
+                        }
+                    }
+
+                    yield return license;
+                }
+            }
+        }
+    }
+
+    private IEnumerable<string> GetCompilerBundleCopyrightStatements(Project project)
+    {
+        yield return "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>";
+
+        foreach (var package in GetCompilerBundlePackages(project))
+        {
+            var copyright = GetPackageCopyright(package.Id, package.Version)?.Trim();
+            if (!string.IsNullOrEmpty(copyright))
+                yield return $"{copyright} ({package.Id})";
+        }
+    }
+
     AbsolutePath GetCompilerRuntimePublishFolder(Project compilerProject, string? runtimeId) =>
         Path.Combine(
             compilerProject.GetProperty("ArtifactsPath").EvaluatedValue,
@@ -225,7 +382,7 @@ public partial class Build
     static string GetCompilerRuntimeSpecificBundleFileName(string version, string runtimeId) =>
         $"{_compilerBundlePackageName}.{runtimeId}.{version}.zip";
 
-    bool NeedPublishCompilerBundle(Project compiler, string runtimeId)
+    bool NeedPublishCompilerBundle(Project compiler, string? runtimeId)
     {
         var folder = GetCompilerRuntimePublishFolder(compiler, runtimeId);
 
