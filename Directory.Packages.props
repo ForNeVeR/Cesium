@@ -32,5 +32,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="ChangelogAutomation.MSBuild" Version="3.0.3" />
   </ItemGroup>
 </Project>
