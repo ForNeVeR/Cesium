@@ -8,6 +8,15 @@ SPDX-License-Identifier: MIT
     <PropertyGroup Label="Versioning">
         <VersionPrefix>0.0.1</VersionPrefix>
     </PropertyGroup>
+    <PropertyGroup Label="Packaging">
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <ContinuousIntegrationBuild Condition="$(CI) != ''">true</ContinuousIntegrationBuild>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
+    </PropertyGroup>
+
     <PropertyGroup Label="Language">
         <Nullable>enable</Nullable>
         <WarningsAsErrors>nullable</WarningsAsErrors>
@@ -18,13 +27,5 @@ SPDX-License-Identifier: MIT
     </PropertyGroup>
     <PropertyGroup Label="Navigation">
         <CesiumSourceRoot>$(MSBuildThisFileDirectory)</CesiumSourceRoot>
-    </PropertyGroup>
-    <PropertyGroup Condition="$(CI) != ''">
-        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    </PropertyGroup>
-    <PropertyGroup>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 </Project>

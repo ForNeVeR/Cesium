@@ -179,8 +179,9 @@ public partial class Build
         {
             Id = packageId,
             Version = NuGetVersion.Parse(compilerProject.GetVersion()),
-            Description = "Cesium compiler executable bundle.",
-            Authors = { "Cesium Team" }
+            Description = "Cesium compiler executable bundle. Used by the Cesium SDK.",
+            Authors = { "Cesium contributors" },
+            Copyright = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
         };
         builder.Files.AddRange(GetPhysicalFiles(publishDirectory, publishedFiles));
 
