@@ -18,8 +18,8 @@ SPDX-License-Identifier: MIT
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsPackable) == 'true'">
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-        <PackageReference Include="ChangelogAutomation.MSBuild" Version="3.0.3" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+        <PackageReference Include="ChangelogAutomation.MSBuild" PrivateAssets="All" />
         <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" PackagePath="\LICENSES" />
         <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" PackagePath="\" />
         <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" PackagePath="\" />
