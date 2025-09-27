@@ -41,6 +41,7 @@ Documentation
 
 - [C23 Language Standard Draft][c23-draft]
 
+- [Changelog][docs.changelog]
 - [Contributor Guide][docs.contributing]
 - [Cesium Tests][docs.tests]
 - [Cesium Type System][docs.type-system]
@@ -130,6 +131,7 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.architecture-sets]: docs/architecture-sets.md
 [docs.builtins]: docs/builtins.md
+[docs.changelog]: CHANGELOG.md
 [docs.contributing]: CONTRIBUTING.md
 [docs.design-notes]: docs/design-notes.md
 [docs.exceptions]: docs/exceptions.md
