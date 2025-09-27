@@ -17,6 +17,14 @@ SPDX-License-Identifier: MIT
         <Copyright>Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
     </PropertyGroup>
 
+    <ItemGroup Condition="$(IsPackable) == 'true'">
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+        <PackageReference Include="ChangelogAutomation.MSBuild" Version="3.0.3" PrivateAssets="All" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" PackagePath="\LICENSES" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" PackagePath="\" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
     <PropertyGroup Label="Language">
         <Nullable>enable</Nullable>
         <WarningsAsErrors>nullable</WarningsAsErrors>
