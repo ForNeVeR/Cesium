@@ -14,6 +14,10 @@ internal sealed class CommaExpression : IExpression
     private readonly IExpression _left;
     private readonly IExpression _right;
 
+    internal IExpression Left => _left;
+
+    internal IExpression Right => _right;
+
     internal CommaExpression(IExpression left, IExpression right)
     {
         _left = left;
@@ -26,21 +30,21 @@ internal sealed class CommaExpression : IExpression
         _right = expression.Right.ToIntermediate(scope);
     }
 
-    public IExpression Lower(IDeclarationScope scope) => new CommaExpression(_left.Lower(scope), _right.Lower(scope));
+    public IExpression Lower(IDeclarationScope scope) => new CommaExpression(Left.Lower(scope), Right.Lower(scope));
 
     public void EmitTo(IEmitScope scope)
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
 
-        _left.EmitTo(scope);
+        Left.EmitTo(scope);
 
-        if (_left.GetExpressionType((IDeclarationScope)scope) is not PrimitiveType { Kind: PrimitiveTypeKind.Void })
+        if (Left.GetExpressionType((IDeclarationScope)scope) is not PrimitiveType { Kind: PrimitiveTypeKind.Void })
         {
             bodyProcessor.Emit(OpCodes.Pop);
         }
 
-        _right.EmitTo(scope);
+        Right.EmitTo(scope);
     }
 
-    public IType GetExpressionType(IDeclarationScope scope) => _right.GetExpressionType(scope);
+    public IType GetExpressionType(IDeclarationScope scope) => Right.GetExpressionType(scope);
 }

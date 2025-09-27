@@ -30,11 +30,8 @@
       "Expression": {
         "$type": "Cesium.Ast.UnaryExpressionSizeOfOperatorExpression, Cesium.Ast",
         "TargetExpession": {
-          "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-          "Constant": {
-            "Kind": "Identifier",
-            "Text": "size"
-          }
+          "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+          "Identifier": "size"
         }
       }
     }

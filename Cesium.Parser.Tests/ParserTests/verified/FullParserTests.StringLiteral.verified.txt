@@ -31,11 +31,8 @@
             "Expression": {
               "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
               "Function": {
-                "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                "Constant": {
-                  "Kind": "Identifier",
-                  "Text": "test"
-                }
+                "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                "Identifier": "test"
               },
               "Arguments": [
                 {

@@ -134,11 +134,8 @@
               "Left": {
                 "$type": "Cesium.Ast.PointerMemberAccessExpression, Cesium.Ast",
                 "Target": {
-                  "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                  "Constant": {
-                    "Kind": "Identifier",
-                    "Text": "x"
-                  }
+                  "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                  "Identifier": "x"
                 },
                 "Identifier": {
                   "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",

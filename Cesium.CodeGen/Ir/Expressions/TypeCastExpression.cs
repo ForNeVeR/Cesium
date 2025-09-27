@@ -10,6 +10,7 @@ using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using JetBrains.Annotations;
 using Mono.Cecil.Cil;
 using BinaryOperatorExpression = Cesium.CodeGen.Ir.Expressions.BinaryOperators.BinaryOperatorExpression;
 using C = Cesium.CodeGen.Ir.Types.CTypeSystem;
@@ -95,6 +96,21 @@ internal sealed class TypeCastExpression : IExpression
                 if (Expression is UnaryOperatorExpression { Operator: UnaryOperator.Promotion } unaryExpression)
                 {
                     return new BinaryOperatorExpression(new IdentifierExpression(namedType.TypeName), BinaryOperator.Add, unaryExpression.Target).Lower(scope);
+                }
+
+                if (Expression is CommaExpression commaExpression)
+                {
+                    List<IExpression> expressions = new();
+                    var newCommaExpression = commaExpression;
+                    do
+                    {
+                        commaExpression = newCommaExpression;
+                        expressions.Add(commaExpression.Left);
+                        newCommaExpression = commaExpression.Right as CommaExpression;
+                    }
+                    while (newCommaExpression is not null);
+                    expressions.Add(commaExpression.Right);
+                    return new Expressions.FunctionCallExpression(new IdentifierExpression(namedType.TypeName), null, expressions).Lower(scope);
                 }
             }
         }

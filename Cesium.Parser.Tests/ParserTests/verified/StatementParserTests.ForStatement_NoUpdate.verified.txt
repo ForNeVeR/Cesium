@@ -4,11 +4,8 @@
   "InitExpression": {
     "$type": "Cesium.Ast.AssignmentExpression, Cesium.Ast",
     "Left": {
-      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-      "Constant": {
-        "Kind": "Identifier",
-        "Text": "i"
-      }
+      "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+      "Identifier": "i"
     },
     "Operator": "=",
     "Right": {
@@ -22,11 +19,8 @@
   "TestExpression": {
     "$type": "Cesium.Ast.ComparisonBinaryOperatorExpression, Cesium.Ast",
     "Left": {
-      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-      "Constant": {
-        "Kind": "Identifier",
-        "Text": "i"
-      }
+      "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+      "Identifier": "i"
     },
     "Operator": "<",
     "Right": {
@@ -47,11 +41,8 @@
         "Text": "++"
       },
       "Target": {
-        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-        "Constant": {
-          "Kind": "Identifier",
-          "Text": "i"
-        }
+        "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+        "Identifier": "i"
       }
     }
   }
