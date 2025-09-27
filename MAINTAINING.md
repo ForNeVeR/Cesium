@@ -15,10 +15,11 @@ Publish a New Version
 4. Update the `<Copyright>` statement and `<PackageLicenseExpression>` field in the `Directory.Build.props`, if required.
 5. Update the `PackageLicenseExpression` and the `<Copyright>` statement in the `Cesium.Compiler.csproj` file (for the compiler dotnet tool). Make sure all the packed libraries are properly accounted for.
 6. Update the `<Version>` in `Directory.Build.props`.
-7. Prepare a corresponding entry in the `CHANGELOG.md` file (usually by renaming the "Unreleased" section).
-8. Merge the aforementioned changes via a pull request.
-9. Check if the NuGet key is still valid (see the **Rotate NuGet Publishing Key** section if it isn't).
-10. Push a tag in form of `v<VERSION>`, e.g. `v0.0.0`. GitHub Actions will do the rest (push a NuGet package).
+7. Update the `<CesiumCompilerPackageVersion>` in the `Sdk.props`.
+8. Prepare a corresponding entry in the `CHANGELOG.md` file (usually by renaming the "Unreleased" section).
+9. Merge the aforementioned changes via a pull request.
+10. Check if the NuGet key is still valid (see the **Rotate NuGet Publishing Key** section if it isn't).
+11. Push a tag in form of `v<VERSION>`, e.g. `v0.0.0`. GitHub Actions will do the rest (push a NuGet package).
 
 Rotate NuGet Publishing Key
 ---------------------------
