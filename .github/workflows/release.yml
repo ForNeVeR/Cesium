@@ -51,7 +51,6 @@ jobs:
           name: Compiler
           path: |-
             ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg
-            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.snupkg
 
             ./artifacts/package/release/Cesium.Compiler.Bundle.linux-arm64.${{ steps.version.outputs.version }}.zip
             ./artifacts/package/release/Cesium.Compiler.Bundle.linux-x64.${{ steps.version.outputs.version }}.zip
@@ -81,7 +80,6 @@ jobs:
           name: SDK
           path: |-
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
-            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload Templates ✅
         uses: actions/upload-artifact@v4
@@ -91,7 +89,62 @@ jobs:
           name: Templates
           path: |-
             ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
-            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.snupkg
 
-      #- name: ✅ Publish to NuGet ✅
-      #  # TODO
+      - name: 👀 Read changelog 👀
+        uses: ForNeVeR/ChangelogAutomation.action@v2
+        with:
+          output: ./release-notes.md
+
+      - name: ✅ Upload the changelog ✅
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: |-
+            ./release-notes.md
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 🚀 Create a release 🚀
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: ./release-notes.md
+          files: |-
+            ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg
+
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.linux-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.osx-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-arm64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x64.${{ steps.version.outputs.version }}.zip
+            ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
+
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
+
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
+
+            ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
+
+            ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg
+
+          name: Cesium v${{ steps.version.outputs.version }}
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 📦 Publish Compiler Bundle 📦
+        run: dotnet nuget push ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 📦 Publish Compiler 📦
+        run: dotnet nuget push ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 📦 Publish Runtime 📦
+        run: dotnet nuget push ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 📦 Publish SDK 📦
+        run: dotnet nuget push ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
+
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: 📦 Publish Templates 📦
+        run: dotnet nuget push ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
