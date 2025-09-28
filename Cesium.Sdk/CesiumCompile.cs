@@ -311,7 +311,7 @@ public class CesiumCompile : Task
                 return pathExtWithDot.Value.Contains(extension);
             }
 
-            return true; // TODO: Proper executable check for Unix
+            return true; // TODO[#840]: Proper executable check for Unix
 
         }
     }
