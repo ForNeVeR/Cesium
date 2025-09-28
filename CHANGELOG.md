@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [0.1.0] - 2025-09-28
 This is the initial release of Cesium.
 
-## Added
+### Added
 - New component: Cesium.Compiler, packaged as
   - a .NET tool,
   - a framework-dependent bundle for SDK use,
