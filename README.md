@@ -106,6 +106,14 @@ If you want to install a compiler separately from the SDK, you have two options:
 
    These platform-specific bundles provide [self-contained executables][dotnet.self-contained] for all the supported platforms, so they don't have a dependency on .NET runtime installed in the target environment.
 
+Packages
+--------
+- [![Cesium.Compiler.Bundle][badge.cesium.compiler.bundle]][nuget.cesium.compiler.bundle]
+- [![Cesium.Compiler][badge.cesium.compiler]][nuget.cesium.compiler]
+- [![Cesium.Runtime][badge.cesium.runtime][nuget.cesium.runtime]
+- [![Cesium.Sdk][badge.cesium.sdk][nuget.cesium.sdk]
+- [![Cesium.Templates][badge.cesium.templates][nuget.cesium.templates]
+
 Compiler Usage
 --------------
 ```console
@@ -181,6 +189,11 @@ The project templates (from the directory `Cesium.Templates`) are distributed un
 The license indication in the project's sources is compliant with the [REUSE specification v3.3][reuse.spec].
 
 [andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
+[badge.cesium.compiler.bundle]: https://img.shields.io/nuget/v/Cesium.Compiler.Bundle
+[badge.cesium.compiler]: https://img.shields.io/nuget/v/Cesium.Compiler
+[badge.cesium.runtime]: https://img.shields.io/nuget/v/Cesium.Runtime
+[badge.cesium.sdk]: https://img.shields.io/nuget/v/Cesium.Sdk
+[badge.cesium.templates]: https://img.shields.io/nuget/v/Cesium.Templates
 [c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.architecture-sets]: docs/architecture-sets.md
@@ -214,6 +227,11 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
 [issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
+[nuget.cesium.compiler.bundle]: https://www.nuget.org/packages/Cesium.Compiler.Bundle
+[nuget.cesium.compiler]: https://www.nuget.org/packages/Cesium.Compiler
+[nuget.cesium.runtime]: https://www.nuget.org/packages/Cesium.Runtime
+[nuget.cesium.sdk]: https://www.nuget.org/packages/Cesium.Sdk
+[nuget.cesium.templates]: https://www.nuget.org/packages/Cesium.Templates
 [releases]: https://github.com/ForNeVeR/Cesium/releases
 [reuse.spec]: https://reuse.software/spec-3.3/
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
