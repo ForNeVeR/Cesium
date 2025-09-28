@@ -91,11 +91,14 @@ If you want to install a compiler separately from the SDK, you have two options:
 
 Packages
 --------
-- **Cesium.Compiler.Bundle**: [![Cesium.Compiler.Bundle][badge.cesium.compiler.bundle]][nuget.cesium.compiler.bundle]
-- **Cesium.Compiler**: [![Cesium.Compiler][badge.cesium.compiler]][nuget.cesium.compiler]
-- **Cesium.Runtime**: [![Cesium.Runtime][badge.cesium.runtime]][nuget.cesium.runtime]
-- **Cesium.Sdk**: [![Cesium.Sdk][badge.cesium.sdk]][nuget.cesium.sdk]
-- **Cesium.Templates**: [![Cesium.Templates][badge.cesium.templates]][nuget.cesium.templates]
+
+| Package                    | Link                                                                                    |
+|----------------------------|-----------------------------------------------------------------------------------------|
+| **Cesium.Compiler.Bundle** | [![Cesium.Compiler.Bundle][badge.cesium.compiler.bundle]][nuget.cesium.compiler.bundle] |
+| **Cesium.Compiler**        | [![Cesium.Compiler][badge.cesium.compiler]][nuget.cesium.compiler]                      |
+| **Cesium.Runtime**         | [![Cesium.Runtime][badge.cesium.runtime]][nuget.cesium.runtime]                         |
+| **Cesium.Sdk**             | [![Cesium.Sdk][badge.cesium.sdk]][nuget.cesium.sdk]                                     |
+| **Cesium.Templates**       | [![Cesium.Templates][badge.cesium.templates]][nuget.cesium.templates]                   |
 
 Compiler Usage
 --------------
