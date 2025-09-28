@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>The .NET SDK for Cesium, a C compiler for .NET.</Description>
+<!--        <IncludeContentInPack>true</IncludeContentInPack>-->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>

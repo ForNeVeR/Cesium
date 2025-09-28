@@ -10,11 +10,15 @@ SPDX-License-Identifier: MIT
     </PropertyGroup>
     <PropertyGroup Label="Packaging">
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat Condition="'$(MSBuildProjectName)' != 'Cesium.Templates'">snupkg</SymbolPackageFormat>
         <ContinuousIntegrationBuild Condition="$(CI) != ''">true</ContinuousIntegrationBuild>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Copyright>Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
+    </PropertyGroup>
+    <PropertyGroup Condition="
+        '$(MSBuildProjectName)' != 'Cesium.Templates' and '$(MSBuildProjectName)' != 'Cesium.Sdk'
+    ">
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup Condition="$(IsPackable) == 'true'">
