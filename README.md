@@ -53,12 +53,66 @@ Documentation
 - [Design Notes][docs.design-notes]
 - [Maintainer Guide][docs.maintaining]
 
-Usage
------
+Installation
+------------
+Cesium consists of different components, which could be installed separately.
 
+### Project Templates
+Install the templates:
 ```console
-$ dotnet run --project Cesium.Compiler -- <list of the input files> --out <path to the output assembly>
+$ dotnet new install Cesium.Templates
 ```
+
+Then use:
+```
+$ dotnet new cesiumapp
+$ dotnet new cesiumlib
+```
+
+The `cesiumapp` template will create a new application (executable), `cesiumlib` will create a library (a non-executable assembly).
+
+Both templates integrate with MSBuild and are buildable using `dotnet build`. This is possible thanks to the [Cesium SDK][docs.msbuild-sdk]. Speaking of which…
+
+### Cesium SDK
+To start working on a new project using Cesium.SDK, write a `.ceproj` file:
+```xml
+<Project Sdk="Cesium.Sdk/[version]">
+    <PropertyGroup>
+        <TargetFramework>[tfm]</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="program.c" />
+    </ItemGroup>
+</Project>
+```
+
+Replace `[version]` with the Cesium SDK version you want to use, and `[tfm]` with the target framework of your program (e.g. `net6.0`).
+
+This is essentially the same as what's contained in the corresponding project template.
+
+### Compiler
+If you want to install a compiler separately from the SDK, you have two options:
+1. Install the compiler as a [.NET global tool][dotnet.tools]:
+
+   ```console
+   $ dotnet tool install --global Cesium.Compiler
+   $ Cesium.Compiler --help
+   ```
+
+   (See the arguments and how to run the compiler below.)
+
+2. Install a self-contained version of Cesium for your platform: download the corresponding `Cesium.Compiler.Bundle.<platform>.zip` from the [releases] page. Unpack and then use the `Cesium.Compiler(.exe)` executable file.
+
+   These platform-specific bundles provide [self-contained executables][dotnet.self-contained] for all the supported platforms, so they don't have a dependency on .NET runtime installed in the target environment.
+
+Compiler Usage
+--------------
+```console
+$ Cesium.Compiler <list of the input files> --out <path to the output assembly> [optional parameters go here]
+```
+
+For run from sources, use `dotnet run --project Cesium.Compiler` in the repository root directory, followed by `--` and the same arguments.
 
 For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
 
@@ -142,6 +196,8 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [docs.msbuild-sdk]: docs/msbuild-sdk.md
 [docs.tests]: docs/tests.md
 [docs.type-system]: docs/type-system.md
+[dotnet.self-contained]: https://learn.microsoft.com/en-us/dotnet/core/deploying/
+[dotnet.tools]: https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools
 [issue.c23-standard]: https://github.com/ForNeVeR/Cesium/issues/62
 [issue.lexer]: https://github.com/ForNeVeR/Cesium/issues/76
 [issue.next-milestone]: https://github.com/ForNeVeR/Cesium/issues/61
@@ -158,6 +214,7 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [issues.sdk]: https://github.com/ForNeVeR/Cesium/labels/area%3Asdk
 [issues.standard-support]: https://github.com/ForNeVeR/Cesium/labels/area%3Astandard-support
 [issues.stdlib]: https://github.com/ForNeVeR/Cesium/labels/area%3Astdlib
+[releases]: https://github.com/ForNeVeR/Cesium/releases
 [reuse.spec]: https://reuse.software/spec-3.3/
 [status-enfer]: https://img.shields.io/badge/status-enfer-orange.svg
 [stdlib]: Cesium.Compiler/stdlib
