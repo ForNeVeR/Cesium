@@ -39,8 +39,7 @@ SPDX-License-Identifier: MIT
 
     <ItemGroup Condition=" $(SkipCesiumRuntimeInstallation) != 'true' ">
         <PackageReference Include="Cesium.Runtime"
-                          Version="$(CesiumCompilerPackageVersion)"
-                          PrivateAssets="all"/>
+                          Version="$(CesiumCompilerPackageVersion)" />
     </ItemGroup>
 
     <UsingTask TaskName="Cesium.Sdk.CesiumCompile"
