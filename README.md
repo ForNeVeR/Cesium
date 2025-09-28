@@ -93,9 +93,9 @@ Packages
 --------
 - [![Cesium.Compiler.Bundle][badge.cesium.compiler.bundle]][nuget.cesium.compiler.bundle]
 - [![Cesium.Compiler][badge.cesium.compiler]][nuget.cesium.compiler]
-- [![Cesium.Runtime][badge.cesium.runtime][nuget.cesium.runtime]
-- [![Cesium.Sdk][badge.cesium.sdk][nuget.cesium.sdk]
-- [![Cesium.Templates][badge.cesium.templates][nuget.cesium.templates]
+- [![Cesium.Runtime][badge.cesium.runtime]][nuget.cesium.runtime]
+- [![Cesium.Sdk][badge.cesium.sdk]][nuget.cesium.sdk]
+- [![Cesium.Templates][badge.cesium.templates]][nuget.cesium.templates]
 
 Compiler Usage
 --------------
