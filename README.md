@@ -36,23 +36,6 @@ int main(int argc, char *argv[])
 
 The next milestone is [#61: sha1collisiondetection][issue.next-milestone], which is **80%** complete _(note that the progress estimation is preliminary and may be changed in either direction at any moment)_.
 
-Documentation
--------------
-
-- [C23 Language Standard Draft][c23-draft]
-
-- [Changelog][docs.changelog]
-- [Contributor Guide][docs.contributing]
-- [Cesium Tests][docs.tests]
-- [Cesium Type System][docs.type-system]
-- [Cesium SDK][docs.msbuild-sdk]
-- [Architecture Sets][docs.architecture-sets]
-- [CLI-Related Language Extensions][docs.language-extensions]
-- [Built-in Functions][docs.builtins]
-- [Exceptions in the Compiler Code][docs.exceptions]
-- [Design Notes][docs.design-notes]
-- [Maintainer Guide][docs.maintaining]
-
 Installation
 ------------
 Cesium consists of different components, which could be installed separately.
@@ -179,6 +162,23 @@ If you're interested in certain project areas, check the per-area issue labels:
 - [`area:sdk`][issues.sdk]: issues related to the Cesium .NET SDK
 - [`area:standard-support`][issues.standard-support]: issues related to C23 standard support
 - [`area:stdlib`][issues.stdlib]: issues related to the standard library implementation
+
+Documentation
+-------------
+
+- [C23 Language Standard Draft][c23-draft]
+
+- [Changelog][docs.changelog]
+- [Contributor Guide][docs.contributing]
+- [Cesium Tests][docs.tests]
+- [Cesium Type System][docs.type-system]
+- [Cesium SDK][docs.msbuild-sdk]
+- [Architecture Sets][docs.architecture-sets]
+- [CLI-Related Language Extensions][docs.language-extensions]
+- [Built-in Functions][docs.builtins]
+- [Exceptions in the Compiler Code][docs.exceptions]
+- [Design Notes][docs.design-notes]
+- [Maintainer Guide][docs.maintaining]
 
 License
 -------
