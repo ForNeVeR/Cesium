@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 param (
-    $NewVersion = '0.0.1',
+    $NewVersion = '0.1.0',
     $RepoRoot = "$PSScriptRoot/.."
 )
 
