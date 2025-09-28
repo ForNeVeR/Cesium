@@ -107,6 +107,10 @@ internal static class Compilation
 
     private static Task<string> Preprocess(AbsolutePath compilationSource, AbsolutePath compilationFileDirectory, TextReader reader, CompilationOptions compilationOptions)
     {
+        // NOTE: We use AppContext.BaseDirectory here, since we expect the standard header files to be placed near our
+        // compiler assembly. For example, use of Environment.ProcessPath wouldn't work here since in some compiler
+        // execution scenarios, in particular when it's started using `dotnet` — because the process path is the path to
+        // the dotnet executable then.
         var currentProcessDir = new AbsolutePath(AppContext.BaseDirectory);
 
         var stdLibDirectory = currentProcessDir / "stdlib";
