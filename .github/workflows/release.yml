@@ -97,12 +97,13 @@ jobs:
 
       - name: ✅ Upload the changelog ✅
         uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
           name: release-notes
           path: |-
             ./release-notes.md
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 🚀 Create a release 🚀
         uses: softprops/action-gh-release@v2
         with:
@@ -129,22 +130,22 @@ jobs:
 
           name: Cesium v${{ steps.version.outputs.version }}
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 📦 Publish Compiler Bundle 📦
         run: dotnet nuget push ./artifacts/package/release/Cesium.Compiler.Bundle.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 📦 Publish Compiler 📦
         run: dotnet nuget push ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 📦 Publish Runtime 📦
         run: dotnet nuget push ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 📦 Publish SDK 📦
         run: dotnet nuget push ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
 
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         name: 📦 Publish Templates 📦
         run: dotnet nuget push ./artifacts/package/release/Cesium.Templates.${{ steps.version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }}
