@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <ContinuousIntegrationBuild Condition="$(CI) != ''">true</ContinuousIntegrationBuild>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Copyright>Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
+        <Copyright>2021-2025 Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
     </PropertyGroup>
     <PropertyGroup Condition="
         '$(MSBuildProjectName)' != 'Cesium.Templates' and '$(MSBuildProjectName)' != 'Cesium.Sdk'

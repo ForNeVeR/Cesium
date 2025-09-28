@@ -188,7 +188,7 @@ The project templates (from the directory `Cesium.Templates`) are distributed un
 
 The license indication in the project's sources is compliant with the [REUSE specification v3.3][reuse.spec].
 
-[andivionian-status-classifier]: https://github.com/ForNeVeR/andivionian-status-classifier#status-enfer-
+[andivionian-status-classifier]: https://andivionian.fornever.me/v1/#status-enfer-
 [badge.cesium.compiler.bundle]: https://img.shields.io/nuget/v/Cesium.Compiler.Bundle
 [badge.cesium.compiler]: https://img.shields.io/nuget/v/Cesium.Compiler
 [badge.cesium.runtime]: https://img.shields.io/nuget/v/Cesium.Runtime

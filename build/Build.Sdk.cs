@@ -353,7 +353,7 @@ public partial class Build
 
     private IEnumerable<string> GetCompilerBundleCopyrightStatements(Project project)
     {
-        yield return "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>";
+        yield return "2021-2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>";
 
         foreach (var package in GetCompilerBundlePackages(project))
         {
