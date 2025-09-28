@@ -246,7 +246,7 @@ public partial class Build
 
     private string? GetPackageLicenseExpression(string packageId, string version)
     {
-        // TODO: These are unused, hopefully will go away after we use dotnet-licenses.
+        // TODO[#839]: These are unused, hopefully will go away after we use dotnet-licenses.
         switch (packageId)
         {
             case "Microsoft.VisualStudio.Setup.Configuration.Interop": return null;
@@ -254,7 +254,7 @@ public partial class Build
 
         switch (packageId, version)
         {
-            case ("CommandLineParser", "2.9.1"): return "MIT"; // TODO: PR to fix metadata
+            case ("CommandLineParser", "2.9.1"): return "MIT"; // Sadly, the package is not actively maintained anymore, we'll have to live with it here
         }
 
         var nupkgPath = GetNuPkgPath(packageId, version);
@@ -301,9 +301,9 @@ public partial class Build
                 .Select(e => (Id: e.GetProperty("id").GetString()!, Version: e.GetProperty("resolvedVersion").GetString()!))
                 .ToList();
 
-        // TODO: Currently, this yields too many packages that aren't in the bundle (e.g. System.Memory,
-        //       Changelog.Automation). In the future, I hope that dotnet.licenses will generate this better. But for
-        //       now, this will have to work.
+        // TODO[#839]: Currently, this yields too many packages that aren't in the bundle (e.g. System.Memory,
+        //             Changelog.Automation). In the future, I hope that dotnet.licenses will generate this better. But
+        //             for now, this will have to work.
 
         return allPackages;
     }
