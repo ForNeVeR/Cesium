@@ -14,7 +14,7 @@ Publish a New Version
 3. Update the copyright statement in the `LICENSE.md` file, if required.
 4. Update the `<Copyright>` statement and `<PackageLicenseExpression>` field in the `Directory.Build.props`, if required.
 5. Update the Cesium's statement in `GetCompilerBundleCopyrightStatements` method of `Build.Sdk.cs`, if required.
-6. Update the `PackageLicenseExpression` and the `<Copyright>` statement in the `Cesium.Compiler.csproj` file (for the compiler dotnet tool). Make sure all the packed libraries are properly accounted for.
+6. Update the `PackageLicenseExpression` and the `<Copyright>` statement in the `Cesium.Compiler.csproj` file (for the compiler dotnet tool), if required. Make sure all the packed libraries are properly accounted for.
 7. Run the `scripts/Update-Version.ps1` script with the argument `-NewVersion <the new version>`. It will update the various places where the new version should be used.
 8. Prepare a corresponding entry in the `CHANGELOG.md` file (usually by renaming the "Unreleased" section).
 9. Merge the aforementioned changes via a pull request.

@@ -1,13 +1,15 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Cesium contributors <https://github.com/ForNeVeR/Cesium>",
-    "classifications": [ "Console" ],
+    "classifications": [
+        "Console"
+    ],
     "identity": "Cesium.Template.Library",
     "name": "Cesium Library",
     "shortName": "cesiumlib",
     "tags": {
         "language": "C",
-        "type":"project"
+        "type": "project"
     },
     "sourceName": "MyProject.Name",
     "preferNameDirectory": true,
@@ -16,7 +18,7 @@
             "type": "generated",
             "generator": "constant",
             "parameters": {
-                "value": "0.0.1"
+                "value": "0.1.1"
             },
             "replaces": "CesiumVersion"
         },
@@ -38,7 +40,7 @@
                     "description": ".NET Framework 4.8 target framework"
                 }
             ],
-            "replaces":"Tfm"
+            "replaces": "Tfm"
         }
     }
 }
