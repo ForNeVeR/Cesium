@@ -32,11 +32,8 @@
         "TargetExpession": {
           "$type": "Cesium.Ast.ParenExpression, Cesium.Ast",
           "Contents": {
-            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-            "Constant": {
-              "Kind": "Identifier",
-              "Text": "size"
-            }
+            "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+            "Identifier": "size"
           }
         }
       }

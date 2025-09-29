@@ -59,30 +59,28 @@ public partial class CParser
     // 6.5 Expressions
 
     [Rule("postfix_expression: primary_expression")] // 6.5.2 Postfix operators
-    [Rule("unary_expression: postfix_expression")] // 6.5.3 Unary operators
-    [Rule("cast_expression: unary_expression")] // 6.5.4 Cast operators
-    [Rule("multiplicative_expression: cast_expression")] // 6.5.5 Multiplicative operators
-    [Rule("additive_expression: multiplicative_expression")] // 6.5.6 Additive operators
-    [Rule("shift_expression: additive_expression")] // 6.5.7 Bitwise shift operators
-    [Rule("relational_expression: shift_expression")] // 6.5.8 Relational operators
-    [Rule("equality_expression: relational_expression")] // 6.5.9 Equality operators
-    [Rule("AND_expression: equality_expression")] // 6.5.10 Bitwise AND operator
-    [Rule("exclusive_OR_expression: AND_expression")] // 6.5.11 Bitwise exclusive OR operator
-    [Rule("inclusive_OR_expression: exclusive_OR_expression")] // 6.5.12 Bitwise inclusive OR operator
-    [Rule("logical_AND_expression: inclusive_OR_expression")] // 6.5.13 Logical AND operator
+    //[Rule("cast_expression: unary_expression")] // 6.5.4 Cast operators
+    //[Rule("multiplicative_expression: cast_expression")] // 6.5.5 Multiplicative operators
+    //[Rule("additive_expression: multiplicative_expression")] // 6.5.6 Additive operators
+    //[Rule("shift_expression: additive_expression")] // 6.5.7 Bitwise shift operators
+    //[Rule("relational_expression: shift_expression")] // 6.5.8 Relational operators
+    //[Rule("equality_expression: relational_expression")] // 6.5.9 Equality operators
+    //[Rule("AND_expression: equality_expression")] // 6.5.10 Bitwise AND operator
+    //[Rule("exclusive_OR_expression: AND_expression")] // 6.5.11 Bitwise exclusive OR operator
+    //[Rule("inclusive_OR_expression: exclusive_OR_expression")] // 6.5.12 Bitwise inclusive OR operator
+    //[Rule("logical_AND_expression: inclusive_OR_expression")] // 6.5.13 Logical AND operator
     [Rule("logical_OR_expression: logical_AND_expression")] // 6.5.14 Logical OR operator
     [Rule("conditional_expression: logical_OR_expression")] // 6.5.15 Conditional operator
     [Rule("assignment_expression: conditional_expression")] // 6.5.16 Assignment operators
     [Rule("expression: assignment_expression")] // 6.5.17 Comma operator
-    [Rule("expression: constant_expression")] // 6.6 Constant expressions
+    // Constant rule included in the assignment_expression via the conditional_expression rule
+    //[Rule("expression: constant_expression")] // 6.6 Constant expressions
     private static Expression CreateExpressionIdentity(Expression expression) => expression;
 
     [Rule("constant_expression: conditional_expression")] // 6.6 Constant expressions
     private static Expression MakeConstantExpression(Expression expression) => expression;
 
     // 6.5.1 Primary expressions
-    [Rule("primary_expression: constant")]
-    private static Expression MakeConstantExpression(ICToken constant) => new ConstantLiteralExpression(constant);
 
     [Rule("primary_expression: Identifier")]
     private static Expression MakeIdentifierExpression(IToken identifier) => new IdentifierExpression(identifier.Text);
@@ -97,6 +95,9 @@ public partial class CParser
 
     [Rule("primary_expression: '(' expression ')'")]
     private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
+
+    [Rule("primary_expression: constant")]
+    private static Expression MakeConstantExpression(ICToken constant) => new ConstantLiteralExpression(constant);
 
     // TODO[#207]:
     // primary-expression:
@@ -167,27 +168,38 @@ public partial class CParser
     // TODO[#207]: 6.5.3 Unary operators
     // unary-expression:
     //    _Alignof ( type-name )
-    [Rule("unary_expression: '++' unary_expression")]
-    [Rule("unary_expression: '--' unary_expression")]
+    [Rule("prefix_increment_operator: '++'")]
+    [Rule("prefix_increment_operator: '--'")]
+    private static ICToken MakePrefixIncrementOperator(ICToken @operator) => @operator;
+
+    [Rule("unary_expression: prefix_increment_operator unary_expression")]
     private static Expression MakePrefixIncrementExpression(ICToken prefixOperator, Expression target) =>
         new PrefixIncrementDecrementExpression(prefixOperator, target);
 
-    [Rule("unary_expression: '*' cast_expression")]
-    private static Expression MakeIndirectionExpression(ICToken _, Expression target) =>
-        new IndirectionExpression(target);
-
-    [Rule("unary_expression: unary_operator cast_expression")]
-    private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target) =>
-        @operator.Kind == CTokenType.Subtract && target is ConstantLiteralExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier
-        ? new ConstantLiteralExpression(MergeTokens(@operator, constantExpression.Constant))
-        : new UnaryOperatorExpression(@operator.Text, target);
-
+    [Rule("unary_operator: '*'")]
     [Rule("unary_operator: '&'")]
     [Rule("unary_operator: '+'")]
     [Rule("unary_operator: '-'")]
     [Rule("unary_operator: '~'")]
     [Rule("unary_operator: '!'")]
     private static ICToken MakeUnaryOperator(ICToken @operator) => @operator;
+
+    [Rule("unary_expression: unary_operator cast_expression")]
+    private static Expression MakeUnaryOperatorExpression(ICToken @operator, Expression target)
+    {
+        if (@operator.Kind == CTokenType.Multiply)
+        {
+            return new IndirectionExpression(target);
+        }
+        else if (@operator.Kind == CTokenType.Subtract && target is ConstantLiteralExpression constantExpression && constantExpression.Constant.Kind is not CTokenType.Identifier)
+        {
+            return new ConstantLiteralExpression(MergeTokens(@operator, constantExpression.Constant));
+        }
+        else
+        {
+            return new UnaryOperatorExpression(@operator.Text, target);
+        }
+    }
 
     [Rule("unary_expression: KeywordSizeof unary_expression")]
     private static Expression MakeExpressionSizeOfOperator(ICToken _, Expression expression) =>
@@ -206,58 +218,147 @@ public partial class CParser
     private static Expression MakeCastExpression(ICToken _, TypeName typeName, ICToken __, Expression target) =>
         new CastExpression(typeName, target);
 
-    // 6.5.5 Multiplicative operators
-    [Rule("multiplicative_expression: multiplicative_expression '*' cast_expression")]
-    [Rule("multiplicative_expression: multiplicative_expression '/' cast_expression")]
-    [Rule("multiplicative_expression: multiplicative_expression '%' cast_expression")]
-    private static Expression MakeMultiplicativeExpression(Expression a, ICToken @operator, Expression b) =>
-        new ArithmeticBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("unary_expression: postfix_expression")] // 6.5.3 Unary operators
+    [Rule("cast_expression: unary_expression")] // 6.5.4 Cast operators
+    private static Expression CreateCastExpressionIdentity(Expression expression) => expression;
 
+    [Rule("multiplicative_expression_operator: '*'")]
+    [Rule("multiplicative_expression_operator: '/'")]
+    [Rule("multiplicative_expression_operator: '%'")]
+    private static ICToken MakeMultiplicativeOperator(ICToken @operator) => @operator;
+
+    // 6.5.5 Multiplicative operators
+    [Rule("multiplicative_expression: (cast_expression (multiplicative_expression_operator cast_expression)*)")]
     // 6.5.6 Additive operators
-    [Rule("additive_expression: additive_expression '+' multiplicative_expression")]
-    [Rule("additive_expression: additive_expression '-' multiplicative_expression")]
-    private static Expression MakeAdditiveExpression(Expression a, ICToken @operator, Expression b) =>
-        new ArithmeticBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("additive_expression: (multiplicative_expression (additive_expression_operator multiplicative_expression)*)")]
+    public static Expression MakeArithmeticBinaryOperatorExpression(Punctuated<Expression, ICToken> p)
+    {
+        Expression result = default!;
+        IToken? lastOp = null;
+        foreach (var (n, op) in p)
+        {
+            if (lastOp is null)
+            {
+                result = n;
+                lastOp = op;
+            }
+            else
+            {
+                result = new ArithmeticBinaryOperatorExpression(result, lastOp.Text, n);
+                if (op is not null)
+                {
+                    lastOp = op;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    [Rule("additive_expression_operator: '+'")]
+    [Rule("additive_expression_operator: '-'")]
+    private static ICToken MakeAdditiveOperator(ICToken @operator) => @operator;
+
+    
+    [Rule("shift_expression_operator: '<<'")]
+    [Rule("shift_expression_operator: '>>'")]
+    private static ICToken MakeShiftOperator(ICToken @operator) => @operator;
 
     // 6.5.7 Bitwise shift operators
-    [Rule("shift_expression: shift_expression '<<' additive_expression")]
-    [Rule("shift_expression: shift_expression '>>' additive_expression")]
-    private static Expression MakeShiftExpression(Expression a, ICToken @operator, Expression b) =>
-        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("shift_expression: (additive_expression (shift_expression_operator additive_expression)*)")]
+    // 6.5.10 Bitwise AND operator
+    [Rule("AND_expression: (equality_expression ('&' equality_expression)*)")]
+    // 6.5.11 Bitwise exclusive OR operator
+    [Rule("exclusive_OR_expression: (AND_expression ('^' AND_expression)*)")]
+    // 6.5.12 Bitwise inclusive OR operator
+    [Rule("inclusive_OR_expression: (exclusive_OR_expression ('|' exclusive_OR_expression)*)")]
+    public static Expression MakeBitwiseBinaryOperatorExpression(Punctuated<Expression, ICToken> p)
+    {
+        Expression result = default!;
+        IToken? lastOp = null;
+        foreach (var (n, op) in p)
+        {
+            if (lastOp is null)
+            {
+                result = n;
+                lastOp = op;
+            }
+            else
+            {
+                result = new BitwiseBinaryOperatorExpression(result, lastOp.Text, n);
+                if (op is not null)
+                {
+                    lastOp = op;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    [Rule("relational_expression_operator: '<'")]
+    [Rule("relational_expression_operator: '>'")]
+    [Rule("relational_expression_operator: '<='")]
+    [Rule("relational_expression_operator: '>='")]
+    private static ICToken MakeRelationalOperator(ICToken @operator) => @operator;
 
     // 6.5.8 Relational operators
-    [Rule("relational_expression: relational_expression '<' additive_expression")]
-    [Rule("relational_expression: relational_expression '>' additive_expression")]
-    [Rule("relational_expression: relational_expression '<=' additive_expression")]
-    [Rule("relational_expression: relational_expression '>=' additive_expression")]
-    private static Expression MakeRelationalExpression(Expression a, ICToken @operator, Expression b) =>
-        new ComparisonBinaryOperatorExpression(a, @operator.Text, b);
-
+    [Rule("relational_expression: (shift_expression (relational_expression_operator shift_expression)*)")]
     // 6.5.9 Equality operators
-    [Rule("equality_expression: equality_expression '==' additive_expression")]
-    [Rule("equality_expression: equality_expression '!=' additive_expression")]
-    private static Expression MakeEqualityExpression(Expression a, ICToken @operator, Expression b) =>
-        new ComparisonBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("equality_expression: (relational_expression (equality_expression_operator relational_expression)*)")]
+    public static Expression MakeComparisonBinaryOperatorExpression(Punctuated<Expression, ICToken> p)
+    {
+        Expression result = default!;
+        IToken? lastOp = null;
+        foreach (var (n, op) in p)
+        {
+            if (lastOp is null)
+            {
+                result = n;
+                lastOp = op;
+            }
+            else
+            {
+                result = new ComparisonBinaryOperatorExpression(result, lastOp.Text, n);
+                if (op is not null)
+                {
+                    lastOp = op;
+                }
+            }
+        }
 
-    // 6.5.10 Bitwise AND operator
-    [Rule("AND_expression: AND_expression '&' equality_expression")]
-    private static Expression MakeBitwiseAndExpression(Expression a, ICToken @operator, Expression b) =>
-        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
+        return result;
+    }
 
-    // 6.5.11 Bitwise exclusive OR operator
-    [Rule("exclusive_OR_expression: exclusive_OR_expression '^' AND_expression")]
-    private static Expression MakeBitwiseXorExpression(Expression a, ICToken @operator, Expression b) =>
-        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
-
-    // 6.5.12 Bitwise inclusive OR operator
-    [Rule("inclusive_OR_expression: inclusive_OR_expression '|' exclusive_OR_expression")]
-    private static Expression MakeBitwiseOrExpression(Expression a, ICToken @operator, Expression b) =>
-        new BitwiseBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("equality_expression_operator: '=='")]
+    [Rule("equality_expression_operator: '!='")]
+    private static ICToken MakeEqualityOperator(ICToken @operator) => @operator;
 
     // 6.5.13 Logical AND operator
-    [Rule("logical_AND_expression: logical_AND_expression '&&' inclusive_OR_expression")]
-    private static Expression MakeLogicalAndExpression(Expression a, ICToken @operator, Expression b) =>
-        new LogicalBinaryOperatorExpression(a, @operator.Text, b);
+    [Rule("logical_AND_expression: (inclusive_OR_expression ('&&' inclusive_OR_expression)*)")]
+    public static Expression MakeLogicalBinaryOperatorExpression(Punctuated<Expression, ICToken> p)
+    {
+        Expression result = default!;
+        IToken? lastOp = null;
+        foreach (var (n, op) in p)
+        {
+            if (lastOp is null)
+            {
+                result = n;
+                lastOp = op;
+            }
+            else
+            {
+                result = new LogicalBinaryOperatorExpression(result, lastOp.Text, n);
+                if (op is not null)
+                {
+                    lastOp = op;
+                }
+            }
+        }
+
+        return result;
+    }
 
     // 6.5.14 Logical OR operator
     [Rule("logical_OR_expression: logical_OR_expression '||' logical_AND_expression")]

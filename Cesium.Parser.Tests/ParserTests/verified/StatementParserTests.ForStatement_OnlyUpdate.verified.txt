@@ -10,11 +10,8 @@
       "Text": "++"
     },
     "Target": {
-      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-      "Constant": {
-        "Kind": "Identifier",
-        "Text": "i"
-      }
+      "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+      "Identifier": "i"
     }
   },
   "Body": {
@@ -26,11 +23,8 @@
         "Text": "++"
       },
       "Target": {
-        "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-        "Constant": {
-          "Kind": "Identifier",
-          "Text": "i"
-        }
+        "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+        "Identifier": "i"
       }
     }
   }

@@ -89,11 +89,8 @@
                   "Expression": {
                     "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
                     "Function": {
-                      "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                      "Constant": {
-                        "Kind": "Identifier",
-                        "Text": "foo"
-                      }
+                      "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                      "Identifier": "foo"
                     },
                     "Arguments": null
                   },
@@ -109,11 +106,8 @@
               "Left": {
                 "$type": "Cesium.Ast.FunctionCallExpression, Cesium.Ast",
                 "Function": {
-                  "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-                  "Constant": {
-                    "Kind": "Identifier",
-                    "Text": "foo"
-                  }
+                  "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+                  "Identifier": "foo"
                 },
                 "Arguments": null
               },

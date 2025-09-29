@@ -25,7 +25,7 @@ public class DeclarationParserTests : ParserTestBase
     public Task InitializerDeclarationTest() => DoDeclarationParserTest("int x = 0;");
 
     [Fact]
-    public Task InitializerHexDeclarationTest() => DoDeclarationParserTest("int x = 0x22;");
+    public Task InitializerHexDeclarationTest() => DoDeclarationParserTest("int x = 0xffui8;");
 
     [Fact]
     public Task MultiDeclaration() => DoDeclarationParserTest("int x = 0, y = 2 + 2;");

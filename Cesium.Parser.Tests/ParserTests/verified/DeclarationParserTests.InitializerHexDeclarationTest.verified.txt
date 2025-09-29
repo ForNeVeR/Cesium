@@ -24,7 +24,7 @@
           "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
           "Constant": {
             "Kind": "IntLiteral",
-            "Text": "0x22"
+            "Text": "0xffui8"
           }
         },
         "Designation": null

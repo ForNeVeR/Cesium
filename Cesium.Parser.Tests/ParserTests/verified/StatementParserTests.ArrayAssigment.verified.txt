@@ -43,11 +43,8 @@
         "Left": {
           "$type": "Cesium.Ast.SubscriptingExpression, Cesium.Ast",
           "Base": {
-            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
-            "Constant": {
-              "Kind": "Identifier",
-              "Text": "a"
-            }
+            "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
+            "Identifier": "a"
           },
           "Index": {
             "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
