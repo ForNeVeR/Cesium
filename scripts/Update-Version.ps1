@@ -31,6 +31,29 @@ function Update-PropsFile($relativePath, $propName) {
     Write-Output "Updated file `"$file`"."
 }
 
+function Update-TemplateJson($relativePath, $symbolName) {
+    Get-ChildItem -Recurse "$RepoRoot/$relativePath" | ForEach-Object {
+        $file = $_.FullName
+        $found = $false
+
+        $content = Get-Content $file | ConvertFrom-Json
+        $symbol = $content.symbols.$symbolName
+        if ($symbol) {
+            $symbol.parameters.value = $NewVersion
+            $found = $true
+        }
+
+        if (!$found) {
+            throw "Cannot find symbol $symbolName in file `"$file`"."
+        }
+
+        $content = ($content | ConvertTo-Json -Depth 4) -replace '  ', '    ' # 4-space indent
+        [IO.File]::WriteAllText($file, $content + "`n")
+        Write-Output "Updated file `"$file`"."
+    }
+}
+
 Update-PowerShellFile 'scripts/Update-Version.ps1'
 Update-PropsFile 'Directory.Build.props' 'VersionPrefix'
 Update-PropsFile 'Cesium.Sdk/Sdk/Sdk.props' 'CesiumCompilerPackageVersion'
+Update-TemplateJson '**/template.json' 'CesiumVersion'
