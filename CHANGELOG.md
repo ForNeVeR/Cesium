@@ -10,6 +10,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-09-29
+### Fixed
+- [#843: SDK templates broken for 0.1.0](https://github.com/ForNeVeR/Cesium/issues/843).
+
+### Changed
+- Expression parsing speedup. Thanks to @kant2002!
+
 ## [0.1.0] - 2025-09-28
 This is the initial release of Cesium.
 
@@ -55,4 +62,5 @@ Thanks to our benefactors (in the alphabetical order):
 - @zawodskoj
 
 [0.1.0]: https://github.com/ForNeVeR/Cesium/releases/tag/v0.1.0
-[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.1.0...HEAD
+[0.1.1]: https://github.com/ForNeVeR/Cesium/compare/v0.1.0...v0.1.1
+[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.1.1...HEAD
