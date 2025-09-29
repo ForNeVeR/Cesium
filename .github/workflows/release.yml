@@ -62,6 +62,7 @@ jobs:
             ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
 
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload Runtime ✅
         uses: actions/upload-artifact@v4
@@ -122,6 +123,7 @@ jobs:
             ./artifacts/package/release/Cesium.Compiler.Bundle.win-x86.${{ steps.version.outputs.version }}.zip
 
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.nupkg
+            ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
 
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.nupkg
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
