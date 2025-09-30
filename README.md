@@ -64,18 +64,27 @@ To start working on a new project using Cesium.SDK, write a `.ceproj` file:
         <TargetFramework>[tfm]</TargetFramework>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="program.c" />
-    </ItemGroup>
 </Project>
 ```
 
 Replace `[version]` with the Cesium SDK version you want to use, and `[tfm]` with the target framework of your program (e.g. `net6.0`).
 
+And add a `program.c` file (or any other `.c` and `.h` files) to the same folder.
+
 This is essentially the same as what's contained in the corresponding project template.
 
+Then, build your project via
+```console
+$ dotnet build
+```
+
+And run it via
+```console
+$ dotnet run
+```
+
 ### Compiler
-If you want to install a compiler separately from the SDK, you have two options:
+If you want to install the compiler separately from the SDK, you have two options:
 1. Install the compiler as a [.NET global tool][dotnet.tools]:
 
    ```console

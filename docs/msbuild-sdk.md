@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 Cesium MSBuild Project SDK
 --------------------------
 
-Cesium provides it's own project SDK that could be used to simplify building of Cesium programs and libraries.
+Cesium provides its own project SDK that could be used to simplify building of Cesium programs and libraries.
 
 Cesium MSBuild SDK inherits default behavior from a `Microsoft.NET.Sdk` SDK and tries to integrate with it the same way as C# does.
 
@@ -16,14 +16,17 @@ Cesium MSBuild SDK only supports SDK-style projects.
 > Note: Some of the common MSBuild properties and items those are not stated in this document could be also used in Cesium project files. Not all of them are tested so something may not work as expected.
 
 ### Source files
-Source files are defined with `<Compile>` items, very similar to other .NET languages:
+By default, SDK includes all the `.c` and `.h` files from the project directory as `<Compile>` items. (While `.h` files aren't really the direct compiler inputs, but they are included for proper incremental compilation support, so that the assembly is recompiled on any header file change.)
+
+In cases when this is unwanted, add an element `<EnableDefaultItems>false</EnableDefaultItems>` into any `<PropertyGroup>` in your project file.
+
+If the default items are disabled, then you'll need to manage the inputs manuallt. In particular, the source files might be defined with `<Compile>` items, very similar to other .NET languages:
 ```xml
 <ItemGroup>
     <Compile Include="hello.c" />
     <Compile Include="folder/*.c" />
 </ItemGroup>
 ```
-> Note: In the current SDK implementation, source files will not be included into compilation implicitly. They should be defined in `<Compile>` items, in opposite to SDK-style C# projects, where all C# source files are implicitly added to the compilation.
 
 ### References
 

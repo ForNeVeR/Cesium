@@ -3,7 +3,4 @@
         <TargetFramework>Tfm</TargetFramework>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="program.c" />
-    </ItemGroup>
 </Project>
