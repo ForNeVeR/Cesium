@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="QuikGraph" Version="2.5.0" />
     <PackageVersion Include="QuikGraph.Graphviz" Version="2.5.0" />
     <PackageVersion Include="TruePath" Version="1.10.0" />
-    <PackageVersion Include="Verify.Xunit" Version="30.19.0" />
+    <PackageVersion Include="Verify.Xunit" Version="30.19.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
