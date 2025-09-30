@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Bundle</CesiumCompilerPackageName>
-        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.1.1</CesiumCompilerPackageVersion>
+        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.1.2</CesiumCompilerPackageVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
 
