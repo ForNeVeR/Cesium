@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Verify.Xunit" Version="30.19.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.assert" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Yoakke.SynKit.C.Syntax" Version="2025.9.28-11.7.0-nightly" />
     <PackageVersion Include="Yoakke.SynKit.Lexer" Version="2025.9.28-11.7.0-nightly" />
     <PackageVersion Include="Yoakke.SynKit.Lexer.Generator" Version="2025.9.28-11.7.0-nightly" />
