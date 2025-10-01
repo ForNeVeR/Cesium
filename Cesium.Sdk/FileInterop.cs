@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Cesium.Sdk;
@@ -16,41 +17,49 @@ internal enum Error
 [StructLayout(LayoutKind.Sequential)]
 internal struct FileStatus
 {
-    public ulong st_dev;
-    public ulong st_ino;
-    public ulong st_nlink;
-    public uint st_mode;
-    public uint st_uid;
-    public uint st_gid;
-    public ulong st_rdev;
-    public long st_size;
-    public long st_blksize;
-    public long st_blocks;
-    public long st_atime;
-    public ulong st_atime_nsec;
-    public long st_mtime;
-    public ulong st_mtime_nsec;
-    public long st_ctime;
-    public ulong st_ctime_nsec;
+    internal FileStatusFlags Flags;
+    internal int Mode;
+    internal uint Uid;
+    internal uint Gid;
+    internal long Size;
+    internal long ATime;
+    internal long ATimeNsec;
+    internal long MTime;
+    internal long MTimeNsec;
+    internal long CTime;
+    internal long CTimeNsec;
+    internal long BirthTime;
+    internal long BirthTimeNsec;
+    internal long Dev;
+    internal long Ino;
+    internal uint UserFlags;
 }
 
 internal static class FileTypes
 {
-    internal const uint S_IFMT   = 0xF000;
-    internal const uint S_IFIFO  = 0x1000;
-    internal const uint S_IFCHR  = 0x2000;
-    internal const uint S_IFDIR  = 0x4000;
-    internal const uint S_IFBLK  = 0x6000;
-    internal const uint S_IFREG  = 0x8000;
-    internal const uint S_IFLNK  = 0xA000;
-    internal const uint S_IFSOCK = 0xC000;
+    internal const int S_IFMT = 0xF000;
+    internal const int S_IFIFO = 0x1000;
+    internal const int S_IFCHR = 0x2000;
+    internal const int S_IFDIR = 0x4000;
+    internal const int S_IFREG = 0x8000;
+    internal const int S_IFLNK = 0xA000;
+    internal const int S_IFSOCK = 0xC000;
+}
+
+[Flags]
+internal enum FileStatusFlags
+{
+    None = 0,
+    HasBirthTime = 1,
 }
 
 internal static class FileInterop
 {
-    [DllImport("libc", EntryPoint = "stat", SetLastError = true, CharSet = CharSet.Ansi)]
+    internal const string SystemNative = "libSystem.Native";
+
+    [DllImport(SystemNative, EntryPoint = "SystemNative_Stat", SetLastError = true, CharSet = CharSet.Ansi)]
     internal static extern int Stat(string path, out FileStatus output);
 
-    [DllImport("libc", EntryPoint = "lstat", SetLastError = true, CharSet = CharSet.Ansi)]
+    [DllImport(SystemNative, EntryPoint = "SystemNative_LStat", SetLastError = true, CharSet = CharSet.Ansi)]
     internal static extern int LStat(string path, out FileStatus output);
 }
