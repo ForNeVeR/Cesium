@@ -7,12 +7,26 @@ SPDX-License-Identifier: MIT
 Contributor Guide
 =================
 
+Prerequisites
+-------------
+To work on the Cesium solution, install [.NET 9 SDK][dotnet.download] or later.
+
 Building
 --------
+To build the compiler executable, run the following shell command:
+```console
+$ dotnet build
+```
 
-### Prerequisites
+Running
+-------
+To run the compiler from sources directly, execute the following shell command:
 
-To build Cesium, install [.NET 9 SDK][dotnet.download] or later.
+```console
+$ dotnet run --project Cesium.Compiler -- [compiler arguments go here]
+```
+
+Read more about the compiler arguments in [the README document][docs.readme].
 
 Testing
 -------
@@ -30,14 +44,13 @@ $ dotnet nuke TestAll
 
 Publishing
 ----------
-
 To produce a standalone compiler executable, run the following shell command:
 
-```shell
-dotnet publish Cesium.Compiler/Cesium.Compiler.csproj -r win-x64 --self-contained
+```console
+$ dotnet nuke PackAllCompilerRuntimeSpecificBundles --configuration release
 ```
 
-Then navigate to `Cesium.Compiler\bin\Debug\net7.0\win-x64\publish\` and that's your Cesium.
+This will prepare runtime-specific ZIP archives in the `artifacts/package/release` folder.
 
 File Encoding Changes
 ---------------------
@@ -67,6 +80,7 @@ If the CI asks you to update the file licenses, follow one of these:
 (Feel free to attribute the changes to "Cesium contributors <https://github.com/ForNeVeR/Cesium>" instead of your name in a multi-author file, or if you don't want your name to be mentioned in the project's source: this doesn't mean you'll lose the copyright.)
 <!-- REUSE-IgnoreEnd -->
 
+[docs.readme]: README.md
 [docs.tests]: docs/tests.md
 [dotnet.download]: https://dotnet.microsoft.com/en-us/download
 [powershell]: https://github.com/PowerShell/PowerShell
