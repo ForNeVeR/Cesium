@@ -17,22 +17,22 @@ internal enum Error
 [StructLayout(LayoutKind.Sequential)]
 internal struct FileStatus
 {
-    internal FileStatusFlags Flags;
-    internal int Mode;
-    internal uint Uid;
-    internal uint Gid;
-    internal long Size;
-    internal long ATime;
-    internal long ATimeNsec;
-    internal long MTime;
-    internal long MTimeNsec;
-    internal long CTime;
-    internal long CTimeNsec;
-    internal long BirthTime;
-    internal long BirthTimeNsec;
-    internal long Dev;
-    internal long Ino;
-    internal uint UserFlags;
+    public ulong st_dev;
+    public UIntPtr st_ino;
+    public ulong st_nlink;
+    public uint st_mode;
+    public uint st_uid;
+    public uint st_gid;
+    public ulong st_rdev;
+    public IntPtr st_size;
+    public long st_blksize;
+    public long st_blocks;
+    public long st_atime;
+    public ulong st_atime_nsec;
+    public long st_mtime;
+    public ulong st_mtime_nsec;
+    public long st_ctime;
+    public ulong st_ctime_nsec;
 }
 
 internal static class FileTypes
@@ -46,20 +46,13 @@ internal static class FileTypes
     internal const int S_IFSOCK = 0xC000;
 }
 
-[Flags]
-internal enum FileStatusFlags
-{
-    None = 0,
-    HasBirthTime = 1,
-}
-
 internal static class FileInterop
 {
-    internal const string SystemNative = "libSystem.Native";
+    internal const string LibcLibrary = "libc";
 
-    [DllImport(SystemNative, EntryPoint = "SystemNative_Stat", SetLastError = true, CharSet = CharSet.Ansi)]
+    [DllImport(LibcLibrary, EntryPoint = "stat", SetLastError = true)]
     internal static extern int Stat(string path, out FileStatus output);
 
-    [DllImport(SystemNative, EntryPoint = "SystemNative_LStat", SetLastError = true, CharSet = CharSet.Ansi)]
+    [DllImport(LibcLibrary, EntryPoint = "lstat", SetLastError = true)]
     internal static extern int LStat(string path, out FileStatus output);
 }

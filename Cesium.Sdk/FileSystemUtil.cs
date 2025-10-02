@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 namespace Cesium.Sdk;
 
 [Flags]
-internal enum FilePermissions
+public enum FilePermissions
 {
     None = 0,
     OtherExecute = 1,
@@ -37,11 +37,7 @@ internal class UnixFileInfo
 
     private void LoadFileStatus(string path)
     {
-        Console.WriteLine("Loading file: " + path);
-
         int rv = FileInterop.LStat(path, out _status);
-
-        Console.WriteLine($"LStat returned {rv}");
 
         if (rv < 0)
         {
@@ -58,22 +54,26 @@ internal class UnixFileInfo
             };
         }
 
-        int fileType = _status.Mode & FileTypes.S_IFMT;
-
-        Console.WriteLine($"File type: {fileType}");
-
+        uint fileType = _status.st_mode & FileTypes.S_IFMT;
         if (fileType != FileTypes.S_IFLNK)
             return;
-        if (FileInterop.Stat(path, out var target) >= 0)
-            _status.Mode = FileTypes.S_IFLNK | (target.Mode & (int)ValidUnixFileModes);
+
+        // It's a symlink, we need to get the target file's mode
+
+        int ret;
+        FileStatus target;
+        while ((ret = FileInterop.Stat(path, out target)) < 0);
+
+        if (ret == 0)
+            _status.st_mode = FileTypes.S_IFLNK | (target.st_mode & (int)ValidUnixFileModes);
         else
             throw new InvalidOperationException($"Stat failed for {path}");
     }
 
-    private int FileTypeCode => _status.Mode & FileTypes.S_IFMT;
+    private uint FileTypeCode => _status.st_mode & FileTypes.S_IFMT;
 
     public FilePermissions FilePermissions =>
-        (FilePermissions)(_status.Mode & (int)ValidUnixFileModes);
+        (FilePermissions)(_status.st_mode & (int)ValidUnixFileModes);
 
     public bool IsDirectory => FileTypeCode == FileTypes.S_IFDIR;
 
@@ -92,7 +92,7 @@ internal class UnixFileInfo
         FilePermissions.SetUser;
 }
 
-internal static class FileSystemUtil
+public static class FileSystemUtil
 {
     public static FilePermissions ExecutablePermissions =>
         FilePermissions.UserExecute
@@ -103,16 +103,14 @@ internal static class FileSystemUtil
     {
         try
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return true; // TODO[#840]: Proper executable check for MacOS
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            //     return true; // TODO[#840]: Proper executable check for MacOS
 
             var info = new UnixFileInfo(Path.GetFullPath(path));
-            Console.WriteLine($"FilePermissions: {info.FilePermissions} ({(int)info.FilePermissions}) IsDir: {info.IsDirectory}");
             return (info.FilePermissions & permissions) != 0 && !info.IsDirectory;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"UnixFileInfo has thrown: {ex.Message}");
             return false;
         }
     }
