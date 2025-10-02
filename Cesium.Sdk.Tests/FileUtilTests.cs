@@ -21,6 +21,9 @@ public class FileUtilTests
             File.CreateSymbolicLink(link, filePath);
     }
 
+    private string TestFile => $"testfile-{Process.GetCurrentProcess().Id}-{Guid.NewGuid()}";
+    private string TestLink => $"testlink-{Process.GetCurrentProcess().Id}-{Guid.NewGuid()}";
+
     [Fact]
     public void ExecutablePermissionsCheckOnUnix()
     {
@@ -28,7 +31,7 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = "testfile";
+            var fileName = TestFile;
             CreateUnixFile(fileName, mode: UnixFileMode.UserExecute);
 
             Assert.True(FileSystemUtil.CheckUnixFilePermissions(fileName, FileSystemUtil.ExecutablePermissions));
@@ -42,8 +45,8 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = "testfile";
-            var linkName = "testlink";
+            var fileName = TestFile;
+            var linkName = TestLink;
             CreateUnixFile(fileName, link: linkName, mode: UnixFileMode.UserExecute);
 
             Assert.True(FileSystemUtil.CheckUnixFilePermissions(linkName, FileSystemUtil.ExecutablePermissions));
@@ -57,7 +60,7 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = "testfile";
+            var fileName = TestFile;
             CreateUnixFile(fileName, mode: UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
             Assert.False(FileSystemUtil.CheckUnixFilePermissions(fileName, FileSystemUtil.ExecutablePermissions));
