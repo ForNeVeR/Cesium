@@ -305,14 +305,13 @@ public class CesiumCompile : Task
 
         bool IsExecutable(string exePath)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var extension = Path.GetExtension(exePath);
-                return pathExtWithDot.Value.Contains(extension);
-            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return FileSystemUtil.CheckUnixFilePermissions(exePath,
+                    FileSystemUtil.ExecutablePermissions);
 
-            return true; // TODO[#840]: Proper executable check for Unix
-
+            var extension = Path.GetExtension(exePath);
+            return pathExtWithDot.Value.Contains(extension);
         }
     }
 
