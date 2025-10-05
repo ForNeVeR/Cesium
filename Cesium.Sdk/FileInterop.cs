@@ -18,13 +18,13 @@ internal enum Error
 internal struct FileStatus
 {
     public ulong st_dev;
-    public UIntPtr st_ino;
+    public ulong st_ino;
     public ulong st_nlink;
     public uint st_mode;
     public uint st_uid;
     public uint st_gid;
     public ulong st_rdev;
-    public IntPtr st_size;
+    public long st_size;
     public long st_blksize;
     public long st_blocks;
     public long st_atime;
