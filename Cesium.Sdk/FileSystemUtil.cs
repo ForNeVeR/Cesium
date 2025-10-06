@@ -39,6 +39,7 @@ internal class UnixFileInfo
     {
         int rv = FileInterop.LStat(path, out _status);
 
+        Console.WriteLine($"LStat: {rv}");
         if (rv < 0)
         {
             var error = Marshal.GetLastWin32Error();
@@ -111,6 +112,7 @@ public static class FileSystemUtil
         }
         catch (Exception ex)
         {
+            Console.WriteLine("Error checking file permissions: " + ex.Message);
             return false;
         }
     }
