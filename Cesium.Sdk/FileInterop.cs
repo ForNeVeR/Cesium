@@ -33,6 +33,13 @@ internal struct FileStatus
     public ulong st_mtime_nsec;
     public long st_ctime;
     public ulong st_ctime_nsec;
+    public long st_birthtimespec;
+    public ulong st_birthtimespec_nsec;
+    public ulong st_flags;
+    public ulong st_gen;
+    private int _reserved1_;
+    private long _reserved2_;
+    private long _reserved3_;
 }
 
 internal static class FileTypes
