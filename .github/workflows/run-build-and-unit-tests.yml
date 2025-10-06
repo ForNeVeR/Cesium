@@ -57,4 +57,4 @@ jobs:
       - name: 📝 Fetch Sources 📝
         uses: actions/checkout@v5
       - name: ✅ REUSE license check ✅
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@v6
