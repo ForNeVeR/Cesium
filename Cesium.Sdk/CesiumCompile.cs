@@ -307,8 +307,7 @@ public class CesiumCompile : Task
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return FileSystemUtil.CheckUnixFilePermissions(exePath,
-                    FileSystemUtil.ExecutablePermissions);
+                return FileSystemUtil.IsUnixFileExecutable(exePath);
 
             var extension = Path.GetExtension(exePath);
             return pathExtWithDot.Value.Contains(extension);

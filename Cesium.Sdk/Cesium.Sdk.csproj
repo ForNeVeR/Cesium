@@ -18,6 +18,7 @@ SPDX-License-Identifier: MIT
         <Content Include="Sdk\Sdk.props" PackagePath="Sdk\Sdk.props" />
         <Content Include="Sdk\Sdk.targets" PackagePath="Sdk\Sdk.targets" />
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="tools" Visible="false"/>
+        <InternalsVisibleTo Include="Cesium.Sdk.Tests" />
     </ItemGroup>
 
     <ItemGroup>

@@ -2,27 +2,31 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Diagnostics;
 using System.Runtime.InteropServices;
+using TruePath;
+using TruePath.SystemIo;
 
 namespace Cesium.Sdk.Tests;
 
 public class FileUtilTests
 {
-    private static void CreateUnixFile(string filePath, string? link = null, UnixFileMode? mode = null)
+    private static void CreateUnixFile(AbsolutePath file, AbsolutePath? link = null, UnixFileMode? mode = null)
     {
-        File.WriteAllText(filePath, "empty");
+        file.WriteAllText("empty");
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux) &&
             !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
         if (mode is { } m)
-            File.SetUnixFileMode(filePath, m);
-        if (link != null)
-            File.CreateSymbolicLink(link, filePath);
+            File.SetUnixFileMode(file.Value, m);
+        if (link is { } linkFile)
+        {
+            linkFile.Delete();
+            File.CreateSymbolicLink(linkFile.Value, file.Value);
+        }
     }
 
-    private string TestFile => $"testfile-{Process.GetCurrentProcess().Id}-{Guid.NewGuid()}";
-    private string TestLink => $"testlink-{Process.GetCurrentProcess().Id}-{Guid.NewGuid()}";
+    private AbsolutePath TestFile = Temporary.CreateTempFile();
+    private AbsolutePath TestLink = Temporary.CreateTempFile();
 
     [Fact]
     public void ExecutablePermissionsCheckOnUnix()
@@ -31,10 +35,10 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = TestFile;
-            CreateUnixFile(fileName, mode: UnixFileMode.UserExecute);
+            var file = TestFile;
+            CreateUnixFile(file, mode: UnixFileMode.UserExecute);
 
-            Assert.True(FileSystemUtil.CheckUnixFilePermissions(fileName, FileSystemUtil.ExecutablePermissions));
+            Assert.True(FileSystemUtil.IsUnixFileExecutable(file.Value));
         }
     }
 
@@ -45,11 +49,11 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = TestFile;
-            var linkName = TestLink;
-            CreateUnixFile(fileName, link: linkName, mode: UnixFileMode.UserExecute);
+            var file = TestFile;
+            var link = TestLink;
+            CreateUnixFile(file, link: link, mode: UnixFileMode.UserExecute);
 
-            Assert.True(FileSystemUtil.CheckUnixFilePermissions(linkName, FileSystemUtil.ExecutablePermissions));
+            Assert.True(FileSystemUtil.IsUnixFileExecutable(link.Value));
         }
     }
 
@@ -60,10 +64,10 @@ public class FileUtilTests
             Assert.True(true);
         else
         {
-            var fileName = TestFile;
-            CreateUnixFile(fileName, mode: UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            var file = TestFile;
+            CreateUnixFile(file, mode: UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
-            Assert.False(FileSystemUtil.CheckUnixFilePermissions(fileName, FileSystemUtil.ExecutablePermissions));
+            Assert.False(FileSystemUtil.IsUnixFileExecutable(file.Value));
         }
     }
 
@@ -75,7 +79,7 @@ public class FileUtilTests
         else
         {
             var dir = "/etc";
-            Assert.False(FileSystemUtil.CheckUnixFilePermissions(dir, FileSystemUtil.ExecutablePermissions));
+            Assert.False(FileSystemUtil.IsUnixFileExecutable(dir));
         }
     }
 }
