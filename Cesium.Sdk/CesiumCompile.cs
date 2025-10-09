@@ -285,11 +285,11 @@ public class CesiumCompile : Task
         var pathExtWithDot = new Lazy<string[]>(() =>
             Environment.GetEnvironmentVariable("PATHEXT")?.Split(Path.PathSeparator) ?? []);
 
-        if (IsExecutable(path)) return true;
+        if (File.Exists(path) && IsExecutable(path)) return true;
 
         foreach (var pathEntry in Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? [])
         {
-            var fullPath = Path.Combine(pathEntry, pathEntry);
+            var fullPath = Path.Combine(pathEntry, path);
             if (IsExecutable(fullPath)) return true;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
