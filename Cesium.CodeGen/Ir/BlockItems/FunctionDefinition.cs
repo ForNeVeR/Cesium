@@ -303,9 +303,13 @@ internal sealed class FunctionDefinition : IBlockItem
 
         BlockItemEmitting.EmitCode(scope, transformed);
         var isVoid = scope.FunctionInfo.ReturnType.Equals(CTypeSystem.Void);
-        if (!isVoid && scope.Method.Body.Instructions.Last().OpCode != OpCodes.Ret)
+        if (scope.Method.Body.Instructions.Last().OpCode != OpCodes.Ret)
         {
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            if (!isVoid)
+            {
+                scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            }
+
             scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
     }
