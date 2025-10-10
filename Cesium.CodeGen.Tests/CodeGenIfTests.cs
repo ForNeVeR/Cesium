@@ -71,4 +71,26 @@ public class CodeGenIfTests : CodeGenTestBase
         a = 2;
     }
 }");
+
+    [Fact]
+    public Task IfWithVoidReturnTest() => DoTest(@"void test()
+{
+    if (1) {
+        int a;
+        a = 1;
+    }
+}");
+
+    [Fact]
+    public Task IfElseWithNestedDeclarationAndVoidReturnTest() => DoTest(@"void test()
+{
+    if (1) {
+        int a;
+        a = 1;
+    }
+    else {
+        int a;
+        a = 2;
+    }
+}");
 }
