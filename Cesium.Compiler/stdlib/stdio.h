@@ -94,3 +94,6 @@ int fscanf(FILE* stream, char* format, ...);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::FScanF")
 int vfscanf(FILE* stream, const char* format, va_list vlist);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::OpenMemStream")
+FILE* open_memstream(char** ptr, size_t* sizeloc);

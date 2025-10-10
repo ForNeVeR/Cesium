@@ -16,10 +16,11 @@ public unsafe static class StdIoFunctions
     internal record StreamHandle
     {
         public required string FileMode { get; set; }
-        public FileStream? Stream { get; set; }
+        public Stream? Stream { get; set; }
         public Func<TextReader>? Reader { get; set; }
         public Func<TextWriter>? Writer { get; set; }
         public int ErrNo { get; set; }
+        public Action<Stream>? CloseCallback { get; set; }
     }
 
     internal static readonly List<StreamHandle> Handles = [];
@@ -695,7 +696,15 @@ public unsafe static class StdIoFunctions
             return ErrNo.EBADF;
         }
 
-        streamHandle.Stream!.Flush(true);
+        if (streamHandle.Stream is FileStream fileStream)
+        {
+            fileStream.Flush(true);
+        }
+        else
+        {
+            streamHandle.Stream!.Flush();
+        }
+
         streamHandle.Stream!.Seek(0, SeekOrigin.Begin);
         return 0;
     }
@@ -1156,6 +1165,22 @@ public unsafe static class StdIoFunctions
         return argsConsumed;
     }
 
+    public static void* OpenMemStream(byte** ptr, nuint* sizeloc)
+    {
+        var memoryStream = new AutoGrowStream(ptr, sizeloc);
+        var streamWriter = new StreamWriter(memoryStream);
+        var handle = new StreamHandle()
+        {
+            FileMode = "w",
+            Stream = memoryStream,
+            Writer = () => streamWriter,
+        };
+        var streamptr = AddStream(handle);
+        *ptr = null;
+        *sizeloc = 0;
+        return streamptr;
+    }
+
     internal static StreamHandle? GetStream(void* filePtr)
     {
         var handle = (IntPtr)filePtr;
@@ -1221,6 +1246,49 @@ public unsafe static class StdIoFunctions
             {
                 Write(c);
             }
+        }
+    }
+
+    class AutoGrowStream : MemoryStream
+    {
+        private readonly byte** _ptr;
+        private readonly nuint* _sizeloc;
+
+        public AutoGrowStream(byte** ptr, nuint* sizeloc) : base()
+        {
+            _ptr = ptr;
+            *_ptr = null;
+            _sizeloc = sizeloc;
+        }
+
+        public override void Flush()
+        {
+            base.Flush();
+            if (*_ptr != null)
+            {
+                StdLibFunctions.Free(*_ptr);
+                return;
+            }
+
+            *_ptr = (byte*)StdLibFunctions.Malloc((UIntPtr)Length + 1);
+            *_sizeloc = (nuint)Length;
+            Marshal.Copy(GetBuffer(), 0, (IntPtr)(*_ptr), (int)Length);
+            (*_ptr)[Length] = 0;
+        }
+
+        public override long Seek(long offset, SeekOrigin loc)
+        {
+            if (loc == SeekOrigin.Begin && offset > Length)
+            {
+                Write(new byte[offset - Length], 0, (int)(offset - Length));
+            }
+
+            return base.Seek(offset, loc);
+        }
+
+        public override void Close()
+        {
+            base.Close();
         }
     }
 }
