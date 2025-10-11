@@ -1,0 +1,33 @@
+{
+  "$type": "Cesium.Ast.Declaration, Cesium.Ast",
+  "Specifiers": [
+    {
+      "$type": "Cesium.Ast.EnumSpecifier, Cesium.Ast",
+      "Identifier": null,
+      "EnumDeclarations": [
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "A",
+          "Constant": {
+            "$type": "Cesium.Ast.ConstantLiteralExpression, Cesium.Ast",
+            "Constant": {
+              "Kind": "IntLiteral",
+              "Text": "5"
+            }
+          }
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "B",
+          "Constant": null
+        },
+        {
+          "$type": "Cesium.Ast.EnumDeclaration, Cesium.Ast",
+          "Identifier": "C",
+          "Constant": null
+        }
+      ]
+    }
+  ],
+  "InitDeclarators": null
+}
