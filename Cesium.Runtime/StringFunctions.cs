@@ -290,4 +290,30 @@ public static unsafe class StringFunctions
                 return UTF8String.NullString;
         }
     }
+
+    public static UTF8String StrStr(UTF8String str, UTF8String substr)
+    {
+        if (substr[0] == '\0')
+            return str;
+
+        var start = str;
+        var substrLength = substr.Length;
+        while (!!start)
+        {
+            var candidate = start.FindEntry(substr[0]);
+            if (!candidate)
+            {
+                return UTF8String.NullString;
+            }
+
+            if (StrNCmp(candidate, substr, substrLength) == 0)
+            {
+                return candidate;
+            }
+
+            start = candidate.At(1);
+        }
+
+        return UTF8String.NullString;
+    }
 }

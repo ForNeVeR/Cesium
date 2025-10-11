@@ -45,3 +45,6 @@ char* strndup(const char* src, size_t size);
 
 __cli_import("Cesium.Runtime.StringFunctions::StrError")
 char* strerror(int errnum);
+
+__cli_import("Cesium.Runtime.StringFunctions::StrStr")
+char* strstr(const char* str, const char* substr);
