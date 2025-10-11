@@ -208,6 +208,51 @@ public class StdIoFunctionTests
     public void FScanFFloat(string input, string format, int expectedExitCode, params float[] expectedResult)
         => FScanFStruct(input, format, expectedExitCode, expectedResult);
 
+    [Fact]
+    public unsafe void OpenAndCloseFile()
+    {
+        try { File.Delete("fopen.bin"); } catch { }
+        var fileName = Encoding.ASCII.GetBytes("fopen.bin");
+        var writeMode = Encoding.ASCII.GetBytes("w");
+        fixed (byte* fileNamePtr = fileName)
+        fixed (byte* writeModePtr = writeMode)
+        {
+            var stream = StdIoFunctions.FOpen(fileNamePtr, writeModePtr);
+            StdIoFunctions.FClose(stream);
+        }
+
+        Assert.True(File.Exists("fopen.bin"), "File fopen.bin should exists after the test");
+    }
+
+    [Fact]
+    public unsafe void FReadFwriteTest()
+    {
+        try { File.Delete("fread.bin"); } catch { }
+        var fileName = Encoding.ASCII.GetBytes("fread.bin");
+        var writeMode = Encoding.ASCII.GetBytes("w");
+        var readMode = Encoding.ASCII.GetBytes("r");
+        double[] test = [1.0, 2.0, 3.0];
+        fixed (byte* fileNamePtr = fileName)
+        fixed (byte* writeModePtr = writeMode)
+        fixed (byte* readModePtr = readMode)
+        fixed (double* testPtr = test)
+        {
+            var stream = StdIoFunctions.FOpen(fileNamePtr, writeModePtr);
+            StdIoFunctions.FWrite(testPtr, sizeof(double), (nuint)test.Length, stream);
+            StdIoFunctions.FClose(stream);
+
+            stream = StdIoFunctions.FOpen(fileNamePtr, readModePtr);
+            test[0] = 0.0;
+            test[1] = 0.0;
+            test[2] = 0.0;
+            var itemsRead = StdIoFunctions.FRead(testPtr, sizeof(double), (nuint)test.Length, stream);
+            Assert.Equal(3, (int)itemsRead);
+            Assert.Equal(1.0, test[0]);
+            Assert.Equal(2.0, test[1]);
+            Assert.Equal(3.0, test[2]);
+        }
+    }
+
     internal unsafe void FScanFStruct<T>(string input, string format, int expectedExitCode, params T[] expectedResult)
         where T : unmanaged
     {

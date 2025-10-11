@@ -26,6 +26,9 @@ int fputs(char* s, FILE* stream);
 __cli_import("Cesium.Runtime.StdIoFunctions::PrintF")
 int printf(char* s, ...);
 
+__cli_import("Cesium.Runtime.StdIoFunctions::PrintF")
+int vprintf(const char* format, va_list vlist);
+
 __cli_import("Cesium.Runtime.StdIoFunctions::FPrintF")
 int fprintf(FILE* stream, char* s, ...);
 
@@ -40,6 +43,9 @@ int putchar(char _Character);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::PutC")
 int putc(char _Character, FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::PutC")
+int fputc(char _Character, FILE* stream);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::FGetC")
 int fgetc(FILE* stream);
@@ -97,3 +103,12 @@ int vfscanf(FILE* stream, const char* format, va_list vlist);
 
 __cli_import("Cesium.Runtime.StdIoFunctions::OpenMemStream")
 FILE* open_memstream(char** ptr, size_t* sizeloc);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FRead")
+size_t fread(void* buffer, size_t size, size_t count, FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FWrite")
+size_t fwrite(void* buffer, size_t size, size_t count, FILE* stream);
+
+__cli_import("Cesium.Runtime.StdIoFunctions::FFlush")
+int fflush(FILE* stream);
