@@ -104,6 +104,13 @@ int main() {
  }");
 
     [Fact]
+    public Task DoubleArrayInitialization() => DoTest(@"int main() {
+    double a[4] = { 1.0, 2.0, 3.0, 4.0, };
+    a[1] = 2.0;
+    return a[1];
+ }");
+
+    [Fact]
     public Task ArrayInitializationChar() => DoTest(@"int main() {
     int a[4] = { '1', '2', '3', '4', };
     a[1] = 2;
