@@ -10,28 +10,29 @@ namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
 internal sealed class FloatingPointConstant : IConstant
 {
-    private readonly double _value;
-    private readonly bool _isFloat;
-
     public FloatingPointConstant(double value, bool isFloat)
     {
-        _value = value;
-        _isFloat = isFloat;
+        Value = value;
+        IsFloat = isFloat;
     }
+
+    public double Value { get; }
+
+    public bool IsFloat { get; }
 
     public void EmitTo(IEmitScope scope)
     {
-        if (_isFloat)
+        if (IsFloat)
         {
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, (float)_value));
+            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R4, (float)Value));
         }
         else
         {
-            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, _value));
+            scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_R8, Value));
         }
     }
 
-    public IType GetConstantType() => _isFloat ? CTypeSystem.Float : CTypeSystem.Double;
+    public IType GetConstantType() => IsFloat ? CTypeSystem.Float : CTypeSystem.Double;
 
-    public override string ToString() => $"{(_isFloat ? "float" : "double")}: {_value}";
+    public override string ToString() => $"{(IsFloat ? "float" : "double")}: {Value}";
 }

@@ -67,7 +67,14 @@ internal sealed class CompoundInitializationExpression : IExpression
             return;
         }
 
-        throw new NotImplementedException($"Non-integer constant not yet supported");
+        if (constantLiteralExpression.Constant is FloatingPointConstant floatingPoint)
+        {
+            var data = floatingPoint.IsFloat ? BitConverter.GetBytes((float)floatingPoint.Value) : BitConverter.GetBytes(floatingPoint.Value);
+            stream.Write(data);
+            return;
+        }
+
+        throw new NotImplementedException($"Constant of type {constantLiteralExpression.Constant.GetType()} not yet supported");
 
         void WriteValue(long value)
         {
@@ -103,6 +110,12 @@ internal sealed class CompoundInitializationExpression : IExpression
                     break;
                 case PrimitiveTypeKind.SignedChar:
                     stream.WriteByte(unchecked((byte)(sbyte)value));
+                    break;
+                case PrimitiveTypeKind.Double:
+                    stream.Write(BitConverter.GetBytes(unchecked((double)value)));
+                    break;
+                case PrimitiveTypeKind.Float:
+                    stream.Write(BitConverter.GetBytes(unchecked((float)value)));
                     break;
                 default:
                     throw new NotImplementedException($"Primitive type {primitiveType.Kind} not yet supported");
