@@ -124,4 +124,13 @@ TestStruct x = {Blue};
 typedef struct { enum Colour { Red, Green, Blue = Green + 10 } x; } TestStruct;
 TestStruct x = {Blue};
 ");
+
+    [Fact]
+    public Task UnnamedGlobalEnum() => DoTest(@"
+enum { Red, Green, Blue };
+
+void test()
+{
+    int x = {Green};
+}");
 }

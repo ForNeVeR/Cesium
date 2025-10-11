@@ -37,6 +37,20 @@ internal static class TranslationUnitEx
                     {
                         var (storageClass, declaration, initializer) = scopedDeclaration;
                         var (type, identifier, cliImportMemberName) = declaration;
+                        if (type is EnumType)
+                        {
+                            if (identifier is not null)
+                            {
+                                yield return new TagBlockItem([declaration]);
+                            }
+
+                            foreach (var d in GetEnumDeclarations(type, scope))
+                            {
+                                yield return d;
+                            }
+                            continue;
+                        }
+
                         if (identifier == null)
                             throw new CompilationException($"Unnamed global symbol of type {type} is not supported.");
 
@@ -65,7 +79,7 @@ internal static class TranslationUnitEx
                             continue;
                         }
 
-                        if (type is EnumType enumType || type is StructType structType)
+                        if (type is StructType structType)
                         {
                             yield return new TagBlockItem([declaration]);
                             foreach (var d in GetEnumDeclarations(type, scope))
