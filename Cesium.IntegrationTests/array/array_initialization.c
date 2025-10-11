@@ -57,6 +57,19 @@ int testShortArray() {
     return 1;
 }
 
+int testDoubleArray() {
+    double a[10] = { 99., 0., 22., 17., -2., 0., };
+    if (a[3] != 17.) {
+        return 0;
+    }
+
+    if (a[4] != -2.) {
+        return 0;
+    }
+
+    return 1;
+}
+
 int g_a[10] = { 99, 0, 22, 17, 2, 0, };
 int testGlobalIntArray() {
     if (g_a[3] != 17) {
@@ -90,6 +103,14 @@ int main(int argc, char *argv[])
 
     if (!testConstCharArray()) {
         return -5;
+    }
+
+    if (!testShortArray()) {
+        return -6;
+    }
+
+    if (!testDoubleArray()) {
+        return -7;
     }
 
     return 42;
