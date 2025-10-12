@@ -156,8 +156,10 @@ public unsafe static class StdIoFunctions
             return -1;
         }
 
-        var streamWriter = streamWriterAccessor();
-        return StreamPrintF(streamWriter, formatString, varargs);
+        using var streamWriter = streamWriterAccessor();
+        var errorCode = StreamPrintF(streamWriter, formatString, varargs);
+        FFlush(streamHandle);
+        return errorCode;
     }
 
     public static int SPrintF(byte* buffer, byte* str, void* varargs)
@@ -578,7 +580,7 @@ public unsafe static class StdIoFunctions
         }
         if (fileAccess != FileAccess.Read)
         {
-            handle.Writer = () => new StreamWriter(stream);
+            handle.Writer = () => new StreamWriter(stream, Encoding.UTF8, 8192, true);
         }
 
         *streamptr = AddStream(handle);
@@ -593,6 +595,7 @@ public unsafe static class StdIoFunctions
             return ErrNo.EBADF;
         }
 
+        FFlush(streamHandle);
         streamHandle.Stream!.Close();
         return FreeStream(stream) ? 0 : ErrNo.EBADF;
     }
@@ -662,6 +665,11 @@ public unsafe static class StdIoFunctions
             return ErrNo.EBADF;
         }
 
+        if (streamHandle.Reader is null)
+        {
+            return 0;
+        }
+
         return streamHandle.Reader!().Peek() == -1 ? 1 : 0;
     }
 
@@ -696,15 +704,7 @@ public unsafe static class StdIoFunctions
             return ErrNo.EBADF;
         }
 
-        if (streamHandle.Stream is FileStream fileStream)
-        {
-            fileStream.Flush(true);
-        }
-        else
-        {
-            streamHandle.Stream!.Flush();
-        }
-
+        FFlush(streamHandle);
         streamHandle.Stream!.Seek(0, SeekOrigin.Begin);
         return 0;
     }
@@ -1181,6 +1181,124 @@ public unsafe static class StdIoFunctions
         return streamptr;
     }
 
+    public static nuint FRead(void* buffer, nuint size, nuint count, void* stream)
+    {
+        var streamHandle = GetStream(stream);
+        if (streamHandle is null || streamHandle.Reader is null)
+        {
+            StdLibFunctions.SetErrNo(ErrNo.EINVAL);
+            return 0;
+        }
+
+        if (size == 0 || count == 0)
+        {
+            return 0;
+        }
+
+        nuint result = 0;
+        if (streamHandle.Stream is not null)
+        {
+            var tempbuffer = new byte[size];
+            for (; result < count; result++)
+            {
+                var readBytes = streamHandle.Stream!.Read(tempbuffer, 0, (int)size);
+                for (nuint i = 0; i < (nuint)readBytes; i++)
+                {
+                    *(byte*)buffer = tempbuffer[i];
+                    buffer = ((byte*)buffer) + 1;
+                }
+
+                if ((int)size != readBytes)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            using var reader = streamHandle.Reader!();
+            for (; result < count; result++)
+            {
+                for (nuint i = 0; i < size; i++)
+                {
+                    var value = reader.Read();
+                    if (value == -1)
+                    {
+                        return result;
+                    }
+
+                    *(byte*)buffer = (byte)value;
+                    buffer = (byte*)buffer + 1;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static nuint FWrite(void* buffer, nuint size, nuint count, void* stream)
+    {
+        var streamHandle = GetStream(stream);
+        if (streamHandle is null || streamHandle.Writer is null)
+        {
+            StdLibFunctions.SetErrNo(ErrNo.EINVAL);
+            return 0;
+        }
+
+        if (size == 0 || count == 0)
+        {
+            return 0;
+        }
+
+        nuint result = 0;
+        if (streamHandle.Stream is not null)
+        {
+            var tempbuffer = new byte[size];
+            for (; result < count; result++)
+            {
+                for (nuint i = 0; i < size; i++)
+                {
+                    tempbuffer[i] = *(byte*)buffer;
+                    buffer = (byte*)buffer + 1;
+                }
+
+                streamHandle.Stream.Write(tempbuffer, 0, (int)size);
+            }
+
+            FFlush(streamHandle);
+        }
+        else
+        {
+            using var writer = streamHandle.Writer!();
+            for (; result < count; result++)
+            {
+                for (nuint i = 0; i < size; i++)
+                {
+                    var value = *(byte*)buffer;
+                    buffer = (byte*)buffer + 1;
+                    writer.Write((char)value);
+                }
+            }
+
+            writer.Flush();
+        }
+
+        return result;
+    }
+
+    public static int FFlush(void* stream)
+    {
+        var streamHandle = GetStream(stream);
+        if (streamHandle == null)
+        {
+            Console.WriteLine("EBADF");
+            return ErrNo.EBADF;
+        }
+
+        FFlush(streamHandle);
+        return 0;
+    }
+
     internal static StreamHandle? GetStream(void* filePtr)
     {
         var handle = (IntPtr)filePtr;
@@ -1219,6 +1337,18 @@ public unsafe static class StdIoFunctions
         gch.Free();
         Marshal.FreeHGlobal(handle);
         return true;
+    }
+
+    private static void FFlush(StreamHandle streamHandle)
+    {
+        if (streamHandle.Stream is FileStream fileStream)
+        {
+            fileStream.Flush(true);
+        }
+        else
+        {
+            streamHandle.Stream?.Flush();
+        }
     }
 
     class BytePtrTextWriter : TextWriter
@@ -1267,7 +1397,6 @@ public unsafe static class StdIoFunctions
             if (*_ptr != null)
             {
                 StdLibFunctions.Free(*_ptr);
-                return;
             }
 
             *_ptr = (byte*)StdLibFunctions.Malloc((UIntPtr)Length + 1);
