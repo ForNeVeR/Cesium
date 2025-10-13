@@ -51,6 +51,9 @@ internal class BinaryExpression(
             if (Regex.IsMatch(macrosValue, $"^(0|[1-9][0-9]*)$"))
                 return int.Parse(macrosValue);
 
+            if (Regex.IsMatch(macrosValue, $"^(-[1-9][0-9]*)$"))
+                return int.Parse(macrosValue);
+
             if (Regex.IsMatch(macrosValue, "^0b[01]+$"))
                 return Convert.ToInt32(macrosValue[2..], 2);
 
