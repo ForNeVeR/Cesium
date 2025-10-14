@@ -18,8 +18,7 @@ internal sealed record IdentifierExpression(Location Location, string Identifier
             if (Regex.IsMatch(searchValue, $"^(0|[1-9][0-9]*)$")
                 || Regex.IsMatch(searchValue, $"^{Regexes.HexLiteral}$")
                 || Regex.IsMatch(searchValue, "^0[0-7]+$")
-                || Regex.IsMatch(searchValue, "^0b[01]+$")
-                || Regex.IsMatch(searchValue, "^(-[1-9][0-9]*)$"))
+                || Regex.IsMatch(searchValue, "^0b[01]+$"))
             {
                 return searchValue;
             }

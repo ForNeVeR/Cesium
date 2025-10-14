@@ -913,10 +913,16 @@ char* x = __FILE__;
     [InlineData("0b11 == 3", true)]
     [InlineData("021 == 17", true)]
     [InlineData("0xF == 15", true)]
+
+
     [InlineData("-10 > 9", false)]
     [InlineData("-10 < 9", true)]
     [InlineData("-10 < -9", true)]
     [InlineData("-9 == -9", true)]
+    [InlineData("-9 <= -9", true)]
+    [InlineData("-9 >= 10", false)]
+    [InlineData(" -10 < 0x10", true)]
+    [InlineData(" -10 != 0x10", true)]
     public async Task EvaluateExpressionAllVariants(
         string expression,
         bool expectedResult)
