@@ -1217,19 +1217,27 @@ public unsafe static class StdIoFunctions
         else
         {
             using var reader = streamHandle.Reader!();
-            for (; result < count; result++)
+            try
             {
-                for (nuint i = 0; i < size; i++)
+                for (; result < count; result++)
                 {
-                    var value = reader.Read();
-                    if (value == -1)
+                    for (nuint i = 0; i < size; i++)
                     {
-                        return result;
-                    }
+                        var value = reader.Read();
+                        if (value == -1)
+                        {
+                            return result;
+                        }
 
-                    *(byte*)buffer = (byte)value;
-                    buffer = (byte*)buffer + 1;
+                        *(byte*)buffer = (byte)value;
+                        buffer = (byte*)buffer + 1;
+                    }
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                StdLibFunctions.SetErrNo(ErrNo.EIO);
+                return result;
             }
         }
 
