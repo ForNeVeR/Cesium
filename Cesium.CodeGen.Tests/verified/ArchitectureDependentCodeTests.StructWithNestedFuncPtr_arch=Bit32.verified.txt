@@ -3,4 +3,5 @@ Module: Primary
 
   Type: <typedef>foo
   Fields:
+    Offset: 0
     method System.Int32 *(method System.Int32 *()) <typedef>foo::foo

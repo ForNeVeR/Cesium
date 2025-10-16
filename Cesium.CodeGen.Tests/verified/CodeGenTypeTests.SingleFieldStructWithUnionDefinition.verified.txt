@@ -29,5 +29,7 @@ Module: Primary
 
   Type: <typedef>_Union_Int_x_Float_f
   Fields:
+    Offset: 0
     System.Int32 <typedef>_Union_Int_x_Float_f::x
+    Offset: 0
     System.Single <typedef>_Union_Int_x_Float_f::f

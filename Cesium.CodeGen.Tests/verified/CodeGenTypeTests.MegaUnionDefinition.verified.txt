@@ -34,27 +34,39 @@ Module: Primary
 
   Type: <typedef>_Union__
   Fields:
+    Offset: 0
     <typedef>_Union_Int_x1_Float_x2__ <typedef>_Union__::_Union_Int_x1_Float_x2__
 
   Type: <typedef>_Union_Int_x1_Float_x2__
   Fields:
+    Offset: 0
     System.Int32 <typedef>_Union_Int_x1_Float_x2__::x1
+    Offset: 0
     System.Single <typedef>_Union_Int_x1_Float_x2__::x2
+    Offset: 0
     <typedef>_Union_Int_x2_Float_f2__ <typedef>_Union_Int_x1_Float_x2__::_Union_Int_x2_Float_f2__
 
   Type: <typedef>_Union_Int_x2_Float_f2__
   Fields:
+    Offset: 0
     System.Int32 <typedef>_Union_Int_x2_Float_f2__::x2
+    Offset: 0
     System.Single <typedef>_Union_Int_x2_Float_f2__::f2
+    Offset: 0
     <typedef>_Union_Int_x3_Float_f3__ <typedef>_Union_Int_x2_Float_f2__::_Union_Int_x3_Float_f3__
 
   Type: <typedef>_Union_Int_x3_Float_f3__
   Fields:
+    Offset: 0
     System.Int32 <typedef>_Union_Int_x3_Float_f3__::x3
+    Offset: 0
     System.Single <typedef>_Union_Int_x3_Float_f3__::f3
+    Offset: 0
     <typedef>_Union_Int_x4_Float_f4 <typedef>_Union_Int_x3_Float_f3__::_Union_Int_x4_Float_f4
 
   Type: <typedef>_Union_Int_x4_Float_f4
   Fields:
+    Offset: 0
     System.Int32 <typedef>_Union_Int_x4_Float_f4::x4
+    Offset: 0
     System.Single <typedef>_Union_Int_x4_Float_f4::f4

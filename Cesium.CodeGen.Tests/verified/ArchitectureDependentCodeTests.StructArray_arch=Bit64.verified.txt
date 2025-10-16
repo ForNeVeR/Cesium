@@ -23,4 +23,5 @@ Module: Primary
 
   Type: <typedef>foo
   Fields:
+    Offset: 0
     System.Byte* <typedef>foo::ptr

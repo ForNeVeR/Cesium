@@ -69,12 +69,16 @@ Module: Primary
 
   Type: <typedef>_Union_Long__3u_Int__4u
   Fields:
+    Offset: 0
     System.Int64 <typedef>_Union_Long__3u_Int__4u::_3u
+    Offset: 0
     System.Int32 <typedef>_Union_Long__3u_Int__4u::_4u
 
   Type: <typedef>_Union_Long__5u_Int__6u
   Fields:
+    Offset: 0
     System.Int64 <typedef>_Union_Long__5u_Int__6u::_5u
+    Offset: 0
     System.Int32 <typedef>_Union_Long__5u_Int__6u::_6u
 
   Type: <typedef>_Anon_Int__7
