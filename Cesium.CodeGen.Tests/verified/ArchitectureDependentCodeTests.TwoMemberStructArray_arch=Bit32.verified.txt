@@ -23,7 +23,7 @@ Module: Primary
 
   Type: <typedef>foo
   Fields:
-    System.Byte* <typedef>foo::ptr
     Offset: 0
-    System.Int32 <typedef>foo::len
+    System.Byte* <typedef>foo::ptr
     Offset: 4
+    System.Int32 <typedef>foo::len

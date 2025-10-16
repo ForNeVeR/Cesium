@@ -23,7 +23,7 @@ Module: Primary
 
   Type: <typedef>foo
   Fields:
-    Cesium.Runtime.CPtr`1<System.Byte> <typedef>foo::ptr
     Offset: 0
-    System.Int32 <typedef>foo::len
+    Cesium.Runtime.CPtr`1<System.Byte> <typedef>foo::ptr
     Offset: 8
+    System.Int32 <typedef>foo::len
