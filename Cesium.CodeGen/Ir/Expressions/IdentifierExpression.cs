@@ -61,7 +61,7 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
                 return new LValueLocalVariable(var.Type, var.Index);
 
             if (var.StorageClass == StorageClass.Static)
-                return new LValueGlobalVariable(var.Type, Identifier);
+                return new LValueGlobalVariable(var.Type, var.EmitName ?? Identifier);
 
             throw new CompilationException($"Identifier {Identifier} has unsupported storage class {var.StorageClass}.");
         }
