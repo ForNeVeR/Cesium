@@ -1,0 +1,4 @@
+System.Void <Module>::.cctor()
+  IL_0000: ldc.i4.0
+  IL_0001: stsfld System.Int32 testInput<Statics>::i
+  IL_0006: ret

@@ -37,4 +37,10 @@ int test()
 
     static int i = 2;
 ");
+
+    [Fact]
+    public Task ConstTypeDef() => DoTest(
+        @"
+typedef int myint;
+static const myint i = 0;");
 }
