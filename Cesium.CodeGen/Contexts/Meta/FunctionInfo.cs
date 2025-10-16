@@ -64,7 +64,10 @@ internal record FunctionInfo(
         var declaredParams = Parameters?.Parameters ?? Array.Empty<ParameterInfo>();
         foreach (var (a, b) in actualParams.Zip(declaredParams))
         {
-            if (!a.Type.IsEqualTo(b.Type))
+            if (!(a.Type.IsEqualTo(b.Type)
+                || (a.Type is Ir.Types.PointerType aPtr && b.Type is Ir.Types.PointerType bPtr
+                    && aPtr.Base is StructType aStruct && bPtr.Base is StructType bStruct
+                    && aStruct.Identifier == bStruct.Identifier)))
                 throw new CompilationException(
                     $"Incorrect type for parameter {a.Name}: declared as {b.Type}, defined as {a.Type}.");
         }
