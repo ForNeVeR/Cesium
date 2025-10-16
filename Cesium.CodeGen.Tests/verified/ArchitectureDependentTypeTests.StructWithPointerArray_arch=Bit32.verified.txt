@@ -13,6 +13,7 @@ Module: Primary
     Fields:
       System.Byte* <typedef>foo/<SyntheticBuffer>x::FixedElementField
   Fields:
+    Offset: 0
     <typedef>foo/<SyntheticBuffer>x <typedef>foo::x
     Custom attributes:
     - FixedBufferAttribute(System.Byte*, 4)

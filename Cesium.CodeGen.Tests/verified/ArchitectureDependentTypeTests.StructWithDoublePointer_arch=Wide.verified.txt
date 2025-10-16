@@ -3,4 +3,5 @@ Module: Primary
 
   Type: <typedef>foo
   Fields:
+    Offset: 0
     Cesium.Runtime.CPtr`1<Cesium.Runtime.CPtr`1<System.Int32>> <typedef>foo::x

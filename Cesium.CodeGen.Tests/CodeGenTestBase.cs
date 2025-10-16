@@ -209,6 +209,11 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 result.AppendLine($"{Indent(indent)}Fields:");
                 foreach (var field in type.Fields)
                 {
+                    if (field.Offset != -1)
+                    {
+                        result.AppendLine($"{Indent(indent + 1)}Offset: {field.Offset}");
+                    }
+
                     result.AppendLine($"{Indent(indent + 1)}{field}");
 
                     if (field.HasCustomAttributes)

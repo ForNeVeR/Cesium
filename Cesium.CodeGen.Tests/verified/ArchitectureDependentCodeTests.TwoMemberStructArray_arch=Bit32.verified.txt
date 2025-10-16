@@ -25,3 +25,5 @@ Module: Primary
   Fields:
     Offset: 0
     System.Byte* <typedef>foo::ptr
+    Offset: 4
+    System.Int32 <typedef>foo::len

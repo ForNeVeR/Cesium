@@ -54,12 +54,12 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
                 break;
             case TargetArchitectureSet.Bit32:
                 structType.PackingSize = 4;
-                // TODO[#355]: enable explicit layout.
+                structType.IsExplicitLayout = true;
                 break;
             case TargetArchitectureSet.Bit64:
             case TargetArchitectureSet.Wide:
                 structType.PackingSize = 8;
-                // TODO[#355]: enable explicit layout.
+                structType.IsExplicitLayout = true;
                 break;
             default:
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
@@ -77,6 +77,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     public void FinishEmit(TypeDefinition definition, string name, TranslationUnitContext context)
     {
+        int currentOffset = 0;
         foreach (var member in Members)
         {
             var (type, identifier, cliImportMemberName) = member;
@@ -96,9 +97,20 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
             var field = type.CreateFieldOfType(context, definition, identifier!);
 
-            if (IsUnion) field.Offset = 0;
+            if (IsUnion)
+            {
+                field.Offset = 0;
+            }
+            else
+            {
+                if (context.AssemblyContext.ArchitectureSet != TargetArchitectureSet.Dynamic)
+                {
+                    var fieldSize = type.GetSizeInBytes(context.AssemblyContext.ArchitectureSet) ?? throw new NotSupportedException($"For type {type} cannot calculate size in bytes");
+                    field.Offset = currentOffset;
+                    currentOffset += fieldSize;
+                }
+            }
 
-            // TODO[#355]: for every field, calculate the explicit layout position.
             definition.Fields.Add(field);
         }
     }
@@ -158,7 +170,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             _ => arch switch
             {
                 TargetArchitectureSet.Dynamic => null,
-                _ => throw new WipException(355, $"Cannot determine size of a structure with {Members.Count} members for architecture set {arch}: this requires struct layout calculation that is not yet supported.")
+                _ => Members.Select(m => m.Type.GetSizeInBytes(arch) ?? throw new NotImplementedException($"Cannot determine size of a type {m.Type} for architecture set {arch}")).Sum()
             }
         };
     }
