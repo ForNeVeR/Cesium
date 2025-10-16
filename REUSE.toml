@@ -27,6 +27,7 @@ path = [
     "Cesium.Compiler.Tests/verified/*.txt",
     "Cesium.Parser.Tests/**/verified/*.txt",
     "Cesium.TestFramework.Tests/verified/*.txt"
+    "Cesium.IntegrationTests/**/*.in"
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
