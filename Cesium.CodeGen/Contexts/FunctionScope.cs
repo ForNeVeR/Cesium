@@ -32,10 +32,11 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
     public VariableInfo? GetGlobalField(string identifier) => AssemblyContext.GetGlobalField(identifier);
     public void AddVariable(StorageClass storageClass, string identifier, IType variableType, IExpression? constant)
     {
-        _variables.Add(identifier, new(storageClass, variableType, constant));
+        var emitName = $"<{FunctionInfo.Identifier}>{identifier}";
+        _variables.Add(identifier, new(storageClass, variableType, constant) { EmitName = emitName });
         if (storageClass == StorageClass.Static)
         {
-            Context.AddTranslationUnitLevelField(storageClass, identifier, variableType);
+            Context.AddTranslationUnitLevelField(storageClass, emitName, variableType);
         }
     }
 
@@ -47,7 +48,7 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
             return variableInfo;
         }
 
-        return Context.GetInitializerScope().GetVariable(identifier);
+        return Context.GetInitializerScope().GetVariable(identifier) ?? Context.GetInitializerScope().GetVariable($"<{FunctionInfo.Identifier}>{identifier}");
     }
 
     public VariableDefinition ResolveVariable(int varIndex)

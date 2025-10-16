@@ -409,7 +409,7 @@ internal static class BlockItemLowering
                     var pinvoke = scope.GetPragma<PInvokeDefinition>();
                     string? dllLibrary = pinvoke != null ? pinvoke.LibName : null;
 
-                    var cliImportFunctionInfo = new FunctionInfo(parametersInfo, returnType, d.StorageClass, IsDefined: d.CliImportMemberName is not null)
+                    var cliImportFunctionInfo = new FunctionInfo(d.Identifier, parametersInfo, returnType, d.StorageClass, IsDefined: d.CliImportMemberName is not null)
                     {
                         CliImportMember = d.CliImportMemberName,
                         DllLibraryName = dllLibrary,
@@ -439,7 +439,7 @@ internal static class BlockItemLowering
                         else
                             throw new CompilationException($"Function {d.Name} already defined as immutable.");
 
-                    var newDeclaration = new FunctionInfo(parameters, returnType, d.StorageClass, IsDefined: true);
+                    var newDeclaration = new FunctionInfo(d.Name, parameters, returnType, d.StorageClass, IsDefined: true);
                     scope.DeclareFunction(d.Name, newDeclaration);
 
                     return new FunctionDefinition(d.Name, d.StorageClass, resolvedFunctionType, d.Statement, d.Inline, d.NoReturn);

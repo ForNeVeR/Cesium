@@ -13,6 +13,7 @@ namespace Cesium.CodeGen.Contexts.Meta;
 
 // TODO[#489]: This is confusing, make immutable.
 internal record FunctionInfo(
+    string Identifier,
     ParametersInfo? Parameters,
     IType ReturnType,
     StorageClass StorageClass,

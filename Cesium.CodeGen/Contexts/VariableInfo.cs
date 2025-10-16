@@ -12,4 +12,5 @@ internal record VariableInfo(StorageClass StorageClass, IType Type, IExpression?
 {
     static int CurrentIndex = 0;
     public int Index { get; } = checked(CurrentIndex++);
+    public string? EmitName { get; set; }
 }
