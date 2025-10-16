@@ -88,7 +88,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 var functionSource = _thisProjectSourceDirectory / "multi-file/function.c";
                 var programSource = _thisProjectSourceDirectory / "multi-file/program.c";
 
-                var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, [functionSource, programSource]);
+                var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, [functionSource, programSource], null);
 
                 var functionObject = await GenerateJsonObjectFile(objDir, functionSource, TargetFramework.Net);
                 var programObject = await GenerateJsonObjectFile(objDir, programSource, TargetFramework.Net);
@@ -98,7 +98,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                     objDir,
                     outRoot,
                     TargetFramework.Net,
-                    [functionObject, programObject]);
+                    [functionObject, programObject],
+                    null);
 
                 Assert.Equal(nativeResult.ReplaceLineEndings("\n"), cesiumResult.ReplaceLineEndings("\n"));
             }
@@ -116,6 +117,15 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             var paths = "[" + string.Join(", ", relativeSourcePaths.Select(x => $"\"{x.Value}\"")) + "]";
             _output.WriteLine($"Building source files {paths} in directory \"{outRoot}\".");
 
+            string? inputContent = null;
+            if (relativeSourcePaths.Length > 0)
+            {
+                var inputPath = SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / relativeSourcePaths[0].WithExtension(".in");
+                if (File.Exists(inputPath.ToString()))
+                {
+                    inputContent = File.ReadAllText(inputPath.ToString());
+                }
+            }
             var binDir = outRoot / "bin";
             var objDir = outRoot / "obj";
             Directory.CreateDirectory(binDir.Value);
@@ -125,8 +135,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 .Select(x => SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / x)
                 .ToList();
 
-            await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles);
-            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, sourceFiles);
+            await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles, inputContent);
+            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, sourceFiles, inputContent);
         }
         finally
         {
@@ -138,10 +148,11 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         AbsolutePath binDir,
         AbsolutePath objDir,
         AbsolutePath outRoot,
-        IList<AbsolutePath> sources)
+        IList<AbsolutePath> sources,
+        string? inputContent)
     {
         var nativeExecutable = await BuildExecutableWithNativeCompiler(binDir, objDir, sources);
-        var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRoot, []);
+        var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRoot, [], inputContent);
         Assert.Equal(42, nativeResult.ExitCode);
         Assert.Empty(nativeResult.StandardError);
         return nativeResult.StandardOutput;
@@ -152,7 +163,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         AbsolutePath objDir,
         AbsolutePath outRoot,
         TargetFramework targetFramework,
-        IList<AbsolutePath> inputFiles)
+        IList<AbsolutePath> inputFiles,
+        string? inputContent)
     {
         var managedExecutable = await BuildExecutableWithCesium(
             binDir,
@@ -161,8 +173,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             targetFramework);
         var managedResult = await (targetFramework switch
         {
-            TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable),
-            TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRoot, []),
+            TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable, inputContent),
+            TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRoot, [], inputContent),
             _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
         });
         Assert.Equal(42, managedResult.ExitCode);

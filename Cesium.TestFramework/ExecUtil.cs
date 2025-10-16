@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Medallion.Shell;
+using Mono.Cecil;
 using TruePath;
 using Xunit.Abstractions;
 
@@ -17,9 +18,10 @@ public static class ExecUtil
         LocalPath executable,
         AbsolutePath workingDirectory,
         string[] args,
+        string? inputContent = null,
         IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
-        var result = await Run(output, executable, workingDirectory, args, additionalEnvironment);
+        var result = await Run(output, executable, workingDirectory, args, inputContent, additionalEnvironment);
         Assert.True(result.Success);
     }
 
@@ -28,12 +30,18 @@ public static class ExecUtil
         LocalPath executable,
         AbsolutePath workingDirectory,
         string[] args,
+        string? inputContent = null,
         IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
         output?.WriteLine($"$ {executable} {string.Join(" ", args)}");
-        var result = await Command.Run(executable.Value, args, o =>
+        var command = Command.Run(executable.Value, args, o =>
         {
             o.WorkingDirectory(workingDirectory.Value);
+            if (inputContent is { })
+            {
+                o.StartInfo(_ => _.RedirectStandardInput = true);
+            }
+
             if (additionalEnvironment != null)
             {
                 foreach (var (key, value) in additionalEnvironment)
@@ -41,7 +49,14 @@ public static class ExecUtil
                     o.EnvironmentVariable(key, value);
                 }
             }
-        }).Task;
+        });
+        if (inputContent is { })
+        {
+            command.StandardInput.Write(inputContent);
+            command.StandardInput.Close();
+        }
+
+        var result = await command.Task;
         foreach (var s in result.StandardOutput.Split("\n"))
             output?.WriteLine(s.TrimEnd());
         if (result.StandardError.Trim() != "")

@@ -43,7 +43,8 @@ public static class DotNetCliHelper
             ExecUtil.DotNetHost,
             AbsolutePath.CurrentWorkingDirectory,
             [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ],
-            env);
+            null,
+            additionalEnvironment: env);
         var resultString = result.StandardOutput;
         if (propertyNames.Length == 1)
             return new Dictionary<string, string> { { propertyNames[0], resultString } };
@@ -66,7 +67,8 @@ public static class DotNetCliHelper
             ExecUtil.DotNetHost,
             AbsolutePath.CurrentWorkingDirectory,
             [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ],
-            env);
+            null,
+            additionalEnvironment: env);
         var resultString = result.StandardOutput;
         var resultJson = JsonDocument.Parse(resultString);
         var itemsJson = resultJson.RootElement.GetProperty("Items").EnumerateObject().ToArray();
@@ -78,14 +80,16 @@ public static class DotNetCliHelper
     public static Task<CommandResult> RunDotNetDll(
         ITestOutputHelper output,
         AbsolutePath workingDirectoryPath,
-        AbsolutePath dllPath) =>
-        ExecUtil.Run(output, ExecUtil.DotNetHost, workingDirectoryPath, [ dllPath.Value ]);
+        AbsolutePath dllPath,
+        string? inputContent) =>
+        ExecUtil.Run(output, ExecUtil.DotNetHost, workingDirectoryPath, [ dllPath.Value ], inputContent);
 
     public static Task RunToSuccess(
         ITestOutputHelper? output,
         LocalPath executable,
         AbsolutePath workingDirectory,
         string[] args) => ExecUtil.RunToSuccess(output, executable, workingDirectory, args,
+        null,
         new Dictionary<string, string>
         {
             // Work around https://github.com/dotnet/sdk/issues/34653
