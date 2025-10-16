@@ -70,9 +70,10 @@ internal static class TranslationUnitEx
                             throw new CompilationException($"CLI initializer should be a function for identifier {identifier}.");
                         }
 
-                        if (type is PrimitiveType or PointerType or InPlaceArrayType
-                            || (type is StructType varStructType && varStructType.Identifier != identifier)
-                            || type is NamedType)
+                        var nonConstType = type.EraseConstType();
+                        if (nonConstType is PrimitiveType or PointerType or InPlaceArrayType
+                            || (nonConstType is StructType varStructType && varStructType.Identifier != identifier)
+                            || nonConstType is NamedType)
                         {
                             var variable = new DeclarationBlockItem(new(storageClass, new(type, identifier, null), initializer));
                             yield return variable;
