@@ -210,6 +210,10 @@ public abstract class CodeGenTestBase : VerifyTestBase
                 foreach (var field in type.Fields)
                 {
                     result.AppendLine($"{Indent(indent + 1)}{field}");
+                    if (field.Offset != -1)
+                    {
+                        result.AppendLine($"{Indent(indent + 1)}Offset: {field.Offset}");
+                    }
 
                     if (field.HasCustomAttributes)
                         PrintCustomAttributes(indent + 1, field.CustomAttributes);

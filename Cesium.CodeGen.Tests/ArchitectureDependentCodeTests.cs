@@ -46,10 +46,10 @@ int main(void)
 """);
 
     [Theory]
-    // TODO[#355]: [InlineData(TargetArchitectureSet.Bit64)]
-    // TODO[#355]: [InlineData(TargetArchitectureSet.Bit32)]
+    [InlineData(TargetArchitectureSet.Bit64)]
+    [InlineData(TargetArchitectureSet.Bit32)]
     [InlineData(TargetArchitectureSet.Dynamic)]
-    // TODO[#355] [InlineData(TargetArchitectureSet.Wide)]
+    [InlineData(TargetArchitectureSet.Wide)]
     public Task TwoMemberStructArray(TargetArchitectureSet arch) => DoTest(arch, """
 typedef struct { char *ptr; int len; } foo;
 
