@@ -922,7 +922,9 @@ char* x = __FILE__;
     [InlineData("-9 <= -9", true)]
     [InlineData("-9 >= 10", false)]
     [InlineData(" -10 < 0x10", true)]
-    [InlineData(" -10 != 0x10", true)]
+    [InlineData(" -0 == 0", true)]
+    [InlineData(" -0 == +0", true)]
+    [InlineData(" -10 != +10", true)]
     public async Task EvaluateExpressionAllVariants(
         string expression,
         bool expectedResult)
