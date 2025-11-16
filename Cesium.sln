@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		REUSE.toml = REUSE.toml
 		MAINTAINING.md = MAINTAINING.md
 		LICENSE.md = LICENSE.md
+		renovate.json = renovate.json
+		renovate.json.license = renovate.json.license
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F6830-E724-4B3A-BFDC-3FA1301A59D0}"

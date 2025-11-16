@@ -2,5 +2,18 @@
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
         "config:recommended"
+    ],
+    "customManagers": [
+        {
+            "description": "Update the GitHub Actions runners.",
+            "customType": "regex",
+            "managerFilePatterns": [
+                ".github/workflows/**/*.yml"
+            ],
+            "matchStrings": [
+                "(?<depName>macos|ubuntu|windows)-(?<currentValue>[-\\w.\\d]+)"
+            ],
+            "datasourceTemplate": "github-runners"
+        }
     ]
 }
