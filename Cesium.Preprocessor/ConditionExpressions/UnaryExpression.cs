@@ -19,6 +19,8 @@ internal sealed record UnaryExpression(
         return Operator switch
         {
             CPreprocessorOperator.Negation => !expressionValue.AsBoolean(Location) ? "1" : "0",
+            CPreprocessorOperator.Sub => $"-{expressionValue}",
+            CPreprocessorOperator.Add => $"{expressionValue}",
             _ => throw new CompilationException($"Operator {Operator} cannot be used in the preprocessor directives")
         };
     }
