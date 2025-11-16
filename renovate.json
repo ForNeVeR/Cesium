@@ -3,6 +3,7 @@
     "extends": [
         "config:recommended"
     ],
+    "automerge": true,
     "customManagers": [
         {
             "description": "Update the GitHub Actions runners.",
