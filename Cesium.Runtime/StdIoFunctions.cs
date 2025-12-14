@@ -25,11 +25,11 @@ public unsafe static class StdIoFunctions
 
     internal static readonly List<StreamHandle> Handles = [];
 
-    private const int StdIn = 0;
+    private const int _stdIn = 0;
 
-    private const int StdOut = 1;
+    private const int _stdOut = 1;
 
-    private const int StdErr = 2;
+    private const int _stdErr = 2;
 
     static StdIoFunctions()
     {
@@ -66,7 +66,7 @@ public unsafe static class StdIoFunctions
 
     public static int GetChar()
     {
-        return FGetC((void*)(IntPtr)StdIn);
+        return FGetC((void*)(IntPtr)_stdIn);
     }
 
     public static int FPutS(byte* str, void* stream)
@@ -133,7 +133,7 @@ public unsafe static class StdIoFunctions
 
     public static int PrintF(byte* str, void* varargs)
     {
-        return FPrintF((void*)StdOut, str, varargs);
+        return FPrintF((void*)_stdOut, str, varargs);
     }
 
     public static int FPrintF(void* stream, byte* str, void* varargs)
@@ -722,7 +722,7 @@ public unsafe static class StdIoFunctions
 
     public static int ScanF(byte* format, void* varargs)
     {
-        return FScanF((void*)StdIn, format, varargs);
+        return FScanF((void*)_stdIn, format, varargs);
     }
 
     public static int FScanF(void* stream, byte* format, void* varargs)
@@ -740,7 +740,6 @@ public unsafe static class StdIoFunctions
         var streamReader = getStreamReader();
 
         int argsConsumed = 0;
-        int bytesConsumed = 0;
         bool whitespacePrefix = false;
 
         int specifierPosition = formatString.IndexOf("%", 0, StringComparison.Ordinal);
@@ -1312,7 +1311,7 @@ public unsafe static class StdIoFunctions
         var handle = (IntPtr)filePtr;
 
         var handleValue = handle.ToInt64();
-        if (handleValue is StdIn or StdOut or StdErr)
+        if (handleValue is _stdIn or _stdOut or _stdErr)
         {
             return Handles[(int)handleValue];
         }
@@ -1359,21 +1358,14 @@ public unsafe static class StdIoFunctions
         }
     }
 
-    class BytePtrTextWriter : TextWriter
+    class BytePtrTextWriter(byte* ptr) : TextWriter
     {
-        private byte* _ptr;
-
-        public BytePtrTextWriter(byte* ptr)
-        {
-            _ptr = ptr;
-        }
-
         public override Encoding Encoding => throw new NotImplementedException();
 
         public override void Write(char value)
         {
-            *_ptr = (byte)value;
-            _ptr++;
+            *ptr = (byte)value;
+            ptr++;
         }
 
         public override void Write(string? value)

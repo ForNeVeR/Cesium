@@ -6,6 +6,10 @@ SPDX-License-Identifier: MIT
 
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Yoakke.SynKit.C.Syntax" />
         <PackageReference Include="Yoakke.SynKit.Lexer" />
