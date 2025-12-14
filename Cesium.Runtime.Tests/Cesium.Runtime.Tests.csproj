@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 
     <PropertyGroup>
         <!--suppress MsbuildTargetFrameworkTagInspection -->
+        <TargetFrameworks>net9.0</TargetFrameworks>
         <TargetFrameworks Condition=" $([MSBuild]::IsOsPlatform('Windows')) ">$(TargetFrameworks);net481</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
