@@ -13,10 +13,8 @@ namespace Cesium.CodeGen.Ir.Types;
 
 internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 {
-    private const string AnonStructPrefix = "_Anon_";
-    private const string AnonUnionPrefix = "_Union_";
-
-    private TypeReference? AnonType;
+    private const string _anonStructPrefix = "_Anon_";
+    private const string _anonUnionPrefix = "_Union_";
 
     public StructType(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion, string? identifier)
     {
@@ -24,7 +22,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         IsUnion = isUnion;
         Identifier = identifier;
         IsAnon = identifier == null;
-        if (IsAnon) AnonIdentifier = CreateAnonIdentifier(members, isUnion);
+        if (IsAnon) _anonIdentifier = CreateAnonIdentifier(members, isUnion);
     }
 
     public bool IsAnon { get; private set; }
@@ -38,7 +36,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
     public string? Identifier { get; }
 
     // We need a good name generator...
-    private string? AnonIdentifier;
+    private readonly string? _anonIdentifier;
 
     public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
@@ -85,7 +83,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
             {
                 if (type is StructType structType && structType.IsAnon)
                 {
-                    identifier = structType.AnonIdentifier;
+                    identifier = structType._anonIdentifier;
                 }
                 else
                     throw new NotImplementedException($"Unexpected field with null ident and with type: {type}");
@@ -127,12 +125,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
     {
         var resolved = context.GetTypeReference(this);
 
-        if (resolved == null)
-        {
-            throw new CompilationException($"Type {this} was not found.");
-        }
-
-        return resolved;
+        return resolved ?? throw new CompilationException($"Type {this} was not found.");
     }
 
     public IExpression GetSizeInBytesExpression(TargetArchitectureSet arch)
@@ -192,9 +185,9 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     public override bool Equals(object? other)
     {
-        if (other is StructType)
+        if (other is StructType type)
         {
-            return Equals((StructType)other);
+            return Equals(type);
         }
 
         return false;
@@ -213,30 +206,21 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     private static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
     {
-        return (isUnion ? AnonUnionPrefix : AnonStructPrefix) + string.Join('_', members.SelectMany(_ => new string[] { _.Type is StructType st ? st.Identifier ?? string.Empty : _.Type is PrimitiveType pt ? pt.Kind.ToString() : _.Type.TypeKind.ToString(), _.Identifier ?? string.Empty }));
+        return (isUnion ? _anonUnionPrefix : _anonStructPrefix) + string.Join('_', members.SelectMany(_ => new string[] { _.Type is StructType st ? st.Identifier ?? string.Empty : _.Type is PrimitiveType pt ? pt.Kind.ToString() : _.Type.TypeKind.ToString(), _.Identifier ?? string.Empty }));
     }
 
-    internal sealed class AnonStructFieldReference : FieldReference
+    internal sealed class AnonStructFieldReference(FieldDefinition field, List<FieldDefinition> path) : FieldReference(field.Name, field.FieldType, field.DeclaringType)
     {
-        private List<FieldDefinition> Path;
-        private FieldDefinition Field;
-
-        public AnonStructFieldReference(FieldDefinition field, List<FieldDefinition> path) : base(field.Name, field.FieldType, field.DeclaringType)
-        {
-            Field = field;
-            Path = path;
-        }
-
         internal void EmitPath(IEmitScope scope)
         {
-            var start = Path.Count - 1;
+            var start = path.Count - 1;
             for (int i = start; i >= 1; i--)
             {
-                var field = Path[i];
+                var field = path[i];
                 scope.LdFldA(field);
             }
         }
 
-        public override FieldDefinition Resolve() => Field;
+        public override FieldDefinition Resolve() => field;
     }
 }

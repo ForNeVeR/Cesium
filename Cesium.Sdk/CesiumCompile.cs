@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Cesium.Sdk;
 
@@ -33,7 +29,7 @@ namespace Cesium.Sdk;
  */
 
 // ReSharper disable once UnusedType.Global
-public class CesiumCompile : Task
+public class CesiumCompile : Microsoft.Build.Utilities.Task
 {
     [Required] public string CompilerRuntime { get; set; } = null!;
     [Required] public string CompilerExe { get; set; } = null!;
@@ -46,8 +42,8 @@ public class CesiumCompile : Task
     public string? ModuleType { get; set; }
     public string? CoreLibPath { get; set; }
     public string? RuntimePath { get; set; }
-    public ITaskItem[] ImportItems { get; set; } = Array.Empty<ITaskItem>();
-    public ITaskItem[] PreprocessorItems { get; set; } = Array.Empty<ITaskItem>();
+    public ITaskItem[] ImportItems { get; set; } = [];
+    public ITaskItem[] PreprocessorItems { get; set; } = [];
     public bool DryRun = false;
 
     [Output] public string? ResultingCommandLine { get; private set; }
@@ -194,7 +190,7 @@ public class CesiumCompile : Task
         options = new ValidatedOptions(
             CompilerRuntime: CompilerRuntime,
             CompilerExe: CompilerExe,
-            InputItems: InputFiles.Select(item => item.ItemSpec).ToArray(),
+            InputItems: [.. InputFiles.Select(item => item.ItemSpec)],
             OutputFile: OutputFile,
             Namespace: Namespace,
             Framework: framework,
@@ -202,8 +198,8 @@ public class CesiumCompile : Task
             ModuleKind: moduleKind,
             CoreLibPath: CoreLibPath,
             RuntimePath: RuntimePath,
-            ImportItems: ImportItems.Select(item => item.ItemSpec).ToArray(),
-            PreprocessorItems: PreprocessorItems.Select(item => item.ItemSpec).ToArray()
+            ImportItems: [.. ImportItems.Select(item => item.ItemSpec)],
+            PreprocessorItems: [.. PreprocessorItems.Select(item => item.ItemSpec)]
         );
 
         return true;
@@ -211,9 +207,10 @@ public class CesiumCompile : Task
 
     private List<string> CollectCommandLineArguments(ValidatedOptions options)
     {
-        var args = new List<string>();
-
-        args.Add("--nologo");
+        var args = new List<string>
+        {
+            "--nologo"
+        };
 
         if (options.Framework is { } framework)
         {

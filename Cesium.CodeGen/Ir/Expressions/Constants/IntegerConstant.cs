@@ -60,78 +60,65 @@ internal sealed class IntegerConstant : IConstant
     {
         var textSpan = text.AsSpan();
         bool unsignedParse = false;
-        bool i64Parse = false;
         if (textSpan.EndsWith("ull", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             unsignedParse = true;
             textSpan = textSpan[..^3];
         }
 
         if (textSpan.EndsWith("ll", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^2];
         }
 
         if (textSpan.EndsWith("ul", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             unsignedParse = true;
             textSpan = textSpan[..^2];
         }
 
         if (textSpan.EndsWith("l", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^1];
         }
 
         if (textSpan.EndsWith("i64", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^3];
         }
 
         if (textSpan.EndsWith("i32", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^3];
         }
 
         if (textSpan.EndsWith("i16", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^3];
         }
 
         if (textSpan.EndsWith("i8", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^2];
         }
 
         if (textSpan.EndsWith("ui64", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^4];
         }
 
         if (textSpan.EndsWith("ui32", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^4];
         }
 
         if (textSpan.EndsWith("ui16", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^4];
         }
 
         if (textSpan.EndsWith("ui8", StringComparison.InvariantCultureIgnoreCase))
         {
-            i64Parse = true;
             textSpan = textSpan[..^3];
         }
 
