@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="Yoakke.SynKit.C.Syntax" />
         <PackageReference Include="Yoakke.SynKit.Lexer" />
     </ItemGroup>
