@@ -15,6 +15,7 @@ SPDX-License-Identifier: MIT
         <NukeScriptDirectory>..</NukeScriptDirectory>
         <NukeTelemetryVersion>1</NukeTelemetryVersion>
         <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
