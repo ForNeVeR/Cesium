@@ -24,8 +24,6 @@ SPDX-License-Identifier: MIT
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <PublishTrimmed>true</PublishTrimmed>
         <RollForward>Major</RollForward>
         <PackAsTool>true</PackAsTool>
