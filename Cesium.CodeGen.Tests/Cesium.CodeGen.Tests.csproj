@@ -7,10 +7,8 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-
         <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,12 +23,12 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
-      <ProjectReference Include="..\Cesium.Compiler\Cesium.Compiler.csproj" />
-      <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
-      <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
-      <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
-      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
+        <ProjectReference Include="..\Cesium.CodeGen\Cesium.CodeGen.csproj" />
+        <ProjectReference Include="..\Cesium.Compiler\Cesium.Compiler.csproj" />
+        <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
+        <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+        <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
+        <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
 </Project>

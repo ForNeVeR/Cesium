@@ -8,10 +8,9 @@ SPDX-License-Identifier: MIT
 
     <PropertyGroup>
         <!--suppress MsbuildTargetFrameworkTagInspection -->
-        <TargetFrameworks>net9.0</TargetFrameworks>
-        <TargetFrameworks Condition=" $([MSBuild]::IsOsPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFrameworks Condition=" $([MSBuild]::IsOsPlatform('Windows')) ">$(TargetFrameworks);net481</TargetFrameworks>
         <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
@@ -25,7 +24,7 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
-      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+        <ProjectReference Include="..\Cesium.Runtime\Cesium.Runtime.csproj" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     </ItemGroup>
 </Project>

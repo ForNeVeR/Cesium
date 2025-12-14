@@ -7,22 +7,20 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Mono.Cecil" />
-      <PackageReference Include="QuikGraph" />
-      <PackageReference Include="QuikGraph.Graphviz" />
-      <PackageReference Include="TruePath" />
+        <PackageReference Include="Mono.Cecil" />
+        <PackageReference Include="QuikGraph" />
+        <PackageReference Include="QuikGraph.Graphviz" />
+        <PackageReference Include="TruePath" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
-      <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
-      <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+        <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
+        <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
+        <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -7,10 +7,8 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-
         <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,27 +22,27 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
-      <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
-      <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
+        <ProjectReference Include="..\Cesium.Parser\Cesium.Parser.csproj" />
+        <ProjectReference Include="..\Cesium.Preprocessor\Cesium.Preprocessor.csproj" />
+        <ProjectReference Include="..\Cesium.TestFramework\Cesium.TestFramework.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="ParserTests\verified\DeclarationParserTests.*.verified.txt">
-        <ParentFile>DeclarationParserTests</ParentFile>
-        <DependentUpon>DeclarationParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\FullParserTests.*.verified.txt">
-        <ParentFile>FullParserTests</ParentFile>
-        <DependentUpon>FullParserTests.cs</DependentUpon>
-      </None>
-      <None Update="ParserTests\StatementParserTests.*.verified.txt">
-        <ParentFile>StatementParserTests</ParentFile>
-        <DependentUpon>StatementParserTests.cs</DependentUpon>
-      </None>
-      <None Update="PreprocessorTests\verified\PreprocessorTests.*.txt">
-        <ParentFile>PreprocessorTests</ParentFile>
-        <DependentUpon>PreprocessorTests.cs</DependentUpon>
-      </None>
+        <None Update="ParserTests\verified\DeclarationParserTests.*.verified.txt">
+            <ParentFile>DeclarationParserTests</ParentFile>
+            <DependentUpon>DeclarationParserTests.cs</DependentUpon>
+        </None>
+        <None Update="ParserTests\FullParserTests.*.verified.txt">
+            <ParentFile>FullParserTests</ParentFile>
+            <DependentUpon>FullParserTests.cs</DependentUpon>
+        </None>
+        <None Update="ParserTests\StatementParserTests.*.verified.txt">
+            <ParentFile>StatementParserTests</ParentFile>
+            <DependentUpon>StatementParserTests.cs</DependentUpon>
+        </None>
+        <None Update="PreprocessorTests\verified\PreprocessorTests.*.txt">
+            <ParentFile>PreprocessorTests</ParentFile>
+            <DependentUpon>PreprocessorTests.cs</DependentUpon>
+        </None>
     </ItemGroup>
 </Project>

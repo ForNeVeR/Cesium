@@ -1,0 +1,76 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/release.yml" />
+    <File Path=".github/workflows/run-build-and-unit-tests.yml" />
+  </Folder>
+  <Folder Name="/.github/workflows/perform-common-steps/">
+    <File Path=".github/workflows/perform-common-steps/action.yml" />
+  </Folder>
+  <Folder Name="/Cesium.Samples/">
+    <File Path="Cesium.Samples/arithmetics.c" />
+    <File Path="Cesium.Samples/cli-interop.c" />
+    <File Path="Cesium.Samples/functions.c" />
+    <File Path="Cesium.Samples/GOL.c" />
+    <File Path="Cesium.Samples/hello.c" />
+    <File Path="Cesium.Samples/minimal.c" />
+    <File Path="Cesium.Samples/quine.c" />
+    <File Path="Cesium.Samples/structs.c" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/architecture-sets.md" />
+    <File Path="docs/builtins.md" />
+    <File Path="docs/design-notes.md" />
+    <File Path="docs/exceptions.md" />
+    <File Path="docs/language-extensions.md" />
+    <File Path="docs/msbuild-sdk.md" />
+    <File Path="docs/tests.md" />
+    <File Path="docs/type-system.md" />
+  </Folder>
+  <Folder Name="/scripts/">
+    <File Path="scripts/approve-all.ps1" />
+    <File Path="scripts/Get-Version.ps1" />
+    <File Path="scripts/Test-Encoding.ps1" />
+    <File Path="scripts/Update-Version.ps1" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="after.Cesium.sln.targets" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE.md" />
+    <File Path="MAINTAINING.md" />
+    <File Path="README.md" />
+    <File Path="renovate.json" />
+    <File Path="renovate.json.license" />
+    <File Path="REUSE.toml" />
+  </Folder>
+  <Folder Name="/Templates/">
+    <Project Path="Cesium.Templates/Cesium.Templates.csproj" />
+  </Folder>
+  <Project Path="build/_build.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="Cesium.Ast/Cesium.Ast.csproj" />
+  <Project Path="Cesium.CodeGen.Tests/Cesium.CodeGen.Tests.csproj" />
+  <Project Path="Cesium.CodeGen/Cesium.CodeGen.csproj" />
+  <Project Path="Cesium.Compiler.Tests/Cesium.Compiler.Tests.csproj" />
+  <Project Path="Cesium.Compiler/Cesium.Compiler.csproj" />
+  <Project Path="Cesium.Core/Cesium.Core.csproj" />
+  <Project Path="Cesium.IntegrationTests/Cesium.IntegrationTests.csproj">
+    <BuildType Project="Debug" />
+  </Project>
+  <Project Path="Cesium.Parser.Tests/Cesium.Parser.Tests.csproj" />
+  <Project Path="Cesium.Parser/Cesium.Parser.csproj" />
+  <Project Path="Cesium.Preprocessor/Cesium.Preprocessor.csproj" />
+  <Project Path="Cesium.Runtime.Tests/Cesium.Runtime.Tests.csproj" />
+  <Project Path="Cesium.Runtime/Cesium.Runtime.csproj" />
+  <Project Path="Cesium.Sdk.Tests/Cesium.Sdk.Tests.csproj" />
+  <Project Path="Cesium.Sdk/Cesium.Sdk.csproj" />
+  <Project Path="Cesium.Solution.Metadata/Cesium.Solution.Metadata.csproj" />
+  <Project Path="Cesium.TestFramework.Tests/Cesium.TestFramework.Tests.csproj" />
+  <Project Path="Cesium.TestFramework/Cesium.TestFramework.csproj" />
+</Solution>

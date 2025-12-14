@@ -8,33 +8,32 @@ SPDX-License-Identifier: MIT
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
         <RootNamespace></RootNamespace>
         <NoWarn>CS0649;CS0169</NoWarn>
         <NukeRootDirectory>..</NukeRootDirectory>
         <NukeScriptDirectory>..</NukeScriptDirectory>
         <NukeTelemetryVersion>1</NukeTelemetryVersion>
         <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Nuke.Common" />
     </ItemGroup>
-    <ItemGroup Label="Transitive package references"> <!-- for the sole purpose of pinning the correct versions -->
+    <ItemGroup Label="Transitive package references">
+        <!-- for the sole purpose of pinning the correct versions -->
         <PackageReference Include="JetBrains.Annotations" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Build.Sdk.cs">
-        <DependentUpon>Build.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Build.Tests.cs">
-        <DependentUpon>Build.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Build.Templates.cs">
-        <DependentUpon>Build.cs</DependentUpon>
-      </Compile>
+        <Compile Update="Build.Sdk.cs">
+            <DependentUpon>Build.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Build.Tests.cs">
+            <DependentUpon>Build.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Build.Templates.cs">
+            <DependentUpon>Build.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>

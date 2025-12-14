@@ -7,21 +7,19 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Yoakke.SynKit.C.Syntax" />
-      <PackageReference Include="Yoakke.SynKit.Lexer" />
-      <PackageReference Include="Yoakke.SynKit.Parser" />
-      <PackageReference Include="Yoakke.SynKit.Parser.Generator" />
+        <PackageReference Include="Yoakke.SynKit.C.Syntax" />
+        <PackageReference Include="Yoakke.SynKit.Lexer" />
+        <PackageReference Include="Yoakke.SynKit.Parser" />
+        <PackageReference Include="Yoakke.SynKit.Parser.Generator" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
-      <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
+        <ProjectReference Include="..\Cesium.Ast\Cesium.Ast.csproj" />
+        <ProjectReference Include="..\Cesium.Core\Cesium.Core.csproj" />
     </ItemGroup>
 
 </Project>
