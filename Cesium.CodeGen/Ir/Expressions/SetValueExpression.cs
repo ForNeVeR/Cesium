@@ -14,6 +14,10 @@ internal sealed class SetValueExpression : IExpression
     private readonly IExpression _expression;
     private readonly bool _doReturn;
 
+    internal ILValue Value => _value;
+
+    internal IExpression Expression => _expression;
+
     public SetValueExpression(ILValue value, IExpression expression, bool doReturn = true)
     {
         _value = value;
@@ -25,15 +29,15 @@ internal sealed class SetValueExpression : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
-        _value.EmitSetValue(scope, _expression);
+        Value.EmitSetValue(scope, Expression);
 
         if (_doReturn)
-            _value.EmitGetValue(scope);
+            Value.EmitGetValue(scope);
     }
 
     public IType GetExpressionType(IDeclarationScope scope) => _doReturn
-        ? _value.GetValueType()
+        ? Value.GetValueType()
         : new PrimitiveType(PrimitiveTypeKind.Void);
 
-    public IExpression NoReturn() => new SetValueExpression(_value, _expression, false);
+    public IExpression NoReturn() => new SetValueExpression(Value, Expression, false);
 }

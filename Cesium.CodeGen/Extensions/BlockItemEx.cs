@@ -7,6 +7,7 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.Core;
+using System.Diagnostics;
 using AmbiguousBlockItem = Cesium.Ast.AmbiguousBlockItem;
 using BreakStatement = Cesium.Ast.BreakStatement;
 using CaseStatement = Cesium.Ast.CaseStatement;
@@ -56,5 +57,131 @@ internal static class BlockItemEx
             _ => throw new WipException(212, $"Unknown kind of declaration: {d}."),
         }).ToList(), null)
         { InheritScope = true };
+    }
+
+    public static void Dump(this IBlockItem blockItem, TextWriter writer, int indentLevel)
+    {
+        var indent = new string(' ', indentLevel * 4);
+        switch (blockItem)
+        {
+            case Ir.BlockItems.CompoundStatement compoundStatement:
+                writer.WriteLine($"{indent}{{");
+                foreach (var item in compoundStatement.Statements)
+                {
+                    Dump(item, writer, indentLevel + 1);
+                }
+                Console.WriteLine($"{indent}}}");
+                break;
+            case Ir.BlockItems.ExpressionStatement expressionStatement:
+                writer.Write(indent + "    ");
+                expressionStatement.Expression?.Dump(writer);
+                writer.WriteLine(";");
+                break;
+            case Ir.BlockItems.IfElseStatement ifElseStatement:
+                writer.Write($"{indent}    if (");
+                ifElseStatement.Expression?.Dump(writer);
+                writer.WriteLine(")");
+                ifElseStatement.TrueBranch.Dump(writer, indentLevel + 1);
+                if (ifElseStatement.FalseBranch is { } falseBranch)
+                {
+                    writer.WriteLine($"{indent}    else");
+                    falseBranch.Dump(writer, indentLevel + 1);
+                }
+                break;
+            case Ir.BlockItems.GoToStatement gotoStatement:
+                writer.Write($"{indent}    goto ");
+                writer.Write(gotoStatement.Identifier);
+                writer.WriteLine(";");
+                break;
+            case Ir.BlockItems.LabelStatement labelStatement:
+                writer.WriteLine($"{indent}{labelStatement.Identifier}:");
+                labelStatement.Expression.Dump(writer, indentLevel + 1);
+                break;
+            case Ir.BlockItems.ReturnStatement returnStatement:
+                writer.Write($"{indent}return ");
+                returnStatement.Expression?.Dump(writer);
+                writer.WriteLine(";");
+                break;
+            default:
+                Debug.Assert(false, $"Dumping {blockItem.GetType().Name} not implemented");
+                break;
+        }
+    }
+    public static void Dump(this Ir.Expressions.IExpression expression, TextWriter writer)
+    {
+        switch (expression)
+        {
+            case Ir.Expressions.DiscardResultExpression discardResultExpression:
+                discardResultExpression.Expression.Dump(writer);
+                break;
+            case Ir.Expressions.SetValueExpression setValueExpression:
+                setValueExpression.Value.Dump(writer);
+                writer.Write(" = ");
+                setValueExpression.Expression.Dump(writer);
+                break;
+            case Ir.Expressions.GetValueExpression getValueExpression:
+                getValueExpression.Value.Dump(writer);
+                break;
+            case Ir.Expressions.BinaryOperators.BinaryOperatorExpression binaryExpression:
+                binaryExpression.Left.Dump(writer);
+                binaryExpression.Operator.Dump(writer);
+                binaryExpression.Right.Dump(writer);
+                break;
+            case Ir.Expressions.ConstantLiteralExpression constLiteralExpression:
+                constLiteralExpression.Constant.Dump(writer);
+                break;
+            case Ir.Expressions.PostfixIncrementDecrementExpression.DuplicateValueExpression duplicateValueExpression:
+                duplicateValueExpression.Value.Dump(writer);
+                break;
+            case Ir.Expressions.PostfixIncrementDecrementExpression.ValuePreservationExpression valuePreservationExpression:
+                valuePreservationExpression.Expression.Dump(writer);
+                break;
+            default:
+                Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
+                break;
+        }
+    }
+    public static void Dump(this Ir.Expressions.Values.IValue expression, TextWriter writer)
+    {
+        switch (expression)
+        {
+            case Ir.Expressions.Values.LValueLocalVariable localValueVariable:
+                if (localValueVariable.Definition is { })
+                {
+                    writer.Write(localValueVariable.Definition.ToString());
+                }
+                else
+                {
+                    writer.Write($"<var #{localValueVariable.VarIndex}>");
+                }
+
+                break;
+            default:
+                Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
+                break;
+        }
+    }
+    public static void Dump(this Ir.Expressions.Constants.IConstant expression, TextWriter writer)
+    {
+        switch (expression)
+        {
+            case Ir.Expressions.Constants.IntegerConstant integerConstant:
+                writer.Write(integerConstant.Value.ToString());
+
+                break;
+            default:
+                Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
+                break;
+        }
+    }
+    public static void Dump(this Ir.Expressions.BinaryOperators.BinaryOperator expression, TextWriter writer)
+    {
+        var operatorString = expression switch
+        {
+            Ir.Expressions.BinaryOperators.BinaryOperator.Add => "+",
+            Ir.Expressions.BinaryOperators.BinaryOperator.EqualTo => "==",
+            _ => throw new InvalidOperationException($"Dumping BinaryOperator.{expression} not implemented"),
+        };
+        writer.Write(operatorString);
     }
 }

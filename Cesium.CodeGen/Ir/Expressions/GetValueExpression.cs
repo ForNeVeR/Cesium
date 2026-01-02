@@ -10,18 +10,18 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class GetValueExpression : IValueExpression
 {
-    private readonly IValue _value;
+    internal IValue Value { get; }
 
     public GetValueExpression(IValue value)
     {
-        _value = value;
+        Value = value;
     }
 
     public IExpression Lower(IDeclarationScope scope) => this;
 
-    public void EmitTo(IEmitScope scope) => _value.EmitGetValue(scope);
+    public void EmitTo(IEmitScope scope) => Value.EmitGetValue(scope);
 
-    public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType();
+    public IType GetExpressionType(IDeclarationScope scope) => Value.GetValueType();
 
-    public IValue Resolve(IDeclarationScope scope) => _value;
+    public IValue Resolve(IDeclarationScope scope) => Value;
 }

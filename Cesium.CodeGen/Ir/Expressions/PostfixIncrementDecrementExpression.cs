@@ -70,38 +70,40 @@ internal sealed class PostfixIncrementDecrementExpression : IExpression
     /// <summary>
     /// Emits the <c>dup</c> opcode for the passed value. Thus, leaves two values on the stack. Use with caution.
     /// </summary>
-    private class DuplicateValueExpression : IExpression
+    internal class DuplicateValueExpression : IExpression
     {
-        private readonly IValue _value;
+        internal IValue Value { get; }
 
         internal DuplicateValueExpression(IValue value)
         {
-            _value = value;
+            Value = value;
         }
 
         public IExpression Lower(IDeclarationScope scope) => this;
 
         public void EmitTo(IEmitScope scope)
         {
-            _value.EmitGetValue(scope);
+            Value.EmitGetValue(scope);
             scope.Dup();
         }
 
-        public IType GetExpressionType(IDeclarationScope scope) => _value.GetValueType();
+        public IType GetExpressionType(IDeclarationScope scope) => Value.GetValueType();
     }
 
     /// <summary>
     /// Provides access to already loaded value (already stored on stack before this expression).
     /// </summary>
-    private class ValuePreservationExpression(IValue value, IExpression expression) : IExpression
+    internal class ValuePreservationExpression(IValue value, IExpression expression) : IExpression
     {
+        public IExpression Expression { get; } = expression;
+
         public IExpression Lower(IDeclarationScope scope) =>
-            new ValuePreservationExpression(value, expression.Lower(scope));
+            new ValuePreservationExpression(value, Expression.Lower(scope));
 
         public void EmitTo(IEmitScope scope)
         {
-            if (expression is not SetValueExpression sv)
-                throw new AssertException($"{expression} should be a {nameof(SetValueExpression)}.");
+            if (Expression is not SetValueExpression sv)
+                throw new AssertException($"{Expression} should be a {nameof(SetValueExpression)}.");
 
             sv
                 .NoReturn() // thus exposes the previously set value
