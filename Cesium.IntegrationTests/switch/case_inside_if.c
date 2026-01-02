@@ -8,7 +8,7 @@ int main()
 {
     int j = 42;
     int c = 3;
-    bool altered = false;
+    int altered = 0;
 
     switch(code) {
         case 3:
