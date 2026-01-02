@@ -10,20 +10,20 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal class DiscardResultExpression : IExpression
 {
-    private IExpression _expression;
+    internal IExpression Expression { get; set; }
 
     public DiscardResultExpression(IExpression expression)
     {
-        _expression = expression;
+        Expression = expression;
     }
 
-    public IExpression Lower(IDeclarationScope scope) => new DiscardResultExpression(_expression.Lower(scope));
+    public IExpression Lower(IDeclarationScope scope) => new DiscardResultExpression(Expression.Lower(scope));
 
     public void EmitTo(IEmitScope scope)
     {
-        if (_expression is SetValueExpression sv)
+        if (Expression is SetValueExpression sv)
             sv.NoReturn().EmitTo(scope);
-        else _expression.EmitTo(scope);
+        else Expression.EmitTo(scope);
 
         var processor = scope.Method.Body.GetILProcessor();
         processor.Emit(OpCodes.Pop);

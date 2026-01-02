@@ -15,6 +15,10 @@ internal sealed class LValueLocalVariable : ILValue
     private readonly int _varIndex;
     private VariableDefinition? _definition;
 
+    public int VarIndex => _varIndex;
+
+    public VariableDefinition? Definition { get => _definition; set => _definition = value; }
+
     public LValueLocalVariable(IType variableType, int varIndex)
     {
         _variableType = variableType;
@@ -30,8 +34,8 @@ internal sealed class LValueLocalVariable : ILValue
             1 => Instruction.Create(OpCodes.Ldloc_1),
             2 => Instruction.Create(OpCodes.Ldloc_2),
             3 => Instruction.Create(OpCodes.Ldloc_3),
-            <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldloc_S, _definition),
-            _ => Instruction.Create(OpCodes.Ldloc, _definition)
+            <= sbyte.MaxValue => Instruction.Create(OpCodes.Ldloc_S, Definition),
+            _ => Instruction.Create(OpCodes.Ldloc, Definition)
         });
     }
 
@@ -49,7 +53,7 @@ internal sealed class LValueLocalVariable : ILValue
                     variable.Index <= sbyte.MaxValue
                         ? OpCodes.Ldloca_S
                         : OpCodes.Ldloca,
-                    _definition
+                    Definition
                 )
             );
         }
@@ -80,5 +84,5 @@ internal sealed class LValueLocalVariable : ILValue
     public IType GetValueType() => _variableType;
 
     private VariableDefinition GetVariableDefinition(IEmitScope scope) =>
-        _definition ??= scope.ResolveVariable(_varIndex);
+        Definition ??= scope.ResolveVariable(VarIndex);
 }
