@@ -34,6 +34,6 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.0.2" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <PackageVersion Include="ChangelogAutomation.MSBuild" Version="3.0.3" />
+    <PackageVersion Include="ChangelogAutomation.MSBuild" Version="3.0.4" />
   </ItemGroup>
 </Project>
