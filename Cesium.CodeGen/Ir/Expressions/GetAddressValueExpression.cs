@@ -11,22 +11,23 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class GetAddressValueExpression : IExpression
 {
-    private readonly IAddressableValue _value;
+    internal IAddressableValue Value { get; }
+
     public GetAddressValueExpression(IAddressableValue value)
     {
-        _value = value;
+        Value = value;
     }
 
     public IExpression Lower(IDeclarationScope scope) => this;
 
     public void EmitTo(IEmitScope scope)
     {
-        _value.EmitGetAddress(scope);
+        Value.EmitGetAddress(scope);
     }
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
-        IType valueType = _value.GetValueType();
+        IType valueType = Value.GetValueType();
         return GetBasePointer(valueType);
     }
 

@@ -10,14 +10,14 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class SizeOfOperatorExpression : IExpression
 {
-    private readonly IType _type;
+    internal IType Type { get; }
 
     public SizeOfOperatorExpression(IType Type)
     {
-        _type = Type;
+        this.Type = Type;
     }
 
-    public IExpression Lower(IDeclarationScope scope) => _type switch
+    public IExpression Lower(IDeclarationScope scope) => Type switch
     {
         InPlaceArrayType arrayType => arrayType.GetSizeInBytesExpression(scope.ArchitectureSet),
         StructType structType => this,
@@ -29,12 +29,12 @@ internal sealed class SizeOfOperatorExpression : IExpression
         var context = scope.Context;
 
         // As sizeof is a type operator, it may need to emit anonymous types right here.
-        if (_type is IGeneratedType generatedType && !generatedType.IsAlreadyEmitted(context))
+        if (Type is IGeneratedType generatedType && !generatedType.IsAlreadyEmitted(context))
         {
             generatedType.EmitType(context);
         }
 
-        var type = _type.Resolve(context);
+        var type = Type.Resolve(context);
         scope.SizeOf(type);
     }
 

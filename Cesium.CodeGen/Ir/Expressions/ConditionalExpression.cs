@@ -12,27 +12,29 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class ConditionalExpression : IExpression
 {
-    private readonly IExpression _condition;
-    private readonly IExpression _trueExpression;
-    private readonly IExpression _falseExpression;
+    internal IExpression Condition { get; }
+
+    internal IExpression TrueExpression { get; }
+
+    internal IExpression FalseExpression { get; }
 
     private ConditionalExpression(IExpression condition, IExpression trueExpression, IExpression falseExpression)
     {
-        _condition = condition;
-        _trueExpression = trueExpression;
-        _falseExpression = falseExpression;
+        Condition = condition;
+        TrueExpression = trueExpression;
+        FalseExpression = falseExpression;
     }
 
     public ConditionalExpression(Ast.ConditionalExpression expression, IDeclarationScope scope)
     {
-        _condition = expression.Condition.ToIntermediate(scope);
-        _trueExpression = expression.TrueExpression.ToIntermediate(scope);
-        _falseExpression = expression.FalseExpression.ToIntermediate(scope);
+        Condition = expression.Condition.ToIntermediate(scope);
+        TrueExpression = expression.TrueExpression.ToIntermediate(scope);
+        FalseExpression = expression.FalseExpression.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var condition = _condition.Lower(scope);
+        var condition = Condition.Lower(scope);
         var conditionType = condition.GetExpressionType(scope);
 
         if (!(conditionType.IsNumeric() || conditionType is PointerType))
@@ -40,10 +42,10 @@ internal sealed class ConditionalExpression : IExpression
             throw new CompilationException("Conditional expression must have a condition of scalar type.");
         }
 
-        var trueExpression = _trueExpression.Lower(scope);
+        var trueExpression = TrueExpression.Lower(scope);
         var trueExpressionType = trueExpression.GetExpressionType(scope);
 
-        var falseExpression = _falseExpression.Lower(scope);
+        var falseExpression = FalseExpression.Lower(scope);
         var falseExpressionType = falseExpression.GetExpressionType(scope);
 
         // Check if both expressions are compatible and convert them to the same type if needed.
@@ -85,26 +87,26 @@ internal sealed class ConditionalExpression : IExpression
     {
         var bodyProcessor = scope.Method.Body.GetILProcessor();
 
-        _condition.EmitTo(scope);
+        Condition.EmitTo(scope);
 
         var falseLabel = bodyProcessor.Create(OpCodes.Nop);
         bodyProcessor.Emit(OpCodes.Brfalse, falseLabel);
 
-        _trueExpression.EmitTo(scope);
+        TrueExpression.EmitTo(scope);
 
         var endLabel = bodyProcessor.Create(OpCodes.Nop);
         bodyProcessor.Emit(OpCodes.Br, endLabel);
 
         bodyProcessor.Append(falseLabel);
-        _falseExpression.EmitTo(scope);
+        FalseExpression.EmitTo(scope);
 
         bodyProcessor.Append(endLabel);
     }
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
-        var trueExpressionType = _trueExpression.GetExpressionType(scope);
-        var falseExpressionType = _falseExpression.GetExpressionType(scope);
+        var trueExpressionType = TrueExpression.GetExpressionType(scope);
+        var falseExpressionType = FalseExpression.GetExpressionType(scope);
 
         // Arithmetic types.
         if (trueExpressionType.IsNumeric() && falseExpressionType.IsNumeric())

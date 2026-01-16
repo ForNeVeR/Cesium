@@ -12,14 +12,12 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal sealed class LValueInstanceField : LValueField
 {
-    private readonly IExpression _expression;
     private readonly StructType _structType;
-    private readonly string _name;
     private FieldReference? _field;
 
     public LValueInstanceField(IExpression expression, PointerType structPointerType, string name)
     {
-        _expression = expression;
+        Expression = expression;
         if (structPointerType.Base is ConstType constType)
         {
             _structType = (StructType)constType.Base;
@@ -29,12 +27,16 @@ internal sealed class LValueInstanceField : LValueField
             _structType = (StructType)structPointerType.Base;
         }
 
-        _name = name;
+        Name = name;
     }
+
+    public string Name { get; }
+
+    internal IExpression Expression { get; }
 
     public override IType GetValueType()
     {
-        var type = _structType.Members.FirstOrDefault(_ => _.Identifier == _name)?.Type;
+        var type = _structType.Members.FirstOrDefault(_ => _.Identifier == Name)?.Type;
         if (type != null) return type;
 
         var structName = _structType.Identifier == null ? "Struct" : $"\"{_structType.Identifier}\"";
@@ -43,14 +45,14 @@ internal sealed class LValueInstanceField : LValueField
         var members = _structType.Members
             .Where(x => x.Identifier == null && x.Type is StructType) // get all struct & union fields in target struct
             .SelectMany(x => ((StructType)x.Type).Members) // get all fields from them
-            .Where(x => x.Identifier == _name)
+            .Where(x => x.Identifier == Name)
             .ToList();
         switch (members.Count)
         {
             case 1: return members.Single().Type;
             case 0: break;
             default: throw new CompilationException(
-                $"{structName} has multiple suitable members named \"{_name}\".");
+                $"{structName} has multiple suitable members named \"{Name}\".");
         }
 
         // go deeper
@@ -59,14 +61,14 @@ internal sealed class LValueInstanceField : LValueField
         if (anonFields.FirstOrDefault() != null)
             foreach (var field in anonFields)
             {
-                type = RecursiveSearch(field.Type, _name);
+                type = RecursiveSearch(field.Type, Name);
                 if (type != null)
                     break;
             }
 
         if (type != null) return type;
         throw new CompilationException(
-            $"{structName} has no member named \"{_name}\".");
+            $"{structName} has no member named \"{Name}\".");
 
         static IType? RecursiveSearch(IType type, string fieldName)
         {
@@ -89,7 +91,7 @@ internal sealed class LValueInstanceField : LValueField
 
     protected override void EmitGetFieldOwner(IEmitScope scope)
     {
-        _expression.EmitTo(scope);
+        Expression.EmitTo(scope);
     }
 
     protected override FieldReference GetField(IEmitScope scope)
@@ -104,21 +106,21 @@ internal sealed class LValueInstanceField : LValueField
         var valueTypeReference = _structType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
 
-        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == _name);
+        var field = valueTypeDef.Fields.FirstOrDefault(f => f?.Name == Name);
 
         if (field == null)
         {
             path = new(1);
 
             foreach (var f in valueTypeDef.Fields)
-                if (RecursiveBuildPath(_name, f, path))
+                if (RecursiveBuildPath(Name, f, path))
                 {
                     path.Add(f);
                     return new StructType.AnonStructFieldReference(path[0], path);
                 }
 
             throw new CompilationException(
-                    $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{_name}\"");
+                    $"\"{valueTypeDef.Name.Replace("<typedef>", string.Empty)}\" has no member named \"{Name}\"");
         }
 
         _field = new FieldReference(field.Name, field.FieldType, field.DeclaringType);

@@ -12,14 +12,16 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class IndirectFunctionCallExpression : FunctionCallExpressionBase
 {
-    private readonly IReadOnlyList<IExpression> _arguments;
-    private readonly IExpression _callee;
     private readonly FunctionType _calleeType;
+
+    internal IExpression Callee { get; }
+
+    internal IReadOnlyList<IExpression> Arguments { get; }
 
     public IndirectFunctionCallExpression(IExpression callee, FunctionType calleeType, IReadOnlyList<IExpression> arguments)
     {
-        _arguments = arguments;
-        _callee = callee;
+        Arguments = arguments;
+        Callee = callee;
         _calleeType = calleeType;
     }
 
@@ -27,12 +29,12 @@ internal sealed class IndirectFunctionCallExpression : FunctionCallExpressionBas
 
     public override void EmitTo(IEmitScope scope)
     {
-        if (_callee == null)
+        if (Callee == null)
             throw new AssertException("Should be lowered");
 
-        EmitArgumentList(scope, _calleeType.Parameters, _arguments);
+        EmitArgumentList(scope, _calleeType.Parameters, Arguments);
 
-        _callee.EmitTo(scope);
+        Callee.EmitTo(scope);
 
         var callSite = new CallSite(_calleeType.ReturnType.Resolve(scope.Context));
 

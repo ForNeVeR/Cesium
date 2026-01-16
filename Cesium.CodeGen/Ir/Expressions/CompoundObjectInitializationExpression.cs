@@ -19,12 +19,13 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     private FieldDefinition? _typeDef;
     private Action? _prefixAction;
     private Action? _postfixAction;
-    private readonly ImmutableArray<IExpression?> _initializers;
+
+    internal ImmutableArray<IExpression?> Initializers { get; }
 
     public CompoundObjectInitializationExpression(IType? type, ImmutableArray<IExpression?> initializers)
     {
         _type = type;
-        _initializers = initializers;
+        Initializers = initializers;
     }
 
     public CompoundObjectInitializationExpression(ImmutableArray<IExpression?> initializers)
@@ -36,7 +37,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     {
         var (type, _) = LocalDeclarationInfo.ProcessSpecifiers(expression.TypeName.SpecifierQualifierList, scope);
         _type = type;
-        _initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer, scope)).ToImmutableArray();
+        Initializers = expression.Initializers.Select(initializer => IScopedDeclarationInfo.ConvertInitializer(_type, initializer, scope)).ToImmutableArray();
     }
 
     public void Hint(FieldDefinition type, Action prefixAction, Action postfixAction)
@@ -54,7 +55,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
         var instructions = scope.Method.Body.Instructions;
         TypeDefinition typeDef = _type != null ? ((StructType)_type).Resolve(scope.Context).Resolve() : _typeDef!.FieldType.Resolve();
         var fieldsDefs = typeDef.Fields;
-        var initializers = _initializers;
+        var initializers = Initializers;
 
         if (typeDef.IsCArray())
         {
@@ -284,7 +285,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
     public IExpression Lower(IDeclarationScope scope)
     {
         var resolvedType = _type?.TypeKind == TypeKind.Unresolved ? scope.ResolveType(_type) : _type;
-        var initializers = _initializers.Select(e => e?.Lower(scope)).ToImmutableArray();
+        var initializers = Initializers.Select(e => e?.Lower(scope)).ToImmutableArray();
         return resolvedType == null ? new CompoundObjectInitializationExpression(initializers) : new CompoundObjectInitializationExpression(resolvedType, initializers);
     }
 }
