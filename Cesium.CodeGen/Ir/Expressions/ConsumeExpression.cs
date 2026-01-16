@@ -10,7 +10,9 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class ConsumeExpression(IExpression expression) : IExpression
 {
-    public IExpression Lower(IDeclarationScope scope) => new ConsumeExpression(expression.Lower(scope));
+    public IExpression Expression { get; } = expression;
+
+    public IExpression Lower(IDeclarationScope scope) => new ConsumeExpression(Expression.Lower(scope));
 
     public IType GetExpressionType(IDeclarationScope scope)
     {
@@ -19,14 +21,14 @@ internal sealed class ConsumeExpression(IExpression expression) : IExpression
 
     public void EmitTo(IEmitScope scope)
     {
-        if (expression is SetValueExpression sv)
+        if (Expression is SetValueExpression sv)
         {
             sv.NoReturn().EmitTo(scope);
 
             return;
         }
 
-        expression.EmitTo(scope);
+        Expression.EmitTo(scope);
         var processor = scope.Method.Body.GetILProcessor();
         processor.Emit(OpCodes.Pop);
     }

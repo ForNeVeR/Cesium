@@ -14,14 +14,16 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 {
-    private readonly IdentifierExpression _function;
-    private readonly IReadOnlyList<IExpression> _arguments;
     private readonly FunctionInfo? _callee;
+
+    internal IdentifierExpression Function { get; }
+
+    internal IReadOnlyList<IExpression> Arguments { get; }
 
     public FunctionCallExpression(IdentifierExpression function, FunctionInfo? callee, IReadOnlyList<IExpression> arguments)
     {
-        _function = function;
-        _arguments = arguments;
+        Function = function;
+        Arguments = arguments;
         _callee = callee;
     }
 
@@ -29,20 +31,20 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
     {
         var (function, arguments) = expression;
         var functionExpression = function.ToIntermediate(scope);
-        _function = functionExpression as IdentifierExpression
+        Function = functionExpression as IdentifierExpression
                     ?? throw new WipException(
                         229,
                         $"Non-constant expressions as function name aren't supported, yet: {functionExpression}.");
-        _arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate(scope)).ToList()
+        Arguments = (IReadOnlyList<IExpression>?)arguments?.Select(e => e.ToIntermediate(scope)).ToList()
                      ?? Array.Empty<IExpression>();
         _callee = null;
     }
 
     public override IExpression Lower(IDeclarationScope scope)
     {
-        if (_function.Identifier == "__builtin_offsetof_instance")
+        if (Function.Identifier == "__builtin_offsetof_instance")
         {
-            if (_arguments is not [TypeCastExpression { TargetType: PointerType { Base: { } baseType } }])
+            if (Arguments is not [TypeCastExpression { TargetType: PointerType { Base: { } baseType } }])
             {
                 throw new CompilationException($"__builtin_offsetof_instance: invalid arguments");
             }
@@ -62,7 +64,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
             return new InstanceForOffsetOfExpression(resolvedStruct);
         }
 
-        var functionName = _function.Identifier;
+        var functionName = Function.Identifier;
 
         if (scope.GetVariable(functionName) is { } var)
         {
@@ -81,7 +83,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
         var callee = scope.GetFunctionInfo(functionName) ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
 
         return new FunctionCallExpression(
-            _function,
+            Function,
             callee,
             ConvertArgs(scope, callee.Parameters));
     }
@@ -89,7 +91,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
     private List<IExpression> ConvertArgs(IDeclarationScope scope, ParametersInfo? parameters)
     {
         int firstVarArgArgument = parameters?.Parameters.Count ?? 0;
-        return _arguments.Select((a, index) =>
+        return Arguments.Select((a, index) =>
         {
             IType targetType;
             var loweredArg = a.Lower(scope);
@@ -128,11 +130,11 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
         if (_callee == null)
             throw new AssertException("Should be lowered");
 
-        var functionName = _function.Identifier;
+        var functionName = Function.Identifier;
         var callee = _callee ?? throw new CompilationException($"Function \"{functionName}\" was not lowered.");
         var methodReference = callee.MethodReference ?? throw new CompilationException($"Function \"{functionName}\" was not found.");
 
-        EmitArgumentList(scope, _callee.Parameters, _arguments, methodReference);
+        EmitArgumentList(scope, _callee.Parameters, Arguments, methodReference);
 
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Call, methodReference));
         if (!_callee.ReturnType.IsVoid())
@@ -152,7 +154,7 @@ internal sealed class FunctionCallExpression : FunctionCallExpressionBase
 
     public override IType GetExpressionType(IDeclarationScope scope)
     {
-        var functionName = _function.Identifier;
+        var functionName = Function.Identifier;
         var callee = _callee ?? throw new AssertException($"Function \"{functionName}\" was not lowered.");
         return callee.ReturnType;
     }

@@ -10,15 +10,16 @@ namespace Cesium.CodeGen.Ir.Expressions.Constants;
 
 internal sealed class StringConstant : IConstant
 {
-    private readonly string _value;
     public StringConstant(string value)
     {
-        _value = value;
+        Value = value;
     }
+
+    public string Value { get; }
 
     public void EmitTo(IEmitScope scope)
     {
-        var fieldReference = scope.AssemblyContext.GetConstantPoolReference(_value);
+        var fieldReference = scope.AssemblyContext.GetConstantPoolReference(Value);
         scope.Method.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsflda, fieldReference));
     }
 

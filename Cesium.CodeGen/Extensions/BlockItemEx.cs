@@ -6,8 +6,10 @@ using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Declarations;
+using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using AmbiguousBlockItem = Cesium.Ast.AmbiguousBlockItem;
 using BreakStatement = Cesium.Ast.BreakStatement;
 using CaseStatement = Cesium.Ast.CaseStatement;
@@ -127,6 +129,10 @@ internal static class BlockItemEx
                 binaryExpression.Operator.Dump(writer);
                 binaryExpression.Right.Dump(writer);
                 break;
+            case Ir.Expressions.UnaryOperatorExpression unaryExpression:
+                unaryExpression.Operator.Dump(writer);
+                unaryExpression.Target.Dump(writer);
+                break;
             case Ir.Expressions.ConstantLiteralExpression constLiteralExpression:
                 constLiteralExpression.Constant.Dump(writer);
                 break;
@@ -135,6 +141,110 @@ internal static class BlockItemEx
                 break;
             case Ir.Expressions.PostfixIncrementDecrementExpression.ValuePreservationExpression valuePreservationExpression:
                 valuePreservationExpression.Expression.Dump(writer);
+                break;
+            case Ir.Expressions.LocalAllocationExpression localAllocationExpression:
+                writer.Write($"{localAllocationExpression.ArrayType.Base.ToString()}[{localAllocationExpression.ArrayType.Size}]");
+                break;
+            case Ir.Expressions.GetAddressValueExpression getAddressValueExpression:
+                writer.Write($"&");
+                getAddressValueExpression.Value.Dump(writer);
+                break;
+            case Ir.Expressions.IdentifierExpression identifierExpression:
+                writer.Write(identifierExpression.Identifier);
+                break;
+            case Ir.Expressions.FunctionCallExpression functionCallExpression:
+                functionCallExpression.Function.Dump(writer);
+                writer.Write($"(");
+                for (var i = 0;i < functionCallExpression.Arguments.Count;i++)
+                {
+                    if (i > 0)
+                    {
+                        writer.Write(", ");
+                    }
+                    functionCallExpression.Arguments[i].Dump(writer);
+                }
+                writer.Write($")");
+                break;
+            case Ir.Expressions.CompoundInitializationExpression compoundInitializationExpression:
+                compoundInitializationExpression.ArrayInitializer.Dump(writer);
+                break;
+            case Ir.Expressions.ArrayInitializerExpression arrayInitializerExpression:
+                writer.Write("{");
+                for (var i = 0; i < arrayInitializerExpression.Initializers.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        writer.Write(", ");
+                    }
+                    arrayInitializerExpression.Initializers[i]?.Dump(writer);
+                }
+                writer.Write("}");
+                break;
+            case Ir.Expressions.CompoundObjectInitializationExpression compoundObjectInitializationExpression:
+                writer.Write("{");
+                for (var i = 0; i < compoundObjectInitializationExpression.Initializers.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        writer.Write(", ");
+                    }
+                    compoundObjectInitializationExpression.Initializers[i]?.Dump(writer);
+                }
+                writer.Write("}");
+                break;
+            case Ir.Expressions.CompoundObjectFieldInitializer compoundObjectFieldInitializer:
+                foreach (var d in compoundObjectFieldInitializer.Designation.Designators)
+                {
+                    d.Dump(writer);
+                    writer.Write(" = ");
+                }
+
+                compoundObjectFieldInitializer.Inner.Dump(writer);
+                writer.Write("}");
+                break;
+            case Ir.Expressions.TypeCastExpression typeCastExpression:
+                writer.Write("(");
+                writer.Write(typeCastExpression.TargetType.ToString());
+                writer.Write(")");
+                typeCastExpression.Expression.Dump(writer);
+                break;
+            case Ir.Expressions.ConsumeExpression consumeExpression:
+                consumeExpression.Expression.Dump(writer);
+                break;
+            case Ir.Expressions.SizeOfOperatorExpression sizeOfOperatorExpression:
+                writer.Write("sizeof(");
+                writer.Write(sizeOfOperatorExpression.Type.ToString());
+                writer.Write(")");
+                break;
+            case Ir.Expressions.IndirectFunctionCallExpression indirectFunctionCallExpression:
+                indirectFunctionCallExpression.Callee.Dump(writer);
+                writer.Write($"(");
+                for (var i = 0; i < indirectFunctionCallExpression.Arguments.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        writer.Write(", ");
+                    }
+                    indirectFunctionCallExpression.Arguments[i].Dump(writer);
+                }
+                writer.Write($")");
+                break;
+            case Ir.Expressions.CommaExpression commaExpression:
+                writer.Write("(");
+                writer.Write(commaExpression.Left.ToString());
+                writer.Write(",");
+                writer.Write(commaExpression.Right.ToString());
+                writer.Write(")");
+                break;
+            case Ir.Expressions.ConditionalExpression conditionalExpression:
+                conditionalExpression.Condition.Dump(writer);
+                writer.Write("?");
+                conditionalExpression.TrueExpression.Dump(writer);
+                writer.Write(":");
+                conditionalExpression.FalseExpression.Dump(writer);
+                break;
+            case Ir.Expressions.InstanceForOffsetOfExpression:
+                // Do nothing for this expression/value
                 break;
             default:
                 Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
@@ -156,6 +266,32 @@ internal static class BlockItemEx
                 }
 
                 break;
+            case Ir.Expressions.Values.LValueArrayElement localArrayVariable:
+                localArrayVariable.Array.Dump(writer);
+                writer.Write($"[{localArrayVariable.Index}]");
+                break;
+            case Ir.Expressions.Values.LValueGlobalVariable localGlobalVariable:
+                writer.Write($"{localGlobalVariable.Name}");
+                break;
+            case Ir.Expressions.Values.LValueIndirection localIndirection:
+                writer.Write($"*");
+                localIndirection.PointerExpression.Dump(writer);
+                break;
+            case Ir.Expressions.Values.LValueParameter parameter:
+                writer.Write(parameter.ParameterInfo.Name);
+                break;
+            case Ir.Expressions.Values.LValueInstanceField instanceField:
+                writer.Write("(");
+                instanceField.Expression.Dump(writer);
+                writer.Write(").");
+                writer.Write(instanceField.Name);
+                break;
+            case Ir.Expressions.Values.FunctionValue functionValue:
+                writer.Write(functionValue.FunctionInfo.Identifier);
+                break;
+            case Ir.Expressions.InstanceForOffsetOfExpression:
+                // Do nothing for this expression/value
+                break;
             default:
                 Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
                 break;
@@ -167,7 +303,19 @@ internal static class BlockItemEx
         {
             case Ir.Expressions.Constants.IntegerConstant integerConstant:
                 writer.Write(integerConstant.Value.ToString());
-
+                break;
+            case Ir.Expressions.Constants.FloatingPointConstant floatingPointConstant:
+                writer.Write(floatingPointConstant.Value.ToString());
+                break;
+            case Ir.Expressions.Constants.StringConstant stringConstant:
+                writer.Write("\"");
+                writer.Write(stringConstant.Value);
+                writer.Write("\"");
+                break;
+            case Ir.Expressions.Constants.CharConstant charConstant:
+                writer.Write("'");
+                writer.Write(charConstant.Value);
+                writer.Write("'");
                 break;
             default:
                 Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
@@ -179,9 +327,54 @@ internal static class BlockItemEx
         var operatorString = expression switch
         {
             Ir.Expressions.BinaryOperators.BinaryOperator.Add => "+",
+            Ir.Expressions.BinaryOperators.BinaryOperator.Subtract => "-",
+            Ir.Expressions.BinaryOperators.BinaryOperator.Multiply => "*",
+            Ir.Expressions.BinaryOperators.BinaryOperator.Divide => "/",
+            Ir.Expressions.BinaryOperators.BinaryOperator.Remainder => "%",
+
+            Ir.Expressions.BinaryOperators.BinaryOperator.BitwiseLeftShift => "<<",
+            Ir.Expressions.BinaryOperators.BinaryOperator.BitwiseRightShift => ">>",
+            Ir.Expressions.BinaryOperators.BinaryOperator.BitwiseOr => "|",
+            Ir.Expressions.BinaryOperators.BinaryOperator.BitwiseAnd => "&",
+            Ir.Expressions.BinaryOperators.BinaryOperator.BitwiseXor => "^",
+
             Ir.Expressions.BinaryOperators.BinaryOperator.EqualTo => "==",
+            Ir.Expressions.BinaryOperators.BinaryOperator.NotEqualTo => "!=",
+            Ir.Expressions.BinaryOperators.BinaryOperator.LessThan => "<",
+            Ir.Expressions.BinaryOperators.BinaryOperator.LessThanOrEqualTo => "<=",
+            Ir.Expressions.BinaryOperators.BinaryOperator.GreaterThan => ">",
+            Ir.Expressions.BinaryOperators.BinaryOperator.GreaterThanOrEqualTo => ">=",
+
+            Ir.Expressions.BinaryOperators.BinaryOperator.LogicalOr => "||",
+            Ir.Expressions.BinaryOperators.BinaryOperator.LogicalAnd => "&&",
             _ => throw new InvalidOperationException($"Dumping BinaryOperator.{expression} not implemented"),
         };
         writer.Write(operatorString);
+    }
+    public static void Dump(this Ir.Expressions.UnaryOperator expression, TextWriter writer)
+    {
+        var operatorString = expression switch
+        {
+            Ir.Expressions.UnaryOperator.Negation => "-",
+            Ir.Expressions.UnaryOperator.Promotion => "+",
+            Ir.Expressions.UnaryOperator.BitwiseNot => "~",
+            Ir.Expressions.UnaryOperator.LogicalNot => "!",
+            Ir.Expressions.UnaryOperator.AddressOf => "&",
+            Ir.Expressions.UnaryOperator.Indirection => "*",
+            _ => throw new InvalidOperationException($"Dumping UnaryOperator.{expression} not implemented"),
+        };
+        writer.Write(operatorString);
+    }
+    public static void Dump(this Ast.Designator expression, TextWriter writer)
+    {
+        switch (expression)
+        {
+            case Ast.IdentifierDesignator identifier:
+                writer.Write(identifier.FieldName);
+                break;
+            default:
+                Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
+                break;
+        }
     }
 }

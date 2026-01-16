@@ -11,11 +11,13 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal sealed class LValueParameter : ILValue
 {
-    private readonly ParameterInfo _parameterInfo;
     private ParameterDefinition? _definition;
+
+    internal ParameterInfo ParameterInfo { get; }
+
     public LValueParameter(ParameterInfo parameterInfo)
     {
-        _parameterInfo = parameterInfo;
+        ParameterInfo = parameterInfo;
     }
 
     public void EmitGetValue(IEmitScope scope)
@@ -56,9 +58,9 @@ internal sealed class LValueParameter : ILValue
             return _definition;
         }
 
-        _definition = scope.ResolveParameter(_parameterInfo.Index);
+        _definition = scope.ResolveParameter(ParameterInfo.Index);
         return _definition;
     }
 
-    public IType GetValueType() => _parameterInfo.Type;
+    public IType GetValueType() => ParameterInfo.Type;
 }

@@ -15,11 +15,12 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 internal sealed class FunctionValue : AddressableValue
 {
     private readonly MethodReference _methodReference;
-    private readonly FunctionInfo _functionInfo;
+
+    internal FunctionInfo FunctionInfo { get; }
 
     public FunctionValue(FunctionInfo functionInfo, MethodReference methodReference)
     {
-        _functionInfo = functionInfo;
+        FunctionInfo = functionInfo;
         _methodReference = methodReference;
     }
 
@@ -35,6 +36,6 @@ internal sealed class FunctionValue : AddressableValue
 
     public override IType GetValueType()
     {
-        return new FunctionType(_functionInfo.Parameters, _functionInfo.ReturnType);
+        return new FunctionType(FunctionInfo.Parameters, FunctionInfo.ReturnType);
     }
 }

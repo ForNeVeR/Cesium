@@ -10,17 +10,19 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 
 internal sealed class LValueGlobalVariable : LValueField
 {
-    private readonly IType _type;
-    private readonly string _name;
     private FieldReference? _field;
 
     public LValueGlobalVariable(IType type, string name)
     {
-        _type = type;
-        _name = name;
+        Type = type;
+        Name = name;
     }
 
-    public override IType GetValueType() => _type;
+    public string Name { get; }
+
+    internal IType Type { get; }
+
+    public override IType GetValueType() => Type;
 
     protected override void EmitGetFieldOwner(IEmitScope scope)
     {
@@ -34,7 +36,7 @@ internal sealed class LValueGlobalVariable : LValueField
             return _field;
         }
 
-        _field = scope.ResolveGlobalField(_name);
+        _field = scope.ResolveGlobalField(Name);
         return _field;
     }
 }

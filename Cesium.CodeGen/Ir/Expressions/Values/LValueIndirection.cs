@@ -12,27 +12,28 @@ namespace Cesium.CodeGen.Ir.Expressions.Values;
 /// <summary>Indirect store or load: will assign a value by pointer of some kind.</summary>
 internal sealed class LValueIndirection : ILValue
 {
-    private readonly IExpression _pointerExpression;
     private readonly PointerType _pointerType;
+
+    internal IExpression PointerExpression { get; }
 
     public LValueIndirection(IExpression expression, PointerType pointerType)
     {
-        _pointerExpression = expression;
+        PointerExpression = expression;
         _pointerType = pointerType;
     }
 
     public void EmitGetValue(IEmitScope scope)
     {
-        _pointerExpression.EmitTo(scope);
+        PointerExpression.EmitTo(scope);
         var (load, _) = GetOpcodes(_pointerType, scope.Context);
         scope.Method.Body.Instructions.Add(load);
     }
 
-    public void EmitGetAddress(IEmitScope scope) => _pointerExpression.EmitTo(scope);
+    public void EmitGetAddress(IEmitScope scope) => PointerExpression.EmitTo(scope);
 
     public void EmitSetValue(IEmitScope scope, IExpression value)
     {
-        _pointerExpression.EmitTo(scope);
+        PointerExpression.EmitTo(scope);
         value.EmitTo(scope);
         var (_, maybeStore) = GetOpcodes(_pointerType, scope.Context);
         if (maybeStore is not {} store)

@@ -11,23 +11,20 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class CommaExpression : IExpression
 {
-    private readonly IExpression _left;
-    private readonly IExpression _right;
+    internal IExpression Left { get; }
 
-    internal IExpression Left => _left;
-
-    internal IExpression Right => _right;
+    internal IExpression Right { get; }
 
     internal CommaExpression(IExpression left, IExpression right)
     {
-        _left = left;
-        _right = right;
+        Left = left;
+        Right = right;
     }
 
     public CommaExpression(Ast.CommaExpression expression, IDeclarationScope scope)
     {
-        _left = expression.Left.ToIntermediate(scope);
-        _right = expression.Right.ToIntermediate(scope);
+        Left = expression.Left.ToIntermediate(scope);
+        Right = expression.Right.ToIntermediate(scope);
     }
 
     public IExpression Lower(IDeclarationScope scope) => new CommaExpression(Left.Lower(scope), Right.Lower(scope));
