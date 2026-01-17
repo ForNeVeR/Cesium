@@ -46,11 +46,10 @@ internal static class BlockItemEmitting
             case CompoundStatement s:
             {
                 Debug.Assert(s.EmitScope == null || s.EmitScope == scope, "EmitScope should be function scope after Lineralize");
-                var realScope = s.EmitScope ?? scope;
 
                 foreach (var item in s.Statements)
                 {
-                    EmitCode(realScope, item);
+                    EmitCode(scope, item);
                 }
 
                 return;
