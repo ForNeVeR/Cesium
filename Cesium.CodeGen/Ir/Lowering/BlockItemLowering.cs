@@ -116,6 +116,22 @@ internal static class BlockItemLowering
                     }
                 }
             }
+            if (labelStatement.Expression is IfElseStatement ifElseStatement)
+            {
+                bool first = true;
+                foreach (var nestedStatement in LinearizeBlockItem(ifElseStatement, scope))
+                {
+                    if (first)
+                    {
+                        first = false;
+                        yield return new LabelStatement(labelStatement.Identifier, nestedStatement, true);
+                    }
+                    else
+                    {
+                        yield return nestedStatement;
+                    }
+                }
+            }
             else
             {
                 yield return statement;
@@ -127,6 +143,11 @@ internal static class BlockItemLowering
             var truePart = Simplify(ifElseStatement.TrueBranch);
 
             yield return new IfElseStatement(ifElseStatement.Expression, truePart, elsePart) { IsEscapeBranchRequired = ifElseStatement.IsEscapeBranchRequired };
+        }
+        else
+        {
+            yield return statement;
+        }
 
             [return: NotNullIfNotNull(nameof(blockItem))]
             IBlockItem? Simplify(IBlockItem? blockItem)
@@ -143,11 +164,6 @@ internal static class BlockItemLowering
                 return new CompoundStatement(result, null);
             }
         }
-        else
-        {
-            yield return statement;
-        }
-    }
 
     private static IBlockItem Lower(IDeclarationScope scope, IBlockItem blockItem)
     {
