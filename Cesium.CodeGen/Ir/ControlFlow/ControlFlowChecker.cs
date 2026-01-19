@@ -207,6 +207,7 @@ internal sealed class ControlFlowChecker
                     return x.BlockItem switch
                     {
                         LabelStatement { Identifier: { } id } when id == goTo.Identifier => true,
+                        LabeledNopStatement { Label: { } id } when id == goTo.Identifier => true,
                         _ => false,
                     };
                 });

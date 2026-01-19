@@ -488,8 +488,22 @@ internal static class BlockItemLowering
                                 new LabeledNopStatement(label),
                             ], (IEmitScope)scope);
                     }
-
-                    return new IfElseStatement(s.Expression.Lower(scope), Lower(scope, s.TrueBranch), falseBranch);
+                    else
+                    {
+                        var label = Guid.NewGuid().ToString();
+                        scope.AddLabel(label);
+                        var falseLabel = Guid.NewGuid().ToString();
+                        scope.AddLabel(falseLabel);
+                        return new CompoundStatement(
+                            [
+                                new ConditionalGotoStatement(condition, ConditionalJumpType.False, falseLabel),
+                                Lower(scope, s.TrueBranch),
+                                new GoToStatement(label), // Previously IsEscapeBranchRequired Should be removed during BB reachability pass
+                                new LabeledNopStatement(falseLabel),
+                                Lower(scope, s.FalseBranch),
+                                new LabeledNopStatement(label),
+                            ], (IEmitScope)scope);
+                    }
                 }
             case LabelStatement s:
                 {

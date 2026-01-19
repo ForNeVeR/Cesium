@@ -104,6 +104,16 @@ internal static class BlockItemEx
                 returnStatement.Expression?.Dump(writer);
                 writer.WriteLine(";");
                 break;
+            case Ir.BlockItems.ConditionalGotoStatement gotoStatement:
+                writer.Write($"{indent}if /*cgoto*/ (");
+                gotoStatement.Condition.Dump(writer);
+                writer.Write(") goto ");
+                writer.Write(gotoStatement.Identifier);
+                writer.WriteLine(";");
+                break;
+            case Ir.BlockItems.LabeledNopStatement labelStatement:
+                writer.WriteLine($"{indent}{labelStatement.Label}: /*label nop*/ ");
+                break;
             default:
                 Debug.Assert(false, $"Dumping {blockItem.GetType().Name} not implemented");
                 break;
