@@ -20,3 +20,20 @@ All the Cesium-produced exceptions are derived from `Cesium.Core.Exceptions.Cesi
   When writing new code, please use `throw new WipException(WipException.ToDo, "some optional description")`. The project maintainers will convert these to the issues while merging your contribution.
 
   The names are designed to easily find any remaining work by performing a text search for the `TODO` word.
+
+## Debugging AST
+
+For local AST debugging you can use
+
+```csharp
+var stringWriter = new StringWriter();
+var dumper = new AstDumper(stringWriter);
+dumper.Dump(translationUnit);
+```
+
+For local IR debugging you can use
+
+```csharp
+var stringWriter = new StringWriter();
+statement.Dump(stringWriter, 0);
+```
