@@ -294,16 +294,12 @@ internal sealed class FunctionDefinition : IBlockItem
     private void EmitCode(FunctionScope scope)
     {
         var loweredStmt = BlockItemLowering.LowerBody(scope, Statement);
-        var stringWriter = new StringWriter();
-        loweredStmt.Dump(stringWriter, 0);
         var transformed = ControlFlowChecker.CheckAndTransformControlFlow(
             scope,
             loweredStmt,
             FunctionType.ReturnType,
             IsMain
         );
-        stringWriter = new StringWriter();
-        transformed.Dump(stringWriter, 0);
         BlockItemEmitting.EmitCode(scope, transformed);
         var isVoid = scope.FunctionInfo.ReturnType.Equals(CTypeSystem.Void);
         if (scope.Method.Body.Instructions.Last().OpCode != OpCodes.Ret)
