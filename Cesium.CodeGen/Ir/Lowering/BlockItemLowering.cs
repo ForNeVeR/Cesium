@@ -68,8 +68,6 @@ internal static class BlockItemLowering
     public static CompoundStatement LowerBody(FunctionScope scope, IBlockItem blockItem)
     {
         CompoundStatement compoundStatement = (CompoundStatement)Lower(scope, blockItem);
-        var stringWriter = new StringWriter();
-        compoundStatement.Dump(stringWriter, 0);
         var linearizedStatement = new CompoundStatement(Linearize(compoundStatement, scope).ToList(), scope);
         return linearizedStatement;
     }
