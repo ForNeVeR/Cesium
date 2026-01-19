@@ -72,32 +72,32 @@ internal static class BlockItemEx
                 {
                     Dump(item, writer, indentLevel + 1);
                 }
-                Console.WriteLine($"{indent}}}");
+                writer.WriteLine($"{indent}}}");
                 break;
             case Ir.BlockItems.ExpressionStatement expressionStatement:
-                writer.Write(indent + "    ");
+                writer.Write(indent);
                 expressionStatement.Expression?.Dump(writer);
                 writer.WriteLine(";");
                 break;
             case Ir.BlockItems.IfElseStatement ifElseStatement:
-                writer.Write($"{indent}    if (");
+                writer.Write($"{indent}if (");
                 ifElseStatement.Expression?.Dump(writer);
                 writer.WriteLine(")");
                 ifElseStatement.TrueBranch.Dump(writer, indentLevel + 1);
                 if (ifElseStatement.FalseBranch is { } falseBranch)
                 {
-                    writer.WriteLine($"{indent}    else");
+                    writer.WriteLine($"{indent}else");
                     falseBranch.Dump(writer, indentLevel + 1);
                 }
                 break;
             case Ir.BlockItems.GoToStatement gotoStatement:
-                writer.Write($"{indent}    goto ");
+                writer.Write($"{indent}goto ");
                 writer.Write(gotoStatement.Identifier);
                 writer.WriteLine(";");
                 break;
             case Ir.BlockItems.LabelStatement labelStatement:
                 writer.WriteLine($"{indent}{labelStatement.Identifier}:");
-                labelStatement.Expression.Dump(writer, indentLevel + 1);
+                labelStatement.Expression.Dump(writer, indentLevel);
                 break;
             case Ir.BlockItems.ReturnStatement returnStatement:
                 writer.Write($"{indent}return ");
@@ -268,7 +268,9 @@ internal static class BlockItemEx
                 break;
             case Ir.Expressions.Values.LValueArrayElement localArrayVariable:
                 localArrayVariable.Array.Dump(writer);
-                writer.Write($"[{localArrayVariable.Index}]");
+                writer.Write("[");
+                localArrayVariable.Index.Dump(writer);
+                writer.Write("]");
                 break;
             case Ir.Expressions.Values.LValueGlobalVariable localGlobalVariable:
                 writer.Write($"{localGlobalVariable.Name}");
