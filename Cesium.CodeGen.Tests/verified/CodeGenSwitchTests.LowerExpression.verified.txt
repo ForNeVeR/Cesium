@@ -10,11 +10,11 @@ System.Int32 <Module>::main()
   IL_0006: ldloc.0
   IL_0007: ldc.i4.0
   IL_0008: ceq
-  IL_000a: brfalse IL_001d
+  IL_000a: brtrue IL_001d
   IL_000f: ldloc.0
   IL_0010: ldc.i4.1
   IL_0011: ceq
-  IL_0013: brfalse IL_0023
+  IL_0013: brtrue IL_0023
   IL_0018: br IL_0023
   IL_001d: nop
   IL_001e: br IL_0029
