@@ -460,6 +460,18 @@ internal static class BlockItemLowering
             case IfElseStatement s:
                 {
                     var falseBranch = s.FalseBranch != null ? Lower(scope, s.FalseBranch) : null;
+                    var condition = s.Expression.Lower(scope);
+                    if (s.FalseBranch == null)
+                    {
+                        var label = Guid.NewGuid().ToString();
+                        scope.AddLabel(label);
+                        return new CompoundStatement(
+                            [
+                                new ConditionalGotoStatement(condition, ConditionalJumpType.False, label),
+                                Lower(scope, s.TrueBranch),
+                                new LabeledNopStatement(label),
+                            ], (IEmitScope)scope);
+                    }
 
                     return new IfElseStatement(s.Expression.Lower(scope), Lower(scope, s.TrueBranch), falseBranch);
                 }
