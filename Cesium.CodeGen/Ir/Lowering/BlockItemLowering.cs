@@ -524,7 +524,7 @@ internal static class BlockItemLowering
                             targetStmts.Add(
                                 new ConditionalGotoStatement(
                                     new BinaryOperatorExpression(idExpr, BinaryOperator.EqualTo, matchGroup.TestExpression).Lower(switchScope),
-                                    ConditionalJumpType.False,
+                                    ConditionalJumpType.True,
                                     matchGroup.Label
                                 )
                             );
