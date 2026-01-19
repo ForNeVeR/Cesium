@@ -95,19 +95,9 @@ internal static class BlockItemEx
                 writer.Write(gotoStatement.Identifier);
                 writer.WriteLine(";");
                 break;
-            case Ir.BlockItems.ConditionalGotoStatement gotoStatement:
-                writer.Write($"{indent}if (");
-                gotoStatement.Condition.Dump(writer);
-                writer.Write(") goto ");
-                writer.Write(gotoStatement.Identifier);
-                writer.WriteLine(";");
-                break;
             case Ir.BlockItems.LabelStatement labelStatement:
                 writer.WriteLine($"{indent}{labelStatement.Identifier}:");
                 labelStatement.Expression.Dump(writer, indentLevel);
-                break;
-            case Ir.BlockItems.LabeledNopStatement labelStatement:
-                writer.WriteLine($"{indent}{labelStatement.Label}:");
                 break;
             case Ir.BlockItems.ReturnStatement returnStatement:
                 writer.Write($"{indent}return ");
