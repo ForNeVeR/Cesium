@@ -12,8 +12,6 @@ System.Void <Module>::test()
   IL_0009: brfalse IL_0013
   IL_000e: br IL_0019
   IL_0013: nop
-  IL_0014: br IL_001f
+  IL_0014: br IL_0019
   IL_0019: nop
-  IL_001a: br IL_001f
-  IL_001f: nop
-  IL_0020: ret
+  IL_001a: ret
