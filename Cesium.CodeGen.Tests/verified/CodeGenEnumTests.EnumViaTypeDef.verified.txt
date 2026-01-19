@@ -6,7 +6,6 @@ System.Void <Module>::test()
   IL_0003: ldloc.0
   IL_0004: ldc.i4.1
   IL_0005: ceq
-  IL_0007: brfalse IL_000d
-  IL_000c: ret
-  IL_000d: nop
-  IL_000e: ret
+  IL_0007: brfalse IL_000c
+  IL_000c: nop
+  IL_000d: ret

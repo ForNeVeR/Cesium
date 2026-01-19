@@ -38,7 +38,7 @@ internal sealed class ControlFlowChecker
             case AmbiguousBlockItem:
                 return Atom();
             case LabelStatement label:
-            {
+                {
                 var labelVtx = new CodeBlockVertex(label);
                 graph.AddVertex(labelVtx);
 
@@ -46,7 +46,17 @@ internal sealed class ControlFlowChecker
                 graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
 
                 return (labelVtx, unboundedNext);
-            }
+                }
+            case LabeledNopStatement labeledNop:
+                {
+                    var labelVtx = new CodeBlockVertex(stmt);
+                    graph.AddVertex(labelVtx);
+
+                    var (nextVtx, unboundedNext) = Atom();
+                    graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
+
+                    return (labelVtx, unboundedNext);
+                }
             case IfElseStatement ifElse:
             {
                 var ifVtx = new CodeBlockVertex(stmt);
@@ -69,6 +79,16 @@ internal sealed class ControlFlowChecker
                 {
                     unboundedNext.Add(ifVtx);
                 }
+
+                return (ifVtx, unboundedNext);
+            }
+            case ConditionalGotoStatement conditionalGotoStmt:
+            {
+                var ifVtx = new CodeBlockVertex(stmt);
+                graph.AddVertex(ifVtx);
+
+                var (vtx, unboundedNext) = Terminator();
+                graph.AddEdge(new CodeBlockEdge(ifVtx, vtx));
 
                 return (ifVtx, unboundedNext);
             }
@@ -218,6 +238,8 @@ internal sealed class ControlFlowChecker
             case FunctionDefinition:
             case GoToStatement:
             case GlobalVariableDefinition:
+            case ConditionalGotoStatement:
+            case LabeledNopStatement:
                 return (false, statement);
             case SwitchStatement:
             case WhileStatement:
@@ -237,7 +259,7 @@ internal sealed class ControlFlowChecker
                         var copy = s.Statements.ToList();
                         copy[i] = replacement;
 
-                        return (true, s with { Statements = copy });
+                        return (true, new CompoundStatement(copy) { InheritScope = s.InheritScope });
                     }
 
                     if (InsertSyntheticReturn(stmt, target, replacement) is { Success: true, Result: { } newStmt })
@@ -245,11 +267,11 @@ internal sealed class ControlFlowChecker
                         var copy = s.Statements.ToList();
                         copy[i] = newStmt;
 
-                        return (true, s with { Statements = copy });
+                        return (true, new CompoundStatement(copy) { InheritScope = s.InheritScope });
                     }
                 }
 
-                return (false, s);
+                return (false, new CompoundStatement(s.Statements) { InheritScope = s.InheritScope });
             }
             case IfElseStatement s:
             {
@@ -293,7 +315,7 @@ internal sealed class ControlFlowChecker
                 return (false, s);
             }
             default:
-                throw new ArgumentOutOfRangeException(nameof(statement));
+                throw new ArgumentOutOfRangeException(nameof(statement), $"The statement type {statement.GetType()} does not expected.");
         }
     }
 

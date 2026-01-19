@@ -88,6 +88,14 @@ internal static class BlockItemEmitting
 
                 return;
             }
+            case ConditionalGotoStatement s:
+            {
+                s.Condition.EmitTo(scope);
+                var instruction = scope.ResolveLabel(s.Identifier);
+                var opcode = s.JumpType == ConditionalJumpType.True ? OpCodes.Brtrue : OpCodes.Brfalse;
+                scope.Method.Body.Instructions.Add(Instruction.Create(opcode, instruction));
+                return;
+            }
             case IfElseStatement s:
             {
                 if (s.IsEscapeBranchRequired == null)
@@ -131,6 +139,12 @@ internal static class BlockItemEmitting
 
                 EmitCode(scope, s.Expression);
 
+                return;
+            }
+            case LabeledNopStatement s:
+            {
+                var instruction = scope.ResolveLabel(s.Label);
+                scope.Method.Body.Instructions.Add(instruction);
                 return;
             }
             case ReturnStatement s:
