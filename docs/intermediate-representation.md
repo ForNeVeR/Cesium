@@ -13,6 +13,7 @@ Currently compiler has 3 logical representations:
 attached source code locations.
 - High level IR (HIR) which is simplified version of AST upon which we perform analysis and code transformations
 - Low level IR (LIR) which is close to machine code and used for optimizations and code generation.
+  Low level IR applicable only within function body.
 
 High level and Low level IRs are defined in the `Cesium.CodeGen/Ir` directory. Each node represented by class
 implementing marker `IBlockItem` interface.
