@@ -459,10 +459,12 @@ internal static class BlockItemLowering
                 }
             case LabelStatement s:
                 {
-                    // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-                    if (!s.DidLowered)
                         scope.AddLabel(s.Identifier);
-                    return new LabelStatement(s.Identifier, Lower(scope, s.Expression), true);
+                    return new CompoundStatement(
+                        [
+                            new LabeledNopStatement(s.Identifier),
+                            Lower(scope, s.Expression)
+                        ], (IEmitScope)scope);
                 }
             case WhileStatement s:
                 {
