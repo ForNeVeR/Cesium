@@ -254,6 +254,7 @@ internal sealed class ControlFlowChecker
         bool isMain
     )
     {
+        var flowGraph = new FlowGraph(block);
         var dset = new AdjacencyGraph<CodeBlockVertex, CodeBlockEdge>();
         var terminator = FillGraph(dset, block);
         AnalyzeReachability(dset);
@@ -309,5 +310,119 @@ internal sealed class ControlFlowChecker
         }
 
         return block;
+    }
+}
+
+internal class BasicBlock: IBlockItem
+{
+    public HashSet<BasicBlock> Sources { get; } = [];
+    public HashSet<BasicBlock> Targets { get; } = [];
+    public List<IBlockItem> Statements { get; } = [];
+}
+
+internal class FlowGraph
+{
+    public BasicBlock Entry { get; } = new BasicBlock();
+    public List<BasicBlock> BasicBlocks { get; } = [];
+    private Dictionary<string, BasicBlock> labeledBlocks = new();
+    public FlowGraph(CompoundStatement compoundStatement)
+    {
+        var currentBlock = Entry;
+        var boolNewBlockRequired = false;
+        for (int i = 0; i < compoundStatement.Statements.Count; i++)
+        {
+            var blockItem = compoundStatement.Statements[i];
+            if (boolNewBlockRequired)
+            {
+                var newBlock = new BasicBlock();
+                currentBlock.Targets.Add(newBlock);
+                currentBlock = newBlock;
+                boolNewBlockRequired = false;
+            }
+
+            if (blockItem is ReturnStatement)
+            {
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var newBlock = new BasicBlock();
+                currentBlock.Targets.Add(newBlock);
+                currentBlock = newBlock;
+            }
+            else if (blockItem is ExpressionStatement)
+            {
+                currentBlock.Statements.Add(blockItem);
+            }
+            else if (blockItem is GoToStatement gotoStatement)
+            {
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var conditionalBlock = Lookup(gotoStatement.Identifier);
+                currentBlock.Targets.Add(conditionalBlock);
+                var newBlock = new BasicBlock();
+                currentBlock.Targets.Add(newBlock);
+                currentBlock = newBlock;
+            }
+            else if (blockItem is ConditionalGotoStatement conditional)
+            {
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var conditionalBlock = Lookup(conditional.Identifier);
+                currentBlock.Targets.Add(conditionalBlock);
+                var newBlock = new BasicBlock();
+                currentBlock.Targets.Add(newBlock);
+                currentBlock = newBlock;
+            }
+            else if (blockItem is LabeledNopStatement labeled)
+            {
+                // Close existing block.
+                BasicBlock nextBlock = new();
+                if (currentBlock.Statements.Count <= 0)
+                {
+                    if (labeledBlocks.TryGetValue(labeled.Label, out var existingBlock))
+                    {
+                        currentBlock = existingBlock;
+                    }
+                    else
+                    {
+                        labeledBlocks.Add(labeled.Label, currentBlock);
+                    }
+                }
+                else
+                {
+                    currentBlock.Statements.Add(blockItem);
+                    BasicBlocks.Add(currentBlock);
+                    if (labeledBlocks.TryGetValue(labeled.Label, out var existingBlock))
+                    {
+                        nextBlock = existingBlock;
+                        currentBlock.Targets.Add(nextBlock);
+                    }
+                    else
+                    {
+                        nextBlock = new();
+                        currentBlock.Targets.Add(nextBlock);
+                        labeledBlocks.Add(labeled.Label, nextBlock);
+                    }
+                }
+            }
+            else
+            {
+                throw new NotSupportedException($"Block item of type {blockItem.GetType()} is not supported in FlowGraph.");
+            }
+        }
+
+        BasicBlocks.Add(currentBlock);
+    }
+    private BasicBlock Lookup(string label)
+    {
+        if (labeledBlocks.TryGetValue(label, out var block))
+        {
+            return block;
+        }
+        else
+        {
+            block = new BasicBlock();
+            labeledBlocks.Add(label, block);
+            return block;
+        }
     }
 }

@@ -23,10 +23,9 @@ Low level IR (LIR)
 
 Currently LIR consists of the following classes.
 
-- Compound statment
-- Goto statement
+- Compound statment *(reused from HIR)*
+- Goto statement *(reused from HIR)*
 - Label without statements attached (LabeledNopStatement)
-- Conditional goto statement
-- Return statement
+- Conditional goto statement (ConditionalGotoStatement)
+- Return statement *(reused from HIR)*
 - Expression statement (ExpressionStatement)
-- AmbiguousBlockItem
