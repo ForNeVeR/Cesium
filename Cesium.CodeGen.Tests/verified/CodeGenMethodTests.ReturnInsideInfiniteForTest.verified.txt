@@ -1,7 +1,3 @@
 System.Void <Module>::test()
   IL_0000: nop
   IL_0001: ret
-  IL_0002: nop
-  IL_0003: br IL_0000
-  IL_0008: nop
-  IL_0009: ret

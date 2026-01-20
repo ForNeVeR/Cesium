@@ -4,9 +4,11 @@
 
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
+using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Emitting;
 
@@ -32,8 +34,18 @@ internal static class BlockItemEmitting
             {
                 throw new AssertException("Should be lowered");
             }
+            case BasicBlock s:
+            {
+                foreach (var item in s.Statements)
+                {
+                    EmitCode(scope, item);
+                }
+
+                return;
+            }
             case CompoundStatement s:
             {
+                Debug.Assert(s.EmitScope == null || s.EmitScope == scope, "EmitScope should be function scope after Lineralize");
                 var realScope = s.EmitScope ?? scope;
 
                 foreach (var item in s.Statements)

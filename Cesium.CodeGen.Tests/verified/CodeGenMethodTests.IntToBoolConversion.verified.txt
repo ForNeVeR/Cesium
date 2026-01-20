@@ -10,8 +10,6 @@ System.Int32 <Module>::main()
   IL_000a: nop
   IL_000b: ldc.i4.0
   IL_000c: ret
-  IL_000d: ldc.i4.0
-  IL_000e: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

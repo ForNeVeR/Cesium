@@ -31,8 +31,6 @@ Module: Primary
       IL_0030: nop
       IL_0031: ldc.i4.1
       IL_0032: ret
-      IL_0033: ldc.i4.0
-      IL_0034: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
