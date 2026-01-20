@@ -35,52 +35,16 @@ internal sealed class ControlFlowChecker
         switch (stmt)
         {
             case ExpressionStatement:
-            case AmbiguousBlockItem:
                 return Atom();
-            case LabelStatement label:
-                {
-                var labelVtx = new CodeBlockVertex(label);
+            case LabeledNopStatement labeledNop:
+            {
+                var labelVtx = new CodeBlockVertex(stmt);
                 graph.AddVertex(labelVtx);
 
-                var (nextVtx, unboundedNext) = AddStatementToGraph(graph, label.Expression);
+                var (nextVtx, unboundedNext) = Atom();
                 graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
 
                 return (labelVtx, unboundedNext);
-                }
-            case LabeledNopStatement labeledNop:
-                {
-                    var labelVtx = new CodeBlockVertex(stmt);
-                    graph.AddVertex(labelVtx);
-
-                    var (nextVtx, unboundedNext) = Atom();
-                    graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
-
-                    return (labelVtx, unboundedNext);
-                }
-            case IfElseStatement ifElse:
-            {
-                var ifVtx = new CodeBlockVertex(stmt);
-                graph.AddVertex(ifVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, ifElse.TrueBranch);
-                graph.AddEdge(new CodeBlockEdge(ifVtx, vtx));
-
-                // true case does not have terminating goto or return or something
-                ifElse.IsEscapeBranchRequired = unboundedNext.Count > 0;
-
-                if (ifElse.FalseBranch != null)
-                {
-                    var (falseVtx, falseUnboundedNext) = AddStatementToGraph(graph, ifElse.FalseBranch);
-                    graph.AddEdge(new CodeBlockEdge(ifVtx, falseVtx));
-
-                    unboundedNext.AddRange(falseUnboundedNext);
-                }
-                else
-                {
-                    unboundedNext.Add(ifVtx);
-                }
-
-                return (ifVtx, unboundedNext);
             }
             case ConditionalGotoStatement conditionalGotoStmt:
             {
@@ -127,6 +91,9 @@ internal sealed class ControlFlowChecker
             case ForStatement:
             case SwitchStatement:
             case DeclarationBlockItem:
+            case LabelStatement:
+            case IfElseStatement:
+            case AmbiguousBlockItem:
                 throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name + " should be lowered");
             default:
                 throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name);
@@ -206,7 +173,6 @@ internal sealed class ControlFlowChecker
                 {
                     return x.BlockItem switch
                     {
-                        LabelStatement { Identifier: { } id } when id == goTo.Identifier => true,
                         LabeledNopStatement { Label: { } id } when id == goTo.Identifier => true,
                         _ => false,
                     };
@@ -248,6 +214,8 @@ internal sealed class ControlFlowChecker
             case ForStatement:
             case CaseStatement:
             case DeclarationBlockItem:
+            case LabelStatement:
+            case IfElseStatement:
                 throw new AssertException("Should be lowered");
             case CompoundStatement s:
             {
@@ -273,47 +241,6 @@ internal sealed class ControlFlowChecker
                 }
 
                 return (false, new CompoundStatement(s.Statements) { InheritScope = s.InheritScope });
-            }
-            case IfElseStatement s:
-            {
-                if (ReferenceEquals(s.TrueBranch, target))
-                {
-                    return (true, s with { TrueBranch = replacement });
-                }
-
-                if (InsertSyntheticReturn(s.TrueBranch, target, replacement) is { Success: true, Result: { } newTrueStmt })
-                {
-                    return (true, s with { TrueBranch = newTrueStmt });
-                }
-
-                if (s.FalseBranch != null)
-                {
-                    if (ReferenceEquals(s.FalseBranch, target))
-                    {
-                        return (true, s with { FalseBranch = replacement });
-                    }
-
-                    if (InsertSyntheticReturn(s.FalseBranch, target, replacement) is { Success: true, Result: { } newFalseStmt })
-                    {
-                        return (true, s with { FalseBranch = newFalseStmt });
-                    }
-                }
-
-                return (false, s);
-            }
-            case LabelStatement s:
-            {
-                if (ReferenceEquals(s.Expression, target))
-                {
-                    return (true, s with { Expression = replacement });
-                }
-
-                if (InsertSyntheticReturn(s.Expression, target, replacement) is { Success: true, Result: { } newStmt })
-                {
-                    return (true, s with { Expression = newStmt });
-                }
-
-                return (false, s);
             }
             default:
                 throw new ArgumentOutOfRangeException(nameof(statement), $"The statement type {statement.GetType()} does not expected.");

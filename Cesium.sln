@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11408.92 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Compiler", "Cesium.Compiler\Cesium.Compiler.csproj", "{B85C397C-1F36-4A27-AB36-D03F55AE1A89}"
 EndProject
@@ -13,20 +13,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
-		README.md = README.md
-		REUSE.toml = REUSE.toml
-		MAINTAINING.md = MAINTAINING.md
 		LICENSE.md = LICENSE.md
+		MAINTAINING.md = MAINTAINING.md
+		README.md = README.md
 		renovate.json = renovate.json
 		renovate.json.license = renovate.json.license
+		REUSE.toml = REUSE.toml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{720F6830-E724-4B3A-BFDC-3FA1301A59D0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C08E4851-DE2E-490E-970D-4F6A0A902A98}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
 		.github\workflows\release.yml = .github\workflows\release.yml
+		.github\workflows\run-build-and-unit-tests.yml = .github\workflows\run-build-and-unit-tests.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cesium.Parser", "Cesium.Parser\Cesium.Parser.csproj", "{537F83F5-67B1-4863-A557-CF08149A99CB}"
@@ -56,8 +56,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{F3EB714E-12F8-46E2-98D8-494723EA92E1}"
 	ProjectSection(SolutionItems) = preProject
 		scripts\approve-all.ps1 = scripts\approve-all.ps1
-		scripts\Test-Encoding.ps1 = scripts\Test-Encoding.ps1
 		scripts\Get-Version.ps1 = scripts\Get-Version.ps1
+		scripts\Test-Encoding.ps1 = scripts\Test-Encoding.ps1
 		scripts\Update-Version.ps1 = scripts\Update-Version.ps1
 	EndProjectSection
 EndProject
@@ -67,6 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{986C6A13-2
 		docs\builtins.md = docs\builtins.md
 		docs\design-notes.md = docs\design-notes.md
 		docs\exceptions.md = docs\exceptions.md
+		docs\intermediate-representation.md = docs\intermediate-representation.md
 		docs\language-extensions.md = docs\language-extensions.md
 		docs\msbuild-sdk.md = docs\msbuild-sdk.md
 		docs\tests.md = docs\tests.md
