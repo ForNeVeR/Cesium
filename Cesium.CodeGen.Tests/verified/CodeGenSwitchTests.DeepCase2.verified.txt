@@ -1,0 +1,75 @@
+System.Int32 <Module>::main()
+  Locals:
+    System.Int32 V_0
+    System.Int32 V_1
+    System.Int32 V_2
+    System.Int32 V_3
+    System.Int32 V_4
+  IL_0000: ldc.i4.s 41
+  IL_0002: stloc.0
+  IL_0003: ldc.i4.3
+  IL_0004: stloc.1
+  IL_0005: ldc.i4.0
+  IL_0006: stloc.2
+  IL_0007: ldloc.1
+  IL_0008: stloc.3
+  IL_0009: ldloc.3
+  IL_000a: ldc.i4.3
+  IL_000b: ceq
+  IL_000d: brtrue IL_0020
+  IL_0012: ldloc.3
+  IL_0013: ldc.i4.2
+  IL_0014: ceq
+  IL_0016: brtrue IL_0027
+  IL_001b: br IL_0034
+  IL_0020: nop
+  IL_0021: ldloc.2
+  IL_0022: brfalse IL_002e
+  IL_0027: nop
+  IL_0028: ldloc.0
+  IL_0029: dup
+  IL_002a: ldc.i4.1
+  IL_002b: add
+  IL_002c: stloc.0
+  IL_002d: pop
+  IL_002e: nop
+  IL_002f: br IL_0034
+  IL_0034: nop
+  IL_0035: ldc.i4.2
+  IL_0036: stloc.1
+  IL_0037: ldloc.1
+  IL_0038: stloc.s V_4
+  IL_003a: ldloc.s V_4
+  IL_003c: ldc.i4.3
+  IL_003d: ceq
+  IL_003f: brtrue IL_0053
+  IL_0044: ldloc.s V_4
+  IL_0046: ldc.i4.2
+  IL_0047: ceq
+  IL_0049: brtrue IL_005a
+  IL_004e: br IL_0067
+  IL_0053: nop
+  IL_0054: ldloc.2
+  IL_0055: brfalse IL_0061
+  IL_005a: nop
+  IL_005b: ldloc.0
+  IL_005c: dup
+  IL_005d: ldc.i4.1
+  IL_005e: add
+  IL_005f: stloc.0
+  IL_0060: pop
+  IL_0061: nop
+  IL_0062: br IL_0067
+  IL_0067: nop
+  IL_0068: ldloc.0
+  IL_0069: ret
+
+System.Int32 <Module>::<SyntheticEntrypoint>()
+  Locals:
+    System.Int32 V_0
+  IL_0000: call System.Int32 <Module>::main()
+  IL_0005: stloc.s V_0
+  IL_0007: ldloc.s V_0
+  IL_0009: call System.Void Cesium.Runtime.RuntimeHelpers::Exit(System.Int32)
+  IL_000e: ldloc.s V_0
+  IL_0010: ret
