@@ -16,61 +16,53 @@ System.Int32 <Module>::main()
   IL_0009: ldloc.3
   IL_000a: ldc.i4.3
   IL_000b: ceq
-  IL_000d: brfalse IL_0017
-  IL_0012: br IL_002c
-  IL_0017: nop
-  IL_0018: ldloc.3
-  IL_0019: ldc.i4.2
-  IL_001a: ceq
-  IL_001c: brfalse IL_0026
-  IL_0021: br IL_0033
-  IL_0026: nop
-  IL_0027: br IL_0040
-  IL_002c: nop
-  IL_002d: ldloc.2
-  IL_002e: brfalse IL_003a
-  IL_0033: nop
-  IL_0034: ldloc.0
-  IL_0035: dup
-  IL_0036: ldc.i4.1
-  IL_0037: add
-  IL_0038: stloc.0
-  IL_0039: pop
-  IL_003a: nop
-  IL_003b: br IL_0040
-  IL_0040: nop
-  IL_0041: ldc.i4.2
-  IL_0042: stloc.1
-  IL_0043: ldloc.1
-  IL_0044: stloc.s V_4
-  IL_0046: ldloc.s V_4
-  IL_0048: ldc.i4.3
-  IL_0049: ceq
-  IL_004b: brfalse IL_0055
-  IL_0050: br IL_006b
-  IL_0055: nop
-  IL_0056: ldloc.s V_4
-  IL_0058: ldc.i4.2
-  IL_0059: ceq
-  IL_005b: brfalse IL_0065
-  IL_0060: br IL_0072
-  IL_0065: nop
-  IL_0066: br IL_007f
-  IL_006b: nop
-  IL_006c: ldloc.2
-  IL_006d: brfalse IL_0079
-  IL_0072: nop
-  IL_0073: ldloc.0
-  IL_0074: dup
-  IL_0075: ldc.i4.1
-  IL_0076: add
-  IL_0077: stloc.0
-  IL_0078: pop
-  IL_0079: nop
-  IL_007a: br IL_007f
-  IL_007f: nop
-  IL_0080: ldloc.0
-  IL_0081: ret
+  IL_000d: brtrue IL_0020
+  IL_0012: ldloc.3
+  IL_0013: ldc.i4.2
+  IL_0014: ceq
+  IL_0016: brtrue IL_0027
+  IL_001b: br IL_0034
+  IL_0020: nop
+  IL_0021: ldloc.2
+  IL_0022: brfalse IL_002e
+  IL_0027: nop
+  IL_0028: ldloc.0
+  IL_0029: dup
+  IL_002a: ldc.i4.1
+  IL_002b: add
+  IL_002c: stloc.0
+  IL_002d: pop
+  IL_002e: nop
+  IL_002f: br IL_0034
+  IL_0034: nop
+  IL_0035: ldc.i4.2
+  IL_0036: stloc.1
+  IL_0037: ldloc.1
+  IL_0038: stloc.s V_4
+  IL_003a: ldloc.s V_4
+  IL_003c: ldc.i4.3
+  IL_003d: ceq
+  IL_003f: brtrue IL_0053
+  IL_0044: ldloc.s V_4
+  IL_0046: ldc.i4.2
+  IL_0047: ceq
+  IL_0049: brtrue IL_005a
+  IL_004e: br IL_0067
+  IL_0053: nop
+  IL_0054: ldloc.2
+  IL_0055: brfalse IL_0061
+  IL_005a: nop
+  IL_005b: ldloc.0
+  IL_005c: dup
+  IL_005d: ldc.i4.1
+  IL_005e: add
+  IL_005f: stloc.0
+  IL_0060: pop
+  IL_0061: nop
+  IL_0062: br IL_0067
+  IL_0067: nop
+  IL_0068: ldloc.0
+  IL_0069: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
