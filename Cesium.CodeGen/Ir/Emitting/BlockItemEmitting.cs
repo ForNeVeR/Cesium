@@ -4,9 +4,11 @@
 
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
+using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil.Cil;
+using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Emitting;
 
@@ -28,11 +30,22 @@ internal static class BlockItemEmitting
             case ForStatement:
             case SwitchStatement:
             case DeclarationBlockItem:
+            case IfElseStatement:
             {
                 throw new AssertException("Should be lowered");
             }
+            case BasicBlock s:
+            {
+                foreach (var item in s.Statements)
+                {
+                    EmitCode(scope, item);
+                }
+
+                return;
+            }
             case CompoundStatement s:
             {
+                Debug.Assert(s.EmitScope == null || s.EmitScope == scope, "EmitScope should be function scope after Lineralize");
                 var realScope = s.EmitScope ?? scope;
 
                 foreach (var item in s.Statements)
@@ -88,40 +101,12 @@ internal static class BlockItemEmitting
 
                 return;
             }
-            case IfElseStatement s:
+            case ConditionalGotoStatement s:
             {
-                if (s.IsEscapeBranchRequired == null)
-                    throw new CompilationException("CFG Graph pass missing");
-
-                var bodyProcessor = scope.Method.Body.GetILProcessor();
-                var ifFalseLabel = bodyProcessor.Create(OpCodes.Nop);
-
-                s.Expression.EmitTo(scope);
-                bodyProcessor.Emit(OpCodes.Brfalse, ifFalseLabel);
-
-                EmitCode(scope, s.TrueBranch);
-
-                if (s.FalseBranch == null)
-                {
-                    bodyProcessor.Append(ifFalseLabel);
-                    return;
-                }
-
-                if (s.IsEscapeBranchRequired.Value)
-                {
-                    var statementEndLabel = bodyProcessor.Create(OpCodes.Nop);
-                    bodyProcessor.Emit(OpCodes.Br, statementEndLabel);
-
-                    bodyProcessor.Append(ifFalseLabel);
-                    EmitCode(scope, s.FalseBranch);
-                    bodyProcessor.Append(statementEndLabel);
-                }
-                else
-                {
-                    bodyProcessor.Append(ifFalseLabel);
-                    EmitCode(scope, s.FalseBranch);
-                }
-
+                s.Condition.EmitTo(scope);
+                var instruction = scope.ResolveLabel(s.Identifier);
+                var opcode = s.JumpType == ConditionalJumpType.True ? OpCodes.Brtrue : OpCodes.Brfalse;
+                scope.Method.Body.Instructions.Add(Instruction.Create(opcode, instruction));
                 return;
             }
             case LabelStatement s:
@@ -131,6 +116,12 @@ internal static class BlockItemEmitting
 
                 EmitCode(scope, s.Expression);
 
+                return;
+            }
+            case LabeledNopStatement s:
+            {
+                var instruction = scope.ResolveLabel(s.Label);
+                scope.Method.Body.Instructions.Add(instruction);
                 return;
             }
             case ReturnStatement s:

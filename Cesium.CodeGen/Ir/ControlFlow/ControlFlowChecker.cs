@@ -8,295 +8,11 @@ using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
-using QuikGraph;
 
 namespace Cesium.CodeGen.Ir.ControlFlow;
 
 internal sealed class ControlFlowChecker
 {
-    // we don't want structural equality here
-    class CodeBlockVertex
-    {
-        public IBlockItem? BlockItem { get; }
-        public bool Terminator { get; }
-        public bool? Reached { get; set; }
-
-        public CodeBlockVertex(IBlockItem? blockItem, bool terminator = false)
-        {
-            BlockItem = blockItem;
-            Terminator = terminator;
-        }
-    }
-
-    record CodeBlockEdge(CodeBlockVertex Source, CodeBlockVertex Target) : IEdge<CodeBlockVertex>;
-
-    private static (CodeBlockVertex, List<CodeBlockVertex>) AddStatementToGraph(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, IBlockItem stmt)
-    {
-        switch (stmt)
-        {
-            case ExpressionStatement:
-            case AmbiguousBlockItem:
-                return Atom();
-            case LabelStatement label:
-            {
-                var labelVtx = new CodeBlockVertex(label);
-                graph.AddVertex(labelVtx);
-
-                var (nextVtx, unboundedNext) = AddStatementToGraph(graph, label.Expression);
-                graph.AddEdge(new CodeBlockEdge(labelVtx, nextVtx));
-
-                return (labelVtx, unboundedNext);
-            }
-            case IfElseStatement ifElse:
-            {
-                var ifVtx = new CodeBlockVertex(stmt);
-                graph.AddVertex(ifVtx);
-
-                var (vtx, unboundedNext) = AddStatementToGraph(graph, ifElse.TrueBranch);
-                graph.AddEdge(new CodeBlockEdge(ifVtx, vtx));
-
-                // true case does not have terminating goto or return or something
-                ifElse.IsEscapeBranchRequired = unboundedNext.Count > 0;
-
-                if (ifElse.FalseBranch != null)
-                {
-                    var (falseVtx, falseUnboundedNext) = AddStatementToGraph(graph, ifElse.FalseBranch);
-                    graph.AddEdge(new CodeBlockEdge(ifVtx, falseVtx));
-
-                    unboundedNext.AddRange(falseUnboundedNext);
-                }
-                else
-                {
-                    unboundedNext.Add(ifVtx);
-                }
-
-                return (ifVtx, unboundedNext);
-            }
-            case CompoundStatement compound:
-            {
-                // copypasted from code below (think how to generalize)
-                var compoundVtx = new CodeBlockVertex(compound);
-                graph.AddVertex(compoundVtx);
-
-                List<CodeBlockVertex> unboundVertices = new()
-                {
-                    compoundVtx
-                };
-
-                foreach (var cs in compound.Statements)
-                {
-                    (var csv, var newUnboundVertices) = AddStatementToGraph(graph, cs);
-
-                    foreach (var ubv in unboundVertices)
-                    {
-                        graph.AddEdge(new CodeBlockEdge(ubv, csv));
-                    }
-
-                    unboundVertices = newUnboundVertices;
-                }
-
-                return (compoundVtx, unboundVertices);
-            }
-            case ReturnStatement:
-            case GoToStatement:
-                return Terminator();
-            case ContinueStatement:
-            case BreakStatement:
-            case DoWhileStatement:
-            case WhileStatement:
-            case ForStatement:
-            case SwitchStatement:
-            case DeclarationBlockItem:
-                throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name + " should be lowered");
-            default:
-                throw new ArgumentOutOfRangeException(nameof(stmt), stmt.GetType().Name);
-        }
-
-        (CodeBlockVertex, List<CodeBlockVertex>) Atom()
-        {
-            var vtx = new CodeBlockVertex(stmt);
-            graph.AddVertex(vtx);
-            return (vtx, new List<CodeBlockVertex> { vtx });
-        }
-
-        (CodeBlockVertex, List<CodeBlockVertex>) Terminator()
-        {
-            var vtx = new CodeBlockVertex(stmt);
-            graph.AddVertex(vtx);
-            return (vtx, new List<CodeBlockVertex>() /* empty */);
-        }
-    }
-
-    private static void AnalyzeReachability(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph)
-    {
-        var start = graph.Vertices.First();
-        AnalyzeReachability(graph, start);
-        foreach (var item in graph.Vertices)
-        {
-            if (item.Reached == null)
-                item.Reached = false;
-        }
-    }
-
-    private static void AnalyzeReachability(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, CodeBlockVertex vertex)
-    {
-        if (vertex.Reached != null) return;
-        vertex.Reached = true;
-        foreach (var node in graph.Edges.Where(x => x.Source == vertex).Select(x => x.Target))
-        {
-            AnalyzeReachability(graph, node);
-        }
-    }
-
-    private static CodeBlockVertex FillGraph(IMutableVertexAndEdgeSet<CodeBlockVertex, CodeBlockEdge> graph, CompoundStatement statement)
-    {
-        var start = new CodeBlockVertex(null);
-        var terminator = new CodeBlockVertex(null, true);
-
-        graph.AddVertex(start);
-        graph.AddVertex(terminator);
-
-        List<CodeBlockVertex> unboundVertices = new()
-        {
-            start
-        };
-
-        foreach (var cs in statement.Statements)
-        {
-            (var csv, var newUnboundVertices) = AddStatementToGraph(graph, cs);
-
-            foreach (var ubv in unboundVertices)
-            {
-                graph.AddEdge(new CodeBlockEdge(ubv, csv));
-            }
-
-            unboundVertices = newUnboundVertices;
-        }
-
-        foreach (var ubv in unboundVertices)
-        {
-            graph.AddEdge(new CodeBlockEdge(ubv, terminator));
-        }
-
-        foreach (var vtx in graph.Vertices)
-        {
-            if (vtx.BlockItem is GoToStatement goTo)
-            {
-                var label = graph.Vertices.First(x =>
-                {
-                    return x.BlockItem switch
-                    {
-                        LabelStatement { Identifier: { } id } when id == goTo.Identifier => true,
-                        _ => false,
-                    };
-                });
-
-                graph.AddEdge(new CodeBlockEdge(vtx, label));
-            }
-
-            if (vtx.BlockItem is ReturnStatement)
-            {
-                graph.AddEdge(new CodeBlockEdge(vtx, terminator));
-            }
-        }
-
-        return terminator;
-    }
-
-    private static (bool Success, IBlockItem Result) InsertSyntheticReturn(IBlockItem statement, IBlockItem target, IBlockItem replacement)
-    {
-        switch (statement)
-        {
-            case AmbiguousBlockItem:
-            case BreakStatement:
-            case ContinueStatement:
-            case TagBlockItem:
-            case TypeDefBlockItem:
-            case ReturnStatement:
-            case ExpressionStatement:
-            case FunctionDeclaration:
-            case FunctionDefinition:
-            case GoToStatement:
-            case GlobalVariableDefinition:
-                return (false, statement);
-            case SwitchStatement:
-            case WhileStatement:
-            case DoWhileStatement:
-            case ForStatement:
-            case CaseStatement:
-            case DeclarationBlockItem:
-                throw new AssertException("Should be lowered");
-            case CompoundStatement s:
-            {
-                for (var i = 0; i < s.Statements.Count; i++)
-                {
-                    var stmt = s.Statements[i];
-
-                    if (ReferenceEquals(stmt, target))
-                    {
-                        var copy = s.Statements.ToList();
-                        copy[i] = replacement;
-
-                        return (true, s with { Statements = copy });
-                    }
-
-                    if (InsertSyntheticReturn(stmt, target, replacement) is { Success: true, Result: { } newStmt })
-                    {
-                        var copy = s.Statements.ToList();
-                        copy[i] = newStmt;
-
-                        return (true, s with { Statements = copy });
-                    }
-                }
-
-                return (false, s);
-            }
-            case IfElseStatement s:
-            {
-                if (ReferenceEquals(s.TrueBranch, target))
-                {
-                    return (true, s with { TrueBranch = replacement });
-                }
-
-                if (InsertSyntheticReturn(s.TrueBranch, target, replacement) is { Success: true, Result: { } newTrueStmt })
-                {
-                    return (true, s with { TrueBranch = newTrueStmt });
-                }
-
-                if (s.FalseBranch != null)
-                {
-                    if (ReferenceEquals(s.FalseBranch, target))
-                    {
-                        return (true, s with { FalseBranch = replacement });
-                    }
-
-                    if (InsertSyntheticReturn(s.FalseBranch, target, replacement) is { Success: true, Result: { } newFalseStmt })
-                    {
-                        return (true, s with { FalseBranch = newFalseStmt });
-                    }
-                }
-
-                return (false, s);
-            }
-            case LabelStatement s:
-            {
-                if (ReferenceEquals(s.Expression, target))
-                {
-                    return (true, s with { Expression = replacement });
-                }
-
-                if (InsertSyntheticReturn(s.Expression, target, replacement) is { Success: true, Result: { } newStmt })
-                {
-                    return (true, s with { Expression = newStmt });
-                }
-
-                return (false, s);
-            }
-            default:
-                throw new ArgumentOutOfRangeException(nameof(statement));
-        }
-    }
-
     public static IBlockItem CheckAndTransformControlFlow(
         FunctionScope scope,
         CompoundStatement block,
@@ -304,60 +20,189 @@ internal sealed class ControlFlowChecker
         bool isMain
     )
     {
-        var dset = new AdjacencyGraph<CodeBlockVertex, CodeBlockEdge>();
-        var terminator = FillGraph(dset, block);
-        AnalyzeReachability(dset);
-
-        var preTerminators = dset.Edges.Where(x => x.Target == terminator).Select(x => x.Source).ToArray();
-        if (preTerminators.Length == 0)
-            // log
-            Console.WriteLine("Code does not terminate");
+        var flowGraph = new FlowGraph(block);
 
         var isVoidFn = returnType.Equals(CTypeSystem.Void);
         var isReturnRequired = !isVoidFn && !isMain;
 
         if (isVoidFn)
         {
-            var hasExpressionReturn = (ReturnStatement?)dset.Vertices.FirstOrDefault(_ => _.BlockItem is ReturnStatement { Expression: { } })?.BlockItem;
+            var hasExpressionReturn = (ReturnStatement?)flowGraph.BasicBlocks.SelectMany(_ => _.Statements).FirstOrDefault(_ => _ is ReturnStatement { Expression: { } });
             if (hasExpressionReturn is not null)
             {
                 throw new CompilationException($"Function {scope.Method.Name} has return type void, and thus cannot have expression in return.");
             }
         }
 
-        foreach (var preTerminator in preTerminators)
+        var lastBlock = flowGraph.BasicBlocks.Last();
+        if (lastBlock.Statements.Count == 0 || lastBlock.Statements.Last() is not ReturnStatement and not GoToStatement)
         {
-            if (preTerminator.BlockItem is ReturnStatement) continue;
-            if (preTerminator.Reached == false) continue;
+            // [TODO #928]: More advanced control flow analysis to determine if all paths return a value.
+            //if (isReturnRequired)
+            //{
+            //    throw new CompilationException($"Not all control flow paths in function {scope.Method.Name} return a value.");
+            //}
 
-            // inserting fake return
             var retn = new ReturnStatement(!isVoidFn ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
+            lastBlock.Statements.Add(retn);
+        }
 
-            if (preTerminator.BlockItem is {} original)
+        return new CompoundStatement([.. flowGraph.BasicBlocks.OfType<IBlockItem>()], scope);
+    }
+}
+
+internal class BasicBlock: IBlockItem
+{
+    public HashSet<BasicBlock> Sources { get; } = [];
+    public HashSet<BasicBlock> Targets { get; } = [];
+    public List<IBlockItem> Statements { get; } = [];
+}
+
+internal class FlowGraph
+{
+    public BasicBlock Entry { get; } = new BasicBlock();
+    public List<BasicBlock> BasicBlocks { get; } = [];
+    private Dictionary<string, BasicBlock> labeledBlocks = new();
+    public FlowGraph(CompoundStatement compoundStatement)
+    {
+        var currentBlock = Entry;
+        for (int i = 0; i < compoundStatement.Statements.Count; i++)
+        {
+            var blockItem = compoundStatement.Statements[i];
+            if (blockItem is ReturnStatement)
             {
-                var (success, result) = InsertSyntheticReturn(block, original, new CompoundStatement(new List<IBlockItem> { original, retn }));
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var newBlock = new BasicBlock();
+                currentBlock = newBlock;
+            }
+            else if (blockItem is ExpressionStatement { Expression: null })
+            {
+                // Do nothing if statement is empty.
+            }
+            else if (blockItem is ExpressionStatement { Expression: { } })
+            {
+                currentBlock.Statements.Add(blockItem);
+            }
+            else if (blockItem is GoToStatement gotoStatement)
+            {
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var gotoBlock = Lookup(gotoStatement.Identifier);
+                currentBlock.Targets.Add(gotoBlock);
+                var newBlock = new BasicBlock();
+                currentBlock = newBlock;
+            }
+            else if (blockItem is ConditionalGotoStatement conditional)
+            {
+                currentBlock.Statements.Add(blockItem);
+                BasicBlocks.Add(currentBlock);
+                var conditionalBlock = Lookup(conditional.Identifier);
+                currentBlock.Targets.Add(conditionalBlock);
+                var newBlock = new BasicBlock();
+                currentBlock.Targets.Add(newBlock);
+                currentBlock = newBlock;
+            }
+            else if (blockItem is LabeledNopStatement labeled)
+            {
+                // Close existing block.
+                var lastBlock = BasicBlocks.LastOrDefault();
+                if (lastBlock != currentBlock)
+                {
+                    BasicBlocks.Add(currentBlock);
+                }
+                BasicBlock nextBlock = new();
+                //if (currentBlock.Statements.LastOrDefault()
+                //    is not GoToStatement and not ReturnStatement)
+                //{
+                //    currentBlock.Targets.Add(nextBlock);
+                //}
 
-                if (!success)
-                    throw new CompilationException("[internal] Unable to insert fake return.");
+                if (currentBlock.Statements.Count == 0)
+                {
+                    if (labeledBlocks.TryGetValue(labeled.Label, out var existingBlock))
+                    {
+                        currentBlock = existingBlock;
+                    }
+                    else
+                    {
+                        labeledBlocks.Add(labeled.Label, currentBlock);
+                        if (currentBlock.Statements.LastOrDefault()
+                            is not GoToStatement and not ReturnStatement)
+                        {
+                            currentBlock.Targets.Add(nextBlock);
+                        }
 
-                block = (CompoundStatement) result;
+                        currentBlock = nextBlock;
+                    }
+
+                    currentBlock.Statements.Add(labeled);
+                }
+                else
+                {
+                    if (labeledBlocks.TryGetValue(labeled.Label, out var existingBlock))
+                    {
+                        nextBlock = existingBlock;
+                        currentBlock.Targets.Add(nextBlock);
+                    }
+                    else
+                    {
+                        nextBlock = new();
+                        currentBlock.Targets.Add(nextBlock);
+                        labeledBlocks.Add(labeled.Label, nextBlock);
+                    }
+                    nextBlock.Statements.Add(labeled);
+                    currentBlock = nextBlock;
+                }
             }
             else
             {
-                // terminator directly follows start node
-                if (block.Statements.Count != 0)
-                    throw new CompilationException("[internal] Function terminates immediately, but there was statements");
-
-                block.Statements.Add(retn);
+                throw new NotSupportedException($"Block item of type {blockItem.GetType()} is not supported in FlowGraph.");
             }
         }
 
-        if (preTerminators.All(pt => pt.Reached == false))
+        if (BasicBlocks.LastOrDefault() != currentBlock)
         {
-            var retn = new ReturnStatement(isMain ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
-            block.Statements.Add(retn);
+            BasicBlocks.Add(currentBlock);
         }
 
-        return block;
+        foreach (BasicBlock bb in BasicBlocks)
+        {
+            foreach (BasicBlock tar in bb.Targets)
+                tar.Sources.Add(bb);
+        }
+
+    startagain:
+        for (var i = BasicBlocks.Count - 1; i > 0; i--)
+        {
+            var bb = BasicBlocks[i];
+            if (bb == Entry)
+            {
+                continue;
+            }
+
+            if (bb.Sources.Count == 0 || bb.Sources.All(_ =>_.Statements.LastOrDefault() is ReturnStatement))
+            {
+                BasicBlocks.RemoveAt(i);
+                foreach (var item in bb.Targets)
+                {
+                    item.Sources.Remove(bb);
+                }
+                goto startagain;
+            }
+        }
+    }
+    private BasicBlock Lookup(string label)
+    {
+        if (labeledBlocks.TryGetValue(label, out var block))
+        {
+            return block;
+        }
+        else
+        {
+            block = new BasicBlock();
+            labeledBlocks.Add(label, block);
+            return block;
+        }
     }
 }

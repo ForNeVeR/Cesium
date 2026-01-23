@@ -29,11 +29,6 @@ System.Int32 <Module>::main()
   IL_0028: nop
   IL_0029: ldc.i4.1
   IL_002a: ret
-  IL_002b: nop
-  IL_002c: br IL_0006
-  IL_0031: nop
-  IL_0032: ldc.i4.0
-  IL_0033: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

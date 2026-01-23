@@ -9,15 +9,13 @@ System.Int32 <Module>::main()
   IL_0004: ldloc.1
   IL_0005: ldc.i4.0
   IL_0006: ceq
-  IL_0008: brfalse IL_0012
+  IL_0008: brtrue IL_0012
   IL_000d: br IL_0018
   IL_0012: nop
-  IL_0013: br IL_001e
+  IL_0013: br IL_0018
   IL_0018: nop
-  IL_0019: br IL_001e
-  IL_001e: nop
-  IL_001f: ldc.i4.1
-  IL_0020: ret
+  IL_0019: ldc.i4.1
+  IL_001a: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:

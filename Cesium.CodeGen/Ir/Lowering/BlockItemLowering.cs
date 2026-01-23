@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
@@ -15,6 +12,8 @@ using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Cesium.CodeGen.Ir.Lowering;
 
@@ -43,13 +42,13 @@ internal static class BlockItemLowering
 
         if (testExpression != null)
         {
-            stmts.Add(new IfElseStatement(new UnaryOperatorExpression(UnaryOperator.LogicalNot, testExpression), new GoToStatement(breakLabel), null));
+            stmts.Add(new ConditionalGotoStatement(testExpression, ConditionalJumpType.False, breakLabel));
         }
 
         if (loopBodyLabel != null)
             stmts.Add(new LabelStatement(loopBodyLabel, body));
         else
-            stmts.Add(body);
+        stmts.Add(body);
 
         var updateStmt = new ExpressionStatement(updateExpression);
 
@@ -83,7 +82,8 @@ internal static class BlockItemLowering
         scope.MergeScope(currentScope);
         foreach (var statement in compoundStatement.Statements)
         {
-            foreach (var nestedStatement in LinearizeBlockItem(statement, scope))
+            var linearizedBlockItems = LinearizeBlockItem(statement, scope).ToList();
+            foreach (var nestedStatement in linearizedBlockItems)
             {
                 yield return nestedStatement;
             }
@@ -93,54 +93,20 @@ internal static class BlockItemLowering
     {
         if (statement is CompoundStatement nestedCompound)
         {
-            foreach (var nestedStatement in Linearize(nestedCompound, scope))
+            var lineralizedNestedCompound = Linearize(nestedCompound, scope).ToList();
+            foreach (var nestedStatement in lineralizedNestedCompound)
             {
-                yield return nestedStatement;
+                var lineralizedNestedStatement = LinearizeBlockItem(nestedStatement, scope);
+                foreach (var nn in lineralizedNestedStatement)
+                    yield return nn;
             }
         }
         else if (statement is LabelStatement labelStatement)
         {
-            if (labelStatement.Expression is CompoundStatement nestedLabeledCompound)
+            yield return new LabeledNopStatement(labelStatement.Identifier);
+            foreach (var nestedStatement in LinearizeBlockItem(labelStatement.Expression, scope))
             {
-                bool first = true;
-                foreach (var nestedStatement in Linearize(nestedLabeledCompound, scope))
-                {
-                    if (first)
-                    {
-                        first = false;
-                        yield return new LabelStatement(labelStatement.Identifier, nestedStatement, true);
-                    }
-                    else
-                    {
-                        yield return nestedStatement;
-                    }
-                }
-            }
-            else
-            {
-                yield return statement;
-            }
-        }
-        else if (statement is IfElseStatement ifElseStatement)
-        {
-            var elsePart = Simplify(ifElseStatement.FalseBranch);
-            var truePart = Simplify(ifElseStatement.TrueBranch);
-
-            yield return new IfElseStatement(ifElseStatement.Expression, truePart, elsePart) { IsEscapeBranchRequired = ifElseStatement.IsEscapeBranchRequired };
-
-            [return: NotNullIfNotNull(nameof(blockItem))]
-            IBlockItem? Simplify(IBlockItem? blockItem)
-            {
-                if (blockItem is null) return null;
-
-                if (blockItem is CompoundStatement falseBranch)
-                {
-                    return new CompoundStatement(Linearize(falseBranch, scope).ToList(), null);
-                }
-
-                var result = LinearizeBlockItem(blockItem, scope).ToList();
-                if (result.Count == 1) return result[0];
-                return new CompoundStatement(result, null);
+                yield return nestedStatement;
             }
         }
         else
@@ -219,6 +185,8 @@ internal static class BlockItemLowering
 
                     return Lower(scope, new LabelStatement(label, currentStatement));
                 }
+            case ConditionalGotoStatement c:
+                return new ConditionalGotoStatement(c.Condition.Lower(scope), c.JumpType, c.Identifier);
             case CompoundStatement c:
                 {
                     var blockScope = c.InheritScope ? scope : new BlockScope((IEmitScope)scope, null, null);
@@ -460,15 +428,43 @@ internal static class BlockItemLowering
             case IfElseStatement s:
                 {
                     var falseBranch = s.FalseBranch != null ? Lower(scope, s.FalseBranch) : null;
-
-                    return new IfElseStatement(s.Expression.Lower(scope), Lower(scope, s.TrueBranch), falseBranch);
+                    var condition = s.Expression.Lower(scope);
+                    if (s.FalseBranch == null)
+                    {
+                        var label = Guid.NewGuid().ToString();
+                        scope.AddLabel(label);
+                        return new CompoundStatement(
+                            [
+                                new ConditionalGotoStatement(condition, ConditionalJumpType.False, label),
+                                Lower(scope, s.TrueBranch),
+                                new LabeledNopStatement(label),
+                            ], (IEmitScope)scope);
+                    }
+                    else
+                    {
+                        var label = Guid.NewGuid().ToString();
+                        scope.AddLabel(label);
+                        var falseLabel = Guid.NewGuid().ToString();
+                        scope.AddLabel(falseLabel);
+                        return new CompoundStatement(
+                            [
+                                new ConditionalGotoStatement(condition, ConditionalJumpType.False, falseLabel),
+                                Lower(scope, s.TrueBranch),
+                                new GoToStatement(label), // Previously IsEscapeBranchRequired Should be removed during BB reachability pass
+                                new LabeledNopStatement(falseLabel),
+                                Lower(scope, s.FalseBranch),
+                                new LabeledNopStatement(label),
+                            ], (IEmitScope)scope);
+                    }
                 }
             case LabelStatement s:
                 {
-                    // TODO[#201]: Remove side effects from Lower, migrate labels to a separate compilation stage.
-                    if (!s.DidLowered)
                         scope.AddLabel(s.Identifier);
-                    return new LabelStatement(s.Identifier, Lower(scope, s.Expression), true);
+                    return new CompoundStatement(
+                        [
+                            new LabeledNopStatement(s.Identifier),
+                            Lower(scope, s.Expression)
+                        ], (IEmitScope)scope);
                 }
             case WhileStatement s:
                 {
@@ -526,10 +522,10 @@ internal static class BlockItemLowering
                         if (matchGroup.TestExpression != null)
                         {
                             targetStmts.Add(
-                                new IfElseStatement(
+                                new ConditionalGotoStatement(
                                     new BinaryOperatorExpression(idExpr, BinaryOperator.EqualTo, matchGroup.TestExpression).Lower(switchScope),
-                                    new GoToStatement(matchGroup.Label),
-                                    null
+                                    ConditionalJumpType.True,
+                                    matchGroup.Label
                                 )
                             );
                         }

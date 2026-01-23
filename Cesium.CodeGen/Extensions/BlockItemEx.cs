@@ -5,6 +5,7 @@
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
+using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.Core;
@@ -74,6 +75,13 @@ internal static class BlockItemEx
                 }
                 writer.WriteLine($"{indent}}}");
                 break;
+            case BasicBlock bb:
+                writer.WriteLine($"{indent} // bb");
+                foreach (var item in bb.Statements)
+                {
+                    Dump(item, writer, indentLevel);
+                }
+                break;
             case Ir.BlockItems.ExpressionStatement expressionStatement:
                 writer.Write(indent);
                 expressionStatement.Expression?.Dump(writer);
@@ -103,6 +111,20 @@ internal static class BlockItemEx
                 writer.Write($"{indent}return ");
                 returnStatement.Expression?.Dump(writer);
                 writer.WriteLine(";");
+                break;
+            case Ir.BlockItems.ConditionalGotoStatement gotoStatement:
+                writer.Write($"{indent}if /*cgoto*/ (");
+                if (gotoStatement.JumpType == ConditionalJumpType.False)
+                {
+                    writer.Write("!");
+                }
+                gotoStatement.Condition.Dump(writer);
+                writer.Write(") goto ");
+                writer.Write(gotoStatement.Identifier);
+                writer.WriteLine(";");
+                break;
+            case Ir.BlockItems.LabeledNopStatement labelStatement:
+                writer.WriteLine($"{indent}{labelStatement.Label}: /*label nop*/ ");
                 break;
             default:
                 Debug.Assert(false, $"Dumping {blockItem.GetType().Name} not implemented");

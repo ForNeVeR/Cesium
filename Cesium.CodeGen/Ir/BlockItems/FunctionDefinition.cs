@@ -300,7 +300,6 @@ internal sealed class FunctionDefinition : IBlockItem
             FunctionType.ReturnType,
             IsMain
         );
-
         BlockItemEmitting.EmitCode(scope, transformed);
         var isVoid = scope.FunctionInfo.ReturnType.Equals(CTypeSystem.Void);
         if (scope.Method.Body.Instructions.Last().OpCode != OpCodes.Ret)
