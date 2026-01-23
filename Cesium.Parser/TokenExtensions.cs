@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
+using Cesium.Core;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 
@@ -31,105 +32,7 @@ public static class TokenExtensions
                 var i = span.IndexOf('\\'); // SIMD search \. Blazing fast.
                 if (i == -1) break; // break if there is no more \
 
-                int shift = 1; // how many characters we're gonna skip
-
-                switch (span[i + 1])
-                {
-                    // Simple escape sequences
-                    case '"': span[i] = '"'; break;
-                    case '?': span[i] = '?'; break;
-                    case '\'': span[i] = '\''; break;
-                    case '\\': span[i] = '\\'; break;
-                    case 'a': span[i] = '\a'; break;
-                    case 'b': span[i] = '\b'; break;
-                    case 'f': span[i] = '\f'; break;
-                    case 'n': span[i] = '\n'; break;
-                    case 'r': span[i] = '\r'; break;
-                    case 't': span[i] = '\t'; break;
-                    case 'v': span[i] = '\v'; break;
-                    // Numeric escape sequences
-                    case '0': // arbitrary octal value '\nnn'
-                        {
-                            if (span.Length <= i + 2 || span[i + 2] == '\0') // \0 check for 2nd..n iters.
-                            {
-                                span[i] = '\0';
-                                break;
-                            }
-
-                            int number = 0;
-                            var c = span[i + shift + 1]; // get next char after 0
-                            do
-                            {
-                                number = number * 8 + (c - '0');
-                                shift++;
-                                c = span[i + shift + 1];
-                            }
-                            while (char.IsBetween(c, '0', '7'));
-                            span[i] = (char)number;
-                            break;
-                        }
-                    case 'x':
-                    case 'X': // \Xn... arbitrary hexadecimal value
-                        {
-                            if (span.Length <= i + 2 || span[i + 2] == '\0') // \0 check for 2nd..n iters.
-                            {
-                                shift = 0;
-                                break;
-                            }
-
-                            int number = 0;
-                            var c = span[i + 1 + shift]; // shift == 1, so i + 2 points at next char after '\' 'X'
-                            do
-                            {
-                                int digit = char.IsAsciiDigit(c) ? c - '0' : (char.ToUpperInvariant(c) - 'A') + 10;
-                                number = number * 16 + digit;
-                                shift++;
-                                c = span[i + 1 + shift];
-                            }
-                            while (char.IsAsciiDigit(c) || char.IsBetween(c, 'a', 'f') || char.IsBetween(c, 'A', 'F'));
-                            span[i] = (char)number;
-                            break;
-                        }
-                    // Universal character names
-                    case 'u': // \unnnn
-                    case 'U': // \Unnnnnnnn 
-                        {
-                            int counter = span[i + 1] == 'U' ? 8 : 4;
-                            if (span.Length <= i + counter) // no free chars no fun
-                            {
-                                shift = 0;
-                                break;
-                            }
-
-                            int number = 0;
-                            for (int n = 0; n < counter; n++)
-                            {
-                                var c = span[i + 2 + n]; // i + 2 points at next char after '\', 'U',
-                                // in theory, we should throw an error.
-                                if (!(char.IsAsciiDigit(c) || char.IsBetween(c, 'a', 'f') || char.IsBetween(c, 'A', 'F'))) break;
-                                int digit = char.IsAsciiDigit(c) ? c - '0' : (char.ToUpperInvariant(c) - 'A') + 10;
-                                number = number * 16 + digit;
-                                shift++;
-                            }
-                            // char.ConvertFromUtf32(number) allocates string :(
-                            //                create span  from     pointer    to our number  represented as ref byte
-                            var spanCodeSeq = new Span<byte>(Unsafe.AsPointer(ref Unsafe.As<int, byte>(ref number)), 4);
-                            // get utf16 chars from utf32 bytes seq without allocations yeeeah
-                            if (!Encoding.UTF32.TryGetChars(spanCodeSeq, span.Slice(i), out int written)) throw new Exception("Bad UTF32 sequence!");
-                            // if we writted one char, so just do nothing
-                            // if we writted two chars, so just skip one char
-                            i += written - 1;
-                            shift -= written - 1;
-                            break;
-                        }
-                    default:
-                        // from orig method:
-                        // TODO[#295]: maybe smarter handling of this edge case with errors/warnings
-                        // builder.Append('\\');
-                        // --i; // don't skip next
-                        // mmm, idk when that might happen
-                        break;
-                }
+                int shift = ParseCharacter(span, i);
 
                 if (shift == 0)
                 {
@@ -165,5 +68,125 @@ public static class TokenExtensions
 
             return result;
         }
+    }
+
+    public static unsafe char UnescapeCharacter(this IToken<CTokenType> token)
+    {
+        var text = token.Text;
+        if (text.Length == 3 && text[0] == '\'' && text[2] == '\'')
+        {
+            return text[1]; // simple char 'a' -> a
+        }
+
+        fixed (char* p = text)
+        {
+            var span = new Span<char>(p, text.Length + 1); // create a span for string. Also +1 for \0
+            var shift = ParseCharacter(span, 1);
+            return span[0];
+        }
+    }
+
+    public unsafe static int ParseCharacter(Span<char> span, int i)
+    {
+        int shift = 1; // how many characters we're gonna skip
+        switch (span[i + 1])
+        {
+            // Simple escape sequences
+            case '"': span[i] = '"'; break;
+            case '?': span[i] = '?'; break;
+            case '\'': span[i] = '\''; break;
+            case '\\': span[i] = '\\'; break;
+            case 'a': span[i] = '\a'; break;
+            case 'b': span[i] = '\b'; break;
+            case 'f': span[i] = '\f'; break;
+            case 'n': span[i] = '\n'; break;
+            case 'r': span[i] = '\r'; break;
+            case 't': span[i] = '\t'; break;
+            case 'v': span[i] = '\v'; break;
+            // Numeric escape sequences
+            case '0': // arbitrary octal value '\nnn'
+                {
+                    if (span.Length <= i + 2 || span[i + 2] == '\0') // \0 check for 2nd..n iters.
+                    {
+                        span[i] = '\0';
+                        break;
+                    }
+
+                    int number = 0;
+                    var c = span[i + shift + 1]; // get next char after 0
+                    do
+                    {
+                        number = number * 8 + (c - '0');
+                        shift++;
+                        c = span[i + shift + 1];
+                    }
+                    while (char.IsBetween(c, '0', '7'));
+                    span[i] = (char)number;
+                    break;
+                }
+            case 'x':
+            case 'X': // \Xn... arbitrary hexadecimal value
+                {
+                    if (span.Length <= i + 2 || span[i + 2] == '\0') // \0 check for 2nd..n iters.
+                    {
+                        shift = 0;
+                        break;
+                    }
+
+                    int number = 0;
+                    var c = span[i + 1 + shift]; // shift == 1, so i + 2 points at next char after '\' 'X'
+                    do
+                    {
+                        int digit = char.IsAsciiDigit(c) ? c - '0' : (char.ToUpperInvariant(c) - 'A') + 10;
+                        number = number * 16 + digit;
+                        shift++;
+                        c = span[i + 1 + shift];
+                    }
+                    while (char.IsAsciiDigit(c) || char.IsBetween(c, 'a', 'f') || char.IsBetween(c, 'A', 'F'));
+                    span[i] = (char)number;
+                    break;
+                }
+            // Universal character names
+            case 'u': // \unnnn
+            case 'U': // \Unnnnnnnn 
+                {
+                    int counter = span[i + 1] == 'U' ? 8 : 4;
+                    if (span.Length <= i + counter) // no free chars no fun
+                    {
+                        shift = 0;
+                        break;
+                    }
+
+                    int number = 0;
+                    for (int n = 0; n < counter; n++)
+                    {
+                        var c = span[i + 2 + n]; // i + 2 points at next char after '\', 'U',
+                                                 // in theory, we should throw an error.
+                        if (!(char.IsAsciiDigit(c) || char.IsBetween(c, 'a', 'f') || char.IsBetween(c, 'A', 'F'))) break;
+                        int digit = char.IsAsciiDigit(c) ? c - '0' : (char.ToUpperInvariant(c) - 'A') + 10;
+                        number = number * 16 + digit;
+                        shift++;
+                    }
+                    // char.ConvertFromUtf32(number) allocates string :(
+                    //                create span  from     pointer    to our number  represented as ref byte
+                    var spanCodeSeq = new Span<byte>(Unsafe.AsPointer(ref Unsafe.As<int, byte>(ref number)), 4);
+                    // get utf16 chars from utf32 bytes seq without allocations yeeeah
+                    if (!Encoding.UTF32.TryGetChars(spanCodeSeq, span.Slice(i), out int written)) throw new Exception("Bad UTF32 sequence!");
+                    // if we writted one char, so just do nothing
+                    // if we writted two chars, so just skip one char
+                    i += written - 1;
+                    shift -= written - 1;
+                    break;
+                }
+            default:
+                // from orig method:
+                // TODO[#295]: maybe smarter handling of this edge case with errors/warnings
+                // builder.Append('\\');
+                // --i; // don't skip next
+                // mmm, idk when that might happen
+                break;
+        }
+
+        return shift;
     }
 }

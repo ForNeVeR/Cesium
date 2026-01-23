@@ -90,6 +90,9 @@ int main()
 {
     char x = 'c';
     char y = '\t';
+    char zero = '\0';
+    char octal_two = '\04';
+    char octal_three = '\040';
 }");
 
     [Fact]
