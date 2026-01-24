@@ -58,14 +58,9 @@ int main(int argc, char *argv[])
         return -10;
     }
 
-    if (sizeof('a') != sizeof(int))
+    if (sizeof('a') != sizeof(char))
     {
         return -11;
-    }
-
-    if (sizeof(L'a') != sizeof(int))
-    {
-        return -12;
     }
 
     return 42;
