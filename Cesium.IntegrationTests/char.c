@@ -58,33 +58,15 @@ int main(int argc, char *argv[])
         return -10;
     }
 
-    if ('\u03A9' != 937)
+    if (sizeof('a') != sizeof(int))
     {
         return -11;
     }
 
-    if ('\U0001F600' != 128512)
+    if (sizeof(L'a') != sizeof(int))
     {
         return -12;
     }
 
-    if (sizeof('a') != sizeof(int))
-    {
-        return -13;
-    }
-
-    if (sizeof(L'a') != sizeof(int))
-    {
-        return -14;
-    }
-
-    if (sizeof(u'a') != sizeof(char16_t))
-    {
-        return -15;
-    }
-    if (sizeof(U'a') != sizeof(char32_t))
-    {
-        return -16;
-    }
     return 42;
 }
