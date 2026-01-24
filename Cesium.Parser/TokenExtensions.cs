@@ -80,9 +80,9 @@ public static class TokenExtensions
 
         fixed (char* p = text)
         {
-            var span = new Span<char>(p, text.Length + 1); // create a span for string. Also +1 for \0
-            var shift = ParseCharacter(span, 1);
-            return span[1];
+            var span = new Span<char>(p + 1, text.Length - 2); // create a span for string. Also +1 for \0
+            var shift = ParseCharacter(span, 0);
+            return span[0];
         }
     }
 
