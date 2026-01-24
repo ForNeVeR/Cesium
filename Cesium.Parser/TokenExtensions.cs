@@ -118,6 +118,10 @@ public static class TokenExtensions
                     {
                         number = number * 8 + (c - '0');
                         shift++;
+                        if (span.Length <= i + shift + 1)
+                        {
+                            break;
+                        }
                         c = span[i + shift + 1];
                     }
                     while (char.IsBetween(c, '0', '7'));
@@ -140,6 +144,10 @@ public static class TokenExtensions
                         int digit = char.IsAsciiDigit(c) ? c - '0' : (char.ToUpperInvariant(c) - 'A') + 10;
                         number = number * 16 + digit;
                         shift++;
+                        if (span.Length <= i + shift + 1)
+                        {
+                            break;
+                        }
                         c = span[i + 1 + shift];
                     }
                     while (char.IsAsciiDigit(c) || char.IsBetween(c, 'a', 'f') || char.IsBetween(c, 'A', 'F'));

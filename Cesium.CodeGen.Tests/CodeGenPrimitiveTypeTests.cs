@@ -50,4 +50,15 @@ public class CodeGenPrimitiveTypeTests : CodeGenTestBase
     int a = { };
     return 0;
  }");
+
+    [Fact]
+    public Task СharLiterals() => DoTest(@"int main() {
+    char a = 'a';
+    char b = '\0';
+    char c = '\01';
+    char d = '\040';
+    char x = '\t';
+    char y = '\x22';
+    return 0;
+ }");
 }
