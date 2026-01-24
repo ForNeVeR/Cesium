@@ -21,6 +21,7 @@ internal sealed class SizeOfOperatorExpression : IExpression
     {
         InPlaceArrayType arrayType => arrayType.GetSizeInBytesExpression(scope.ArchitectureSet),
         StructType structType => this,
+        ConstType constType => new SizeOfOperatorExpression(this.Type.EraseConstType()).Lower(scope),
         _ => this
     };
 
@@ -32,6 +33,12 @@ internal sealed class SizeOfOperatorExpression : IExpression
         if (Type is IGeneratedType generatedType && !generatedType.IsAlreadyEmitted(context))
         {
             generatedType.EmitType(context);
+        }
+
+        if (Type is PrimitiveType { Kind: PrimitiveTypeKind.Char })
+        {
+            scope.SizeOf(CTypeSystem.Int.Resolve(context));
+            return;
         }
 
         var type = Type.Resolve(context);
