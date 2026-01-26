@@ -14,6 +14,7 @@ int testPrimitiveTypeSizeof() {
         return 2;
     }
 
+    // 6.4.4.4 Character constants paragraph: Semantics 11
     if (sizeof('a') != sizeof(int)) {
         return 3;
     }
