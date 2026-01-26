@@ -24,7 +24,7 @@ internal sealed class CharConstant : IConstant
         instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 
-    public IType GetConstantType() => CTypeSystem.Char;
+    public IType GetConstantType() => CTypeSystem.Int;
 
     public override string ToString() => $"char: {Value}";
 }
