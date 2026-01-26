@@ -20,8 +20,8 @@ Module: Primary
       IL_001d: mul
       IL_001e: add
       IL_001f: ldind.i1
-      IL_0020: ldc.i4.s 68
-      IL_0022: conv.u1
+      IL_0020: conv.i4
+      IL_0021: ldc.i4.s 68
       IL_0023: ceq
       IL_0025: ldc.i4.0
       IL_0026: ceq

@@ -21,7 +21,6 @@ internal sealed class CharConstant : IConstant
     {
         var instructions = scope.Method.Body.Instructions;
         instructions.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)Value));
-        instructions.Add(Instruction.Create(OpCodes.Conv_U1));
     }
 
     public IType GetConstantType() => CTypeSystem.Int;
