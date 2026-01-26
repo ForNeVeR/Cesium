@@ -31,6 +31,13 @@ int main() {
 }");
 
     [Fact]
+    public Task CharSizeof() => DoTest(@"
+int main() {
+    int a = 1;
+    return sizeof('a');
+}");
+
+    [Fact]
     public Task GlobalIdentifierSizeof() => DoTest(@"
 int a = 1;
 int main() {
