@@ -7,55 +7,64 @@
 int testPrimitiveTypeSizeof() {
     int a = sizeof(int);
     if (a != 4) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    if (sizeof(char) != 1) {
+        return 2;
+    }
+
+    // 6.4.4.4 Character constants paragraph: Semantics 11
+    if (sizeof('a') != sizeof(int)) {
+        return 3;
+    }
+
+    return 0;
 }
 
 int testNamedTypeSizeof() {
     int a = 0;
     int b = sizeof(a);
     if (b != 4) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int testCharSizeof() {
     if (sizeof(char) != 1) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int testArraySizeof() {
     int x[] = { 1,2,3,4,5 };
     if (sizeof(x) != 20) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int y[] = { 1,2,3,4,5 };
 int testGlobalArraySizeof() {
     if (sizeof(y) != 20) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int testArrayLength() {
     int numElements = sizeof(y) / sizeof(int);
     if (numElements != 5) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int testLocalEnumSizeOf() {
@@ -64,9 +73,9 @@ int testLocalEnumSizeOf() {
     };
 
     if (sizeof(enum fooLocal) != 4) {
-        return 0;
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 enum foo {
@@ -74,9 +83,9 @@ enum foo {
 };
 int testGlobalEnumSizeOf() {
     if (sizeof(enum foo) != 4) {
-        return 0;
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int testStructSizeof() {
@@ -88,14 +97,17 @@ int testStructSizeof() {
     int structSize = sizeof(struct bar);
 
     if (structSize != 8) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int testDirectArrSizeof() {
-    return sizeof(int[5]) == (sizeof(int) * 5);
+    if (sizeof(int[5]) != (sizeof(int) * 5)) {
+        return 1;
+    }
+    return 0;
 }
 
 struct foobar {
@@ -106,55 +118,55 @@ int testGlobalStructSizeof() {
     int structSize = sizeof(struct foobar);
 
     if (structSize != 8) {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int main(int argc, char* argv[])
 {
-    if (!testPrimitiveTypeSizeof()) {
+    if (testPrimitiveTypeSizeof()) {
         return -1;
     }
 
-    if (!testNamedTypeSizeof()) {
+    if (testNamedTypeSizeof()) {
         return -2;
     }
 
-    if (!testGlobalStructSizeof()) {
+    if (testGlobalStructSizeof()) {
         return -3;
     }
 
-    if (!testCharSizeof()) {
+    if (testCharSizeof()) {
         return -4;
     }
 
-    if (!testArraySizeof()) {
+    if (testArraySizeof()) {
         return -5;
     }
 
-    if (!testGlobalArraySizeof()) {
+    if (testGlobalArraySizeof()) {
         return -6;
     }
 
-    if (!testArrayLength()) {
+    if (testArrayLength()) {
         return -7;
     }
 
-    if (!testLocalEnumSizeOf()) {
+    if (testLocalEnumSizeOf()) {
         return -8;
     }
 
-    if (!testGlobalEnumSizeOf()) {
+    if (testGlobalEnumSizeOf()) {
         return -9;
     }
 
-    if (!testStructSizeof()) {
+    if (testStructSizeof()) {
         return -10;
     }
 
-    if (!testDirectArrSizeof()) {
+    if (testDirectArrSizeof()) {
         return -11;
     }
 
