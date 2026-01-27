@@ -38,6 +38,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
             .SelectMany(static path =>
             {
+                // Specify rules for .nonportable tests
                 if (path.Value.EndsWith(".nonportable.c"))
                 {
                     return
@@ -45,6 +46,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                         [TargetArch.Dynamic, path.Value]
                     ];
                 }
+                // Specify supported configuration for Windows
                 else if (OperatingSystem.IsWindows())
                 {
                     return
@@ -55,6 +57,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                         [TargetArch.Dynamic, path.Value]
                     ];
                 }
+                // Specify supported configuration for Linux/Mac
                 else
                 {
                     return new object[][]
@@ -64,6 +67,26 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                         [TargetArch.Dynamic, path.Value]
                     };
                 }
+            })
+            .Where(items =>
+            {
+                // Explicitly mark that specific configuration is broken and thus excluded.
+                // Previous rules specify what is supported by design.
+                var arch = (TargetArch)items[0];
+                var path = (string)items[1];
+                if (path.EndsWith(".ignore.wide.c") && arch == TargetArch.Wide)
+                {
+                    return false;
+                }
+                if (path.EndsWith(".ignore.32.c") && arch == TargetArch.Bit32)
+                {
+                    return false;
+                }
+                if (path.EndsWith(".ignore.64.c") && arch == TargetArch.Bit64)
+                {
+                    return false;
+                }
+                return true;
             });
     }
 
