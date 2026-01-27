@@ -36,7 +36,35 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         return cFiles
             .Where(IsValidForCommonTestRun)
             .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
-            .SelectMany(path => new[] { new object[] { TargetArch.Bit32, path.Value }, [TargetArch.Bit64, path.Value], [TargetArch.Wide, path.Value], [TargetArch.Dynamic, path.Value] });
+            .SelectMany(static path =>
+            {
+                if (path.Value.EndsWith(".nonportable.c"))
+                {
+                    return
+                    [
+                        [TargetArch.Dynamic, path.Value]
+                    ];
+                }
+                else if (OperatingSystem.IsWindows())
+                {
+                    return
+                    [
+                        [TargetArch.Bit32, path.Value],
+                        [TargetArch.Bit64, path.Value],
+                        [TargetArch.Wide, path.Value],
+                        [TargetArch.Dynamic, path.Value]
+                    ];
+                }
+                else
+                {
+                    return new object[][]
+                    {
+                        [TargetArch.Bit64, path.Value],
+                        [TargetArch.Wide, path.Value],
+                        [TargetArch.Dynamic, path.Value]
+                    };
+                }
+            });
     }
 
     private static bool IsValidForCommonTestRun(AbsolutePath file)
