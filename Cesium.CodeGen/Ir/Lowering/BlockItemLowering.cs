@@ -215,97 +215,113 @@ internal static class BlockItemLowering
                         // TODO[#91]: A place to register whether {type} is const or not.
 
                         if (identifier == null)
-                            throw new CompilationException("An anonymous local declaration isn't supported.");
-
-                        if (cliImportMemberName != null)
-                            throw new CompilationException(
-                                $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
-
-                        type = scope.ResolveType(type);
-                        if (scope is BlockScope { Parent: FunctionScope } && scope.GetParameterInfo(identifier) is not null)
                         {
-                            throw new CompilationException($"Variable {identifier} is both available as a local and as a function parameter.");
-                        }
-
-                        scope.AddVariable(storageClass, identifier, type, null);
-                        if (scope is GlobalConstructorScope)
-                        {
-                            newItems.Add(new GlobalVariableDefinition(storageClass, type, identifier));
-                        }
-
-                        var initializerExpression = initializer;
-                        if (initializerExpression != null)
-                        {
-                            if (initializerExpression is UnaryOperatorExpression { Operator: UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
+                            if (type is EnumType enumType)
                             {
-                                var tempVariableName = scope.GetTmpVariable();
-                                var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
-                                if (type is PointerType pointerType)
+                                var resolvedType = scope.ResolveType(type);
+                                var enumDefinitions = TranslationUnitEx.FindEnumConstants(enumType, scope);
+                                foreach (var ed in enumDefinitions)
                                 {
-                                    type = pointerType.Base;
+                                    scope.AddVariable(StorageClass.Static, ed.Identifier, resolvedType, ed.Value);
                                 }
-
-                                var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
-                                newItems.Add(Lower(scope, tempVariable));
-                                initializerExpression = new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier);
                             }
-
-                            var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
-                            if (CTypeSystem.IsConversionAvailable(initializerType, type)
-                                && CTypeSystem.IsConversionRequired(initializerType, type))
+                            else
                             {
-                                initializerExpression = new TypeCastExpression(type, initializerExpression);
+                                throw new CompilationException("An anonymous local declaration isn't supported.");
                             }
                         }
+                        else
+                        { 
+                            if (cliImportMemberName != null)
+                                throw new CompilationException(
+                                    $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
 
-                        IExpression? primaryInitializerExpression = null;
-                        if (type is InPlaceArrayType i)
-                        {
-                            primaryInitializerExpression = 
-                                new AssignmentExpression(
-                                    new IdentifierExpression(identifier),
-                                    AssignmentOperator.Assign,
-                                    new LocalAllocationExpression(i),
-                                    true
-                            );
-                            newItems.Add(Lower(scope, new ExpressionStatement(primaryInitializerExpression)));
+                            type = scope.ResolveType(type);
+                            if (scope is BlockScope { Parent: FunctionScope } && scope.GetParameterInfo(identifier) is not null)
+                            {
+                                throw new CompilationException($"Variable {identifier} is both available as a local and as a function parameter.");
+                            }
+
+                            scope.AddVariable(storageClass, identifier, type, null);
+                            if (scope is GlobalConstructorScope)
+                            {
+                                newItems.Add(new GlobalVariableDefinition(storageClass, type, identifier));
+                            }
+
+                            var initializerExpression = initializer;
                             if (initializerExpression != null)
                             {
-                                // String array.
-                                if (i.Base.EraseConstType() is PointerType pointerType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression)
+                                if (initializerExpression is UnaryOperatorExpression { Operator: UnaryOperator.AddressOf, Target: CompoundObjectInitializationExpression compoundInitializationExpression } unaryOperatorExpression)
                                 {
-                                    if (pointerType.Base.EraseConstType() is PrimitiveType { Kind: PrimitiveTypeKind.Char })
+                                    var tempVariableName = scope.GetTmpVariable();
+                                    var tempVariableIdentifier = new IdentifierExpression(tempVariableName);
+                                    if (type is PointerType pointerType)
                                     {
-                                        int index = 0;
-                                        foreach (var arrayItem in compoundInitializationExpression.ArrayInitializer.Initializers)
+                                        type = pointerType.Base;
+                                    }
+
+                                    var tempVariable = new DeclarationBlockItem(new(storageClass, new(type, tempVariableName, null), compoundInitializationExpression));
+                                    newItems.Add(Lower(scope, tempVariable));
+                                    initializerExpression = new UnaryOperatorExpression(UnaryOperator.AddressOf, tempVariableIdentifier);
+                                }
+
+                                var initializerType = initializerExpression.Lower(scope).GetExpressionType(scope);
+                                if (CTypeSystem.IsConversionAvailable(initializerType, type)
+                                    && CTypeSystem.IsConversionRequired(initializerType, type))
+                                {
+                                    initializerExpression = new TypeCastExpression(type, initializerExpression);
+                                }
+                            }
+
+                            IExpression? primaryInitializerExpression = null;
+                            if (type is InPlaceArrayType i)
+                            {
+                                primaryInitializerExpression = 
+                                    new AssignmentExpression(
+                                        new IdentifierExpression(identifier),
+                                        AssignmentOperator.Assign,
+                                        new LocalAllocationExpression(i),
+                                        true
+                                );
+                                newItems.Add(Lower(scope, new ExpressionStatement(primaryInitializerExpression)));
+                                if (initializerExpression != null)
+                                {
+                                    // String array.
+                                    if (i.Base.EraseConstType() is PointerType pointerType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression)
+                                    {
+                                        if (pointerType.Base.EraseConstType() is PrimitiveType { Kind: PrimitiveTypeKind.Char })
                                         {
-                                            if (arrayItem is null)
+                                            int index = 0;
+                                            foreach (var arrayItem in compoundInitializationExpression.ArrayInitializer.Initializers)
                                             {
+                                                if (arrayItem is null)
+                                                {
+                                                    index++;
+                                                    continue;
+                                                }
+
+                                                var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)));
+                                                var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem, true);
+                                                newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
                                                 index++;
-                                                continue;
                                             }
 
-                                            var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)));
-                                            var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem, true);
-                                            newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
-                                            index++;
+                                            initializerExpression = null;
                                         }
-
-                                        initializerExpression = null;
                                     }
                                 }
                             }
-                        }
 
-                        if (initializerExpression is not null)
-                        {
-                            initializerExpression = new AssignmentExpression(
-                                new IdentifierExpression(identifier),
-                                AssignmentOperator.Assign,
-                                initializerExpression,
-                                true);
+                            if (initializerExpression is not null)
+                            {
+                                initializerExpression = new AssignmentExpression(
+                                    new IdentifierExpression(identifier),
+                                    AssignmentOperator.Assign,
+                                    initializerExpression,
+                                    true);
 
-                            newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
+                                newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
+                            }
                         }
                     }
 
