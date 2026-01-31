@@ -142,7 +142,7 @@ internal static class TranslationUnitEx
         }
     }
 
-    private static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType, IDeclarationScope scope)
+    public static IEnumerable<EnumConstantDefinition> FindEnumConstants(EnumType enumType, IDeclarationScope scope)
     {
         long currentValue = -1;
         foreach (var enumeratorDeclaration in enumType.Members)

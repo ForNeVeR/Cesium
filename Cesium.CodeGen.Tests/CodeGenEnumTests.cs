@@ -133,4 +133,13 @@ void test()
 {
     int x = {Green};
 }");
+
+    [Fact]
+    public Task UnnamedLocalEnum() => DoTest(@"
+void test()
+{
+    enum { Red, Green, Blue };
+
+    int x = {Green};
+}");
 }
