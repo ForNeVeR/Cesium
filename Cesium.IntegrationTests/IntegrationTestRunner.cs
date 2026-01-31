@@ -36,7 +36,58 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         return cFiles
             .Where(IsValidForCommonTestRun)
             .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
-            .Select(path => new object[] { path.Value });
+            .SelectMany(static path =>
+            {
+                // Specify rules for .nonportable tests
+                if (path.Value.EndsWith(".nonportable.c"))
+                {
+                    return
+                    [
+                        [TargetArch.Dynamic, path.Value]
+                    ];
+                }
+                // Specify supported configuration for Windows
+                else if (OperatingSystem.IsWindows())
+                {
+                    return
+                    [
+                        [TargetArch.Bit32, path.Value],
+                        [TargetArch.Bit64, path.Value],
+                        [TargetArch.Wide, path.Value],
+                        [TargetArch.Dynamic, path.Value]
+                    ];
+                }
+                // Specify supported configuration for Linux/Mac
+                else
+                {
+                    return new object[][]
+                    {
+                        [TargetArch.Bit64, path.Value],
+                        [TargetArch.Wide, path.Value],
+                        [TargetArch.Dynamic, path.Value]
+                    };
+                }
+            })
+            .Where(items =>
+            {
+                // Explicitly mark that specific configuration is broken and thus excluded.
+                // Previous rules specify what is supported by design.
+                var arch = (TargetArch)items[0];
+                var path = (string)items[1];
+                if (path.EndsWith(".ignore.wide.c") && arch == TargetArch.Wide)
+                {
+                    return false;
+                }
+                if (path.EndsWith(".ignore.32.c") && arch == TargetArch.Bit32)
+                {
+                    return false;
+                }
+                if (path.EndsWith(".ignore.64.c") && arch == TargetArch.Bit64)
+                {
+                    return false;
+                }
+                return true;
+            });
     }
 
     private static bool IsValidForCommonTestRun(AbsolutePath file)
@@ -53,25 +104,33 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         Net
     }
 
+    public enum TargetArch
+    {
+        Bit32,
+        Bit64,
+        Wide,
+        Dynamic
+    }
+
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public async Task TestNetFramework(string relativeSourcePath)
+    public async Task TestNetFramework(TargetArch arch, string relativeSourcePath)
     {
         if (OperatingSystem.IsWindows())
         {
-            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, new LocalPath(relativeSourcePath)));
+            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, arch, new LocalPath(relativeSourcePath)));
         }
     }
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public Task TestNet(string relativeSourcePath) =>
-        _context.WrapTestBody(() => DoTest(TargetFramework.Net, new LocalPath(relativeSourcePath)));
+    public Task TestNet(TargetArch arch, string relativeSourcePath) =>
+        _context.WrapTestBody(() => DoTest(TargetFramework.Net, arch, new LocalPath(relativeSourcePath)));
 
     [Fact]
     public Task MultiFileApplicationCompiles() =>
         _context.WrapTestBody(() => DoTest(
-            TargetFramework.Net, new("multi-file/program.c"), new("multi-file/function.c")));
+            TargetFramework.Net, TargetArch.Dynamic, new("multi-file/program.c"), new("multi-file/function.c")));
 
     [Fact]
     public Task CompilerAcceptsAnObjFileAsInput() =>
@@ -98,6 +157,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                     objDir,
                     outRoot,
                     TargetFramework.Net,
+                    TargetArch.Dynamic,
                     [functionObject, programObject],
                     null);
 
@@ -109,7 +169,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             }
         });
 
-    private async Task DoTest(TargetFramework targetFramework, params LocalPath[] relativeSourcePaths)
+    private async Task DoTest(TargetFramework targetFramework, TargetArch arch, params LocalPath[] relativeSourcePaths)
     {
         var outRoot = Temporary.CreateTempFolder();
         try
@@ -136,7 +196,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 .ToList();
 
             await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles, inputContent);
-            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, sourceFiles, inputContent);
+            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, arch, sourceFiles, inputContent);
         }
         finally
         {
@@ -163,6 +223,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         AbsolutePath objDir,
         AbsolutePath outRoot,
         TargetFramework targetFramework,
+        TargetArch arch,
         IList<AbsolutePath> inputFiles,
         string? inputContent)
     {
@@ -170,7 +231,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             binDir,
             objDir,
             inputFiles,
-            targetFramework);
+            targetFramework,
+            arch);
         var managedResult = await (targetFramework switch
         {
             TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable, inputContent),
@@ -253,7 +315,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         AbsolutePath binDir,
         AbsolutePath objDir,
         IList<AbsolutePath> inputFiles,
-        TargetFramework targetFramework)
+        TargetFramework targetFramework,
+        TargetArch arch)
     {
         var paths = "[" + string.Join(", ", inputFiles.Select(x => $"\"{x.Value}\"")) + "]";
         _output.WriteLine($"Compiling input files {paths} with Cesium.");
@@ -269,6 +332,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             "--nologo",
             ..inputFiles.Select(x => x.Value),
             "--out", executableFilePath.Value,
+            "--arch", arch.ToString(),
             "-D__TEST_DEFINE",
             "--framework", targetFramework.ToString()
         ]);
