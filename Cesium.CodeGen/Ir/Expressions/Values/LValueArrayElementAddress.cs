@@ -10,13 +10,13 @@ using Mono.Cecil.Cil;
 
 namespace Cesium.CodeGen.Ir.Expressions.Values;
 
-internal sealed class LValueArrayElement : ILValue
+internal sealed class LValueArrayElementAddress : ILValue
 {
     internal IValue Array { get; }
 
     internal IExpression Index { get; }
 
-    public LValueArrayElement(IValue array, IExpression index)
+    public LValueArrayElementAddress(IValue array, IExpression index)
     {
         Array = array;
         Index = index;
@@ -25,9 +25,6 @@ internal sealed class LValueArrayElement : ILValue
     public void EmitGetValue(IEmitScope scope)
     {
         EmitPointerMoveToElement(scope);
-
-        var (loadOp, _) = GetElementOpcodes();
-        scope.Method.Body.GetILProcessor().Emit(loadOp);
     }
 
     public void EmitGetAddress(IEmitScope scope)
@@ -37,25 +34,7 @@ internal sealed class LValueArrayElement : ILValue
 
     public void EmitSetValue(IEmitScope scope, IExpression value)
     {
-        EmitPointerMoveToElement(scope);
-        value.EmitTo(scope);
-        var (_, maybeStore) = GetElementOpcodes();
-        if (maybeStore is not {} storeOp)
-            throw new CompilationException($"Type {Array} doesn't support the array store operation.");
-
-        scope.Method.Body.GetILProcessor().Emit(storeOp);
-    }
-
-    private (OpCode, OpCode?) GetElementOpcodes()
-    {
-        var elementType = GetValueType().EraseConstType();
-        return elementType switch
-        {
-            PrimitiveType primitiveType => PrimitiveTypeInfo.Opcodes[primitiveType.Kind],
-            PointerType => (OpCodes.Ldind_I, OpCodes.Stind_I),
-            InPlaceArrayType => (OpCodes.Ldind_I, OpCodes.Stind_I),
-            _ => throw new WipException(256, $"Unsupported type for array access: {elementType}.")
-        };
+        throw new CompilationException($"The array adressingdoesn't support the store operation.");
     }
 
     public IType GetValueType()
@@ -72,7 +51,7 @@ internal sealed class LValueArrayElement : ILValue
     private void EmitPointerMoveToElement(IEmitScope scope)
     {
         // Nested array addressing mode:
-        if (Array is LValueArrayElement baseArray)
+        if (Array is LValueArrayElementAddress baseArray)
         {
             baseArray.EmitPointerMoveToElement(scope);
         }

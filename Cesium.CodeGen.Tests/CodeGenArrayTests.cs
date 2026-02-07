@@ -150,6 +150,16 @@ int main() {
  }");
 
     [Fact]
+    public Task MultidimensionalArrayInitialization() => DoTest(@"int main() {
+    int a[][4] = {
+        { 1, 2, 3, 4, },
+        { 4, 5, },
+    };
+    a[1][5] = 2;
+    return a[1][5];
+ }");
+
+    [Fact]
     public Task ArrayParameterPassing() => DoTest(@"
 int foo(int ints[]) { return ints[0]; }");
 

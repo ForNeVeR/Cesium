@@ -7,10 +7,9 @@ using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.ControlFlow;
 using Cesium.CodeGen.Ir.Declarations;
-using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using AmbiguousBlockItem = Cesium.Ast.AmbiguousBlockItem;
 using BreakStatement = Cesium.Ast.BreakStatement;
 using CaseStatement = Cesium.Ast.CaseStatement;
@@ -165,7 +164,7 @@ internal static class BlockItemEx
                 valuePreservationExpression.Expression.Dump(writer);
                 break;
             case Ir.Expressions.LocalAllocationExpression localAllocationExpression:
-                writer.Write($"{localAllocationExpression.ArrayType.Base.ToString()}[{localAllocationExpression.ArrayType.Size}]");
+                localAllocationExpression.ArrayType.Dump(writer);
                 break;
             case Ir.Expressions.GetAddressValueExpression getAddressValueExpression:
                 writer.Write($"&");
@@ -215,6 +214,7 @@ internal static class BlockItemEx
                 writer.Write("}");
                 break;
             case Ir.Expressions.CompoundObjectFieldInitializer compoundObjectFieldInitializer:
+                writer.Write("{");
                 foreach (var d in compoundObjectFieldInitializer.Designation.Designators)
                 {
                     d.Dump(writer);
@@ -251,6 +251,15 @@ internal static class BlockItemEx
                 }
                 writer.Write($")");
                 break;
+            case Ir.Expressions.CompoundInitializationFunctionCallExpression compoundRuntimeInitializationExpression:
+                writer.Write($"InitializeCompound(");
+                compoundRuntimeInitializationExpression.Source.Dump(writer);
+                writer.Write(", ");
+                compoundRuntimeInitializationExpression.Target.Dump(writer);
+                writer.Write(", ");
+                compoundRuntimeInitializationExpression.Size.Dump(writer);
+                writer.Write($")");
+                break;
             case Ir.Expressions.CommaExpression commaExpression:
                 writer.Write("(");
                 writer.Write(commaExpression.Left.ToString());
@@ -268,9 +277,31 @@ internal static class BlockItemEx
             case Ir.Expressions.InstanceForOffsetOfExpression:
                 // Do nothing for this expression/value
                 break;
+            case Ir.Expressions.SubscriptingExpression subscriptingExpression:
+                subscriptingExpression.Expression.Dump(writer);
+                writer.Write("[");
+                subscriptingExpression.Index.Dump(writer);
+                writer.Write("]");
+                break;
             default:
                 Debug.Assert(false, $"Dumping {expression.GetType().Name} not implemented");
                 break;
+        }
+    }
+    public static void Dump(this Ir.Types.IType type, TextWriter writer)
+    {
+        if (type is InPlaceArrayType inPlaceArrayType)
+        {
+            inPlaceArrayType.Base.Dump(writer);
+            writer.Write($"[{inPlaceArrayType.Size}]");
+        }
+        else if (type is PrimitiveType primitiveType)
+        {
+            writer.Write(primitiveType.Kind.ToString());
+        }
+        else 
+        {
+            writer.Write(type.ToString());
         }
     }
     public static void Dump(this Ir.Expressions.Values.IValue expression, TextWriter writer)
@@ -292,6 +323,13 @@ internal static class BlockItemEx
                 localArrayVariable.Array.Dump(writer);
                 writer.Write("[");
                 localArrayVariable.Index.Dump(writer);
+                writer.Write("]");
+                break;
+            case Ir.Expressions.Values.LValueArrayElementAddress localArrayAddressVariable:
+                writer.Write("&");
+                localArrayAddressVariable.Array.Dump(writer);
+                writer.Write("[");
+                localArrayAddressVariable.Index.Dump(writer);
                 writer.Write("]");
                 break;
             case Ir.Expressions.Values.LValueGlobalVariable localGlobalVariable:
