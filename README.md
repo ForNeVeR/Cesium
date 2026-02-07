@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+SPDX-FileCopyrightText: 2022-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 
 SPDX-License-Identifier: MIT
 -->
@@ -117,11 +117,11 @@ $ Cesium.Compiler <list of the input files> --out <path to the output assembly> 
 
 For run from sources, use `dotnet run --project Cesium.Compiler` in the repository root directory, followed by `--` and the same arguments.
 
-For example, this will generate an assembly executable by .NET 6, .NET Framework, or Mono:
+For example, this will generate an assembly executable by .NET 6 or later, .NET Framework, or Mono:
 
 ```console
 $ dotnet run --project Cesium.Compiler -- Cesium.Samples/minimal.c --out out.exe
-$ dotnet ./out.exe # run with .NET 6
+$ dotnet ./out.exe # run with .NET 6 or later
 $ ./out.exe # only on Windows, run with .NET Framework
 $ mono ./out.exe # run with Mono
 ```
@@ -133,7 +133,7 @@ As inputs, Cesium accepts its own internal `.obj` file format produced by the `-
 - `--framework <framework>`: specifies the target framework, defaults to `Net`
   - `NetFramework` for .NET Framework
   - `NetStandard` for .NET Standard
-  - `Net` for .NET 5+
+  - `Net` for .NET 6 or later
 - `--arch <architecture-set>`: specifies the [target architecture set][docs.architecture-sets], defaults to `Dynamic`. Possible values are:
   - `Dynamic` (machine-independent, calculates pointer size and structure layout in runtime),
   - `Bit32` (for 32-bit architectures),
