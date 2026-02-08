@@ -21,7 +21,7 @@ using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
 
-public class AssemblyContext
+public class AssemblyContext : IDisposable
 {
     internal AssemblyDefinition Assembly { get; }
     public TargetArchitectureSet ArchitectureSet { get; }
@@ -365,6 +365,18 @@ public class AssemblyContext
     internal TypeReference? GetTypeReference(IGeneratedType type)
     {
         return _generatedTypes.GetValueOrDefault(type);
+    }
+
+    public void Dispose()
+    {
+        Assembly.Dispose();
+        MscorlibAssembly.Dispose();
+        CesiumRuntimeAssembly.Dispose();
+        Module.Dispose();
+        foreach (AssemblyDefinition importedAssembly in ImportAssemblies)
+        {
+            importedAssembly.Dispose();
+        }
     }
 
     private struct ByteArrayWrapper

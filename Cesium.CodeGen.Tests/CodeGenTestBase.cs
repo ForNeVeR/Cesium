@@ -50,7 +50,7 @@ public abstract class CodeGenTestBase : VerifyTestBase
         string globalTypeFqn = "",
         AbsolutePath[]? referencePaths = null)
     {
-        var context = CreateAssembly(
+        using var context = CreateAssembly(
             runtime,
             arch,
             @namespace: @namespace,
