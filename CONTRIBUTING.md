@@ -10,7 +10,8 @@ Contributor Guide
 Prerequisites
 -------------
 To work on the Cesium solution, install the latest [.NET SDK][dotnet.download] (currently .NET 10).
-To execute integration tests, the following components must be installed via **Visual Studio Installer** (either as **individual components** or as part of the **Desktop development with C++** workload):
+
+To execute integration tests on **Windows**, the following components must be installed via **Visual Studio Installer** (either as **individual components** or as part of the **Desktop development with C++** workload):
 * VC++ compiler (**MSVC Build Tools for x64/x86, latest version**)
 * Windows 10 SDK (**Windows 11 SDK** also works)
 
