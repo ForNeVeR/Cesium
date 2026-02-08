@@ -9,7 +9,7 @@ Contributor Guide
 
 Prerequisites
 -------------
-To work on the Cesium solution, install [.NET 9 SDK][dotnet.download] or later.
+To work on the Cesium solution, install latest [.NET SDK][dotnet.download](currently .NET 10).
 
 Building
 --------
