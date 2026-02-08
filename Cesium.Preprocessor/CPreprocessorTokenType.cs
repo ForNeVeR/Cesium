@@ -29,10 +29,10 @@ public enum CPreprocessorTokenType
     [Token("...")]
     Ellipsis,
 
-    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<>\",.|\\[\\]&\\\\]+")]
+    [Regex("[^ \t\v\f\r\n#;+\\-*/()=!<>\",.|\\[\\]\\\\{}&\\\\]+")]
     PreprocessingToken,
 
-    [Regex(@"([.]|[;+\-*/=!,|&]+|<=|>=|>|<|[|])")]
+    [Regex(@"([.]|[;+\-*/=!,|&]+|<=|>=|>|<|[|]|\{|\})")]
     Separator,
 
     [Token("(")]

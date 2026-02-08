@@ -1122,4 +1122,12 @@ enum test {
 
     [Fact]
     public Task CesiumMacro() => DoTest("__CESIUM__");
+
+    [Fact]
+    public Task SimpleMacroAroundBrackes() => DoTest("""
+#define NULL 0
+char *cast_table[] = {
+  {NULL,  NULL,   NULL, NULL}, // i8
+};
+""");
 }
