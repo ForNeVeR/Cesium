@@ -8,6 +8,7 @@ using AsyncKeyedLock;
 using Cesium.CodeGen;
 using Cesium.Solution.Metadata;
 using TruePath;
+using TruePath.SystemIo;
 using Xunit.Abstractions;
 
 namespace Cesium.TestFramework;
@@ -40,7 +41,6 @@ public class CSharpCompilationUtil : IDisposable
             return projectDirectory / "bin" / _configuration / _targetRuntime / (_projectName + ".dll");
         }
     }
-
 
     private static async Task<AbsolutePath> CreateCSharpProject(ITestOutputHelper output, AbsolutePath directory)
     {
@@ -86,6 +86,6 @@ public class CSharpCompilationUtil : IDisposable
 
     public void Dispose()
     {
-        Directory.Delete(_tempDirectory.Value, recursive: true);
+        _tempDirectory.DeleteDirectoryRecursively();
     }
 }
