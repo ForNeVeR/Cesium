@@ -13,20 +13,23 @@ namespace Cesium.CodeGen.Ir.Expressions;
 
 internal sealed class SubscriptingExpression : IValueExpression
 {
-    private readonly IExpression _expression;
-    private readonly IExpression _index;
+    internal IExpression Expression { get; }
+
+    internal IExpression Index { get; }
+    public bool AddressOnly { get; }
 
     public SubscriptingExpression(Ast.SubscriptingExpression subscriptingExpression, IDeclarationScope scope)
     {
         var (expression, index) = subscriptingExpression;
-        _expression = expression.ToIntermediate(scope);
-        _index = index.ToIntermediate(scope);
+        Expression = expression.ToIntermediate(scope);
+        Index = index.ToIntermediate(scope);
     }
 
-    public SubscriptingExpression(IExpression expression, IExpression index)
+    public SubscriptingExpression(IExpression expression, IExpression index, bool addressOnly)
     {
-        _expression = expression;
-        _index = index;
+        Expression = expression;
+        Index = index;
+        AddressOnly = addressOnly;
     }
 
     private static bool CheckIfTypeIsSubscriptable(IType type)
@@ -36,8 +39,8 @@ internal sealed class SubscriptingExpression : IValueExpression
 
     public IExpression Lower(IDeclarationScope scope)
     {
-        var expression = _expression.Lower(scope);
-        var index = _index.Lower(scope);
+        var expression = Expression.Lower(scope);
+        var index = Index.Lower(scope);
         var expressionType = expression.GetExpressionType(scope);
         var indexType = index.GetExpressionType(scope);
 
@@ -60,7 +63,8 @@ internal sealed class SubscriptingExpression : IValueExpression
             {
                 var arrayExpression = (IValueExpression)expression;
                 var arrayValue = arrayExpression.Resolve(scope);
-                fullExpression = new GetValueExpression(new LValueArrayElement(arrayValue, index));
+                fullExpression = new GetValueExpression(
+                    AddressOnly ? new LValueArrayElementAddress(arrayValue, index)  : new LValueArrayElement(arrayValue, index));
                 break;
             }
             case PointerType:
@@ -86,12 +90,15 @@ internal sealed class SubscriptingExpression : IValueExpression
 
     public IValue Resolve(IDeclarationScope scope)
     {
-        if (_expression is IValueExpression valueExpression)
+        if (Expression is IValueExpression valueExpression)
         {
-            return new LValueArrayElement(valueExpression.Resolve(scope), _index);
+            var newValueExpression = valueExpression.Resolve(scope);
+            return AddressOnly
+                ? new LValueArrayElementAddress(newValueExpression, Index)
+                : new LValueArrayElement(newValueExpression, Index);
         }
 
-        throw new CompilationException($"{_expression} is not a value expression");
+        throw new CompilationException($"{Expression} is not a value expression");
     }
 
     private static int GetElementsSize(InPlaceArrayType inPlaceArray)

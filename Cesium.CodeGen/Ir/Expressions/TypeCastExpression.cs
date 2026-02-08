@@ -125,7 +125,8 @@ internal sealed class TypeCastExpression : IExpression
                     return new BinaryOperatorExpression(
                         new SubscriptingExpression(
                             new IdentifierExpression(namedType1.TypeName),
-                            new ConstantLiteralExpression(new IntegerConstant(inPlaceArrayType.Size))),
+                            new ConstantLiteralExpression(new IntegerConstant(inPlaceArrayType.Size)),
+                            false),
                         BinaryOperator.Add,
                         unaryExpression.Target).Lower(scope);
                 }
@@ -133,7 +134,8 @@ internal sealed class TypeCastExpression : IExpression
                 {
                     return new SubscriptingExpression(
                         new IdentifierExpression(namedType1.TypeName),
-                        indirectionExpression.Target).Lower(scope);
+                        indirectionExpression.Target,
+                        true).Lower(scope);
                 }
             }
         }

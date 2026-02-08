@@ -11,7 +11,7 @@ Module: Primary
       IL_0009: ldloc.0
       IL_000a: ldc.i4.1
       IL_000b: conv.i
-      IL_000c: ldc.i4 40
+      IL_000c: ldc.i4 16
       IL_0011: mul
       IL_0012: add
       IL_0013: ldc.i4.2
@@ -24,7 +24,7 @@ Module: Primary
       IL_001e: ldloc.0
       IL_001f: ldc.i4.1
       IL_0020: conv.i
-      IL_0021: ldc.i4 40
+      IL_0021: ldc.i4 16
       IL_0026: mul
       IL_0027: add
       IL_0028: ldc.i4.2

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 using Medallion.Shell;
-using Mono.Cecil;
 using TruePath;
 using Xunit.Abstractions;
 
@@ -22,7 +21,7 @@ public static class ExecUtil
         IReadOnlyDictionary<string, string>? additionalEnvironment = null)
     {
         var result = await Run(output, executable, workingDirectory, args, inputContent, additionalEnvironment);
-        Assert.True(result.Success);
+        Assert.True(result.Success, $"The failed to run {executable} with arguments {string.Join(" ", args)}");
     }
 
     public static async Task<CommandResult> Run(

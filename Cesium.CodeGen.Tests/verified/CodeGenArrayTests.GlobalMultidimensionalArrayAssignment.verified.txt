@@ -14,7 +14,7 @@ Module: Primary
       IL_0000: ldsfld System.Int32* <Module>::a
       IL_0005: ldc.i4.1
       IL_0006: conv.i
-      IL_0007: ldc.i4 40
+      IL_0007: ldc.i4 16
       IL_000c: mul
       IL_000d: add
       IL_000e: ldc.i4.2
@@ -27,7 +27,7 @@ Module: Primary
       IL_0019: ldsfld System.Int32* <Module>::a
       IL_001e: ldc.i4.1
       IL_001f: conv.i
-      IL_0020: ldc.i4 40
+      IL_0020: ldc.i4 16
       IL_0025: mul
       IL_0026: add
       IL_0027: ldc.i4.2
