@@ -11,7 +11,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed class StructType : IGeneratedType, IEquatable<StructType>
+internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEquatable<IGeneratedType>
 {
     private const string _anonStructPrefix = "_Anon_";
     private const string _anonUnionPrefix = "_Union_";
@@ -181,6 +181,16 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         }
 
         return true;
+    }
+
+    public bool Equals(IGeneratedType? other)
+    {
+        if (other is StructType type)
+        {
+            return Equals(type);
+        }
+
+        return false;
     }
 
     public override bool Equals(object? other)

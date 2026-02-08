@@ -1,0 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+struct T;
+int function(struct T*);
+
+int main(void)
+{
+    return function(0);
+}

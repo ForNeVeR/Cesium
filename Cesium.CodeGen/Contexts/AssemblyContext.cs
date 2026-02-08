@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Collections;
-using System.Diagnostics;
-using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Contexts.Utilities;
@@ -17,6 +14,11 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using QuikGraph;
+using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -92,7 +94,31 @@ public class AssemblyContext
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
-    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(new GeneratedTypeEqualityComparer());
+    class GeneratedTypeEqualityComparer : IEqualityComparer<IGeneratedType>
+    {
+        public bool Equals(IGeneratedType? x, IGeneratedType? y)
+        {
+            if (x is StructType xStruct && y is StructType yStruct)
+            {
+                var shortVariant = xStruct.Identifier == yStruct.Identifier
+                    && (xStruct.Members.Count == 0 || yStruct.Members.Count == 0);
+                if (shortVariant) return true;
+            }
+
+            return x?.Equals(y) == true;
+        }
+
+        public int GetHashCode([DisallowNull] IGeneratedType obj)
+        {
+            if (obj is StructType { Identifier: not null } structType)
+            {
+                return structType.Identifier.GetHashCode();
+            }
+
+            return obj.GetHashCode();
+        }
+    }
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
@@ -345,6 +371,28 @@ public class AssemblyContext
         {
             var typeReference = type.StartEmit(name, context);
             _generatedTypes.Add(type, typeReference);
+            if (type.Members.Count != 0)
+            {
+                foreach (var member in type.Members)
+                {
+                    if (member.Type is StructType structType)
+                    {
+                        structType.EmitType(context);
+                    }
+
+                    if (member.Type is PointerType { Base: StructType structTypePtr })
+                    {
+                        structTypePtr.EmitType(context);
+                    }
+                }
+
+                type.FinishEmit(typeReference, name, context);
+                return;
+            }
+        }
+        else
+        {
+            var typeReference = (TypeDefinition)_generatedTypes[type]!;
             foreach (var member in type.Members)
             {
                 if (member.Type is StructType structType)
