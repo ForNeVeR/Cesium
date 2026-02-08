@@ -18,7 +18,8 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
         [StringSyntax("csharp")] string cSharpCode,
         [StringSyntax("cpp")] string cCode)
     {
-        var cSharpAssemblyPath = await CSharpCompilationUtil.CompileCSharpAssembly(
+        using CSharpCompilationUtil compilation = new();
+        var cSharpAssemblyPath = await compilation.CompileCSharpAssembly(
             output,
             CSharpCompilationUtil.DefaultRuntime,
             cSharpCode);
