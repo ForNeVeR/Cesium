@@ -353,11 +353,6 @@ internal sealed record LocalDeclarationInfo(
 
     private static IType CreateArrayType(IType type, int size)
     {
-        if (type is InPlaceArrayType inplaceArrayType)
-        {
-            return new InPlaceArrayType(new InPlaceArrayType(inplaceArrayType.Base, size), inplaceArrayType.Size);
-        }
-
         return new InPlaceArrayType(type, size);
     }
 

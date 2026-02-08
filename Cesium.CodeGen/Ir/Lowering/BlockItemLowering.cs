@@ -276,40 +276,14 @@ internal static class BlockItemLowering
                             IExpression? primaryInitializerExpression = null;
                             if (type is InPlaceArrayType i)
                             {
-                                primaryInitializerExpression = 
-                                    new AssignmentExpression(
-                                        new IdentifierExpression(identifier),
-                                        AssignmentOperator.Assign,
-                                        new LocalAllocationExpression(i),
-                                        true
+                                primaryInitializerExpression = new AssignmentExpression(
+                                    new IdentifierExpression(identifier),
+                                    AssignmentOperator.Assign,
+                                    new LocalAllocationExpression(i),
+                                    true
                                 );
                                 newItems.Add(Lower(scope, new ExpressionStatement(primaryInitializerExpression)));
-                                if (initializerExpression != null)
-                                {
-                                    // String array.
-                                    if (i.Base.EraseConstType() is PointerType pointerType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression)
-                                    {
-                                        if (pointerType.Base.EraseConstType() is PrimitiveType { Kind: PrimitiveTypeKind.Char })
-                                        {
-                                            int index = 0;
-                                            foreach (var arrayItem in compoundInitializationExpression.ArrayInitializer.Initializers)
-                                            {
-                                                if (arrayItem is null)
-                                                {
-                                                    index++;
-                                                    continue;
-                                                }
-
-                                                var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)));
-                                                var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem, true);
-                                                newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
-                                                index++;
-                                            }
-
-                                            initializerExpression = null;
-                                        }
-                                    }
-                                }
+                                initializerExpression = CreateArrayInitializationExpression(scope, storageClass, primaryInitializerExpression, newItems, identifier, initializerExpression, i);
                             }
 
                             if (initializerExpression is not null)
@@ -619,5 +593,78 @@ internal static class BlockItemLowering
             default:
                 throw new ArgumentOutOfRangeException(nameof(blockItem));
         }
+    }
+
+    private static IExpression? CreateArrayInitializationExpression(IDeclarationScope scope, StorageClass storageClass, IExpression primaryInitializerExpression, List<IBlockItem> newItems, string identifier, IExpression? initializerExpression, InPlaceArrayType i)
+    {
+        if (initializerExpression != null)
+        {
+            // String array.
+            if (i.Base.EraseConstType() is PointerType pointerType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression)
+            {
+                if (pointerType.Base.EraseConstType() is PrimitiveType { Kind: PrimitiveTypeKind.Char })
+                {
+                    int index = 0;
+                    foreach (var arrayItem in compoundInitializationExpression.ArrayInitializer.Initializers)
+                    {
+                        if (arrayItem is null)
+                        {
+                            index++;
+                            continue;
+                        }
+
+                        var subscriptionIndex = new SubscriptingExpression(new IdentifierExpression(identifier), new ConstantLiteralExpression(new IntegerConstant(index)), false);
+                        var itemAssignment = new AssignmentExpression(subscriptionIndex, AssignmentOperator.Assign, arrayItem, true);
+                        newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
+                        index++;
+                    }
+
+                    initializerExpression = null;
+                }
+            }
+            else if (i.Base is InPlaceArrayType inplaceArrayType && initializerExpression is CompoundInitializationExpression compoundInitializationExpression2)
+            {
+                int index = 0;
+                var uniqueIdentifierName = Guid.NewGuid();
+                foreach (var arrayItem in compoundInitializationExpression2.ArrayInitializer.Initializers)
+                {
+                    var subitemIdentifier = uniqueIdentifierName + "_" + index;
+                    var subitemIdentifierExpression = new IdentifierExpression(subitemIdentifier);
+                    scope.AddVariable(storageClass, uniqueIdentifierName + "_" + index, inplaceArrayType, null);
+                    var subscriptionIndex = new SubscriptingExpression(
+                        new IdentifierExpression(identifier),
+                        new ConstantLiteralExpression(new IntegerConstant(index)),
+                        true);
+                    var itemAssignment = new AssignmentExpression(
+                        subitemIdentifierExpression,
+                        AssignmentOperator.Assign,
+                        subscriptionIndex,
+                        doReturn: true);
+                    initializerExpression = CreateArrayInitializationExpression(scope, storageClass, subscriptionIndex, newItems, uniqueIdentifierName + "_" + index, arrayItem, inplaceArrayType);
+                    if (initializerExpression is not null)
+                    {
+                        initializerExpression = new CompoundInitializationFunctionCallExpression(
+                            subscriptionIndex,
+                            initializerExpression,
+                            inplaceArrayType.GetSizeInBytesExpression(scope.ArchitectureSet));
+
+                        newItems.Add(Lower(scope, new ExpressionStatement(initializerExpression)));
+                    }
+
+                    if (arrayItem is null)
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    //newItems.Add(Lower(scope, new ExpressionStatement(itemAssignment)));
+                    index++;
+                }
+
+                initializerExpression = null;
+            }
+        }
+
+        return initializerExpression;
     }
 }

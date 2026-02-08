@@ -13,7 +13,7 @@ Module: Primary
       IL_0008: ldc.i4.1
       IL_0009: sub
       IL_000a: conv.i
-      IL_000b: ldc.i4 40
+      IL_000b: ldc.i4 8
       IL_0010: mul
       IL_0011: add
       IL_0012: ldc.i4.1
