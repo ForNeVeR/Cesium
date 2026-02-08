@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Collections.Immutable;
-using System.Diagnostics;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Extensions;
 using Cesium.CodeGen.Ir;
@@ -11,6 +9,9 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
 using Mono.Cecil;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Security.AccessControl;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -104,9 +105,10 @@ public class TranslationUnitContext
     private readonly Dictionary<string, IType> _types = new();
     private readonly Dictionary<string, IType> _tags = new();
 
-    internal void GenerateType(string name, IGeneratedType type)
+    internal void GenerateType(string name, StructType type)
     {
-        AssemblyContext.GenerateType(this, name, (StructType)type);
+        AssemblyContext.GenerateType(this, name, type);
+        AssemblyContext.GenerateTypeMembers(this, name, type);
     }
 
     internal void AddTypeDefinition(string name, IType type)

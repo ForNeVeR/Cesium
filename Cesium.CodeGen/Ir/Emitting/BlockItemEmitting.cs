@@ -135,7 +135,7 @@ internal static class BlockItemEmitting
                 foreach (var typeDef in t.Types)
                 {
                     var (type, identifier, _) = typeDef;
-                    if (type is IGeneratedType g)
+                    if (type is StructType g)
                         scope.Context.GenerateType(identifier!, g);
                 }
 
@@ -146,7 +146,7 @@ internal static class BlockItemEmitting
                 foreach (var typeDef in t.Types)
                 {
                     var (type, identifier, _) = typeDef;
-                    if (type is IGeneratedType g)
+                    if (type is StructType g)
                         scope.Context.GenerateType(identifier!, g);
                 }
 

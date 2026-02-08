@@ -14,7 +14,6 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using QuikGraph;
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -95,6 +94,7 @@ public class AssemblyContext
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
     private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(new GeneratedTypeEqualityComparer());
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedFieldsTypes = new(new GeneratedTypeEqualityComparer());
     class GeneratedTypeEqualityComparer : IEqualityComparer<IGeneratedType>
     {
         public bool Equals(IGeneratedType? x, IGeneratedType? y)
@@ -365,51 +365,63 @@ public class AssemblyContext
         return field;
     }
 
+    internal string GenerateTypeName(StructType type)
+    {
+        var name = type.IsAnon
+            ? StructType.CreateAnonIdentifier(type.Members, type.IsUnion)
+            : type.Identifier ?? StructType.CreateAnonIdentifier(type.Members, type.IsUnion);
+        return name;
+    }
+
     internal void GenerateType(TranslationUnitContext context, string name, StructType type)
     {
         if (!_generatedTypes.ContainsKey(type))
         {
             var typeReference = type.StartEmit(name, context);
             _generatedTypes.Add(type, typeReference);
-            if (type.Members.Count != 0)
-            {
-                foreach (var member in type.Members)
-                {
-                    if (member.Type is StructType structType)
-                    {
-                        structType.EmitType(context);
-                    }
 
-                    if (member.Type is PointerType { Base: StructType structTypePtr })
-                    {
-                        structTypePtr.EmitType(context);
-                    }
-                }
-
-                type.FinishEmit(typeReference, name, context);
-                return;
-            }
-        }
-        else
-        {
-            var typeReference = (TypeDefinition)_generatedTypes[type]!;
             if (typeReference.Fields.Count == 0)
             {
                 foreach (var member in type.Members)
                 {
                     if (member.Type is StructType structType)
                     {
-                        structType.EmitType(context);
+                        var typeName = this.GenerateTypeName(structType);
+                        this.GenerateType(context, typeName, structType);
                     }
 
                     if (member.Type is PointerType { Base: StructType structTypePtr })
                     {
-                        structTypePtr.EmitType(context);
+                        var typeName = this.GenerateTypeName(structTypePtr);
+                        this.GenerateType(context, typeName, structTypePtr);
                     }
                 }
-
-                type.FinishEmit(typeReference, name, context);
             }
+        }
+    }
+
+    internal void GenerateTypeMembers(TranslationUnitContext context, string name, StructType type)
+    {
+        if (!_generatedFieldsTypes.ContainsKey(type))
+        {
+            var typeReference = (TypeDefinition)_generatedTypes[type]!;
+            _generatedFieldsTypes.Add(type, typeReference);
+            foreach (var member in type.Members)
+            {
+                if (member.Type is StructType structType)
+                {
+                    var typeName = this.GenerateTypeName(structType);
+                    this.GenerateTypeMembers(context, typeName, structType);
+                }
+
+                if (member.Type is PointerType { Base: StructType structTypePtr })
+                {
+                    var typeName = this.GenerateTypeName(structTypePtr);
+                    this.GenerateTypeMembers(context, typeName, structTypePtr);
+                }
+            }
+
+            type.FinishEmit(typeReference, name, context);
         }
     }
 

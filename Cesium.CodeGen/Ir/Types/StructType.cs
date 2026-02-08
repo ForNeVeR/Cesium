@@ -115,7 +115,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEqua
 
     public void EmitType(TranslationUnitContext context)
     {
-        var name = IsAnon ? CreateAnonIdentifier(Members, IsUnion) : Identifier ?? CreateAnonIdentifier(Members, IsUnion);
+        var name = context.AssemblyContext.GenerateTypeName(this);
         context.GenerateType(name, this);
     }
 
@@ -214,7 +214,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEqua
         return hash;
     }
 
-    private static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
+    internal static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
     {
         return (isUnion ? _anonUnionPrefix : _anonStructPrefix) + string.Join('_', members.SelectMany(_ => new string[] { _.Type is StructType st ? st.Identifier ?? string.Empty : _.Type is PrimitiveType pt ? pt.Kind.ToString() : _.Type.TypeKind.ToString(), _.Identifier ?? string.Empty }));
     }
