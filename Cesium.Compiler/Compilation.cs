@@ -53,7 +53,7 @@ internal static class Compilation
 
         Console.WriteLine($"Generating assembly \"{outputFile.Value}\".");
 
-        var assemblyContext = CreateAssembly(outputFile.ResolveToCurrentDirectory(), compilationOptions);
+        using var assemblyContext = CreateAssembly(outputFile.ResolveToCurrentDirectory(), compilationOptions);
 
         var inputSources = new List<AbsolutePath>();
         foreach (var inputFile in inputFilePaths)
