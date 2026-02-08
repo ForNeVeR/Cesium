@@ -393,20 +393,23 @@ public class AssemblyContext
         else
         {
             var typeReference = (TypeDefinition)_generatedTypes[type]!;
-            foreach (var member in type.Members)
+            if (typeReference.Fields.Count == 0)
             {
-                if (member.Type is StructType structType)
+                foreach (var member in type.Members)
                 {
-                    structType.EmitType(context);
+                    if (member.Type is StructType structType)
+                    {
+                        structType.EmitType(context);
+                    }
+
+                    if (member.Type is PointerType { Base: StructType structTypePtr })
+                    {
+                        structTypePtr.EmitType(context);
+                    }
                 }
 
-                if (member.Type is PointerType { Base: StructType structTypePtr })
-                {
-                    structTypePtr.EmitType(context);
-                }
+                type.FinishEmit(typeReference, name, context);
             }
-
-            type.FinishEmit(typeReference, name, context);
         }
     }
 
