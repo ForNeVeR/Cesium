@@ -11,7 +11,7 @@ using Mono.Cecil;
 
 namespace Cesium.CodeGen.Ir.Types;
 
-internal sealed class StructType : IGeneratedType, IEquatable<StructType>
+internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEquatable<IGeneratedType>
 {
     private const string _anonStructPrefix = "_Anon_";
     private const string _anonUnionPrefix = "_Union_";
@@ -115,7 +115,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
 
     public void EmitType(TranslationUnitContext context)
     {
-        var name = IsAnon ? CreateAnonIdentifier(Members, IsUnion) : Identifier ?? CreateAnonIdentifier(Members, IsUnion);
+        var name = context.AssemblyContext.GenerateTypeName(this);
         context.GenerateType(name, this);
     }
 
@@ -183,6 +183,16 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         return true;
     }
 
+    public bool Equals(IGeneratedType? other)
+    {
+        if (other is StructType type)
+        {
+            return Equals(type);
+        }
+
+        return false;
+    }
+
     public override bool Equals(object? other)
     {
         if (other is StructType type)
@@ -204,7 +214,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>
         return hash;
     }
 
-    private static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
+    internal static string CreateAnonIdentifier(IReadOnlyList<LocalDeclarationInfo> members, bool isUnion)
     {
         return (isUnion ? _anonUnionPrefix : _anonStructPrefix) + string.Join('_', members.SelectMany(_ => new string[] { _.Type is StructType st ? st.Identifier ?? string.Empty : _.Type is PrimitiveType pt ? pt.Kind.ToString() : _.Type.TypeKind.ToString(), _.Identifier ?? string.Empty }));
     }

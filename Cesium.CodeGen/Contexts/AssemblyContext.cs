@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Collections;
-using System.Diagnostics;
-using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Contexts.Utilities;
@@ -17,6 +14,10 @@ using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -92,7 +93,32 @@ public class AssemblyContext : IDisposable
 
     private readonly Dictionary<int, TypeReference> _stubTypesPerSize = new();
     private readonly Dictionary<ByteArrayWrapper, FieldReference> _dataConstantHolders = new();
-    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new();
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedTypes = new(new GeneratedTypeEqualityComparer());
+    private readonly Dictionary<IGeneratedType, TypeReference> _generatedFieldsTypes = new(new GeneratedTypeEqualityComparer());
+    class GeneratedTypeEqualityComparer : IEqualityComparer<IGeneratedType>
+    {
+        public bool Equals(IGeneratedType? x, IGeneratedType? y)
+        {
+            if (x is StructType xStruct && y is StructType yStruct)
+            {
+                var shortVariant = xStruct.Identifier == yStruct.Identifier
+                    && (xStruct.Members.Count == 0 || yStruct.Members.Count == 0);
+                if (shortVariant) return true;
+            }
+
+            return x?.Equals(y) == true;
+        }
+
+        public int GetHashCode([DisallowNull] IGeneratedType obj)
+        {
+            if (obj is StructType { Identifier: not null } structType)
+            {
+                return structType.Identifier.GetHashCode();
+            }
+
+            return obj.GetHashCode();
+        }
+    }
 
     private readonly Lazy<TypeDefinition> _constantPool;
     private MethodDefinition? _globalInitializer;
@@ -339,22 +365,59 @@ public class AssemblyContext : IDisposable
         return field;
     }
 
+    internal string GenerateTypeName(StructType type)
+    {
+        var name = type.IsAnon
+            ? StructType.CreateAnonIdentifier(type.Members, type.IsUnion)
+            : type.Identifier ?? StructType.CreateAnonIdentifier(type.Members, type.IsUnion);
+        return name;
+    }
+
     internal void GenerateType(TranslationUnitContext context, string name, StructType type)
     {
         if (!_generatedTypes.ContainsKey(type))
         {
             var typeReference = type.StartEmit(name, context);
             _generatedTypes.Add(type, typeReference);
+
+            if (typeReference.Fields.Count == 0)
+            {
+                foreach (var member in type.Members)
+                {
+                    if (member.Type is StructType structType)
+                    {
+                        var typeName = this.GenerateTypeName(structType);
+                        this.GenerateType(context, typeName, structType);
+                    }
+
+                    if (member.Type is PointerType { Base: StructType structTypePtr })
+                    {
+                        var typeName = this.GenerateTypeName(structTypePtr);
+                        this.GenerateType(context, typeName, structTypePtr);
+                    }
+                }
+            }
+        }
+    }
+
+    internal void GenerateTypeMembers(TranslationUnitContext context, string name, StructType type)
+    {
+        if (!_generatedFieldsTypes.ContainsKey(type))
+        {
+            var typeReference = (TypeDefinition)_generatedTypes[type]!;
+            _generatedFieldsTypes.Add(type, typeReference);
             foreach (var member in type.Members)
             {
                 if (member.Type is StructType structType)
                 {
-                    structType.EmitType(context);
+                    var typeName = this.GenerateTypeName(structType);
+                    this.GenerateTypeMembers(context, typeName, structType);
                 }
 
                 if (member.Type is PointerType { Base: StructType structTypePtr })
                 {
-                    structTypePtr.EmitType(context);
+                    var typeName = this.GenerateTypeName(structTypePtr);
+                    this.GenerateTypeMembers(context, typeName, structTypePtr);
                 }
             }
 

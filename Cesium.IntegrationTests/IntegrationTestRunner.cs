@@ -35,15 +35,21 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             SearchOption.AllDirectories).Select(x => new AbsolutePath(x));
         return cFiles
             .Where(IsValidForCommonTestRun)
-            .Select(file => file.RelativeTo(_thisProjectSourceDirectory))
-            .SelectMany(static path =>
+            .SelectMany(static file =>
             {
+                var path = file.RelativeTo(_thisProjectSourceDirectory);
+                var sourceFiles =
+                    file.ReadKind() == FileEntryKind.Directory
+                        ? Directory.GetFiles(file.Value)
+                            .Select(_ => Path.GetRelativePath(_thisProjectSourceDirectory.Value, _))
+                            .ToArray()
+                        : [path.Value];
                 // Specify rules for .nonportable tests
                 if (path.Value.EndsWith(".nonportable.c"))
                 {
                     return
                     [
-                        [TargetArch.Dynamic, path.Value]
+                        [TargetArch.Dynamic, sourceFiles]
                     ];
                 }
                 // Specify supported configuration for Windows
@@ -51,10 +57,10 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 {
                     return
                     [
-                        [TargetArch.Bit32, path.Value],
-                        [TargetArch.Bit64, path.Value],
-                        [TargetArch.Wide, path.Value],
-                        [TargetArch.Dynamic, path.Value]
+                        [TargetArch.Bit32, sourceFiles],
+                        [TargetArch.Bit64, sourceFiles],
+                        [TargetArch.Wide, sourceFiles],
+                        [TargetArch.Dynamic, sourceFiles]
                     ];
                 }
                 // Specify supported configuration for Linux/Mac
@@ -62,9 +68,9 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 {
                     return new object[][]
                     {
-                        [TargetArch.Bit64, path.Value],
-                        [TargetArch.Wide, path.Value],
-                        [TargetArch.Dynamic, path.Value]
+                        [TargetArch.Bit64, sourceFiles],
+                        [TargetArch.Wide, sourceFiles],
+                        [TargetArch.Dynamic, sourceFiles]
                     };
                 }
             })
@@ -73,7 +79,8 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 // Explicitly mark that specific configuration is broken and thus excluded.
                 // Previous rules specify what is supported by design.
                 var arch = (TargetArch)items[0];
-                var path = (string)items[1];
+                var paths = (string[])items[1];
+                var path = paths.Length == 1 ? paths[0] : Path.GetDirectoryName(paths[0])!;
                 if (path.EndsWith(".ignore.wide.c") && arch == TargetArch.Wide)
                 {
                     return false;
@@ -92,7 +99,13 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     private static bool IsValidForCommonTestRun(AbsolutePath file)
     {
-        if (file.Parent?.FileName == "multi-file") return false;
+        var parent = file.Parent;
+        if (parent != null)
+        {
+            if (parent.Value.FileName == "multi-file") return false;
+            if (parent.Value.FileName.EndsWith(".c")) return false;
+        }
+
         var fileName = file.FileName;
         return !fileName.EndsWith(".ignore.c")
                && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && fileName.EndsWith(".msvc_ignore.c"));
@@ -114,18 +127,18 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public async Task TestNetFramework(TargetArch arch, string relativeSourcePath)
+    public async Task TestNetFramework(TargetArch arch, string[] relativeSourcePath)
     {
         if (OperatingSystem.IsWindows())
         {
-            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, arch, new LocalPath(relativeSourcePath)));
+            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, arch, [..relativeSourcePath.Select(_ => new LocalPath(_))]));
         }
     }
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
-    public Task TestNet(TargetArch arch, string relativeSourcePath) =>
-        _context.WrapTestBody(() => DoTest(TargetFramework.Net, arch, new LocalPath(relativeSourcePath)));
+    public Task TestNet(TargetArch arch, string[] relativeSourcePath) =>
+        _context.WrapTestBody(() => DoTest(TargetFramework.Net, arch, [.. relativeSourcePath.Select(_ => new LocalPath(_))]));
 
     [Fact]
     public Task MultiFileApplicationCompiles() =>
