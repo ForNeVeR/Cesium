@@ -5,6 +5,7 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct foo_t
 {
@@ -57,6 +58,10 @@ int main(void)
     (void) (1, foo(1, 2));
 
     unsigned x = (unsigned)2;
+
+    int64_t p = 10;
+    int64_t r = o;
+    if (p != 10) return -2;
 
     return 42;
 }

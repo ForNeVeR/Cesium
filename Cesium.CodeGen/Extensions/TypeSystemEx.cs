@@ -232,6 +232,7 @@ internal static class TypeSystemEx
             || t.IsEqualTo(CTypeSystem.Short)
             || t.IsEqualTo(CTypeSystem.Int)
             || t.IsEqualTo(CTypeSystem.Long)
+            || t.IsEqualTo(CTypeSystem.LongLong)
             || t.IsEqualTo(CTypeSystem.NativeInt);
     }
 
@@ -275,7 +276,7 @@ internal static class TypeSystemEx
 
         // Otherwise, if both operands have signed integer types or both have unsigned integer types,
         // the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
-        var signedTypes = new[] { CTypeSystem.SignedChar, CTypeSystem.Short, CTypeSystem.Int, CTypeSystem.Long, CTypeSystem.NativeInt};
+        var signedTypes = new[] { CTypeSystem.SignedChar, CTypeSystem.Short, CTypeSystem.Int, CTypeSystem.Long, CTypeSystem.LongLong, CTypeSystem.NativeInt};
         var unsignedTypes = new[] { CTypeSystem.Char, CTypeSystem.UnsignedChar, CTypeSystem.UnsignedShort, CTypeSystem.Unsigned, CTypeSystem.UnsignedInt, CTypeSystem.UnsignedLong, CTypeSystem.NativeUInt };
         // TODO[#381]: Move NativeInt and NativeUInt accordingly or consider them properly based on the current architecture.
 
