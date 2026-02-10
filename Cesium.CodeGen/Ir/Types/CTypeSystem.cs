@@ -48,6 +48,8 @@ internal static class CTypeSystem
             return true;
         else if (targetType.Equals(Long))
             return true;
+        else if (targetType.Equals(LongLong))
+            return true;
         else if (targetType.Equals(Char))
             return true;
         else if (targetType.Equals(UnsignedShort))
@@ -85,6 +87,8 @@ internal static class CTypeSystem
         else if (targetType.Equals(Int))
             return !type.Equals(Bool);
         else if (targetType.Equals(Long))
+            return true;
+        else if (targetType.Equals(LongLong))
             return true;
         else if (targetType.Equals(Char))
             return true;
