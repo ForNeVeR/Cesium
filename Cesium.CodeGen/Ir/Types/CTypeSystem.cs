@@ -89,7 +89,7 @@ internal static class CTypeSystem
         else if (targetType.Equals(Long))
             return true;
         else if (targetType.Equals(LongLong))
-            return true;
+            return false;
         else if (targetType.Equals(Char))
             return true;
         else if (targetType.Equals(UnsignedShort))
