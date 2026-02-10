@@ -33,7 +33,7 @@ internal record FunctionInfo(
     /// </summary>
     public string? DllImportNameStrip { get; set; }
 
-    public void VerifySignatureEquality(string name, ParametersInfo? parameters, IType returnType)
+    public void VerifySignatureEquality(string name, StorageClass storageClass, ParametersInfo? parameters, IType returnType)
     {
         if (!returnType.Equals(ReturnType))
             throw new CompilationException(

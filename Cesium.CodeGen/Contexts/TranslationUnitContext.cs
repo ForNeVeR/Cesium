@@ -29,7 +29,9 @@ public class TranslationUnitContext
 
     private TypeDefinition? _translationUnitLevelType;
 
-    internal Dictionary<string, FunctionInfo> Functions => AssemblyContext.Functions;
+    private Dictionary<string, FunctionInfo> Functions { get; } = new();
+
+    private Dictionary<string, FunctionInfo> AutoFunctions => AssemblyContext.Functions;
 
     private GlobalConstructorScope? _initializerScope;
 
@@ -47,11 +49,11 @@ public class TranslationUnitContext
         _initializerScope ??= new GlobalConstructorScope(this);
 
     internal FunctionInfo? GetFunctionInfo(string identifier) =>
-        Functions.GetValueOrDefault(identifier);
+        Functions.GetValueOrDefault(identifier) ?? AutoFunctions.GetValueOrDefault(identifier);
 
     internal void DeclareFunction(string identifier, FunctionInfo functionInfo)
     {
-        var existingDeclaration = Functions.GetValueOrDefault(identifier);
+        var existingDeclaration = GetFunctionInfo(identifier);
         if (existingDeclaration is null)
         {
             if (functionInfo.CliImportMember is not null)
@@ -59,11 +61,19 @@ public class TranslationUnitContext
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
                 functionInfo = ProcessCliImport(functionInfo, method);
             }
-            Functions.Add(identifier, functionInfo);
+
+            if (functionInfo.StorageClass == StorageClass.Static)
+            {
+                Functions.Add(identifier, functionInfo);
+            }
+            else
+            {
+                AutoFunctions.Add(identifier, functionInfo);
+            }
         }
         else
         {
-            existingDeclaration.VerifySignatureEquality(identifier, functionInfo.Parameters, functionInfo.ReturnType);
+            existingDeclaration.VerifySignatureEquality(identifier, functionInfo.StorageClass, functionInfo.Parameters, functionInfo.ReturnType);
             if (functionInfo.CliImportMember is not null && existingDeclaration.CliImportMember is not null)
             {
                 var method = this.MethodLookup(functionInfo.CliImportMember, functionInfo.Parameters!, functionInfo.ReturnType);
@@ -96,10 +106,18 @@ public class TranslationUnitContext
                 name,
                 returnType.Resolve(this),
                 parameters);
-        var existingDeclaration = Functions.GetValueOrDefault(name);
+        var existingDeclaration = GetFunctionInfo(name);
         Debug.Assert(existingDeclaration is not null, $"Attempt to define method for undeclared function {name}");
-        Functions[name] = existingDeclaration with { MethodReference = method };
-            return method;
+        if (existingDeclaration.StorageClass == StorageClass.Static)
+        {
+            Functions[name] = existingDeclaration with { MethodReference = method };
+        }
+        else
+        {
+            AutoFunctions[name] = existingDeclaration with { MethodReference = method };
+        }
+
+        return method;
     }
 
     private readonly Dictionary<string, IType> _types = new();
