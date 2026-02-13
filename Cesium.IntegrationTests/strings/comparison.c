@@ -28,7 +28,7 @@ int testCaseInsensetiveComparison() {
 
 int main(int argc, char* argv[])
 {
-    if (!testConcatenation()) {
+    if (!testCaseInsensetiveComparison()) {
         return -1;
     }
 
