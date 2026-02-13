@@ -44,6 +44,12 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                             .Select(_ => Path.GetRelativePath(_thisProjectSourceDirectory.Value, _))
                             .ToArray()
                         : [path.Value];
+                // Specify rules for test to run on POSIX only systems
+                if (path.Value.EndsWith(".posix.c") && OperatingSystem.IsWindows())
+                {
+                    // We ignore POSIX tests on Windows. For other OS regular rules applies.
+                    return [];
+                }
                 // Specify rules for .nonportable tests
                 if (path.Value.EndsWith(".nonportable.c"))
                 {
