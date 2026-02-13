@@ -6,8 +6,9 @@
 
 #include <strings.h>
 
-
-int testCaseInsensetiveComparison() {
+int main(int argc, char* argv[])
+{
+    // Test case insensitive comparison
     int result = strcasecmp("a b c", "A B c");
     if (result) {
         return -1;
@@ -20,16 +21,7 @@ int testCaseInsensetiveComparison() {
 
     result = strcasecmp("a b c", "A b D");
     if (result != -1) {
-        return -2;
-    }
-
-    return 0;
-}
-
-int main(int argc, char* argv[])
-{
-    if (!testCaseInsensetiveComparison()) {
-        return -1;
+        return -3;
     }
 
     return 42;
