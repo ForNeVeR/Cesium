@@ -102,7 +102,7 @@ internal sealed class LValueInstanceField : LValueField
         }
 
         List<FieldDefinition>? path = null;
-
+        scope.Context.EnsureAnonymousTypeGenerated(_structType);
         var valueTypeReference = _structType.Resolve(scope.Context);
         var valueTypeDef = valueTypeReference.Resolve();
 

@@ -22,7 +22,20 @@ typedef struct {
     } s;
 } foo;
 
+int test() {
+    union {
+        long l;
+        int i;
+    } x;
+    x.l = 10;
+    return x.i;
+}
+
 int main() {
+    if (test() != 10) {
+        return -1;
+    }
+
     foo f;
     f._1 = 2;
     f._2a = 10;

@@ -315,6 +315,11 @@ public class TranslationUnitContext
                 structTypePtr.EmitType(this);
             }
         }
+
+        if (type is StructType structTypeAnon && structTypeAnon.IsAnon)
+        {
+            structTypeAnon.EmitType(this);
+        }
     }
 
     private TypeDefinition GetOrCreateTranslationUnitType()
