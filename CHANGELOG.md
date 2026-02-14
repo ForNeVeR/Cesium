@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [#532](https://github.com/ForNeVeR/Cesium/issues/532): negative number support in preprocessor expressions. Thanks to @nt-devilboi!
-- [#863](https://github.com/ForNeVeR/Cesium/pull/863): experimental `open_memsrteam` extension. Thanks to @kant2002!
+- [#863](https://github.com/ForNeVeR/Cesium/pull/863): experimental `open_memstream` extension. Thanks to @kant2002!
 - [#935](https://github.com/ForNeVeR/Cesium/pull/935): compound multidimensional array initialization. Thanks to @kant2002!
 - [#865](https://github.com/ForNeVeR/Cesium/pull/865): `strstr` function. Thanks to @kant2002!
 - [#867](https://github.com/ForNeVeR/Cesium/pull/867): anonymous global enum constant support. Thanks to @kant2002!
@@ -27,7 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - `fread`,
   - `fwrite`,
   - `fputc`,
-  - `vprtinf`,
+  - `vprintf`,
   - `fflush`. 
   Thanks to @kant2002!
 - [#355](https://github.com/ForNeVeR/Cesium/issues/355): static struct layout calculation. Thanks to @kant2002!
