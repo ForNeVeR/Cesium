@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2025 Friedrich von Never <friedrich@fornever.me>
+# SPDX-FileCopyrightText: 2025-2026 Friedrich von Never <friedrich@fornever.me>
 #
 # SPDX-License-Identifier: MIT
 
 param (
-    $NewVersion = '0.1.2',
+    $NewVersion = '0.2.0',
     $RepoRoot = "$PSScriptRoot/.."
 )
 

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+SPDX-FileCopyrightText: 2023-2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 
 SPDX-License-Identifier: MIT
 -->
@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
         <SkipCesiumCompilerInstallation Condition="$(SkipCesiumCompilerInstallation) == ''">false</SkipCesiumCompilerInstallation>
         <SkipCesiumRuntimeInstallation Condition="$(SkipCesiumRuntimeInstallation) == ''">false</SkipCesiumRuntimeInstallation>
         <CesiumCompilerPackageName Condition="$(CesiumCompilerPackageName) == ''">Cesium.Compiler.Bundle</CesiumCompilerPackageName>
-        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.1.2</CesiumCompilerPackageVersion>
+        <CesiumCompilerPackageVersion Condition="$(CesiumCompilerPackageVersionPrefix) == ''">0.2.0</CesiumCompilerPackageVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
 

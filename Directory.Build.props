@@ -1,18 +1,18 @@
 <!--
-SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+SPDX-FileCopyrightText: 2021-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 
 SPDX-License-Identifier: MIT
 -->
 
 <Project>
     <PropertyGroup Label="Versioning">
-        <VersionPrefix>0.1.2</VersionPrefix>
+        <VersionPrefix>0.2.0</VersionPrefix>
     </PropertyGroup>
     <PropertyGroup Label="Packaging">
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <ContinuousIntegrationBuild Condition="$(CI) != ''">true</ContinuousIntegrationBuild>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Copyright>2021-2025 Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
+        <Copyright>2021-2026 Cesium contributors &lt;https://github.com/ForNeVeR/Cesium></Copyright>
     </PropertyGroup>
     <PropertyGroup Condition="
         '$(MSBuildProjectName)' != 'Cesium.Templates' and '$(MSBuildProjectName)' != 'Cesium.Sdk'

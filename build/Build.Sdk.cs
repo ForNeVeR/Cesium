@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2023-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -353,7 +353,7 @@ public partial class Build
 
     private IEnumerable<string> GetCompilerBundleCopyrightStatements(Project project)
     {
-        yield return "2021-2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>";
+        yield return "2021-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>";
 
         foreach (var package in GetCompilerBundlePackages(project))
         {

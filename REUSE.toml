@@ -36,5 +36,5 @@ SPDX-License-Identifier = "MIT"
 [[annotations]]
 path = "Cesium.Templates/**/*"
 precedence = "override"
-SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-FileCopyrightText = "2024-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "CC0-1.0"
