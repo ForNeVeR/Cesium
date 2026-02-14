@@ -43,4 +43,13 @@ int test()
         @"
 typedef int myint;
 static const myint i = 0;");
+
+    [Fact]
+    public Task AnonymousUnionVariableInsideFunction() => DoTest(
+        @"int main()
+{
+    union {int i;} t;
+    t.i = 0;
+}
+");
 }

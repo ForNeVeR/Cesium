@@ -22,6 +22,15 @@ typedef struct {
     } s;
 } foo;
 
+int test() {
+    union {
+        long l;
+        int i;
+    } x;
+    x.l = 10;
+    return x.i;
+}
+
 int main() {
     foo f;
     f._1 = 2;
@@ -29,5 +38,5 @@ int main() {
     f._3u = 10;
     f.uni._5u = 10;
     f.s._7 = 10;
-    return f._1 + f._2a + f._4u + f.uni._6u + f.s._7;
+    return f._1 + f._2a + f._4u + f.uni._6u + f.s._7 + (test() - 10);
 }
