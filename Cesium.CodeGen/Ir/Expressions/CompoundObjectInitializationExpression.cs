@@ -111,7 +111,7 @@ internal sealed class CompoundObjectInitializationExpression : IExpression
             if (init == null)
                 throw new CompilationException($"Retrieved null initializer!");
 
-            if (init is ConstantLiteralExpression)
+            if (init is ConstantLiteralExpression or GetValueExpression or TypeCastExpression)
             {
                 instructions.Add(Instruction.Create(OpCodes.Ldloca, newobj));
                 init.EmitTo(scope);
