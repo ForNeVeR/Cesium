@@ -63,6 +63,7 @@ public class StdLibFunctionTests
     [Theory]
     [InlineData("111.11", 111.11)]
     [InlineData("-2.22", -2.22)]
+    [InlineData(" -2.22", -2.22)]
     [InlineData("NaN", double.NaN)]
     [InlineData("nan(2)", double.NaN)]
     [InlineData("inF", double.PositiveInfinity)]
@@ -82,7 +83,7 @@ public class StdLibFunctionTests
         fixed (byte* str = stringBytes)
         {
             var actual = StdLibFunctions.StrToD(str, &strEnd);
-
+            Assert.Equal(0, *strEnd);
             Assert.Equal(expectedResult, actual);
         }
     }
