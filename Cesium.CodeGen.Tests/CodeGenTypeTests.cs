@@ -466,4 +466,13 @@ void foo(foo* p1, foo* p2) {
     *p1 = *p2;
 }
 """);
+
+    [Fact]
+    public Task TypeDefTwice() => DoTest(@"typedef struct Token Token;
+typedef struct Token Token;
+
+struct Token {
+    int x;
+};
+");
 }

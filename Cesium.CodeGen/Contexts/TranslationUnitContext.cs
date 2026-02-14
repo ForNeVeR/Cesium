@@ -132,7 +132,16 @@ public class TranslationUnitContext
     internal void AddTypeDefinition(string name, IType type)
     {
         if (_types.ContainsKey(name))
+        {
+            if (type is StructType newStructType && newStructType.Members.Count == 0)
+            {
+                if (_types[name] is StructType existingStructType && existingStructType.Members.Count == 0 && existingStructType.Identifier == newStructType.Identifier)
+                {
+                    return;
+                }
+            }
             throw new CompilationException($"Type definition {name} was already defined.");
+        }
 
         _types.Add(name, type);
     }

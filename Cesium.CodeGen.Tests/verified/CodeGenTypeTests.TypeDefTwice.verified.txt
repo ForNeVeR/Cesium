@@ -1,0 +1,6 @@
+Module: Primary
+  Type: <Module>
+
+  Type: Token
+  Fields:
+    System.Int32 Token::x
