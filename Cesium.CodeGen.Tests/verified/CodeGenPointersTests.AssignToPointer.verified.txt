@@ -1,0 +1,11 @@
+System.Void <Module>::foo_int(System.Int32* x)
+  IL_0000: ldarg.0
+  IL_0001: ldc.i4.0
+  IL_0002: stind.i4
+  IL_0003: ret
+
+System.Void <Module>::foo_uint64(System.UInt64* x)
+  IL_0000: ldarg.0
+  IL_0001: ldc.i4.0
+  IL_0002: stind.i8
+  IL_0003: ret
