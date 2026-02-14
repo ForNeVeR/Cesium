@@ -252,6 +252,83 @@ public unsafe static class StdLibFunctions
         return (ulong)StrToL(str, str_end, @base);
     }
 
+    public static float StrToF(byte* str, byte** str_end)
+    {
+        return (float)StrToD(str, str_end);
+    }
+
+    public static double StrToD(byte* str, byte** str_end)
+    {
+        byte* current = str;
+        byte currentChar;
+        int @base = 10;
+        do
+        {
+            currentChar = *current++;
+        }
+        while (CTypeFunctions.IsSpace(currentChar) != 0);
+
+        bool negate = false;
+        if (currentChar == '-')
+        {
+            negate = true;
+            currentChar = *current++;
+        }
+        else if (currentChar == '+')
+            currentChar = *current++;
+
+        if (currentChar == 'I' || currentChar == 'i')
+        {
+            if ((current[0] == 'n' || current[0] == 'N') && (current[1] == 'f' || current[1] == 'F'))
+            {
+                if (str_end != null)
+                    *str_end = current + 2;
+                return negate ? double.NegativeInfinity : double.PositiveInfinity;
+            }
+            errNo = 34 /*ERANGE*/;
+        }
+
+        if (currentChar == 'n' || currentChar == 'N')
+        {
+            if ((current[0] == 'a' || current[0] == 'A') && (current[1] == 'n' || current[1] == 'N'))
+            {
+                if (str_end != null)
+                    *str_end = current + 2;
+                return double.NaN;
+            }
+            errNo = 34 /*ERANGE*/;
+        }
+
+        if (currentChar == '0' && (*current == 'x' || *current == 'X'))
+        {
+            currentChar = current[1];
+            current += 2;
+            @base = 16;
+        }
+
+        double result = StrToL(current - 1, &current, @base);
+        if (*current == '.')
+        {
+            current++;
+            long exponenta = StrToL(current, &current, @base);
+            if (exponenta != 0)
+            {
+                var expPower = Math.Log(exponenta, @base);
+                expPower = Math.Ceiling(expPower);
+                result += exponenta / Math.Pow(@base, expPower);
+            }
+        }
+
+        if ((*current == 'E' && @base == 10) || (*current == 'P' && @base == 16))
+        {
+            current++;
+            var exp = StrToL(current, &current, @base);
+            result = result * Math.Pow(@base == 16 ? 2 : @base, exp);
+        }
+
+        return (negate ? -result : result);
+    }
+
     private static EnvVarsStorage InitEnvVarsStorage()
     {
         var processEnvs = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
