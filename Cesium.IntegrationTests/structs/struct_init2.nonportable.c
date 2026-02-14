@@ -13,5 +13,5 @@ typedef struct Foo
 int main() {
     int c = 33;
     Foo f = { NULL, c };
-    return f.a + f.b + 9;
+    return (int)f.a + f.b + 9;
 }
