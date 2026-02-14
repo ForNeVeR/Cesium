@@ -79,7 +79,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
 
         var result = await ExecuteTargets(projectName, "Restore", "Build");
 
-        Assert.True(result.ExitCode == 0);
+        Assert.Equal(1, result.ExitCode);
         Assert.Equal("Unsupported TargetFramework: net461. Supported frameworks are: net6.0 and up, netstandard2.0 and net462 and up.", result.StdErrOutput);
         Assert.Empty(result.IntermediateArtifacts);
         Assert.Empty(result.OutputArtifacts);
