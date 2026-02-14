@@ -306,11 +306,13 @@ public unsafe static class StdLibFunctions
             @base = 16;
         }
 
-        double result = StrToL(current - 1, &current, @base);
-        if (*current == '.')
+        double result = StrToL(current - 1, str_end, @base);
+        if (*(char*)str_end == '.')
         {
+            current = (byte*)str_end;
             current++;
-            long exponenta = StrToL(current, &current, @base);
+            long exponenta = StrToL(current, str_end, @base);
+            current = (byte*)str_end;
             if (exponenta != 0)
             {
                 var expPower = Math.Log(exponenta, @base);
@@ -322,7 +324,7 @@ public unsafe static class StdLibFunctions
         if ((*current == 'E' && @base == 10) || (*current == 'P' && @base == 16))
         {
             current++;
-            var exp = StrToL(current, &current, @base);
+            var exp = StrToL(current, str_end, @base);
             result = result * Math.Pow(@base == 16 ? 2 : @base, exp);
         }
 
