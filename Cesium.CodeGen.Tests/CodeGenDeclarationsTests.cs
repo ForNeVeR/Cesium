@@ -43,4 +43,10 @@ int test()
         @"
 typedef int myint;
 static const myint i = 0;");
+
+    [Fact]
+    public Task ЕнзуВуаЕцшсу() => DoTest(
+        @"
+typedef int myint;
+static const myint i = 0;");
 }
