@@ -55,6 +55,12 @@ long strtol(const char* str, char** str_end, int base);
 __cli_import("Cesium.Runtime.StdLibFunctions::StrToUL")
 unsigned long strtoul(const char* str, char** str_end, int base);
 
+__cli_import("Cesium.Runtime.StdLibFunctions::StrToF")
+float strtof(const char* str, char** str_end);
+
+__cli_import("Cesium.Runtime.StdLibFunctions::StrToD")
+double strtod(const char* str, char** str_end);
+
 __cli_import("Cesium.Runtime.StdLibFunctions::GetErrNo")
 int* _errno(void);
 
