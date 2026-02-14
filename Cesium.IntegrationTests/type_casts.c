@@ -63,5 +63,9 @@ int main(void)
     int64_t r = o;
     if (p != 10) return -2;
 
+    uint64_t s = 333;
+    uint64_t t = o;
+    if (s != 333) return -3;
+
     return 42;
 }
