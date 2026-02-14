@@ -40,6 +40,12 @@ public class CodeGenPointersTests : CodeGenTestBase
     public Task IndexOverPointer() => DoTest("void foo (int *x) { int y = x[1]; }");
 
     [Fact]
+    public Task AssignToPointer() => DoTest(@"
+void foo_int (int *x) { *x = 0; }
+void foo_uint64 (unsigned long long *x) { *x = 0; }
+");
+
+    [Fact]
     public Task PointerToPointer() => DoTest("void foo (int **x) { int y = *x[1]; }");
 
     [Fact]
