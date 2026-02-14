@@ -49,7 +49,7 @@ SPDX-License-Identifier: MIT
     </Target>
 
     <PropertyGroup Label="MapTargetFramework" Condition="$(_CesiumFramework) == ''">
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">Net</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">Net</_CesiumFramework>
         <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">NetFramework</_CesiumFramework>
         <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">NetStandard</_CesiumFramework>
     </PropertyGroup>
