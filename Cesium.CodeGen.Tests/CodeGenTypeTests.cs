@@ -398,6 +398,24 @@ int main() {
 ");
 
     [Fact]
+    public Task StructVariableInitialization() => DoTest(@"typedef struct Foo { int a; int b; } Foo;
+int main() {
+    int c = 1;
+    Foo f = { c, 2 };
+    return f.a + f.b;
+}
+");
+
+    [Fact]
+    public Task StructCastInitialization() => DoTest(@"typedef struct Foo { int a; int b; } Foo;
+int main() {
+    int c = 1;
+    Foo f = { (int)c, 2 };
+    return f.a + f.b;
+}
+");
+
+    [Fact]
     public Task SuperHardStructInitialization() => DoTest(@"
 typedef struct Foo
 {
