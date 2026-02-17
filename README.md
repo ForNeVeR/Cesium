@@ -145,7 +145,7 @@ As inputs, Cesium accepts its own internal `.obj` file format produced by the `-
   - `Windows`: doesn't get detected, so it's only possible to select manually
   - `NetModule`: is a rudiment from Cecil, not supported
 - `-c`: will produce a JSON-based object file imitation in the output file. This mode is supposed to be used when using Cesium compiler as a C compiler for an existing toolset
-- `-ast-dump`: prints the Abstract Syntax Tree (AST) of the output file. No output assembly is generated. For diagnostic use only.
+- `--ast-dump`: prints the Abstract Syntax Tree (AST) of the output file. No output assembly is generated. For diagnostic use only.
 
 Implementation Dashboard
 ------------------------
