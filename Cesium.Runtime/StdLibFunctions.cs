@@ -260,8 +260,10 @@ public unsafe static class StdLibFunctions
     public static double StrToD(byte* str, byte** str_end)
     {
         byte* current = str;
+        byte* next = str;
         byte currentChar;
         int @base = 10;
+        errNo = 0;
         do
         {
             currentChar = *current++;
@@ -286,12 +288,27 @@ public unsafe static class StdLibFunctions
                 return negate ? double.NegativeInfinity : double.PositiveInfinity;
             }
             errNo = 34 /*ERANGE*/;
+            if (str_end != null)
+                *str_end = str;
         }
 
         if (currentChar == 'n' || currentChar == 'N')
         {
             if ((current[0] == 'a' || current[0] == 'A') && (current[1] == 'n' || current[1] == 'N'))
             {
+                current += 2;
+                if (current[0] == '(')
+                {
+                    current++;
+                    while (*current != ')' && (CTypeFunctions.IsAlnum(*current) != 0 || *current == '_'))
+                    {
+                        current++;
+                    }
+                    if (*current == ')')
+                    {
+                        current++;
+                    }
+                }
                 if (str_end != null)
                     *str_end = current + 2;
                 return double.NaN;
@@ -306,13 +323,17 @@ public unsafe static class StdLibFunctions
             @base = 16;
         }
 
-        double result = StrToL(current - 1, str_end, @base);
-        if (*(char*)str_end == '.')
+        double result = StrToL(current - 1, &next, @base);
+        if (errNo == 0)
         {
-            current = (byte*)str_end;
+            current = next;
+        }
+
+        if ((char)(*next) == '.')
+        {
             current++;
-            long exponenta = StrToL(current, str_end, @base);
-            current = (byte*)str_end;
+            long exponenta = StrToL(current, &next, @base);
+            current = next;
             if (exponenta != 0)
             {
                 var expPower = Math.Log(exponenta, @base);
@@ -324,8 +345,14 @@ public unsafe static class StdLibFunctions
         if ((*current == 'E' && @base == 10) || (*current == 'P' && @base == 16))
         {
             current++;
-            var exp = StrToL(current, str_end, @base);
+            var exp = StrToL(current, &next, @base);
+            current = next;
             result = result * Math.Pow(@base == 16 ? 2 : @base, exp);
+        }
+
+        if (str_end != null)
+        {
+            *str_end = current;
         }
 
         return (negate ? -result : result);
