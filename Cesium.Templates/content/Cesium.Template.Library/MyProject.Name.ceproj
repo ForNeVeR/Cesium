@@ -2,5 +2,6 @@
     <PropertyGroup>
         <TargetFramework>Tfm</TargetFramework>
         <OutputType>Library</OutputType>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
 </Project>
