@@ -2,5 +2,6 @@
     <PropertyGroup>
         <TargetFramework>Tfm</TargetFramework>
         <OutputType>Exe</OutputType>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
 </Project>
