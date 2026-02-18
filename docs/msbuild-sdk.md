@@ -11,6 +11,8 @@ Cesium provides its own project SDK that could be used to simplify building of C
 
 Cesium MSBuild SDK inherits default behavior from a `Microsoft.NET.Sdk` SDK and tries to integrate with it the same way as C# does.
 
+This page is a reference for the [MSBuild properties][MSBuild_props] and items that you can use to configure .NET projects.
+
 Cesium MSBuild SDK only supports SDK-style projects.
 
 > Note: Some of the common MSBuild properties and items those are not stated in this document could be also used in Cesium project files. Not all of them are tested so something may not work as expected.
@@ -72,3 +74,5 @@ Output assembly and additional artifacts will be placed in `bin` folder. Dependi
 
 ### Items
 - `Compile`: a C source file to be included into compiler execution command
+
+[MSBuild_props]: https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props

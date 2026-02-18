@@ -63,6 +63,7 @@ To start working on a new project using Cesium.SDK, write a `.ceproj` file:
     <PropertyGroup>
         <TargetFramework>[tfm]</TargetFramework>
         <OutputType>Exe</OutputType>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
 </Project>
 ```
