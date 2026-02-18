@@ -8,5 +8,6 @@ SPDX-License-Identifier: MIT
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <OutputType>Library</OutputType>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
 </Project>
