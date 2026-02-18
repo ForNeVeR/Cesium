@@ -46,6 +46,25 @@ $ dotnet restore
 $ dotnet nuke TestAll
 ```
 
+Testing Templates
+-------
+If you want to test changes in Cesium.Templates locally then you can use usual install template command from the Cesium folder.
+```console
+$ cd <PATH_TO_CESIUM>/Cesium
+$ dotnet new install Cesium.Templates
+```
+It will install templates locally and will allow to consume template changes bypassing Nuget cache.
+
+## Testing Templates
+If you want to test changes in **Cesium.Templates** locally, you can install the templates directly from the Cesium folder.
+
+```console
+cd <PATH_TO_CESIUM>/Cesium
+dotnet new install Cesium.Templates
+```
+This installs the templates locally and lets you use template changes without going through the NuGet cache.
+
+
 Publishing
 ----------
 To produce a standalone compiler executable, run the following shell command:
