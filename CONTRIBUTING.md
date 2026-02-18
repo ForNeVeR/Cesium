@@ -54,8 +54,7 @@ If you want to test changes in **Cesium.Templates** locally, you can install the
 $ cd <PATH_TO_CESIUM>/Cesium
 $ dotnet new install Cesium.Templates
 ```
-This installs the templates locally and lets you use template changes without going through the NuGet cache.
-More info: https://learn.microsoft.com/en-us/dotnet/core/install/templates?pivots=os-windows#folder
+This [installs the templates locally][install_templates] and lets you use template changes without going through the NuGet cache.
 
 Publishing
 ----------
@@ -100,3 +99,4 @@ If the CI asks you to update the file licenses, follow one of these:
 [dotnet.download]: https://dotnet.microsoft.com/en-us/download
 [powershell]: https://github.com/PowerShell/PowerShell
 [reuse]: https://reuse.software/
+[install_templates]: https://learn.microsoft.com/en-us/dotnet/core/install/templates?pivots=os-windows#folder
