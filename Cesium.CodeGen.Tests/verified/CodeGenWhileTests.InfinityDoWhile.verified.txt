@@ -5,16 +5,14 @@ System.Int32 <Module>::main()
   IL_0001: stloc.0
   IL_0002: nop
   IL_0003: ldloc.0
-  IL_0004: ldc.i4.1
-  IL_0005: add
-  IL_0006: stloc.0
-  IL_0007: ldloc.0
-  IL_0008: ldc.i4.s 10
-  IL_000a: clt
-  IL_000c: brtrue IL_0002
-  IL_0011: nop
-  IL_0012: ldc.i4.0
-  IL_0013: ret
+  IL_0004: dup
+  IL_0005: ldc.i4.1
+  IL_0006: add
+  IL_0007: stloc.0
+  IL_0008: pop
+  IL_0009: br IL_0002
+  IL_000e: ldc.i4.0
+  IL_000f: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
