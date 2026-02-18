@@ -11,7 +11,7 @@ Cesium provides its own project SDK that could be used to simplify building of C
 
 Cesium MSBuild SDK inherits default behavior from a `Microsoft.NET.Sdk` SDK and tries to integrate with it the same way as C# does.
 
-This page is a reference for the [MSBuild properties][MSBuild_props] and items that you can use to configure .NET projects.
+[This page is a reference][MSBuild_props] for the MSBuild properties and items that you can use to configure .NET projects.
 
 Cesium MSBuild SDK only supports SDK-style projects.
 
