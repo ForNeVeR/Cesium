@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
         <TargetFramework>net6.0</TargetFramework>
         <OutputType>Exe</OutputType>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <RollForward>Major</RollForward>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="hello.c" />
