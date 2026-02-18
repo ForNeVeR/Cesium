@@ -55,6 +55,7 @@ $ cd <PATH_TO_CESIUM>/Cesium
 $ dotnet new install Cesium.Templates
 ```
 This installs the templates locally and lets you use template changes without going through the NuGet cache.
+More info: https://learn.microsoft.com/en-us/dotnet/core/install/templates?pivots=os-windows#folder
 
 Publishing
 ----------
