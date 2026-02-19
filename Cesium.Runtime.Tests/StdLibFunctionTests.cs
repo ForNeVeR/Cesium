@@ -17,6 +17,7 @@ public class StdLibFunctionTests
     [InlineData("012", 0, 10)]
     [InlineData("0xA", 0, 10)]
     [InlineData("junk", 0, 0)]
+    [InlineData("111.", 10, 111)]
     public unsafe void StrToL(string input, int @base, long expectedResult)
     {
         var stringBytes = Encoding.UTF8.GetBytes(input);
@@ -57,6 +58,33 @@ public class StdLibFunctionTests
             var errorCode = *StdLibFunctions.GetErrNo();
             Assert.Equal(34, errorCode);
             Assert.Equal(long.MinValue, actual);
+        }
+    }
+    [Theory]
+    [InlineData("111.11", 111.11, 0)]
+    [InlineData("-2.22", -2.22, 0)]
+    [InlineData(" -2.22", -2.22, 0)]
+    [InlineData("NaN", double.NaN, 0)]
+    [InlineData("nan(2)", double.NaN, 0)]
+    [InlineData("inF", double.PositiveInfinity, 0)]
+    [InlineData("0X1.BC70A3D70A3D7P+6", 111.11, 0)]
+    [InlineData("junk", 0, (int)(byte)'j')]
+    public unsafe void StrToD(string input, double expectedResult, int expectedLastByte)
+    {
+        var stringBytes = Encoding.UTF8.GetBytes(input);
+        fixed (byte* str = stringBytes)
+        {
+            var actual = StdLibFunctions.StrToD(str, null);
+
+            Assert.Equal(expectedResult, actual);
+        }
+
+        byte* strEnd;
+        fixed (byte* str = stringBytes)
+        {
+            var actual = StdLibFunctions.StrToD(str, &strEnd);
+            Assert.Equal(expectedResult, actual);
+            Assert.Equal(expectedLastByte, *strEnd);
         }
     }
 }
