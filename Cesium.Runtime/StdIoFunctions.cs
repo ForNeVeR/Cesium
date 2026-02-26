@@ -295,6 +295,28 @@ public unsafe static class StdIoFunctions
                 padding = width;
             }
 
+            bool trimZero = false;
+            if (formatSpecifier == "g" || formatSpecifier == "G")
+            {
+                trimZero = true;
+                var floatNumber = ((double*)varargs)[consumedArgs];
+                var exponent = (int)Math.Log10(floatNumber);
+                if (precision == -1)
+                {
+                    precision = 6;
+                }
+                if (precision > exponent && exponent >= -4)
+                {
+                    formatSpecifier = formatSpecifier == "g" ? "f" : "F";
+                    precision = precision - 1 - exponent;
+                }
+                else
+                {
+                    formatSpecifier = formatSpecifier == "g" ? "e" : "E";
+                    precision = precision - 1;
+                }
+            }
+
             int trim = -1;
             if (precision == -2)
             {
@@ -431,6 +453,11 @@ public unsafe static class StdIoFunctions
                             streamWriter.Write(new string(zeroPrepend ? '0' : ' ', width - floatNumberString.Length));
                         }
 
+                        if (trimZero)
+                        {
+                            floatNumberString = floatNumberString.TrimEnd('0');
+                        }
+
                         streamWriter.Write(floatNumberString);
                         consumedBytes += floatNumberString.Length;
                         consumedArgs++;
@@ -441,7 +468,7 @@ public unsafe static class StdIoFunctions
                     {
                         var floatNumber = ((double*)varargs)[consumedArgs];
                         //streamWriter.Write($"!padding {padding} trim {trim} precision {precision} ");
-                        string floatNumberString = floatNumber.ToString("0." + new string('0', trim == -1 ? 6 : trim) + formatSpecifier + "+00", CultureInfo.InvariantCulture.NumberFormat);
+                        string floatNumberString = floatNumber.ToString("0." + new string(trimZero ? '#' : '0', trim == -1 ? 6 : trim) + formatSpecifier + "+00", CultureInfo.InvariantCulture.NumberFormat);
                         if (alwaysSign && floatNumber > 0)
                         {
                             streamWriter.Write('+');
