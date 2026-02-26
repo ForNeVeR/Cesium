@@ -47,7 +47,7 @@ jobs:
         run: echo "version=$(scripts/Get-Version.ps1 -RefName $env:GITHUB_REF)" >> $env:GITHUB_OUTPUT
 
       - name: ✅ Upload Compiler ✅
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
@@ -67,7 +67,7 @@ jobs:
             ./artifacts/package/release/Cesium.Compiler.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload Runtime ✅
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
@@ -77,7 +77,7 @@ jobs:
             ./artifacts/package/release/Cesium.Runtime.${{ steps.version.outputs.version }}.snupkg
 
       - name: ✅ Upload SDK ✅
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
@@ -86,7 +86,7 @@ jobs:
             ./artifacts/package/release/Cesium.Sdk.${{ steps.version.outputs.version }}.nupkg
 
       - name: ✅ Upload Templates ✅
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
@@ -100,7 +100,7 @@ jobs:
           output: ./release-notes.md
 
       - name: ✅ Upload the changelog ✅
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           if-no-files-found: 'error'
