@@ -49,13 +49,13 @@ SPDX-License-Identifier: MIT
     </Target>
 
     <PropertyGroup Label="MapTargetFramework" Condition="$(_CesiumFramework) == ''">
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v6.0'">Net</_CesiumFramework>
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion)' == 'v4.8'">NetFramework</_CesiumFramework>
-        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.0'">NetStandard</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">Net</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(_TargetFrameworkVersionWithoutV)' >= '4.6.2'">NetFramework</_CesiumFramework>
+        <_CesiumFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(_TargetFrameworkVersionWithoutV)' >= '2.0'">NetStandard</_CesiumFramework>
     </PropertyGroup>
 
     <Target Name="CheckFramework" BeforeTargets="CesiumValidateProperties">
-        <Error Text="Unsupported TargetFramework: $(TargetFramework). Supported frameworks are: net6.0, netstandard2.0 and net48."
+        <Error Text="Unsupported TargetFramework: $(TargetFramework). Supported frameworks are: net6.0 and up, netstandard2.0 and net462 and up."
                Condition="'$(_CesiumFramework)' == ''" />
     </Target>
 

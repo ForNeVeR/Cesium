@@ -71,11 +71,13 @@ public abstract class SdkTestBase : IDisposable
 
         using var process = new Process();
         process.StartInfo = startInfo;
-
+        var stdOutOutput = "";
+        var stdErrOutput = "";
         process.OutputDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
+                stdOutOutput += e.Data + Environment.NewLine;
                 _testOutputHelper.WriteLine($"[stdout]: {e.Data}");
             }
         };
@@ -84,6 +86,7 @@ public abstract class SdkTestBase : IDisposable
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
+                stdErrOutput += e.Data + Environment.NewLine;
                 _testOutputHelper.WriteLine($"[stderr]: {e.Data}");
             }
         };
@@ -115,7 +118,7 @@ public abstract class SdkTestBase : IDisposable
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
 
-        var result = new BuildResult(process.ExitCode, binArtifacts, objArtifacts);
+        var result = new BuildResult(process.ExitCode, stdOutOutput, stdErrOutput, binArtifacts, objArtifacts);
         _testOutputHelper.WriteLine($"Build result: {JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true })}");
         return result;
 
@@ -189,6 +192,8 @@ public abstract class SdkTestBase : IDisposable
 
     protected record BuildResult(
         int ExitCode,
+        string StdOutOutput,
+        string StdErrOutput,
         IReadOnlyCollection<BuildArtifact> OutputArtifacts,
         IReadOnlyCollection<BuildArtifact> IntermediateArtifacts);
 
