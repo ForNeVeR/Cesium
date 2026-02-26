@@ -141,7 +141,7 @@ public class CodeGenSwitchTests : CodeGenTestBase
 int my_condition() { return 0; }
 int main()
 {
-    switch(my_condition()) { 
+    switch(my_condition()) {
         case 0: break;
         case 1:
         default: break;

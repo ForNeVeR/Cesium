@@ -32,4 +32,36 @@ public class CodeGenWhileTests : CodeGenTestBase
     int i = 0;
     do ++i; while (i < 10);
 }");
+
+    [Fact]
+    public Task InfinityWhile() => DoTest(
+        @"int main()
+{
+    int i = 0;
+    while (1) i++;
+}");
+
+    [Fact]
+    public Task InfinityDoWhile() => DoTest(
+        @"int main()
+{
+    int i = 0;
+    do i++; while (1);
+}");
+
+    [Fact]
+    public Task NegativeWhile() => DoTest(
+        @"int main()
+{
+    int i = 0;
+    while (!1) i++;
+}");
+
+    [Fact]
+    public Task NegativeDoWhile() => DoTest(
+        @"int main()
+{
+    int i = 0;
+    do i++; while (!1);
+}");
 }

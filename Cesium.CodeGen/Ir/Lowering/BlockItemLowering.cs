@@ -63,6 +63,24 @@ internal static class BlockItemLowering
         return Lower(scope, new CompoundStatement(stmts, scope));
     }
 
+    private static IBlockItem MakeDoWhileLoop(
+            BlockScope scope,
+            IExpression testExpression,
+            IBlockItem body,
+            string breakLabel,
+            string loopBodyLabel
+        )
+    {
+        var stmts = new List<IBlockItem>
+        {
+            new LabelStatement(loopBodyLabel, body),
+            new ConditionalGotoStatement(testExpression, ConditionalJumpType.True, loopBodyLabel),
+            new LabelStatement(breakLabel, new ExpressionStatement(null))
+        };
+
+        return Lower(scope, new CompoundStatement(stmts, scope));
+    }
+
     public static CompoundStatement LowerBody(FunctionScope scope, IBlockItem blockItem)
     {
         CompoundStatement compoundStatement = (CompoundStatement)Lower(scope, blockItem);
@@ -231,7 +249,7 @@ internal static class BlockItemLowering
                             }
                         }
                         else
-                        { 
+                        {
                             if (cliImportMemberName != null)
                                 throw new CompilationException(
                                     $"Local declaration with a CLI import member name {cliImportMemberName} isn't supported.");
@@ -308,16 +326,12 @@ internal static class BlockItemLowering
 
                     var loopScope = new BlockScope((IEmitScope)scope, breakLabel, continueLabel);
 
-                    return MakeLoop(
+                    return MakeDoWhileLoop(
                         loopScope,
-                        new GoToStatement(continueLabel),
                         s.TestExpression,
-                        null,
                         s.Body,
                         breakLabel,
-                        null,
-                        continueLabel,
-                        null
+                        continueLabel
                     );
                 }
             case ExpressionStatement s:
