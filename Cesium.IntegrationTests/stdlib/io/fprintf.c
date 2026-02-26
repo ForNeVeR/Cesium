@@ -35,8 +35,8 @@ int main(void)
     printf("\tScientific:\t%E %e\n", 1.5, 1.5);
     // Not in the mood for this.
     //printf("\tHexadecimal:\t%a %A\n", 1.5, 1.5);
-    //float divzero = 0.0F;
-    //printf("\tSpecial values:\t0/0=%g 1/0=%g\n", 0.0 / divzero, 1.0 / divzero);
+    float divzero = 0.0F;
+    printf("\tSpecial values:\t0/0=%g 1/0=%g\n", 0.0 / divzero, 1.0 / divzero);
 
     //printf("Fixed-width types:\n");
     //printf("\tLargest 32-bit value is %" PRIu32 " or %#" PRIx32 "\n",
