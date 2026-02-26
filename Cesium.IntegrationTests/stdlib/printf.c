@@ -48,8 +48,21 @@ int main(int argc, char *argv[])
     }
 
     char myLetter = 'D';
-    if (printf("%c\n%c", myLetter, '1') != 3) {
+    if (printf("%c\n%c\n", myLetter, '1') != 4) {
         return -9;
+    }
+
+    if (printf("%g\n", doubleValue) != 5) {
+        return -10;
+    }
+
+    if (printf("%g3\n", doubleValue) != 6) {
+        return -11;
+    }
+
+    double largeDoubleValue = 10300020.44;
+    if (printf("%g\n", largeDoubleValue) != 9) {
+        return -12;
     }
 
     // We cannot validate this automatically, but at least we can uncomment and check
