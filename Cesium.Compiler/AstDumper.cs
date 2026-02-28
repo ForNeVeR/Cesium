@@ -31,7 +31,6 @@ internal sealed class AstDumper : AstVisitor
     {
         _writer.WriteLine("FunctionDefinition");
         _writer.Indent++;
-        VisitFunctionDeclarationSpecifiers(functionDefinition);
 
         Visit(functionDefinition.Declarator);
 
@@ -43,13 +42,6 @@ internal sealed class AstDumper : AstVisitor
         _writer.Indent--;
     }
 
-    protected override void VisitFunctionDeclarationSpecifiers(FunctionDefinition functionDefinition)
-    {
-        _writer.WriteLine("Specifiers");
-        _writer.Indent++;
-        base.VisitFunctionDeclarationSpecifiers(functionDefinition);
-        _writer.Indent--;
-    }
 
     protected override void Visit(SymbolDeclaration symbolDeclaration)
     {
@@ -69,14 +61,12 @@ internal sealed class AstDumper : AstVisitor
     {
         _writer.WriteLine("Decl");
         _writer.Indent++;
-        _writer.WriteLine("Specifiers");
-        _writer.Indent++;
         foreach (var specifier in declaration.Specifiers)
         {
             Visit(specifier);
         }
-
         _writer.Indent--;
+
         if (declaration.InitDeclarators is not null)
         {
             _writer.Indent++;
@@ -87,8 +77,6 @@ internal sealed class AstDumper : AstVisitor
 
             _writer.Indent--;
         }
-
-        _writer.Indent--;
     }
 
     protected override void VisitInitDeclarator(InitDeclarator initDeclarator)

@@ -43,7 +43,10 @@ internal abstract class AstVisitor
 
     protected virtual void Visit(FunctionDefinition functionDefinition)
     {
-        VisitFunctionDeclarationSpecifiers(functionDefinition);
+        foreach (var specifier in functionDefinition.Specifiers)
+        {
+            Visit(specifier);
+        }
 
         Visit(functionDefinition.Declarator);
 
@@ -60,14 +63,6 @@ internal abstract class AstVisitor
             {
                 Visit(declaration);
             }
-        }
-    }
-
-    protected virtual void VisitFunctionDeclarationSpecifiers(FunctionDefinition functionDefinition)
-    {
-        foreach (var specifier in functionDefinition.Specifiers)
-        {
-            Visit(specifier);
         }
     }
 
