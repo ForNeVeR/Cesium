@@ -368,14 +368,14 @@ internal sealed class AstDumper : AstVisitor
                 Visit(typeQualifier);
                 break;
             case ITypeSpecifier typeSpecifier:
-                VisitITypeSpecifier(typeSpecifier);
+                Visit(typeSpecifier);
                 break;
             default:
                 throw new AssertException($"Unknown specifier qualified list item of type {specifierQualifierListItem.GetType()}.");
         }
     }
 
-    private void VisitITypeSpecifier(ITypeSpecifier typeSpecifier)
+    protected override void Visit(ITypeSpecifier typeSpecifier)
     {
         switch (typeSpecifier)
         {
