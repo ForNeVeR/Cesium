@@ -16,59 +16,56 @@ internal sealed class AstDumper : AstVisitor
         _writer = new IndentedTextWriter(writer);
     }
 
-    public void Dump(TranslationUnit translationUnit) => Visit(translationUnit);
+    public void Dump(TranslationUnit translationUnit) =>
+        VisitTranslationUnit(translationUnit);
 
-    protected override void VisitTranslationUnit(TranslationUnit translationUnit)
+    protected override void Visit(TranslationUnit translationUnit)
     {
         _writer.WriteLine("TranslationUnitDecl");
         _writer.Indent++;
-        base.VisitTranslationUnit(translationUnit);
+        base.Visit(translationUnit);
         _writer.Indent--;
     }
 
-    protected override void VisitFunctionDefinition(FunctionDefinition functionDefinition)
+    protected override void Visit(FunctionDefinition functionDefinition)
     {
         _writer.WriteLine("FunctionDefinition");
         _writer.Indent++;
-        _writer.WriteLine("Specifiers");
+        VisitFunctionDeclarationSpecifiers(functionDefinition);
+
+        Visit(functionDefinition.Declarator);
+
         _writer.Indent++;
-        foreach (var declarationSpecifier in functionDefinition.Specifiers)
-        {
-            VisitDeclarationSpecifier(declarationSpecifier);
-        }
-
+        VisitFunctionDeclarations(functionDefinition);
         _writer.Indent--;
-        VisitDeclarator(functionDefinition.Declarator);
-        if (functionDefinition.Declarations is not null)
-        {
-            _writer.Indent++;
-            foreach (var declaration in functionDefinition.Declarations)
-            {
-                VisitDeclaration(declaration);
-            }
 
-            _writer.Indent--;
-        }
-
-        VisitStatement(functionDefinition.Statement);
+        Visit(functionDefinition.Statement);
         _writer.Indent--;
     }
 
-    protected override void VisitSymbolDeclaration(SymbolDeclaration symbolDeclaration)
+    protected override void VisitFunctionDeclarationSpecifiers(FunctionDefinition functionDefinition)
+    {
+        _writer.WriteLine("Specifiers");
+        _writer.Indent++;
+        base.VisitFunctionDeclarationSpecifiers(functionDefinition);
+        _writer.Indent--;
+    }
+
+    protected override void Visit(SymbolDeclaration symbolDeclaration)
     {
         _writer.WriteLine("SymbolDecl");
         _writer.Indent++;
-        VisitDeclaration(symbolDeclaration.Declaration);
+        Visit(symbolDeclaration.Declaration);
         _writer.Indent--;
     }
 
-    protected override void VisitPInvokeDeclaration(PInvokeDeclaration pInvokeDeclaration)
+    protected override void Visit(PInvokeDeclaration pInvokeDeclaration)
     {
         var prefixPart = pInvokeDeclaration.Prefix is null ? string.Empty : $" Prefix = {pInvokeDeclaration.Prefix}";
         _writer.WriteLine($"PInvokeDecl {pInvokeDeclaration.Declaration}{prefixPart}");
     }
 
-    protected override void VisitDeclaration(Declaration declaration)
+    protected override void Visit(Declaration declaration)
     {
         _writer.WriteLine("Decl");
         _writer.Indent++;
@@ -76,7 +73,7 @@ internal sealed class AstDumper : AstVisitor
         _writer.Indent++;
         foreach (var specifier in declaration.Specifiers)
         {
-            VisitDeclarationSpecifier(specifier);
+            Visit(specifier);
         }
 
         _writer.Indent--;
@@ -98,7 +95,7 @@ internal sealed class AstDumper : AstVisitor
     {
         _writer.WriteLine("InitDecl");
         _writer.Indent++;
-        VisitDeclarator(initDeclarator.Declarator);
+        Visit(initDeclarator.Declarator);
         if (initDeclarator.Initializer is not null)
         {
             VisitInitializer(initDeclarator.Initializer);
@@ -107,20 +104,20 @@ internal sealed class AstDumper : AstVisitor
         _writer.Indent--;
     }
 
-    protected override void VisitDeclarator(Declarator declarator)
+    protected override void Visit(Declarator declarator)
     {
         _writer.WriteLine("Declarator");
         _writer.Indent++;
         if (declarator.Pointer is not null)
         {
-            VisitPointer(declarator.Pointer);
+            Visit(declarator.Pointer);
         }
 
-        VisitIDirectDeclarator(declarator.DirectDeclarator);
+        Visit(declarator.DirectDeclarator);
         _writer.Indent--;
     }
 
-    protected override void VisitIDirectDeclarator(IDirectDeclarator directDeclarator)
+    protected override void Visit(IDirectDeclarator directDeclarator)
     {
         switch (directDeclarator)
         {
@@ -130,25 +127,25 @@ internal sealed class AstDumper : AstVisitor
             case ArrayDirectDeclarator arrayDirectDeclarator:
                 _writer.WriteLine("ArrayDirectDeclarator");
                 _writer.Indent++;
-                VisitIDirectDeclarator(arrayDirectDeclarator.Base);
+                Visit(arrayDirectDeclarator.Base);
                 if (arrayDirectDeclarator.TypeQualifiers is not null)
                 {
                     foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
                     {
-                        VisitTypeQualifier(typeQualifier);
+                        Visit(typeQualifier);
                     }
                 }
                 if (arrayDirectDeclarator.Size is not null)
                 {
-                    VisitExpression(arrayDirectDeclarator.Size);
+                    Visit(arrayDirectDeclarator.Size);
                 }
                 _writer.Indent--;
                 break;
             case ParameterListDirectDeclarator parameterListDirectDeclarator:
                 _writer.WriteLine("ParameterListDirectDeclarator");
                 _writer.Indent++;
-                VisitIDirectDeclarator(parameterListDirectDeclarator.Base);
-                VisitParameterTypeList(parameterListDirectDeclarator.Parameters);
+                Visit(parameterListDirectDeclarator.Base);
+                Visit(parameterListDirectDeclarator.Parameters);
                 if (parameterListDirectDeclarator.Parameters.HasEllipsis)
                 {
                     _writer.WriteLine("HasEllipsis");
@@ -159,7 +156,7 @@ internal sealed class AstDumper : AstVisitor
             case IdentifierListDirectDeclarator identifierListDirectDeclarator:
                 _writer.WriteLine("IdentifierListDirectDeclarator");
                 _writer.Indent++;
-                VisitIDirectDeclarator(identifierListDirectDeclarator.Base);
+                Visit(identifierListDirectDeclarator.Base);
                 if (identifierListDirectDeclarator.Identifiers is not null)
                 {
                     _writer.WriteLine($"Identifiers {string.Join(", ", identifierListDirectDeclarator.Identifiers)}");
@@ -170,7 +167,7 @@ internal sealed class AstDumper : AstVisitor
             case DeclaratorDirectDeclarator declaratorDirectDeclarator:
                 _writer.WriteLine("DeclaratorDirectDeclarator");
                 _writer.Indent++;
-                VisitDeclarator(declaratorDirectDeclarator.Declarator);
+                Visit(declaratorDirectDeclarator.Declarator);
                 _writer.Indent--;
                 break;
             default:
@@ -178,58 +175,58 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitParameterTypeList(ParameterTypeList parameterTypeList)
+    protected override void Visit(ParameterTypeList parameterTypeList)
     {
         foreach (var parameterDeclaration in parameterTypeList.Parameters)
         {
-            VisitParameterDeclaration(parameterDeclaration);
+            Visit(parameterDeclaration);
         }
     }
 
-    protected override void VisitParameterDeclaration(ParameterDeclaration parameterDeclaration)
+    protected override void Visit(ParameterDeclaration parameterDeclaration)
     {
         _writer.WriteLine("ParameterDeclaration");
         _writer.Indent++;
         foreach (var declarationSpecifier in parameterDeclaration.Specifiers)
         {
-            VisitDeclarationSpecifier(declarationSpecifier);
+            Visit(declarationSpecifier);
         }
         if (parameterDeclaration.Declarator is not null)
         {
-            VisitDeclarator(parameterDeclaration.Declarator);
+            Visit(parameterDeclaration.Declarator);
         }
         if (parameterDeclaration.AbstractDeclarator is not null)
         {
-            VisitAbstractDeclarator(parameterDeclaration.AbstractDeclarator);
+            Visit(parameterDeclaration.AbstractDeclarator);
         }
 
         _writer.Indent--;
     }
 
-    protected override void VisitAbstractDeclarator(AbstractDeclarator abstractDeclarator)
+    protected override void Visit(AbstractDeclarator abstractDeclarator)
     {
         _writer.WriteLine("ParameterDeclaration");
         _writer.Indent++;
         if (abstractDeclarator.Pointer is not null)
         {
-            VisitPointer(abstractDeclarator.Pointer);
+            Visit(abstractDeclarator.Pointer);
         }
         if (abstractDeclarator.DirectAbstractDeclarator is not null)
         {
-            VisitIDirectAbstractDeclarator(abstractDeclarator.DirectAbstractDeclarator);
+            Visit(abstractDeclarator.DirectAbstractDeclarator);
         }
 
         _writer.Indent--;
     }
 
-    protected override void VisitIDirectAbstractDeclarator(IDirectAbstractDeclarator directAbstractDeclarator)
+    protected override void Visit(IDirectAbstractDeclarator directAbstractDeclarator)
     {
         switch (directAbstractDeclarator)
         {
             case SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator:
                 _writer.WriteLine("SimpleDirectAbstractDeclarator");
                 _writer.Indent++;
-                VisitAbstractDeclarator(simpleDirectAbstractDeclarator.Declarator);
+                Visit(simpleDirectAbstractDeclarator.Declarator);
                 _writer.Indent--;
                 break;
             case ArrayDirectAbstractDeclarator arrayDirectDeclarator:
@@ -237,19 +234,19 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 if (arrayDirectDeclarator.Base is not null)
                 {
-                    VisitIDirectAbstractDeclarator(arrayDirectDeclarator.Base);
+                    Visit(arrayDirectDeclarator.Base);
                 }
 
                 if (arrayDirectDeclarator.TypeQualifiers is not null)
                 {
                     foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
                     {
-                        VisitTypeQualifier(typeQualifier);
+                        Visit(typeQualifier);
                     }
                 }
                 if (arrayDirectDeclarator.Size is not null)
                 {
-                    VisitExpression(arrayDirectDeclarator.Size);
+                    Visit(arrayDirectDeclarator.Size);
                 }
 
                 _writer.Indent--;
@@ -259,7 +256,7 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitPointer(Pointer pointer)
+    protected override void Visit(Pointer pointer)
     {
         _writer.WriteLine("Pointer");
         _writer.Indent--;
@@ -268,14 +265,14 @@ internal sealed class AstDumper : AstVisitor
             _writer.Indent++;
             foreach (var typeQualifier in pointer.TypeQualifiers)
             {
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
             }
 
             _writer.Indent--;
         }
         if (pointer.ChildPointer is not null)
         {
-            VisitPointer(pointer.ChildPointer);
+            Visit(pointer.ChildPointer);
         }
         _writer.Indent++;
     }
@@ -292,7 +289,7 @@ internal sealed class AstDumper : AstVisitor
                     VisitDesignation(initializer.Designation);
                 }
 
-                VisitExpression(assignmentInitializer.Expression);
+                Visit(assignmentInitializer.Expression);
                 _writer.Indent--;
                 break;
             case ArrayInitializer arrayInitializer:
@@ -334,7 +331,7 @@ internal sealed class AstDumper : AstVisitor
             case BracketsDesignator bracketsDesignator:
                 _writer.WriteLine("BracketsDesignator");
                 _writer.Indent++;
-                VisitExpression(bracketsDesignator.Expression);
+                Visit(bracketsDesignator.Expression);
                 _writer.Indent--;
                 break;
             case IdentifierDesignator identifierDesignator:
@@ -345,7 +342,7 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitDeclarationSpecifier(IDeclarationSpecifier specifier)
+    protected override void Visit(IDeclarationSpecifier specifier)
     {
         switch (specifier)
         {
@@ -356,19 +353,19 @@ internal sealed class AstDumper : AstVisitor
                 _writer.WriteLine($"CliImportSpecifier {cliImportSpecifier.MemberName}");
                 break;
             case ISpecifierQualifierListItem specifierQualifierListItem:
-                VisitSpecifierQualifierListItem(specifierQualifierListItem);
+                Visit(specifierQualifierListItem);
                 break;
             default:
                 throw new AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
         }
     }
 
-    protected override void VisitSpecifierQualifierListItem(ISpecifierQualifierListItem specifierQualifierListItem)
+    protected override void Visit(ISpecifierQualifierListItem specifierQualifierListItem)
     {
         switch (specifierQualifierListItem)
         {
             case TypeQualifier typeQualifier:
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
                 break;
             case ITypeSpecifier typeSpecifier:
                 VisitITypeSpecifier(typeSpecifier);
@@ -386,10 +383,10 @@ internal sealed class AstDumper : AstVisitor
                 _writer.WriteLine($"SimpleTypeSpecifier {simpleTypeSpecifier.TypeName}");
                 break;
             case StructOrUnionSpecifier structOrUnionSpecifier:
-                VisitStructOrUnionSpecifier(structOrUnionSpecifier);
+                Visit(structOrUnionSpecifier);
                 break;
             case EnumSpecifier enumSpecifier:
-                VisitEnumSpecifier(enumSpecifier);
+                Visit(enumSpecifier);
                 break;
             case NamedTypeSpecifier namedTypeSpecifier:
                 _writer.WriteLine($"NamedTypeSpecifier {namedTypeSpecifier.TypeDefName}");
@@ -399,12 +396,12 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitTypeQualifier(TypeQualifier typeQualifier)
+    protected override void Visit(TypeQualifier typeQualifier)
     {
         _writer.WriteLine($"TypeQualifier {typeQualifier.Name}");
     }
 
-    protected override void VisitStructOrUnionSpecifier(StructOrUnionSpecifier structOrUnionSpecifier)
+    protected override void Visit(StructOrUnionSpecifier structOrUnionSpecifier)
     {
         _writer.WriteLine($"StructOrUnionSpecifier {structOrUnionSpecifier.TypeKind} {structOrUnionSpecifier.Identifier}");
         foreach (var structDeclaration in structOrUnionSpecifier.StructDeclarations)
@@ -415,7 +412,7 @@ internal sealed class AstDumper : AstVisitor
             _writer.Indent++;
             foreach (var specifierQualifierListItem in structDeclaration.SpecifiersQualifiers)
             {
-                VisitSpecifierQualifierListItem(specifierQualifierListItem);
+                Visit(specifierQualifierListItem);
             }
 
             _writer.Indent--;
@@ -425,7 +422,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 foreach (var structDeclarator in structDeclaration.Declarators)
                 {
-                    VisitStructDeclarator(structDeclarator);
+                    Visit(structDeclarator);
                 }
 
                 _writer.Indent--;
@@ -435,15 +432,15 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitStructDeclarator(StructDeclarator structDeclarator)
+    protected override void Visit(StructDeclarator structDeclarator)
     {
         _writer.WriteLine("StructDeclarator");
         _writer.Indent++;
-        VisitDeclarator(structDeclarator.Declarator);
+        Visit(structDeclarator.Declarator);
         _writer.Indent--;
     }
 
-    protected override void VisitEnumSpecifier(EnumSpecifier enumSpecifier)
+    protected override void Visit(EnumSpecifier enumSpecifier)
     {
         _writer.WriteLine($"EnumSpecifier {enumSpecifier.Identifier}");
         if (enumSpecifier.EnumDeclarations is not null)
@@ -454,14 +451,14 @@ internal sealed class AstDumper : AstVisitor
                 if (enumDeclaration.Constant is not null)
                 {
                     _writer.Indent++;
-                    VisitExpression(enumDeclaration.Constant);
+                    Visit(enumDeclaration.Constant);
                     _writer.Indent--;
                 }
             }
         }
     }
 
-    protected override void VisitExpression(Expression expression)
+    protected override void Visit(Expression expression)
     {
         switch (expression)
         {
@@ -477,7 +474,7 @@ internal sealed class AstDumper : AstVisitor
             case ParenExpression parenExpression:
                 _writer.WriteLine("ParenExpression");
                 _writer.Indent++;
-                VisitExpression(parenExpression.Contents);
+                Visit(parenExpression.Contents);
                 _writer.Indent--;
                 break;
             case SubscriptingExpression subscriptingExpression:
@@ -485,11 +482,11 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Base");
                 _writer.Indent++;
-                VisitExpression(subscriptingExpression.Base);
+                Visit(subscriptingExpression.Base);
                 _writer.Indent--;
                 _writer.WriteLine("Index");
                 _writer.Indent++;
-                VisitExpression(subscriptingExpression.Index);
+                Visit(subscriptingExpression.Index);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -498,7 +495,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Function");
                 _writer.Indent++;
-                VisitExpression(functionCallExpression.Function);
+                Visit(functionCallExpression.Function);
                 _writer.Indent--;
                 _writer.WriteLine("Arguments");
                 if (functionCallExpression.Arguments is not null)
@@ -506,7 +503,7 @@ internal sealed class AstDumper : AstVisitor
                     _writer.Indent++;
                     foreach (var argument in functionCallExpression.Arguments)
                     {
-                        VisitExpression(argument);
+                        Visit(argument);
                     }
 
                     _writer.Indent--;
@@ -520,7 +517,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 foreach (var argument in typeCastOrNamedFunctionCallExpression.Arguments)
                 {
-                    VisitExpression(argument);
+                    Visit(argument);
                 }
 
                 _writer.Indent--;
@@ -531,7 +528,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(memberAccessExpression.Target);
+                Visit(memberAccessExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -540,7 +537,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(pointerMemberAccessExpression.Target);
+                Visit(pointerMemberAccessExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -549,7 +546,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(postfixIncrementDecrementExpression.Target);
+                Visit(postfixIncrementDecrementExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -558,7 +555,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(prefixIncrementDecrementExpression.Target);
+                Visit(prefixIncrementDecrementExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -567,7 +564,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(unaryOperatorExpression.Target);
+                Visit(unaryOperatorExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -576,7 +573,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(indirectionExpression.Target);
+                Visit(indirectionExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -585,7 +582,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(unaryExpressionSizeOfOperatorExpression.TargetExpession);
+                Visit(unaryExpressionSizeOfOperatorExpression.TargetExpession);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -604,7 +601,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent--;
                 _writer.WriteLine("Target");
                 _writer.Indent++;
-                VisitExpression(castExpression.Target);
+                Visit(castExpression.Target);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -613,11 +610,11 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Left");
                 _writer.Indent++;
-                VisitExpression(binaryOperatorExpression.Left);
+                Visit(binaryOperatorExpression.Left);
                 _writer.Indent--;
                 _writer.WriteLine("Right");
                 _writer.Indent++;
-                VisitExpression(binaryOperatorExpression.Right);
+                Visit(binaryOperatorExpression.Right);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -626,15 +623,15 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Condition");
                 _writer.Indent++;
-                VisitExpression(conditionalExpression.Condition);
+                Visit(conditionalExpression.Condition);
                 _writer.Indent--;
                 _writer.WriteLine("TrueExpression");
                 _writer.Indent++;
-                VisitExpression(conditionalExpression.TrueExpression);
+                Visit(conditionalExpression.TrueExpression);
                 _writer.Indent--;
                 _writer.WriteLine("FalseExpression");
                 _writer.Indent++;
-                VisitExpression(conditionalExpression.FalseExpression);
+                Visit(conditionalExpression.FalseExpression);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -643,11 +640,11 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Left");
                 _writer.Indent++;
-                VisitExpression(commaExpression.Left);
+                Visit(commaExpression.Left);
                 _writer.Indent--;
                 _writer.WriteLine("Right");
                 _writer.Indent++;
-                VisitExpression(commaExpression.Right);
+                Visit(commaExpression.Right);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -664,7 +661,7 @@ internal sealed class AstDumper : AstVisitor
         _writer.Indent++;
         foreach (var specifierQualifierListItem in typeName.SpecifierQualifierList)
         {
-            VisitSpecifierQualifierListItem(specifierQualifierListItem);
+            Visit(specifierQualifierListItem);
         }
 
         _writer.Indent--;
@@ -672,21 +669,21 @@ internal sealed class AstDumper : AstVisitor
         if (typeName.AbstractDeclarator is not null)
         {
             _writer.Indent++;
-            VisitAbstractDeclarator(typeName.AbstractDeclarator);
+            Visit(typeName.AbstractDeclarator);
             _writer.Indent--;
         }
 
         _writer.Indent--;
     }
 
-    protected override void VisitStatement(Statement statement)
+    protected override void Visit(Statement statement)
     {
         switch (statement)
         {
             case LabelStatement labelStatement:
                 _writer.WriteLine($"LabelStatement {labelStatement.Identifier}");
                 _writer.Indent++;
-                VisitStatement(labelStatement.Body);
+                Visit(labelStatement.Body);
                 _writer.Indent--;
                 break;
             case CaseStatement caseStatement:
@@ -696,13 +693,13 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("Constant");
                     _writer.Indent++;
-                    VisitExpression(caseStatement.Constant);
+                    Visit(caseStatement.Constant);
                     _writer.Indent--;
                 }
 
                 _writer.WriteLine("Body");
                 _writer.Indent++;
-                VisitStatement(caseStatement.Body);
+                Visit(caseStatement.Body);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -720,7 +717,7 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("Expression");
                     _writer.Indent++;
-                    VisitExpression(expressionStatement.Expression);
+                    Visit(expressionStatement.Expression);
                     _writer.Indent--;
                 }
 
@@ -731,17 +728,17 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Expression");
                 _writer.Indent++;
-                VisitExpression(ifElseStatement.Expression);
+                Visit(ifElseStatement.Expression);
                 _writer.Indent--;
                 _writer.WriteLine("TrueBranch");
                 _writer.Indent++;
-                VisitStatement(ifElseStatement.TrueBranch);
+                Visit(ifElseStatement.TrueBranch);
                 _writer.Indent--;
                 if (ifElseStatement.FalseBranch is not null)
                 {
                     _writer.WriteLine("FalseBranch");
                     _writer.Indent++;
-                    VisitStatement(ifElseStatement.FalseBranch);
+                    Visit(ifElseStatement.FalseBranch);
                     _writer.Indent--;
                 }
 
@@ -752,11 +749,11 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Expression");
                 _writer.Indent++;
-                VisitExpression(switchStatement.Expression);
+                Visit(switchStatement.Expression);
                 _writer.Indent--;
                 _writer.WriteLine("Body");
                 _writer.Indent++;
-                VisitStatement(switchStatement.Body);
+                Visit(switchStatement.Body);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -765,7 +762,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("TestExpression");
                 _writer.Indent++;
-                VisitExpression(whileStatement.TestExpression);
+                Visit(whileStatement.TestExpression);
                 _writer.Indent--;
                 _writer.WriteLine("Body");
                 _writer.Indent++;
@@ -778,7 +775,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("TestExpression");
                 _writer.Indent++;
-                VisitExpression(doWhileStatement.TestExpression);
+                Visit(doWhileStatement.TestExpression);
                 _writer.Indent--;
                 _writer.WriteLine("Body");
                 _writer.Indent++;
@@ -802,7 +799,7 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("InitExpression");
                     _writer.Indent++;
-                    VisitExpression(forStatement.InitExpression);
+                    Visit(forStatement.InitExpression);
                     _writer.Indent--;
                 }
 
@@ -810,7 +807,7 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("TestExpression");
                     _writer.Indent++;
-                    VisitExpression(forStatement.TestExpression);
+                    Visit(forStatement.TestExpression);
                     _writer.Indent--;
                 }
 
@@ -818,7 +815,7 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("UpdateExpression");
                     _writer.Indent++;
-                    VisitExpression(forStatement.UpdateExpression);
+                    Visit(forStatement.UpdateExpression);
                     _writer.Indent--;
                 }
 
@@ -842,7 +839,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent++;
                 _writer.WriteLine("Expression");
                 _writer.Indent++;
-                VisitExpression(returnStatement.Expression);
+                Visit(returnStatement.Expression);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;

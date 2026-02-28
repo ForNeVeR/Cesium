@@ -9,72 +9,103 @@ namespace Cesium.Compiler;
 
 internal abstract class AstVisitor
 {
-    public void Visit(TranslationUnit translationUnit)
+    public void VisitTranslationUnit(TranslationUnit translationUnit)
     {
         ArgumentNullException.ThrowIfNull(translationUnit);
-        VisitTranslationUnit(translationUnit);
+        Visit(translationUnit);
     }
 
-    protected virtual void VisitTranslationUnit(TranslationUnit translationUnit)
+    protected virtual void Visit(TranslationUnit translationUnit)
     {
         foreach (var declaration in translationUnit.Declarations)
         {
-            VisitExternalDeclaration(declaration);
+            Visit(declaration);
         }
     }
 
-    protected virtual void VisitExternalDeclaration(ExternalDeclaration declaration)
+    protected virtual void Visit(ExternalDeclaration declaration)
     {
         switch (declaration)
         {
             case FunctionDefinition functionDefinition:
-                VisitFunctionDefinition(functionDefinition);
+                Visit(functionDefinition);
                 break;
             case SymbolDeclaration symbolDeclaration:
-                VisitSymbolDeclaration(symbolDeclaration);
+                Visit(symbolDeclaration);
                 break;
             case PInvokeDeclaration pInvokeDeclaration:
-                VisitPInvokeDeclaration(pInvokeDeclaration);
+                Visit(pInvokeDeclaration);
                 break;
             default:
                 throw new AssertException($"Unknown external declaration of type {declaration.GetType()}.");
         }
     }
 
-    protected virtual void VisitFunctionDefinition(FunctionDefinition functionDefinition)
+    protected virtual void Visit(FunctionDefinition functionDefinition)
     {
-        foreach (var specifier in functionDefinition.Specifiers)
-        {
-            VisitDeclarationSpecifier(specifier);
-        }
+        VisitFunctionDeclarationSpecifiers(functionDefinition);
 
-        VisitDeclarator(functionDefinition.Declarator);
+        Visit(functionDefinition.Declarator);
 
+        VisitFunctionDeclarations(functionDefinition);
+
+        Visit(functionDefinition.Statement);
+    }
+
+    protected virtual void VisitFunctionDeclarations(FunctionDefinition functionDefinition)
+    {
         if (functionDefinition.Declarations is not null)
         {
             foreach (var declaration in functionDefinition.Declarations)
             {
-                VisitDeclaration(declaration);
+                Visit(declaration);
             }
         }
-
-        VisitStatement(functionDefinition.Statement);
     }
 
-    protected virtual void VisitSymbolDeclaration(SymbolDeclaration symbolDeclaration)
+    protected virtual void VisitFunctionDeclarationSpecifiers(FunctionDefinition functionDefinition)
     {
-        VisitDeclaration(symbolDeclaration.Declaration);
+        foreach (var specifier in functionDefinition.Specifiers)
+        {
+            Visit(specifier);
+        }
     }
 
-    protected virtual void VisitPInvokeDeclaration(PInvokeDeclaration pInvokeDeclaration)
+    protected virtual void Visit(IDeclarationSpecifier specifier)
+    {
+        switch (specifier)
+        {
+            case StorageClassSpecifier storageClassSpecifier:
+                Visit(storageClassSpecifier);
+                break;
+            case CliImportSpecifier cliImportSpecifier:
+                Visit(cliImportSpecifier);
+                break;
+            case FunctionSpecifier functionSpecifier:
+                Visit(functionSpecifier);
+                break;
+            case ISpecifierQualifierListItem specifierQualifierListItem:
+                Visit(specifierQualifierListItem);
+                break;
+            default:
+                throw new AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
+        }
+    }
+
+    protected virtual void Visit(SymbolDeclaration symbolDeclaration)
+    {
+        Visit(symbolDeclaration.Declaration);
+    }
+
+    protected virtual void Visit(PInvokeDeclaration pInvokeDeclaration)
     {
     }
 
-    protected virtual void VisitDeclaration(Declaration declaration)
+    protected virtual void Visit(Declaration declaration)
     {
         foreach (var specifier in declaration.Specifiers)
         {
-            VisitDeclarationSpecifier(specifier);
+            Visit(specifier);
         }
 
         if (declaration.InitDeclarators is not null)
@@ -88,227 +119,206 @@ internal abstract class AstVisitor
 
     protected virtual void VisitInitDeclarator(InitDeclarator initDeclarator)
     {
-        VisitDeclarator(initDeclarator.Declarator);
+        Visit(initDeclarator.Declarator);
         if (initDeclarator.Initializer is not null)
         {
             VisitInitializer(initDeclarator.Initializer);
         }
     }
 
-    protected virtual void VisitDeclarator(Declarator declarator)
+    protected virtual void Visit(Declarator declarator)
     {
         if (declarator.Pointer is not null)
         {
-            VisitPointer(declarator.Pointer);
+            Visit(declarator.Pointer);
         }
 
-        VisitIDirectDeclarator(declarator.DirectDeclarator);
+        Visit(declarator.DirectDeclarator);
     }
 
-    protected virtual void VisitIDirectDeclarator(IDirectDeclarator directDeclarator)
+    protected virtual void Visit(IDirectDeclarator directDeclarator)
     {
         switch (directDeclarator)
         {
             case IdentifierDirectDeclarator identifierDirectDeclarator:
-                VisitIdentifierDirectDeclarator(identifierDirectDeclarator);
+                Visit(identifierDirectDeclarator);
                 break;
             case ArrayDirectDeclarator arrayDirectDeclarator:
-                VisitArrayDirectDeclarator(arrayDirectDeclarator);
+                Visit(arrayDirectDeclarator);
                 break;
             case ParameterListDirectDeclarator parameterListDirectDeclarator:
-                VisitParameterListDirectDeclarator(parameterListDirectDeclarator);
+                Visit(parameterListDirectDeclarator);
                 break;
             case IdentifierListDirectDeclarator identifierListDirectDeclarator:
-                VisitIdentifierListDirectDeclarator(identifierListDirectDeclarator);
+                Visit(identifierListDirectDeclarator);
                 break;
             case DeclaratorDirectDeclarator declaratorDirectDeclarator:
-                VisitDeclaratorDirectDeclarator(declaratorDirectDeclarator);
+                Visit(declaratorDirectDeclarator);
                 break;
             default:
                 throw new AssertException($"Unknown direct declarator of type {directDeclarator.GetType()}.");
         }
     }
 
-    protected virtual void VisitIdentifierDirectDeclarator(IdentifierDirectDeclarator identifierDirectDeclarator)
+    protected virtual void Visit(IdentifierDirectDeclarator identifierDirectDeclarator)
     {
     }
 
-    protected virtual void VisitArrayDirectDeclarator(ArrayDirectDeclarator arrayDirectDeclarator)
+    protected virtual void Visit(ArrayDirectDeclarator arrayDirectDeclarator)
     {
-        VisitIDirectDeclarator(arrayDirectDeclarator.Base);
+        Visit(arrayDirectDeclarator.Base);
 
         if (arrayDirectDeclarator.TypeQualifiers is not null)
         {
             foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
             {
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
             }
         }
 
         if (arrayDirectDeclarator.Size is not null)
         {
-            VisitExpression(arrayDirectDeclarator.Size);
+            Visit(arrayDirectDeclarator.Size);
         }
     }
 
-    protected virtual void VisitParameterListDirectDeclarator(ParameterListDirectDeclarator parameterListDirectDeclarator)
+    protected virtual void Visit(ParameterListDirectDeclarator parameterListDirectDeclarator)
     {
-        VisitIDirectDeclarator(parameterListDirectDeclarator.Base);
-        VisitParameterTypeList(parameterListDirectDeclarator.Parameters);
+        Visit(parameterListDirectDeclarator.Base);
+        Visit(parameterListDirectDeclarator.Parameters);
     }
 
-    protected virtual void VisitIdentifierListDirectDeclarator(IdentifierListDirectDeclarator identifierListDirectDeclarator)
+    protected virtual void Visit(IdentifierListDirectDeclarator identifierListDirectDeclarator)
     {
-        VisitIDirectDeclarator(identifierListDirectDeclarator.Base);
+        Visit(identifierListDirectDeclarator.Base);
     }
 
-    protected virtual void VisitDeclaratorDirectDeclarator(DeclaratorDirectDeclarator declaratorDirectDeclarator)
+    protected virtual void Visit(DeclaratorDirectDeclarator declaratorDirectDeclarator)
     {
-        VisitDeclarator(declaratorDirectDeclarator.Declarator);
+        Visit(declaratorDirectDeclarator.Declarator);
     }
 
-    protected virtual void VisitPointer(Pointer pointer)
+    protected virtual void Visit(Pointer pointer)
     {
         if (pointer.TypeQualifiers is not null)
         {
             foreach (var typeQualifier in pointer.TypeQualifiers)
             {
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
             }
         }
 
         if (pointer.ChildPointer is not null)
         {
-            VisitPointer(pointer.ChildPointer);
+            Visit(pointer.ChildPointer);
         }
     }
 
-    protected virtual void VisitDeclarationSpecifier(IDeclarationSpecifier specifier)
-    {
-        switch (specifier)
-        {
-            case StorageClassSpecifier storageClassSpecifier:
-                VisitStorageClassSpecifier(storageClassSpecifier);
-                break;
-            case CliImportSpecifier cliImportSpecifier:
-                VisitCliImportSpecifier(cliImportSpecifier);
-                break;
-            case FunctionSpecifier functionSpecifier:
-                VisitFunctionSpecifier(functionSpecifier);
-                break;
-            case ISpecifierQualifierListItem specifierQualifierListItem:
-                VisitSpecifierQualifierListItem(specifierQualifierListItem);
-                break;
-            default:
-                throw new AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
-        }
-    }
-
-    protected virtual void VisitStorageClassSpecifier(StorageClassSpecifier storageClassSpecifier)
+    protected virtual void Visit(StorageClassSpecifier storageClassSpecifier)
     {
     }
 
-    protected virtual void VisitCliImportSpecifier(CliImportSpecifier cliImportSpecifier)
+    protected virtual void Visit(CliImportSpecifier cliImportSpecifier)
     {
     }
 
-    protected virtual void VisitFunctionSpecifier(FunctionSpecifier functionSpecifier)
+    protected virtual void Visit(FunctionSpecifier functionSpecifier)
     {
     }
 
-    protected virtual void VisitSpecifierQualifierListItem(ISpecifierQualifierListItem specifierQualifierListItem)
+    protected virtual void Visit(ISpecifierQualifierListItem specifierQualifierListItem)
     {
         switch (specifierQualifierListItem)
         {
             case TypeQualifier typeQualifier:
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
                 break;
             case ITypeSpecifier typeSpecifier:
-                VisitTypeSpecifier(typeSpecifier);
+                Visit(typeSpecifier);
                 break;
             default:
                 throw new AssertException($"Unknown specifier qualifier list item of type {specifierQualifierListItem.GetType()}.");
         }
     }
 
-    protected virtual void VisitTypeQualifier(TypeQualifier typeQualifier)
+    protected virtual void Visit(TypeQualifier typeQualifier)
     {
     }
 
-    protected virtual void VisitTypeSpecifier(ITypeSpecifier typeSpecifier)
+    protected virtual void Visit(ITypeSpecifier typeSpecifier)
     {
         switch (typeSpecifier)
         {
             case SimpleTypeSpecifier simpleTypeSpecifier:
-                VisitSimpleTypeSpecifier(simpleTypeSpecifier);
+                Visit(simpleTypeSpecifier);
                 break;
             case StructOrUnionSpecifier structOrUnionSpecifier:
-                VisitStructOrUnionSpecifier(structOrUnionSpecifier);
+                Visit(structOrUnionSpecifier);
                 break;
             case EnumSpecifier enumSpecifier:
-                VisitEnumSpecifier(enumSpecifier);
+                Visit(enumSpecifier);
                 break;
             case NamedTypeSpecifier namedTypeSpecifier:
-                VisitNamedTypeSpecifier(namedTypeSpecifier);
+                Visit(namedTypeSpecifier);
                 break;
             default:
                 throw new AssertException($"Unknown type specifier of type {typeSpecifier.GetType()}.");
         }
     }
 
-    protected virtual void VisitSimpleTypeSpecifier(SimpleTypeSpecifier simpleTypeSpecifier)
+    protected virtual void Visit(SimpleTypeSpecifier simpleTypeSpecifier)
     {
     }
 
-    protected virtual void VisitNamedTypeSpecifier(NamedTypeSpecifier namedTypeSpecifier)
+    protected virtual void Visit(NamedTypeSpecifier namedTypeSpecifier)
     {
     }
 
-    protected virtual void VisitStructOrUnionSpecifier(StructOrUnionSpecifier structOrUnionSpecifier)
+    protected virtual void Visit(StructOrUnionSpecifier structOrUnionSpecifier)
     {
         foreach (var structDeclaration in structOrUnionSpecifier.StructDeclarations)
         {
-            VisitStructDeclaration(structDeclaration);
+            Visit(structDeclaration);
         }
     }
 
-    protected virtual void VisitStructDeclaration(StructDeclaration structDeclaration)
+    protected virtual void Visit(StructDeclaration structDeclaration)
     {
         foreach (var specifierQualifierListItem in structDeclaration.SpecifiersQualifiers)
         {
-            VisitSpecifierQualifierListItem(specifierQualifierListItem);
+            Visit(specifierQualifierListItem);
         }
 
         if (structDeclaration.Declarators is not null)
         {
             foreach (var structDeclarator in structDeclaration.Declarators)
             {
-                VisitStructDeclarator(structDeclarator);
+                Visit(structDeclarator);
             }
         }
     }
 
-    protected virtual void VisitStructDeclarator(StructDeclarator structDeclarator)
+    protected virtual void Visit(StructDeclarator structDeclarator)
     {
-        VisitDeclarator(structDeclarator.Declarator);
+        Visit(structDeclarator.Declarator);
     }
 
-    protected virtual void VisitEnumSpecifier(EnumSpecifier enumSpecifier)
+    protected virtual void Visit(EnumSpecifier enumSpecifier)
     {
         if (enumSpecifier.EnumDeclarations is not null)
         {
             foreach (var enumDeclaration in enumSpecifier.EnumDeclarations)
             {
-                VisitEnumDeclaration(enumDeclaration);
+                Visit(enumDeclaration);
             }
         }
     }
 
-    protected virtual void VisitEnumDeclaration(EnumDeclaration enumDeclaration)
+    protected virtual void Visit(EnumDeclaration enumDeclaration)
     {
         if (enumDeclaration.Constant is not null)
         {
-            VisitExpression(enumDeclaration.Constant);
+            Visit(enumDeclaration.Constant);
         }
     }
 
@@ -316,92 +326,92 @@ internal abstract class AstVisitor
     {
         foreach (var specifierQualifierListItem in typeName.SpecifierQualifierList)
         {
-            VisitSpecifierQualifierListItem(specifierQualifierListItem);
+            Visit(specifierQualifierListItem);
         }
 
         if (typeName.AbstractDeclarator is not null)
         {
-            VisitAbstractDeclarator(typeName.AbstractDeclarator);
+            Visit(typeName.AbstractDeclarator);
         }
     }
 
-    protected virtual void VisitAbstractDeclarator(AbstractDeclarator abstractDeclarator)
+    protected virtual void Visit(AbstractDeclarator abstractDeclarator)
     {
         if (abstractDeclarator.Pointer is not null)
         {
-            VisitPointer(abstractDeclarator.Pointer);
+            Visit(abstractDeclarator.Pointer);
         }
 
         if (abstractDeclarator.DirectAbstractDeclarator is not null)
         {
-            VisitIDirectAbstractDeclarator(abstractDeclarator.DirectAbstractDeclarator);
+            Visit(abstractDeclarator.DirectAbstractDeclarator);
         }
     }
 
-    protected virtual void VisitIDirectAbstractDeclarator(IDirectAbstractDeclarator directAbstractDeclarator)
+    protected virtual void Visit(IDirectAbstractDeclarator directAbstractDeclarator)
     {
         switch (directAbstractDeclarator)
         {
             case SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator:
-                VisitSimpleDirectAbstractDeclarator(simpleDirectAbstractDeclarator);
+                Visit(simpleDirectAbstractDeclarator);
                 break;
             case ArrayDirectAbstractDeclarator arrayDirectAbstractDeclarator:
-                VisitArrayDirectAbstractDeclarator(arrayDirectAbstractDeclarator);
+                Visit(arrayDirectAbstractDeclarator);
                 break;
             default:
                 throw new AssertException($"Unknown direct abstract declarator of type {directAbstractDeclarator.GetType()}.");
         }
     }
 
-    protected virtual void VisitSimpleDirectAbstractDeclarator(SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator)
+    protected virtual void Visit(SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator)
     {
-        VisitAbstractDeclarator(simpleDirectAbstractDeclarator.Declarator);
+        Visit(simpleDirectAbstractDeclarator.Declarator);
     }
 
-    protected virtual void VisitArrayDirectAbstractDeclarator(ArrayDirectAbstractDeclarator arrayDirectAbstractDeclarator)
+    protected virtual void Visit(ArrayDirectAbstractDeclarator arrayDirectAbstractDeclarator)
     {
         if (arrayDirectAbstractDeclarator.Base is not null)
         {
-            VisitIDirectAbstractDeclarator(arrayDirectAbstractDeclarator.Base);
+            Visit(arrayDirectAbstractDeclarator.Base);
         }
 
         if (arrayDirectAbstractDeclarator.TypeQualifiers is not null)
         {
             foreach (var typeQualifier in arrayDirectAbstractDeclarator.TypeQualifiers)
             {
-                VisitTypeQualifier(typeQualifier);
+                Visit(typeQualifier);
             }
         }
 
         if (arrayDirectAbstractDeclarator.Size is not null)
         {
-            VisitExpression(arrayDirectAbstractDeclarator.Size);
+            Visit(arrayDirectAbstractDeclarator.Size);
         }
     }
 
-    protected virtual void VisitParameterTypeList(ParameterTypeList parameterTypeList)
+    protected virtual void Visit(ParameterTypeList parameterTypeList)
     {
         foreach (var parameterDeclaration in parameterTypeList.Parameters)
         {
-            VisitParameterDeclaration(parameterDeclaration);
+            Visit(parameterDeclaration);
         }
     }
 
-    protected virtual void VisitParameterDeclaration(ParameterDeclaration parameterDeclaration)
+    protected virtual void Visit(ParameterDeclaration parameterDeclaration)
     {
         foreach (var specifier in parameterDeclaration.Specifiers)
         {
-            VisitDeclarationSpecifier(specifier);
+            Visit(specifier);
         }
 
         if (parameterDeclaration.Declarator is not null)
         {
-            VisitDeclarator(parameterDeclaration.Declarator);
+            Visit(parameterDeclaration.Declarator);
         }
 
         if (parameterDeclaration.AbstractDeclarator is not null)
         {
-            VisitAbstractDeclarator(parameterDeclaration.AbstractDeclarator);
+            Visit(parameterDeclaration.AbstractDeclarator);
         }
     }
 
@@ -415,7 +425,7 @@ internal abstract class AstVisitor
         switch (initializer)
         {
             case AssignmentInitializer assignmentInitializer:
-                VisitExpression(assignmentInitializer.Expression);
+                Visit(assignmentInitializer.Expression);
                 break;
             case ArrayInitializer arrayInitializer:
                 foreach (var arraySubInitializer in arrayInitializer.Initializers)
@@ -441,7 +451,7 @@ internal abstract class AstVisitor
         switch (designator)
         {
             case BracketsDesignator bracketsDesignator:
-                VisitExpression(bracketsDesignator.Expression);
+                Visit(bracketsDesignator.Expression);
                 break;
             case IdentifierDesignator:
                 break;
@@ -450,7 +460,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitExpression(Expression expression)
+    protected virtual void Visit(Expression expression)
     {
         switch (expression)
         {
@@ -533,23 +543,23 @@ internal abstract class AstVisitor
 
     protected virtual void VisitParenExpression(ParenExpression expression)
     {
-        VisitExpression(expression.Contents);
+        Visit(expression.Contents);
     }
 
     protected virtual void VisitSubscriptingExpression(SubscriptingExpression expression)
     {
-        VisitExpression(expression.Base);
-        VisitExpression(expression.Index);
+        Visit(expression.Base);
+        Visit(expression.Index);
     }
 
     protected virtual void VisitFunctionCallExpression(FunctionCallExpression expression)
     {
-        VisitExpression(expression.Function);
+        Visit(expression.Function);
         if (expression.Arguments is not null)
         {
             foreach (var argument in expression.Arguments)
             {
-                VisitExpression(argument);
+                Visit(argument);
             }
         }
     }
@@ -558,30 +568,30 @@ internal abstract class AstVisitor
     {
         foreach (var argument in expression.Arguments)
         {
-            VisitExpression(argument);
+            Visit(argument);
         }
     }
 
     protected virtual void VisitMemberAccessExpression(MemberAccessExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitPointerMemberAccessExpression(PointerMemberAccessExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitPostfixIncrementDecrementExpression(PostfixIncrementDecrementExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitCompoundLiteralExpression(CompoundLiteralExpression expression)
     {
         foreach (var specifier in expression.StorageClassSpecifiers)
         {
-            VisitDeclarationSpecifier(specifier);
+            Visit((IDeclarationSpecifier)specifier);
         }
 
         VisitTypeName(expression.TypeName);
@@ -593,22 +603,22 @@ internal abstract class AstVisitor
 
     protected virtual void VisitPrefixIncrementDecrementExpression(PrefixIncrementDecrementExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitUnaryOperatorExpression(UnaryOperatorExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitIndirectionExpression(IndirectionExpression expression)
     {
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitUnaryExpressionSizeOfOperatorExpression(UnaryExpressionSizeOfOperatorExpression expression)
     {
-        VisitExpression(expression.TargetExpession);
+        Visit(expression.TargetExpession);
     }
 
     protected virtual void VisitTypeNameSizeOfOperatorExpression(TypeNameSizeOfOperatorExpression expression)
@@ -619,26 +629,26 @@ internal abstract class AstVisitor
     protected virtual void VisitCastExpression(CastExpression expression)
     {
         VisitTypeName(expression.TypeName);
-        VisitExpression(expression.Target);
+        Visit(expression.Target);
     }
 
     protected virtual void VisitBinaryOperatorExpression(BinaryOperatorExpression expression)
     {
-        VisitExpression(expression.Left);
-        VisitExpression(expression.Right);
+        Visit(expression.Left);
+        Visit(expression.Right);
     }
 
     protected virtual void VisitConditionalExpression(ConditionalExpression expression)
     {
-        VisitExpression(expression.Condition);
-        VisitExpression(expression.TrueExpression);
-        VisitExpression(expression.FalseExpression);
+        Visit(expression.Condition);
+        Visit(expression.TrueExpression);
+        Visit(expression.FalseExpression);
     }
 
     protected virtual void VisitCommaExpression(CommaExpression expression)
     {
-        VisitExpression(expression.Left);
-        VisitExpression(expression.Right);
+        Visit(expression.Left);
+        Visit(expression.Right);
     }
 
     protected virtual void VisitAmbiguousBlockItem(AmbiguousBlockItem ambiguousBlockItem)
@@ -650,10 +660,10 @@ internal abstract class AstVisitor
         switch (blockItem)
         {
             case Declaration declaration:
-                VisitDeclaration(declaration);
+                Visit(declaration);
                 break;
             case Statement statement:
-                VisitStatement(statement);
+                Visit(statement);
                 break;
             case AmbiguousBlockItem ambiguousBlockItem:
                 VisitAmbiguousBlockItem(ambiguousBlockItem);
@@ -663,7 +673,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitStatement(Statement statement)
+    protected virtual void Visit(Statement statement)
     {
         switch (statement)
         {
@@ -713,17 +723,17 @@ internal abstract class AstVisitor
 
     protected virtual void VisitLabelStatement(LabelStatement statement)
     {
-        VisitStatement(statement.Body);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitCaseStatement(CaseStatement statement)
     {
         if (statement.Constant is not null)
         {
-            VisitExpression(statement.Constant);
+            Visit(statement.Constant);
         }
 
-        VisitStatement(statement.Body);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitCompoundStatement(CompoundStatement statement)
@@ -738,35 +748,35 @@ internal abstract class AstVisitor
     {
         if (statement.Expression is not null)
         {
-            VisitExpression(statement.Expression);
+            Visit(statement.Expression);
         }
     }
 
     protected virtual void VisitIfElseStatement(IfElseStatement statement)
     {
-        VisitExpression(statement.Expression);
-        VisitStatement(statement.TrueBranch);
+        Visit(statement.Expression);
+        Visit(statement.TrueBranch);
         if (statement.FalseBranch is not null)
         {
-            VisitStatement(statement.FalseBranch);
+            Visit(statement.FalseBranch);
         }
     }
 
     protected virtual void VisitSwitchStatement(SwitchStatement statement)
     {
-        VisitExpression(statement.Expression);
-        VisitStatement(statement.Body);
+        Visit(statement.Expression);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitWhileStatement(WhileStatement statement)
     {
-        VisitExpression(statement.TestExpression);
+        Visit(statement.TestExpression);
         VisitBlockItem(statement.Body);
     }
 
     protected virtual void VisitDoWhileStatement(DoWhileStatement statement)
     {
-        VisitExpression(statement.TestExpression);
+        Visit(statement.TestExpression);
         VisitBlockItem(statement.Body);
     }
 
@@ -779,17 +789,17 @@ internal abstract class AstVisitor
 
         if (statement.InitExpression is not null)
         {
-            VisitExpression(statement.InitExpression);
+            Visit(statement.InitExpression);
         }
 
         if (statement.TestExpression is not null)
         {
-            VisitExpression(statement.TestExpression);
+            Visit(statement.TestExpression);
         }
 
         if (statement.UpdateExpression is not null)
         {
-            VisitExpression(statement.UpdateExpression);
+            Visit(statement.UpdateExpression);
         }
 
         VisitBlockItem(statement.Body);
@@ -809,6 +819,6 @@ internal abstract class AstVisitor
 
     protected virtual void VisitReturnStatement(ReturnStatement statement)
     {
-        VisitExpression(statement.Expression);
+        Visit(statement.Expression);
     }
 }
