@@ -507,6 +507,14 @@ int main() { foo(0) return 0; }
 ");
 
     [Fact, NoVerify]
+    public Task NestedMacroDeferredExpansion() => DoPreprocess(
+@"#define EMPTY()
+#define DEFER(id) id EMPTY()
+#define FAIL() DEFER ( EMPTY ) ( )
+FAIL()
+");
+
+    [Fact, NoVerify]
     public Task IfExpressionCannotConsumeNonInteger()
     {
         return Assert.ThrowsAsync<PreprocessorException>(() => DoPreprocess(
