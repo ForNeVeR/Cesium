@@ -52,7 +52,7 @@ internal abstract class AstVisitor
             }
         }
 
-        Visit(functionDefinition.Statement);
+        Visit((Statement)functionDefinition.Statement);
     }
 
 
@@ -686,55 +686,55 @@ internal abstract class AstVisitor
         switch (statement)
         {
             case LabelStatement labelStatement:
-                VisitLabelStatement(labelStatement);
+                Visit(labelStatement);
                 break;
             case CaseStatement caseStatement:
-                VisitCaseStatement(caseStatement);
+                Visit(caseStatement);
                 break;
             case CompoundStatement compoundStatement:
-                VisitCompoundStatement(compoundStatement);
+                Visit(compoundStatement);
                 break;
             case ExpressionStatement expressionStatement:
-                VisitExpressionStatement(expressionStatement);
+                Visit(expressionStatement);
                 break;
             case IfElseStatement ifElseStatement:
-                VisitIfElseStatement(ifElseStatement);
+                Visit(ifElseStatement);
                 break;
             case SwitchStatement switchStatement:
-                VisitSwitchStatement(switchStatement);
+                Visit(switchStatement);
                 break;
             case WhileStatement whileStatement:
-                VisitWhileStatement(whileStatement);
+                Visit(whileStatement);
                 break;
             case DoWhileStatement doWhileStatement:
-                VisitDoWhileStatement(doWhileStatement);
+                Visit(doWhileStatement);
                 break;
             case ForStatement forStatement:
-                VisitForStatement(forStatement);
+                Visit(forStatement);
                 break;
             case GoToStatement goToStatement:
-                VisitGoToStatement(goToStatement);
+                Visit(goToStatement);
                 break;
-            case BreakStatement:
-                VisitBreakStatement();
+            case BreakStatement breakStatement:
+                Visit(breakStatement);
                 break;
-            case ContinueStatement:
-                VisitContinueStatement();
+            case ContinueStatement continueStatement:
+                Visit(continueStatement);
                 break;
             case ReturnStatement returnStatement:
-                VisitReturnStatement(returnStatement);
+                Visit(returnStatement);
                 break;
             default:
                 throw new AssertException($"Unknown statement of type {statement.GetType()}.");
         }
     }
 
-    protected virtual void VisitLabelStatement(LabelStatement statement)
+    protected virtual void Visit(LabelStatement statement)
     {
         Visit(statement.Body);
     }
 
-    protected virtual void VisitCaseStatement(CaseStatement statement)
+    protected virtual void Visit(CaseStatement statement)
     {
         if (statement.Constant is not null)
         {
@@ -744,7 +744,7 @@ internal abstract class AstVisitor
         Visit(statement.Body);
     }
 
-    protected virtual void VisitCompoundStatement(CompoundStatement statement)
+    protected virtual void Visit(CompoundStatement statement)
     {
         foreach (var blockItem in statement.Block)
         {
@@ -752,7 +752,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitExpressionStatement(ExpressionStatement statement)
+    protected virtual void Visit(ExpressionStatement statement)
     {
         if (statement.Expression is not null)
         {
@@ -760,7 +760,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitIfElseStatement(IfElseStatement statement)
+    protected virtual void Visit(IfElseStatement statement)
     {
         Visit(statement.Expression);
         Visit(statement.TrueBranch);
@@ -770,25 +770,25 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitSwitchStatement(SwitchStatement statement)
+    protected virtual void Visit(SwitchStatement statement)
     {
         Visit(statement.Expression);
         Visit(statement.Body);
     }
 
-    protected virtual void VisitWhileStatement(WhileStatement statement)
+    protected virtual void Visit(WhileStatement statement)
     {
         Visit(statement.TestExpression);
         Visit(statement.Body);
     }
 
-    protected virtual void VisitDoWhileStatement(DoWhileStatement statement)
+    protected virtual void Visit(DoWhileStatement statement)
     {
         Visit(statement.TestExpression);
         Visit(statement.Body);
     }
 
-    protected virtual void VisitForStatement(ForStatement statement)
+    protected virtual void Visit(ForStatement statement)
     {
         if (statement.InitDeclaration is not null)
         {
@@ -813,19 +813,19 @@ internal abstract class AstVisitor
         Visit(statement.Body);
     }
 
-    protected virtual void VisitGoToStatement(GoToStatement statement)
+    protected virtual void Visit(GoToStatement statement)
     {
     }
 
-    protected virtual void VisitBreakStatement()
+    protected virtual void Visit(BreakStatement statement)
     {
     }
 
-    protected virtual void VisitContinueStatement()
+    protected virtual void Visit(ContinueStatement statement)
     {
     }
 
-    protected virtual void VisitReturnStatement(ReturnStatement statement)
+    protected virtual void Visit(ReturnStatement statement)
     {
         Visit(statement.Expression);
     }

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.Ast;
-using Cesium.Core;
 
 namespace Cesium.Compiler;
 
@@ -498,6 +497,12 @@ internal sealed class AstDumper : AstVisitor
         Exit();
     }
 
+    protected override void Visit(AmbiguousBlockItem ambiguousBlockItem)
+    {
+        _writer.WriteLine($"AmbiguousBlockItem ({ambiguousBlockItem.Item1}, {ambiguousBlockItem.Item2})");
+        base.Visit(ambiguousBlockItem);
+    }
+
     protected override void Visit(TypeName typeName)
     {
         Enter("TypeName");
@@ -507,178 +512,168 @@ internal sealed class AstDumper : AstVisitor
 
     protected override void Visit(Statement statement)
     {
-        switch (statement)
-        {
-            case LabelStatement labelStatement:
-                _writer.WriteLine($"LabelStatement {labelStatement.Identifier}");
-                _writer.Indent++;
-                Visit(labelStatement.Body);
-                _writer.Indent--;
-                break;
-            case CaseStatement caseStatement:
-                _writer.WriteLine("CaseStatement");
-                _writer.Indent++;
-                if (caseStatement.Constant is not null)
-                {
-                    _writer.WriteLine("Constant");
-                    _writer.Indent++;
-                    Visit(caseStatement.Constant);
-                    _writer.Indent--;
-                }
-
-                _writer.WriteLine("Body");
-                _writer.Indent++;
-                Visit(caseStatement.Body);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case CompoundStatement compoundStatement:
-                _writer.WriteLine("CompoundStatement");
-                foreach (var subStatement in compoundStatement.Block)
-                {
-                    Visit(subStatement);
-                }
-                break;
-            case ExpressionStatement expressionStatement:
-                _writer.WriteLine("ExpressionStatement");
-                _writer.Indent++;
-                if (expressionStatement.Expression is not null)
-                {
-                    _writer.WriteLine("Expression");
-                    _writer.Indent++;
-                    Visit(expressionStatement.Expression);
-                    _writer.Indent--;
-                }
-
-                _writer.Indent--;
-                break;
-            case IfElseStatement ifElseStatement:
-                _writer.WriteLine("IfElseStatement");
-                _writer.Indent++;
-                _writer.WriteLine("Expression");
-                _writer.Indent++;
-                Visit(ifElseStatement.Expression);
-                _writer.Indent--;
-                _writer.WriteLine("TrueBranch");
-                _writer.Indent++;
-                Visit(ifElseStatement.TrueBranch);
-                _writer.Indent--;
-                if (ifElseStatement.FalseBranch is not null)
-                {
-                    _writer.WriteLine("FalseBranch");
-                    _writer.Indent++;
-                    Visit(ifElseStatement.FalseBranch);
-                    _writer.Indent--;
-                }
-
-                _writer.Indent--;
-                break;
-            case SwitchStatement switchStatement:
-                _writer.WriteLine("SwitchStatement");
-                _writer.Indent++;
-                _writer.WriteLine("Expression");
-                _writer.Indent++;
-                Visit(switchStatement.Expression);
-                _writer.Indent--;
-                _writer.WriteLine("Body");
-                _writer.Indent++;
-                Visit(switchStatement.Body);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case WhileStatement whileStatement:
-                _writer.WriteLine("WhileStatement");
-                _writer.Indent++;
-                _writer.WriteLine("TestExpression");
-                _writer.Indent++;
-                Visit(whileStatement.TestExpression);
-                _writer.Indent--;
-                _writer.WriteLine("Body");
-                _writer.Indent++;
-                Visit(whileStatement.Body);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case DoWhileStatement doWhileStatement:
-                _writer.WriteLine("DoWhileStatement");
-                _writer.Indent++;
-                _writer.WriteLine("TestExpression");
-                _writer.Indent++;
-                Visit(doWhileStatement.TestExpression);
-                _writer.Indent--;
-                _writer.WriteLine("Body");
-                _writer.Indent++;
-                Visit(doWhileStatement.Body);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case ForStatement forStatement:
-                _writer.WriteLine("ForStatement");
-                _writer.Indent++;
-
-                if (forStatement.InitDeclaration is not null)
-                {
-                    _writer.WriteLine("InitDeclaration");
-                    _writer.Indent++;
-                    Visit(forStatement.InitDeclaration);
-                    _writer.Indent--;
-                }
-
-                if (forStatement.InitExpression is not null)
-                {
-                    _writer.WriteLine("InitExpression");
-                    _writer.Indent++;
-                    Visit(forStatement.InitExpression);
-                    _writer.Indent--;
-                }
-
-                if (forStatement.TestExpression is not null)
-                {
-                    _writer.WriteLine("TestExpression");
-                    _writer.Indent++;
-                    Visit(forStatement.TestExpression);
-                    _writer.Indent--;
-                }
-
-                if (forStatement.UpdateExpression is not null)
-                {
-                    _writer.WriteLine("UpdateExpression");
-                    _writer.Indent++;
-                    Visit(forStatement.UpdateExpression);
-                    _writer.Indent--;
-                }
-
-                _writer.WriteLine("Body");
-                _writer.Indent++;
-                Visit(forStatement.Body);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case GoToStatement goToStatement:
-                _writer.WriteLine($"GoToStatement {goToStatement.Identifier}");
-                break;
-            case BreakStatement:
-                _writer.WriteLine("BreakStatement");
-                break;
-            case ContinueStatement:
-                _writer.WriteLine("ContinueStatement");
-                break;
-            case ReturnStatement returnStatement:
-                _writer.WriteLine("ReturnStatement");
-                _writer.Indent++;
-                _writer.WriteLine("Expression");
-                _writer.Indent++;
-                Visit(returnStatement.Expression);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            default:
-                throw new AssertException($"Unknown statement of type {statement.GetType()}.");
-        }
+        base.Visit(statement);
     }
 
-    protected override void Visit(AmbiguousBlockItem ambiguousBlockItem)
+    protected override void Visit(LabelStatement statement)
     {
-        _writer.WriteLine($"AmbiguousBlockItem ({ambiguousBlockItem.Item1}, {ambiguousBlockItem.Item2})");
+        Enter($"LabelStatement {statement.Identifier}");
+        base.Visit(statement);
+        Exit();
+    }
+    protected override void Visit(CaseStatement statement)
+    {
+        Enter("CaseStatement");
+        if (statement.Constant is not null)
+        {
+            Enter("Constant");
+            base.Visit(statement.Constant);
+            Exit();
+        }
+
+        Enter("Body");
+        base.Visit(statement.Body);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(CompoundStatement statement)
+    {
+        _writer.WriteLine("CompoundStatement");
+        base.Visit(statement);
+    }
+
+    protected override void Visit(ExpressionStatement statement)
+    {
+        Enter("ExpressionStatement");
+        if (statement.Expression is not null)
+        {
+            Enter("Expression");
+            base.Visit(statement.Expression);
+            Exit();
+        }
+        Exit();
+    }
+
+    protected override void Visit(IfElseStatement statement)
+    {
+        Enter("IfElseStatement");
+        Enter("Expression");
+        base.Visit(statement.Expression);
+        Exit();
+
+        Enter("TrueBranch");
+        base.Visit(statement.TrueBranch);
+        Exit();
+
+        if (statement.FalseBranch is not null)
+        {
+            Enter("FalseBranch");
+            base.Visit(statement.FalseBranch);
+            Exit();
+        }
+
+        Exit();
+    }
+
+    protected override void Visit(SwitchStatement statement)
+    {
+        Enter("SwitchStatement");
+        Enter("Expression");
+        base.Visit(statement.Expression);
+        Exit();
+        Enter("Body");
+        base.Visit(statement.Body);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(WhileStatement statement)
+    {
+        Enter("WhileStatement");
+        Enter("TestExpression");
+        base.Visit(statement.TestExpression);
+        Exit();
+        Enter("Body");
+        base.Visit(statement.Body);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(DoWhileStatement statement)
+    {
+        Enter("DoWhileStatement");
+        Enter("TestExpression");
+        base.Visit(statement.TestExpression);
+        Exit();
+        Enter("Body");
+        Visit(statement.Body);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(ForStatement statement)
+    {
+        Enter("ForStatement");
+
+        if (statement.InitDeclaration is not null)
+        {
+            Enter("InitDeclaration");
+            base.Visit(statement.InitDeclaration);
+            Exit();
+        }
+
+        if (statement.InitExpression is not null)
+        {
+            Enter("InitExpression");
+            base.Visit(statement.InitExpression);
+            Exit();
+        }
+
+        if (statement.TestExpression is not null)
+        {
+            Enter("TestExpression");
+            base.Visit(statement.TestExpression);
+            Exit();
+        }
+
+        if (statement.UpdateExpression is not null)
+        {
+            Enter("UpdateExpression");
+            base.Visit(statement.UpdateExpression);
+            Exit();
+        }
+
+        Enter("Body");
+        base.Visit(statement.Body);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(GoToStatement statement)
+    {
+        _writer.WriteLine($"GoToStatement {statement.Identifier}");
+        base.Visit(statement);
+    }
+
+    protected override void Visit(BreakStatement statement)
+    {
+        _writer.WriteLine("BreakStatement");
+        base.Visit(statement);
+    }
+
+    protected override void Visit(ContinueStatement statement)
+    {
+        _writer.WriteLine("ContinueStatement");
+        base.Visit(statement);
+    }
+
+    protected override void Visit(ReturnStatement statement)
+    {
+        Enter("ReturnStatement");
+        Enter("Expression");
+        base.Visit(statement.Expression);
+        Exit();
+        Exit();
     }
 }
