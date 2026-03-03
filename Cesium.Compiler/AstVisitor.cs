@@ -9,13 +9,7 @@ namespace Cesium.Compiler;
 
 internal abstract class AstVisitor
 {
-    public void VisitTranslationUnit(TranslationUnit translationUnit)
-    {
-        ArgumentNullException.ThrowIfNull(translationUnit);
-        Visit(translationUnit);
-    }
-
-    protected virtual void Visit(TranslationUnit translationUnit)
+    public virtual void Visit(TranslationUnit translationUnit)
     {
         foreach (var declaration in translationUnit.Declarations)
         {
@@ -50,21 +44,17 @@ internal abstract class AstVisitor
 
         Visit(functionDefinition.Declarator);
 
-        VisitFunctionDeclarations(functionDefinition);
-
-        Visit(functionDefinition.Statement);
-    }
-
-    protected virtual void VisitFunctionDeclarations(FunctionDefinition functionDefinition)
-    {
-        if (functionDefinition.Declarations is not null)
+        if (functionDefinition.Declarations is { } declarations)
         {
-            foreach (var declaration in functionDefinition.Declarations)
+            foreach (var declaration in declarations)
             {
                 Visit(declaration);
             }
         }
+
+        Visit(functionDefinition.Statement);
     }
+
 
     protected virtual void Visit(IDeclarationSpecifier specifier)
     {
@@ -75,9 +65,6 @@ internal abstract class AstVisitor
                 break;
             case CliImportSpecifier cliImportSpecifier:
                 Visit(cliImportSpecifier);
-                break;
-            case FunctionSpecifier functionSpecifier:
-                Visit(functionSpecifier);
                 break;
             case ISpecifierQualifierListItem specifierQualifierListItem:
                 Visit(specifierQualifierListItem);
@@ -103,21 +90,21 @@ internal abstract class AstVisitor
             Visit(specifier);
         }
 
-        if (declaration.InitDeclarators is not null)
+        if (declaration.InitDeclarators is { } initDeclarations)
         {
-            foreach (var initDeclarator in declaration.InitDeclarators)
+            foreach (var initDeclarator in initDeclarations)
             {
-                VisitInitDeclarator(initDeclarator);
+                Visit(initDeclarator);
             }
         }
     }
 
-    protected virtual void VisitInitDeclarator(InitDeclarator initDeclarator)
+    protected virtual void Visit(InitDeclarator initDeclarator)
     {
         Visit(initDeclarator.Declarator);
         if (initDeclarator.Initializer is not null)
         {
-            VisitInitializer(initDeclarator.Initializer);
+            Visit(initDeclarator.Initializer);
         }
     }
 
@@ -163,9 +150,9 @@ internal abstract class AstVisitor
     {
         Visit(arrayDirectDeclarator.Base);
 
-        if (arrayDirectDeclarator.TypeQualifiers is not null)
+        if (arrayDirectDeclarator.TypeQualifiers is { } typeQualifiers)
         {
-            foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
+            foreach (var typeQualifier in typeQualifiers)
             {
                 Visit(typeQualifier);
             }
@@ -410,49 +397,75 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitInitializer(Initializer initializer)
+    protected virtual void Visit(Initializer initializer)
     {
-        if (initializer.Designation is not null)
-        {
-            VisitDesignation(initializer.Designation);
-        }
-
         switch (initializer)
         {
             case AssignmentInitializer assignmentInitializer:
-                Visit(assignmentInitializer.Expression);
+                Visit(assignmentInitializer);
                 break;
             case ArrayInitializer arrayInitializer:
-                foreach (var arraySubInitializer in arrayInitializer.Initializers)
-                {
-                    VisitInitializer(arraySubInitializer);
-                }
+                Visit(arrayInitializer);
                 break;
             default:
                 throw new AssertException($"Unknown initializer of type {initializer.GetType()}.");
         }
     }
 
-    protected virtual void VisitDesignation(Designation designation)
+    protected virtual void Visit(AssignmentInitializer assignmentInitializer)
     {
-        foreach (var designator in designation.Designators)
+        if (assignmentInitializer.Designation is not null)
         {
-            VisitDesignator(designator);
+            Visit(assignmentInitializer.Designation);
+        }
+
+        Visit(assignmentInitializer.Expression);
+    }
+
+    protected virtual void Visit(ArrayInitializer arrayInitializer)
+    {
+        if (arrayInitializer.Designation is not null)
+        {
+            Visit(arrayInitializer.Designation);
+        }
+
+        foreach (var arraySubInitializer in arrayInitializer.Initializers)
+        {
+            Visit(arraySubInitializer);
         }
     }
 
-    protected virtual void VisitDesignator(Designator designator)
+    protected virtual void Visit(Designation designation)
+    {
+        foreach (var designator in designation.Designators)
+        {
+            Visit(designator);
+        }
+    }
+
+    protected virtual void Visit(Designator designator)
     {
         switch (designator)
         {
             case BracketsDesignator bracketsDesignator:
-                Visit(bracketsDesignator.Expression);
+                Visit(bracketsDesignator);
                 break;
-            case IdentifierDesignator:
+            case IdentifierDesignator identifierDesignator:
+                Visit(identifierDesignator);
                 break;
             default:
                 throw new AssertException($"Unknown designator of type {designator.GetType()}.");
         }
+    }
+
+    protected virtual void Visit(BracketsDesignator bracketsDesignator)
+    {
+        Visit(bracketsDesignator.Expression);
+    }
+
+    protected virtual void Visit(IdentifierDesignator identifierDesignator)
+    {
+        Visit(identifierDesignator);
     }
 
     protected virtual void Visit(Expression expression)
@@ -592,7 +605,7 @@ internal abstract class AstVisitor
         VisitTypeName(expression.TypeName);
         foreach (var initializer in expression.Initializers)
         {
-            VisitInitializer(initializer);
+            Visit(initializer);
         }
     }
 

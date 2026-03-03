@@ -16,151 +16,111 @@ internal sealed class AstDumper : AstVisitor
         _writer = new IndentedTextWriter(writer);
     }
 
-    public void Dump(TranslationUnit translationUnit) =>
-        VisitTranslationUnit(translationUnit);
-
-    protected override void Visit(TranslationUnit translationUnit)
+    public override void Visit(TranslationUnit translationUnit)
     {
-        _writer.WriteLine("TranslationUnitDecl");
-        _writer.Indent++;
+        Enter("TranslationUnitDecl");
         base.Visit(translationUnit);
-        _writer.Indent--;
+        Exit();
     }
 
     protected override void Visit(FunctionDefinition functionDefinition)
     {
-        _writer.WriteLine("FunctionDefinition");
-        _writer.Indent++;
+        Enter("FunctionDefinition");
+        base.Visit(functionDefinition);
+        Exit();
+    }
 
-        Visit(functionDefinition.Declarator);
-
-        _writer.Indent++;
-        VisitFunctionDeclarations(functionDefinition);
-        _writer.Indent--;
-
-        Visit(functionDefinition.Statement);
+    private void Exit()
+    {
         _writer.Indent--;
     }
 
+    private void Enter(string nodeName)
+    {
+        _writer.WriteLine(nodeName);
+        _writer.Indent++;
+    }
 
     protected override void Visit(SymbolDeclaration symbolDeclaration)
     {
-        _writer.WriteLine("SymbolDecl");
-        _writer.Indent++;
-        Visit(symbolDeclaration.Declaration);
-        _writer.Indent--;
+        Enter("SymbolDecl");
+        base.Visit(symbolDeclaration);
+        Exit();
     }
 
     protected override void Visit(PInvokeDeclaration pInvokeDeclaration)
     {
         var prefixPart = pInvokeDeclaration.Prefix is null ? string.Empty : $" Prefix = {pInvokeDeclaration.Prefix}";
         _writer.WriteLine($"PInvokeDecl {pInvokeDeclaration.Declaration}{prefixPart}");
+        base.Visit(pInvokeDeclaration);
     }
 
     protected override void Visit(Declaration declaration)
     {
-        _writer.WriteLine("Decl");
-        _writer.Indent++;
-        foreach (var specifier in declaration.Specifiers)
-        {
-            Visit(specifier);
-        }
-        _writer.Indent--;
-
-        if (declaration.InitDeclarators is not null)
-        {
-            _writer.Indent++;
-            foreach (var initDeclarator in declaration.InitDeclarators)
-            {
-                VisitInitDeclarator(initDeclarator);
-            }
-
-            _writer.Indent--;
-        }
+        Enter("Decl");
+        base.Visit(declaration);
+        Exit();
     }
 
-    protected override void VisitInitDeclarator(InitDeclarator initDeclarator)
+    protected override void Visit(InitDeclarator initDeclarator)
     {
-        _writer.WriteLine("InitDecl");
-        _writer.Indent++;
-        Visit(initDeclarator.Declarator);
-        if (initDeclarator.Initializer is not null)
-        {
-            VisitInitializer(initDeclarator.Initializer);
-        }
-
-        _writer.Indent--;
+        Enter("InitDecl");
+        base.Visit(initDeclarator);
+        Exit();
     }
 
     protected override void Visit(Declarator declarator)
     {
-        _writer.WriteLine("Declarator");
-        _writer.Indent++;
-        if (declarator.Pointer is not null)
-        {
-            Visit(declarator.Pointer);
-        }
-
-        Visit(declarator.DirectDeclarator);
-        _writer.Indent--;
+        Enter("Declarator");
+        base.Visit(declarator);
+        Exit();
     }
 
     protected override void Visit(IDirectDeclarator directDeclarator)
     {
-        switch (directDeclarator)
+        base.Visit(directDeclarator);
+    }
+
+    protected override void Visit(IdentifierDirectDeclarator identifierDirectDeclarator)
+    {
+        _writer.WriteLine($"IdentifierDirectDeclarator {identifierDirectDeclarator.Identifier}");
+        base.Visit(identifierDirectDeclarator);
+    }
+    protected override void Visit(ArrayDirectDeclarator arrayDirectDeclarator)
+    {
+        Enter("ArrayDirectDeclarator");
+        base.Visit(arrayDirectDeclarator);
+        Exit();
+    }
+
+    protected override void Visit(ParameterListDirectDeclarator parameterListDirectDeclarator)
+    {
+        Enter("ParameterListDirectDeclarator");
+        base.Visit(parameterListDirectDeclarator);
+
+        if (parameterListDirectDeclarator.Parameters.HasEllipsis)
         {
-            case IdentifierDirectDeclarator identifierDirectDeclarator:
-                _writer.WriteLine($"IdentifierDirectDeclarator {identifierDirectDeclarator.Identifier}");
-                break;
-            case ArrayDirectDeclarator arrayDirectDeclarator:
-                _writer.WriteLine("ArrayDirectDeclarator");
-                _writer.Indent++;
-                Visit(arrayDirectDeclarator.Base);
-                if (arrayDirectDeclarator.TypeQualifiers is not null)
-                {
-                    foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
-                    {
-                        Visit(typeQualifier);
-                    }
-                }
-                if (arrayDirectDeclarator.Size is not null)
-                {
-                    Visit(arrayDirectDeclarator.Size);
-                }
-                _writer.Indent--;
-                break;
-            case ParameterListDirectDeclarator parameterListDirectDeclarator:
-                _writer.WriteLine("ParameterListDirectDeclarator");
-                _writer.Indent++;
-                Visit(parameterListDirectDeclarator.Base);
-                Visit(parameterListDirectDeclarator.Parameters);
-                if (parameterListDirectDeclarator.Parameters.HasEllipsis)
-                {
-                    _writer.WriteLine("HasEllipsis");
-                }
-
-                _writer.Indent--;
-                break;
-            case IdentifierListDirectDeclarator identifierListDirectDeclarator:
-                _writer.WriteLine("IdentifierListDirectDeclarator");
-                _writer.Indent++;
-                Visit(identifierListDirectDeclarator.Base);
-                if (identifierListDirectDeclarator.Identifiers is not null)
-                {
-                    _writer.WriteLine($"Identifiers {string.Join(", ", identifierListDirectDeclarator.Identifiers)}");
-                }
-
-                _writer.Indent--;
-                break;
-            case DeclaratorDirectDeclarator declaratorDirectDeclarator:
-                _writer.WriteLine("DeclaratorDirectDeclarator");
-                _writer.Indent++;
-                Visit(declaratorDirectDeclarator.Declarator);
-                _writer.Indent--;
-                break;
-            default:
-                throw new AssertException($"Unknown direct declarator of type {directDeclarator.GetType()}.");
+            _writer.WriteLine("HasEllipsis");
         }
+        Exit();
+    }
+
+    protected override void Visit(IdentifierListDirectDeclarator identifierListDirectDeclarator)
+    {
+        Enter("IdentifierListDirectDeclarator");
+        base.Visit(identifierListDirectDeclarator.Base);
+        if (identifierListDirectDeclarator.Identifiers is not null)
+        {
+            _writer.WriteLine($"Identifiers {string.Join(", ", identifierListDirectDeclarator.Identifiers)}");
+        }
+        Exit();
+    }
+
+    protected override void Visit(DeclaratorDirectDeclarator declaratorDirectDeclarator)
+    {
+        Enter("DeclaratorDirectDeclarator");
+        base.Visit(declaratorDirectDeclarator);
+        Exit();
     }
 
     protected override void Visit(ParameterTypeList parameterTypeList)
@@ -173,215 +133,126 @@ internal sealed class AstDumper : AstVisitor
 
     protected override void Visit(ParameterDeclaration parameterDeclaration)
     {
-        _writer.WriteLine("ParameterDeclaration");
-        _writer.Indent++;
-        foreach (var declarationSpecifier in parameterDeclaration.Specifiers)
-        {
-            Visit(declarationSpecifier);
-        }
-        if (parameterDeclaration.Declarator is not null)
-        {
-            Visit(parameterDeclaration.Declarator);
-        }
-        if (parameterDeclaration.AbstractDeclarator is not null)
-        {
-            Visit(parameterDeclaration.AbstractDeclarator);
-        }
-
-        _writer.Indent--;
+        Enter("ParameterDeclaration");
+        base.Visit(parameterDeclaration);
+        Exit();
     }
 
     protected override void Visit(AbstractDeclarator abstractDeclarator)
     {
-        _writer.WriteLine("ParameterDeclaration");
-        _writer.Indent++;
-        if (abstractDeclarator.Pointer is not null)
-        {
-            Visit(abstractDeclarator.Pointer);
-        }
-        if (abstractDeclarator.DirectAbstractDeclarator is not null)
-        {
-            Visit(abstractDeclarator.DirectAbstractDeclarator);
-        }
-
-        _writer.Indent--;
+        Enter("AbstractDeclarator");
+        base.Visit(abstractDeclarator);
+        Exit();
     }
 
     protected override void Visit(IDirectAbstractDeclarator directAbstractDeclarator)
     {
-        switch (directAbstractDeclarator)
-        {
-            case SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator:
-                _writer.WriteLine("SimpleDirectAbstractDeclarator");
-                _writer.Indent++;
-                Visit(simpleDirectAbstractDeclarator.Declarator);
-                _writer.Indent--;
-                break;
-            case ArrayDirectAbstractDeclarator arrayDirectDeclarator:
-                _writer.WriteLine("ArrayDirectDeclarator");
-                _writer.Indent++;
-                if (arrayDirectDeclarator.Base is not null)
-                {
-                    Visit(arrayDirectDeclarator.Base);
-                }
+        base.Visit(directAbstractDeclarator);
+    }
 
-                if (arrayDirectDeclarator.TypeQualifiers is not null)
-                {
-                    foreach (var typeQualifier in arrayDirectDeclarator.TypeQualifiers)
-                    {
-                        Visit(typeQualifier);
-                    }
-                }
-                if (arrayDirectDeclarator.Size is not null)
-                {
-                    Visit(arrayDirectDeclarator.Size);
-                }
+    protected override void Visit(SimpleDirectAbstractDeclarator simpleDirectAbstractDeclarator)
+    {
+        Enter("SimpleDirectAbstractDeclarator");
+        base.Visit(simpleDirectAbstractDeclarator);
+        Exit();
+    }
 
-                _writer.Indent--;
-                break;
-            default:
-                throw new AssertException($"Unknown direct abstract declarator of type {directAbstractDeclarator.GetType()}.");
-        }
+    protected override void Visit(ArrayDirectAbstractDeclarator arrayDirectAbstractDeclarator)
+    {
+        Enter("ArrayDirectDeclarator");
+        base.Visit(arrayDirectAbstractDeclarator);
+        Exit();
     }
 
     protected override void Visit(Pointer pointer)
     {
-        _writer.WriteLine("Pointer");
-        _writer.Indent--;
-        if (pointer.TypeQualifiers is not null)
-        {
-            _writer.Indent++;
-            foreach (var typeQualifier in pointer.TypeQualifiers)
-            {
-                Visit(typeQualifier);
-            }
-
-            _writer.Indent--;
-        }
-        if (pointer.ChildPointer is not null)
-        {
-            Visit(pointer.ChildPointer);
-        }
-        _writer.Indent++;
+        Enter("Pointer");
+        base.Visit(pointer);
+        Exit();
     }
 
-    protected override void VisitInitializer(Initializer initializer)
+    protected override void Visit(Initializer initializer)
     {
-        switch (initializer)
-        {
-            case AssignmentInitializer assignmentInitializer:
-                _writer.WriteLine("AssignmentInitializer");
-                _writer.Indent++;
-                if (initializer.Designation is not null)
-                {
-                    VisitDesignation(initializer.Designation);
-                }
-
-                Visit(assignmentInitializer.Expression);
-                _writer.Indent--;
-                break;
-            case ArrayInitializer arrayInitializer:
-                _writer.WriteLine("ArrayInitializer");
-                _writer.Indent++;
-                if (initializer.Designation is not null)
-                {
-                    VisitDesignation(initializer.Designation);
-                }
-
-                foreach (var arraySubInitializer in arrayInitializer.Initializers)
-                {
-                    VisitInitializer(arraySubInitializer);
-                }
-
-                _writer.Indent--;
-                break;
-            default:
-                throw new AssertException($"Unknown initializer of type {initializer.GetType()}.");
-        }
+        base.Visit(initializer);
     }
 
-    protected override void VisitDesignation(Designation designation)
+    protected override void Visit(AssignmentInitializer assignmentInitializer)
     {
-        _writer.WriteLine("Designation");
-        _writer.Indent++;
-        foreach (var designator in designation.Designators)
-        {
-            VisitDesignator(designator);
-        }
-
-        _writer.Indent--;
+        Enter("AssignmentInitializer");
+        base.Visit(assignmentInitializer);
+        Exit();
     }
 
-    protected override void VisitDesignator(Designator designator)
+    protected override void Visit(ArrayInitializer arrayInitializer)
     {
-        switch (designator)
-        {
-            case BracketsDesignator bracketsDesignator:
-                _writer.WriteLine("BracketsDesignator");
-                _writer.Indent++;
-                Visit(bracketsDesignator.Expression);
-                _writer.Indent--;
-                break;
-            case IdentifierDesignator identifierDesignator:
-                _writer.WriteLine($"IdentifierDesignator .{identifierDesignator.FieldName}");
-                break;
-            default:
-                throw new AssertException($"Unknown designator of type {designator.GetType()}.");
-        }
+        Enter("ArrayInitializer");
+        base.Visit(arrayInitializer);
+        Exit();
+    }
+
+    protected override void Visit(Designation designation)
+    {
+        Enter("Designation");
+        base.Visit(designation);
+        Exit();
+    }
+
+    protected override void Visit(Designator designator)
+    {
+        base.Visit(designator);
+    }
+
+    protected override void Visit(BracketsDesignator bracketsDesignator)
+    {
+        Enter("BracketsDesignator");
+        base.Visit(bracketsDesignator);
+        Exit();
+    }
+
+    protected override void Visit(IdentifierDesignator identifierDesignator)
+    {
+        _writer.WriteLine($"IdentifierDesignator .{identifierDesignator.FieldName}");
+        base.Visit(identifierDesignator);
     }
 
     protected override void Visit(IDeclarationSpecifier specifier)
     {
-        switch (specifier)
-        {
-            case StorageClassSpecifier storageClassSpecifier:
-                _writer.WriteLine($"StorageClassSpecifier {storageClassSpecifier.Name}");
-                break;
-            case CliImportSpecifier cliImportSpecifier:
-                _writer.WriteLine($"CliImportSpecifier {cliImportSpecifier.MemberName}");
-                break;
-            case ISpecifierQualifierListItem specifierQualifierListItem:
-                Visit(specifierQualifierListItem);
-                break;
-            default:
-                throw new AssertException($"Unknown declaration specifier of type {specifier.GetType()}.");
-        }
+        base.Visit(specifier);
+    }
+
+    protected override void Visit(StorageClassSpecifier storageClassSpecifier)
+    {
+        _writer.WriteLine($"StorageClassSpecifier {storageClassSpecifier.Name}");
+        base.Visit(storageClassSpecifier);
+    }
+
+    protected override void Visit(CliImportSpecifier cliImportSpecifier)
+    {
+        Enter($"CliImportSpecifier {cliImportSpecifier.MemberName}");
+        base.Visit(cliImportSpecifier);
+        Exit();
     }
 
     protected override void Visit(ISpecifierQualifierListItem specifierQualifierListItem)
     {
-        switch (specifierQualifierListItem)
-        {
-            case TypeQualifier typeQualifier:
-                Visit(typeQualifier);
-                break;
-            case ITypeSpecifier typeSpecifier:
-                Visit(typeSpecifier);
-                break;
-            default:
-                throw new AssertException($"Unknown specifier qualified list item of type {specifierQualifierListItem.GetType()}.");
-        }
+        base.Visit(specifierQualifierListItem);
     }
 
     protected override void Visit(ITypeSpecifier typeSpecifier)
     {
-        switch (typeSpecifier)
-        {
-            case SimpleTypeSpecifier simpleTypeSpecifier:
-                _writer.WriteLine($"SimpleTypeSpecifier {simpleTypeSpecifier.TypeName}");
-                break;
-            case StructOrUnionSpecifier structOrUnionSpecifier:
-                Visit(structOrUnionSpecifier);
-                break;
-            case EnumSpecifier enumSpecifier:
-                Visit(enumSpecifier);
-                break;
-            case NamedTypeSpecifier namedTypeSpecifier:
-                _writer.WriteLine($"NamedTypeSpecifier {namedTypeSpecifier.TypeDefName}");
-                break;
-            default:
-                throw new AssertException($"Unknown type specifier of type {typeSpecifier.GetType()}.");
-        }
+        base.Visit(typeSpecifier);
+    }
+
+    protected override void Visit(SimpleTypeSpecifier simpleTypeSpecifier)
+    {
+        _writer.WriteLine($"SimpleTypeSpecifier {simpleTypeSpecifier.TypeName}");
+        base.Visit(simpleTypeSpecifier);
+    }
+
+    protected override void Visit(NamedTypeSpecifier namedTypeSpecifier)
+    {
+        _writer.WriteLine($"NamedTypeSpecifier {namedTypeSpecifier.TypeDefName}");
+        base.Visit(namedTypeSpecifier);
     }
 
     protected override void Visit(TypeQualifier typeQualifier)
@@ -392,57 +263,40 @@ internal sealed class AstDumper : AstVisitor
     protected override void Visit(StructOrUnionSpecifier structOrUnionSpecifier)
     {
         _writer.WriteLine($"StructOrUnionSpecifier {structOrUnionSpecifier.TypeKind} {structOrUnionSpecifier.Identifier}");
-        foreach (var structDeclaration in structOrUnionSpecifier.StructDeclarations)
-        {
-            _writer.WriteLine("StructDeclaration");
-            _writer.Indent++;
-            _writer.WriteLine("SpecifiersQualifiers");
-            _writer.Indent++;
-            foreach (var specifierQualifierListItem in structDeclaration.SpecifiersQualifiers)
-            {
-                Visit(specifierQualifierListItem);
-            }
+        base.Visit(structOrUnionSpecifier);
+    }
 
-            _writer.Indent--;
-            _writer.WriteLine("SpecifiersQualifiers");
-            if (structDeclaration.Declarators is not null)
-            {
-                _writer.Indent++;
-                foreach (var structDeclarator in structDeclaration.Declarators)
-                {
-                    Visit(structDeclarator);
-                }
-
-                _writer.Indent--;
-            }
-
-            _writer.Indent--;
-        }
+    protected override void Visit(StructDeclaration structDeclaration)
+    {
+        Enter("StructDeclaration");
+        Enter("SpecifiersQualifiers");
+        base.Visit(structDeclaration);
+        Exit();
+        Exit();
     }
 
     protected override void Visit(StructDeclarator structDeclarator)
     {
-        _writer.WriteLine("StructDeclarator");
-        _writer.Indent++;
-        Visit(structDeclarator.Declarator);
-        _writer.Indent--;
+        Enter("StructDeclarator");
+        base.Visit(structDeclarator);
+        Exit();
     }
 
     protected override void Visit(EnumSpecifier enumSpecifier)
     {
         _writer.WriteLine($"EnumSpecifier {enumSpecifier.Identifier}");
-        if (enumSpecifier.EnumDeclarations is not null)
+        base.Visit(enumSpecifier);
+    }
+
+    protected override void Visit(EnumDeclaration enumDeclaration)
+    {
+        _writer.WriteLine($"EnumDeclaration {enumDeclaration.Identifier}");
+        base.Visit(enumDeclaration);
+        if (enumDeclaration.Constant is not null)
         {
-            foreach (var enumDeclaration in enumSpecifier.EnumDeclarations)
-            {
-                _writer.WriteLine($"EnumDeclaration {enumDeclaration.Identifier}");
-                if (enumDeclaration.Constant is not null)
-                {
-                    _writer.Indent++;
-                    Visit(enumDeclaration.Constant);
-                    _writer.Indent--;
-                }
-            }
+            _writer.Indent++;
+            base.Visit(enumDeclaration.Constant);
+            _writer.Indent--;
         }
     }
 

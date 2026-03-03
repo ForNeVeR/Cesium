@@ -94,7 +94,7 @@ internal static class Compilation
     private static void DumpAst(TranslationUnit translationUnit)
     {
         var astDumper = new AstDumper(Console.Out);
-        astDumper.Dump(translationUnit);
+        astDumper.Visit(translationUnit);
     }
 
     private static AssemblyContext CreateAssembly(AbsolutePath outputFile, CompilationOptions compilationOptions)
