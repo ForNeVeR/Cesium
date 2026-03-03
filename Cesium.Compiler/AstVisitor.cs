@@ -304,7 +304,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitTypeName(TypeName typeName)
+    protected virtual void Visit(TypeName typeName)
     {
         foreach (var specifierQualifierListItem in typeName.SpecifierQualifierList)
         {
@@ -473,94 +473,94 @@ internal abstract class AstVisitor
         switch (expression)
         {
             case StringLiteralListExpression stringLiteralListExpression:
-                VisitStringLiteralListExpression(stringLiteralListExpression);
+                Visit(stringLiteralListExpression);
                 break;
             case IdentifierExpression identifierExpression:
-                VisitIdentifierExpression(identifierExpression);
+                Visit(identifierExpression);
                 break;
             case ConstantLiteralExpression constantLiteralExpression:
-                VisitConstantLiteralExpression(constantLiteralExpression);
+                Visit(constantLiteralExpression);
                 break;
             case ParenExpression parenExpression:
-                VisitParenExpression(parenExpression);
+                Visit(parenExpression);
                 break;
             case SubscriptingExpression subscriptingExpression:
-                VisitSubscriptingExpression(subscriptingExpression);
+                Visit(subscriptingExpression);
                 break;
             case FunctionCallExpression functionCallExpression:
-                VisitFunctionCallExpression(functionCallExpression);
+                Visit(functionCallExpression);
                 break;
             case TypeCastOrNamedFunctionCallExpression typeCastOrNamedFunctionCallExpression:
-                VisitTypeCastOrNamedFunctionCallExpression(typeCastOrNamedFunctionCallExpression);
+                Visit(typeCastOrNamedFunctionCallExpression);
                 break;
             case MemberAccessExpression memberAccessExpression:
-                VisitMemberAccessExpression(memberAccessExpression);
+                Visit(memberAccessExpression);
                 break;
             case PointerMemberAccessExpression pointerMemberAccessExpression:
-                VisitPointerMemberAccessExpression(pointerMemberAccessExpression);
+                Visit(pointerMemberAccessExpression);
                 break;
             case PostfixIncrementDecrementExpression postfixIncrementDecrementExpression:
-                VisitPostfixIncrementDecrementExpression(postfixIncrementDecrementExpression);
+                Visit(postfixIncrementDecrementExpression);
                 break;
             case CompoundLiteralExpression compoundLiteralExpression:
-                VisitCompoundLiteralExpression(compoundLiteralExpression);
+                Visit(compoundLiteralExpression);
                 break;
             case PrefixIncrementDecrementExpression prefixIncrementDecrementExpression:
-                VisitPrefixIncrementDecrementExpression(prefixIncrementDecrementExpression);
+                Visit(prefixIncrementDecrementExpression);
                 break;
             case UnaryOperatorExpression unaryOperatorExpression:
-                VisitUnaryOperatorExpression(unaryOperatorExpression);
+                Visit(unaryOperatorExpression);
                 break;
             case IndirectionExpression indirectionExpression:
-                VisitIndirectionExpression(indirectionExpression);
+                Visit(indirectionExpression);
                 break;
             case UnaryExpressionSizeOfOperatorExpression unaryExpressionSizeOfOperatorExpression:
-                VisitUnaryExpressionSizeOfOperatorExpression(unaryExpressionSizeOfOperatorExpression);
+                Visit(unaryExpressionSizeOfOperatorExpression);
                 break;
             case TypeNameSizeOfOperatorExpression typeNameSizeOfOperatorExpression:
-                VisitTypeNameSizeOfOperatorExpression(typeNameSizeOfOperatorExpression);
+                Visit(typeNameSizeOfOperatorExpression);
                 break;
             case CastExpression castExpression:
-                VisitCastExpression(castExpression);
+                Visit(castExpression);
                 break;
             case BinaryOperatorExpression binaryOperatorExpression:
-                VisitBinaryOperatorExpression(binaryOperatorExpression);
+                Visit(binaryOperatorExpression);
                 break;
             case ConditionalExpression conditionalExpression:
-                VisitConditionalExpression(conditionalExpression);
+                Visit(conditionalExpression);
                 break;
             case CommaExpression commaExpression:
-                VisitCommaExpression(commaExpression);
+                Visit(commaExpression);
                 break;
             default:
                 throw new AssertException($"Unknown expression of type {expression.GetType()}.");
         }
     }
 
-    protected virtual void VisitStringLiteralListExpression(StringLiteralListExpression expression)
+    protected virtual void Visit(StringLiteralListExpression stringLiteralListExpression)
     {
     }
 
-    protected virtual void VisitIdentifierExpression(IdentifierExpression expression)
+    protected virtual void Visit(IdentifierExpression identifierExpression)
     {
     }
 
-    protected virtual void VisitConstantLiteralExpression(ConstantLiteralExpression expression)
+    protected virtual void Visit(ConstantLiteralExpression constantLiteralExpression)
     {
     }
 
-    protected virtual void VisitParenExpression(ParenExpression expression)
+    protected virtual void Visit(ParenExpression expression)
     {
         Visit(expression.Contents);
     }
 
-    protected virtual void VisitSubscriptingExpression(SubscriptingExpression expression)
+    protected virtual void Visit(SubscriptingExpression expression)
     {
         Visit(expression.Base);
         Visit(expression.Index);
     }
 
-    protected virtual void VisitFunctionCallExpression(FunctionCallExpression expression)
+    protected virtual void Visit(FunctionCallExpression expression)
     {
         Visit(expression.Function);
         if (expression.Arguments is not null)
@@ -572,7 +572,7 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitTypeCastOrNamedFunctionCallExpression(TypeCastOrNamedFunctionCallExpression expression)
+    protected virtual void Visit(TypeCastOrNamedFunctionCallExpression expression)
     {
         foreach (var argument in expression.Arguments)
         {
@@ -580,90 +580,90 @@ internal abstract class AstVisitor
         }
     }
 
-    protected virtual void VisitMemberAccessExpression(MemberAccessExpression expression)
+    protected virtual void Visit(MemberAccessExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitPointerMemberAccessExpression(PointerMemberAccessExpression expression)
+    protected virtual void Visit(PointerMemberAccessExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitPostfixIncrementDecrementExpression(PostfixIncrementDecrementExpression expression)
+    protected virtual void Visit(PostfixIncrementDecrementExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitCompoundLiteralExpression(CompoundLiteralExpression expression)
+    protected virtual void Visit(CompoundLiteralExpression expression)
     {
         foreach (var specifier in expression.StorageClassSpecifiers)
         {
             Visit((IDeclarationSpecifier)specifier);
         }
 
-        VisitTypeName(expression.TypeName);
+        Visit(expression.TypeName);
         foreach (var initializer in expression.Initializers)
         {
             Visit(initializer);
         }
     }
 
-    protected virtual void VisitPrefixIncrementDecrementExpression(PrefixIncrementDecrementExpression expression)
+    protected virtual void Visit(PrefixIncrementDecrementExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitUnaryOperatorExpression(UnaryOperatorExpression expression)
+    protected virtual void Visit(UnaryOperatorExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitIndirectionExpression(IndirectionExpression expression)
+    protected virtual void Visit(IndirectionExpression expression)
     {
         Visit(expression.Target);
     }
 
-    protected virtual void VisitUnaryExpressionSizeOfOperatorExpression(UnaryExpressionSizeOfOperatorExpression expression)
+    protected virtual void Visit(UnaryExpressionSizeOfOperatorExpression expression)
     {
         Visit(expression.TargetExpession);
     }
 
-    protected virtual void VisitTypeNameSizeOfOperatorExpression(TypeNameSizeOfOperatorExpression expression)
+    protected virtual void Visit(TypeNameSizeOfOperatorExpression expression)
     {
-        VisitTypeName(expression.TypeName);
+        Visit(expression.TypeName);
     }
 
-    protected virtual void VisitCastExpression(CastExpression expression)
+    protected virtual void Visit(CastExpression expression)
     {
-        VisitTypeName(expression.TypeName);
+        Visit(expression.TypeName);
         Visit(expression.Target);
     }
 
-    protected virtual void VisitBinaryOperatorExpression(BinaryOperatorExpression expression)
+    protected virtual void Visit(BinaryOperatorExpression expression)
     {
         Visit(expression.Left);
         Visit(expression.Right);
     }
 
-    protected virtual void VisitConditionalExpression(ConditionalExpression expression)
+    protected virtual void Visit(ConditionalExpression expression)
     {
         Visit(expression.Condition);
         Visit(expression.TrueExpression);
         Visit(expression.FalseExpression);
     }
 
-    protected virtual void VisitCommaExpression(CommaExpression expression)
+    protected virtual void Visit(CommaExpression expression)
     {
         Visit(expression.Left);
         Visit(expression.Right);
     }
 
-    protected virtual void VisitAmbiguousBlockItem(AmbiguousBlockItem ambiguousBlockItem)
+    protected virtual void Visit(AmbiguousBlockItem ambiguousBlockItem)
     {
     }
 
-    protected virtual void VisitBlockItem(IBlockItem blockItem)
+    protected virtual void Visit(IBlockItem blockItem)
     {
         switch (blockItem)
         {
@@ -674,7 +674,7 @@ internal abstract class AstVisitor
                 Visit(statement);
                 break;
             case AmbiguousBlockItem ambiguousBlockItem:
-                VisitAmbiguousBlockItem(ambiguousBlockItem);
+                Visit(ambiguousBlockItem);
                 break;
             default:
                 throw new AssertException($"Unknown block item of type {blockItem.GetType()}.");
@@ -748,7 +748,7 @@ internal abstract class AstVisitor
     {
         foreach (var blockItem in statement.Block)
         {
-            VisitBlockItem(blockItem);
+            Visit(blockItem);
         }
     }
 
@@ -779,20 +779,20 @@ internal abstract class AstVisitor
     protected virtual void VisitWhileStatement(WhileStatement statement)
     {
         Visit(statement.TestExpression);
-        VisitBlockItem(statement.Body);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitDoWhileStatement(DoWhileStatement statement)
     {
         Visit(statement.TestExpression);
-        VisitBlockItem(statement.Body);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitForStatement(ForStatement statement)
     {
         if (statement.InitDeclaration is not null)
         {
-            VisitBlockItem(statement.InitDeclaration);
+            Visit(statement.InitDeclaration);
         }
 
         if (statement.InitExpression is not null)
@@ -810,7 +810,7 @@ internal abstract class AstVisitor
             Visit(statement.UpdateExpression);
         }
 
-        VisitBlockItem(statement.Body);
+        Visit(statement.Body);
     }
 
     protected virtual void VisitGoToStatement(GoToStatement statement)

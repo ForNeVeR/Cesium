@@ -291,7 +291,6 @@ internal sealed class AstDumper : AstVisitor
     protected override void Visit(EnumDeclaration enumDeclaration)
     {
         _writer.WriteLine($"EnumDeclaration {enumDeclaration.Identifier}");
-        base.Visit(enumDeclaration);
         if (enumDeclaration.Constant is not null)
         {
             _writer.Indent++;
@@ -302,220 +301,208 @@ internal sealed class AstDumper : AstVisitor
 
     protected override void Visit(Expression expression)
     {
-        switch (expression)
-        {
-            case StringLiteralListExpression stringLiteralListExpression:
-                _writer.WriteLine($"StringLiteralListExpression {string.Join(", ", stringLiteralListExpression.ConstantList.Select(_ => _.Text))}");
-                break;
-            case IdentifierExpression identifierExpression:
-                _writer.WriteLine($"IdentifierExpression {identifierExpression.Identifier}");
-                break;
-            case ConstantLiteralExpression constantLiteralExpression:
-                _writer.WriteLine($"ConstantLiteralExpression {constantLiteralExpression.Constant.Text}");
-                break;
-            case ParenExpression parenExpression:
-                _writer.WriteLine("ParenExpression");
-                _writer.Indent++;
-                Visit(parenExpression.Contents);
-                _writer.Indent--;
-                break;
-            case SubscriptingExpression subscriptingExpression:
-                _writer.WriteLine("ParenExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Base");
-                _writer.Indent++;
-                Visit(subscriptingExpression.Base);
-                _writer.Indent--;
-                _writer.WriteLine("Index");
-                _writer.Indent++;
-                Visit(subscriptingExpression.Index);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case FunctionCallExpression functionCallExpression:
-                _writer.WriteLine("FunctionCallExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Function");
-                _writer.Indent++;
-                Visit(functionCallExpression.Function);
-                _writer.Indent--;
-                _writer.WriteLine("Arguments");
-                if (functionCallExpression.Arguments is not null)
-                {
-                    _writer.Indent++;
-                    foreach (var argument in functionCallExpression.Arguments)
-                    {
-                        Visit(argument);
-                    }
-
-                    _writer.Indent--;
-                }
-                _writer.Indent--;
-                break;
-            case TypeCastOrNamedFunctionCallExpression typeCastOrNamedFunctionCallExpression:
-                _writer.WriteLine($"TypeCastOrNamedFunctionCallExpression {typeCastOrNamedFunctionCallExpression.TypeOrFunctionName}");
-                _writer.Indent++;
-                _writer.WriteLine("Arguments");
-                _writer.Indent++;
-                foreach (var argument in typeCastOrNamedFunctionCallExpression.Arguments)
-                {
-                    Visit(argument);
-                }
-
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case MemberAccessExpression memberAccessExpression:
-                _writer.WriteLine($"MemberAccessExpression {memberAccessExpression.Identifier.Identifier}");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(memberAccessExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case PointerMemberAccessExpression pointerMemberAccessExpression:
-                _writer.WriteLine($"PointerMemberAccessExpression {pointerMemberAccessExpression.Identifier.Identifier}");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(pointerMemberAccessExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case PostfixIncrementDecrementExpression postfixIncrementDecrementExpression:
-                _writer.WriteLine($"PostfixIncrementDecrementExpression {postfixIncrementDecrementExpression.PostfixOperator.Text}");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(postfixIncrementDecrementExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case PrefixIncrementDecrementExpression prefixIncrementDecrementExpression:
-                _writer.WriteLine($"PrefixIncrementDecrementExpression {prefixIncrementDecrementExpression.PrefixOperator.Text}");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(prefixIncrementDecrementExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case UnaryOperatorExpression unaryOperatorExpression:
-                _writer.WriteLine($"UnaryOperatorExpression {unaryOperatorExpression.Operator}");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(unaryOperatorExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case IndirectionExpression indirectionExpression:
-                _writer.WriteLine("IndirectionExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(indirectionExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case UnaryExpressionSizeOfOperatorExpression unaryExpressionSizeOfOperatorExpression:
-                _writer.WriteLine("UnaryExpressionSizeOfOperatorExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(unaryExpressionSizeOfOperatorExpression.TargetExpession);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case TypeNameSizeOfOperatorExpression typeNameSizeOfOperatorExpression:
-                _writer.WriteLine("TypeNameSizeOfOperatorExpression");
-                _writer.Indent++;
-                VisitTypeName(typeNameSizeOfOperatorExpression.TypeName);
-                _writer.Indent--;
-                break;
-            case CastExpression castExpression:
-                _writer.WriteLine("UnaryExpressionSizeOfOperatorExpression");
-                _writer.Indent++;
-                _writer.WriteLine("TypeName");
-                _writer.Indent++;
-                VisitTypeName(castExpression.TypeName);
-                _writer.Indent--;
-                _writer.WriteLine("Target");
-                _writer.Indent++;
-                Visit(castExpression.Target);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case BinaryOperatorExpression binaryOperatorExpression:
-                _writer.WriteLine($"BinaryOperatorExpression {binaryOperatorExpression.Operator}");
-                _writer.Indent++;
-                _writer.WriteLine("Left");
-                _writer.Indent++;
-                Visit(binaryOperatorExpression.Left);
-                _writer.Indent--;
-                _writer.WriteLine("Right");
-                _writer.Indent++;
-                Visit(binaryOperatorExpression.Right);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case ConditionalExpression conditionalExpression:
-                _writer.WriteLine("ConditionalExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Condition");
-                _writer.Indent++;
-                Visit(conditionalExpression.Condition);
-                _writer.Indent--;
-                _writer.WriteLine("TrueExpression");
-                _writer.Indent++;
-                Visit(conditionalExpression.TrueExpression);
-                _writer.Indent--;
-                _writer.WriteLine("FalseExpression");
-                _writer.Indent++;
-                Visit(conditionalExpression.FalseExpression);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            case CommaExpression commaExpression:
-                _writer.WriteLine("CommaExpression");
-                _writer.Indent++;
-                _writer.WriteLine("Left");
-                _writer.Indent++;
-                Visit(commaExpression.Left);
-                _writer.Indent--;
-                _writer.WriteLine("Right");
-                _writer.Indent++;
-                Visit(commaExpression.Right);
-                _writer.Indent--;
-                _writer.Indent--;
-                break;
-            default:
-                throw new AssertException($"Unknown expression of type {expression.GetType()}.");
-        }
+        base.Visit(expression);
+    }
+    protected override void Visit(StringLiteralListExpression stringLiteralListExpression)
+    {
+        _writer.WriteLine($"StringLiteralListExpression {string.Join(", ", stringLiteralListExpression.ConstantList.Select(_ => _.Text))}");
+        base.Visit(stringLiteralListExpression);
     }
 
-    protected override void VisitTypeName(TypeName typeName)
+    protected override void Visit(IdentifierExpression identifierExpression)
     {
-        _writer.WriteLine("TypeName");
-        _writer.Indent++;
-        _writer.WriteLine("SpecifierQualifierList");
-        _writer.Indent++;
-        foreach (var specifierQualifierListItem in typeName.SpecifierQualifierList)
-        {
-            Visit(specifierQualifierListItem);
-        }
+        _writer.WriteLine($"IdentifierExpression {identifierExpression.Identifier}");
+        base.Visit(identifierExpression);
+    }
 
-        _writer.Indent--;
-        _writer.WriteLine("AbstractDeclarator");
-        if (typeName.AbstractDeclarator is not null)
-        {
-            _writer.Indent++;
-            Visit(typeName.AbstractDeclarator);
-            _writer.Indent--;
-        }
+    protected override void Visit(ConstantLiteralExpression constantLiteralExpression)
+    {
+        _writer.WriteLine($"ConstantLiteralExpression {constantLiteralExpression.Constant.Text}");
+        base.Visit(constantLiteralExpression);
+    }
 
-        _writer.Indent--;
+    protected override void Visit(ParenExpression expression)
+    {
+        Enter("ParenExpression");
+        base.Visit(expression);
+        Exit();
+    }
+
+    protected override void Visit(SubscriptingExpression expression)
+    {
+        Enter("SubscriptingExpression");
+        Enter("Base");
+        base.Visit(expression.Base);
+        Exit();
+        Enter("Index");
+        base.Visit(expression.Index);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(FunctionCallExpression expression)
+    {
+        Enter("FunctionCallExpression");
+        Enter("Function");
+        base.Visit(expression.Function);
+        Exit();
+        Enter("Arguments");
+        if (expression.Arguments is not null)
+        {
+            foreach (var argument in expression.Arguments)
+            {
+                base.Visit(argument);
+            }
+        }
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(TypeCastOrNamedFunctionCallExpression expression)
+    {
+        Enter($"TypeCastOrNamedFunctionCallExpression {expression.TypeOrFunctionName}");
+        Enter("Arguments");
+        foreach (var argument in expression.Arguments)
+        {
+            base.Visit(argument);
+        }
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(MemberAccessExpression expression)
+    {
+        Enter($"MemberAccessExpression {expression.Identifier.Identifier}");
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(PointerMemberAccessExpression expression)
+    {
+        Enter($"PointerMemberAccessExpression {expression.Identifier.Identifier}");
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(PostfixIncrementDecrementExpression expression)
+    {
+        Enter($"PostfixIncrementDecrementExpression {expression.PostfixOperator.Text}");
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(CompoundLiteralExpression expression)
+    {
+        Enter("CompoundLiteralExpression"); //?
+        base.Visit(expression);
+        Exit();
+    }
+
+    protected override void Visit(PrefixIncrementDecrementExpression expression)
+    {
+        Enter($"PrefixIncrementDecrementExpression {expression.PrefixOperator.Text}");
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(UnaryOperatorExpression expression)
+    {
+        Enter($"UnaryOperatorExpression {expression.Operator}");
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(IndirectionExpression expression)
+    {
+        Enter("IndirectionExpression");
+        Enter("Target");
+        base.Visit(expression);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(UnaryExpressionSizeOfOperatorExpression expression)
+    {
+        Enter("UnaryExpressionSizeOfOperatorExpression");
+        Enter("Target");
+        base.Visit(expression.TargetExpession);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(TypeNameSizeOfOperatorExpression expression)
+    {
+        Enter("TypeNameSizeOfOperatorExpression");
+        base.Visit(expression);
+        Exit();
+    }
+
+    protected override void Visit(CastExpression expression)
+    {
+        Enter("CastExpression");
+        Enter("TypeName");
+        base.Visit(expression.TypeName);
+        Exit();
+        Enter("Target");
+        base.Visit(expression.Target);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(BinaryOperatorExpression expression)
+    {
+        Enter("BinaryOperatorExpression");
+        Enter("Left");
+        base.Visit(expression.Left);
+        Exit();
+        Enter("Right");
+        base.Visit(expression.Right);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(ConditionalExpression expression)
+    {
+        Enter("ConditionalExpression");
+        Enter("Condition");
+        base.Visit(expression.Condition);
+        Exit();
+        Enter("TrueExpression");
+        base.Visit(expression.TrueExpression);
+        Exit();
+        Enter("FalseExpression");
+        base.Visit(expression.FalseExpression);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(CommaExpression expression)
+    {
+        Enter("CommaExpression");
+        Enter("Left");
+        base.Visit(expression.Left);
+        Exit();
+        Enter("Right");
+        base.Visit(expression.Right);
+        Exit();
+        Exit();
+    }
+
+    protected override void Visit(TypeName typeName)
+    {
+        Enter("TypeName");
+        base.Visit(typeName);
+        Exit();
     }
 
     protected override void Visit(Statement statement)
@@ -549,7 +536,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.WriteLine("CompoundStatement");
                 foreach (var subStatement in compoundStatement.Block)
                 {
-                    VisitBlockItem(subStatement);
+                    Visit(subStatement);
                 }
                 break;
             case ExpressionStatement expressionStatement:
@@ -608,7 +595,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent--;
                 _writer.WriteLine("Body");
                 _writer.Indent++;
-                VisitBlockItem(whileStatement.Body);
+                Visit(whileStatement.Body);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -621,7 +608,7 @@ internal sealed class AstDumper : AstVisitor
                 _writer.Indent--;
                 _writer.WriteLine("Body");
                 _writer.Indent++;
-                VisitBlockItem(doWhileStatement.Body);
+                Visit(doWhileStatement.Body);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -633,7 +620,7 @@ internal sealed class AstDumper : AstVisitor
                 {
                     _writer.WriteLine("InitDeclaration");
                     _writer.Indent++;
-                    VisitBlockItem(forStatement.InitDeclaration);
+                    Visit(forStatement.InitDeclaration);
                     _writer.Indent--;
                 }
 
@@ -663,7 +650,7 @@ internal sealed class AstDumper : AstVisitor
 
                 _writer.WriteLine("Body");
                 _writer.Indent++;
-                VisitBlockItem(forStatement.Body);
+                Visit(forStatement.Body);
                 _writer.Indent--;
                 _writer.Indent--;
                 break;
@@ -690,7 +677,7 @@ internal sealed class AstDumper : AstVisitor
         }
     }
 
-    protected override void VisitAmbiguousBlockItem(AmbiguousBlockItem ambiguousBlockItem)
+    protected override void Visit(AmbiguousBlockItem ambiguousBlockItem)
     {
         _writer.WriteLine($"AmbiguousBlockItem ({ambiguousBlockItem.Item1}, {ambiguousBlockItem.Item2})");
     }
