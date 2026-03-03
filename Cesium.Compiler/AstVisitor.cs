@@ -472,65 +472,65 @@ internal abstract class AstVisitor
     {
         switch (expression)
         {
-            case StringLiteralListExpression stringLiteralListExpression:
-                Visit(stringLiteralListExpression);
+            case StringLiteralListExpression expr:
+                Visit(expr);
                 break;
-            case IdentifierExpression identifierExpression:
-                Visit(identifierExpression);
+            case IdentifierExpression expr:
+                Visit(expr);
                 break;
-            case ConstantLiteralExpression constantLiteralExpression:
-                Visit(constantLiteralExpression);
+            case ConstantLiteralExpression expr:
+                Visit(expr);
                 break;
-            case ParenExpression parenExpression:
-                Visit(parenExpression);
+            case ParenExpression expr:
+                Visit(expr);
                 break;
-            case SubscriptingExpression subscriptingExpression:
-                Visit(subscriptingExpression);
+            case SubscriptingExpression expr:
+                Visit(expr);
                 break;
-            case FunctionCallExpression functionCallExpression:
-                Visit(functionCallExpression);
+            case FunctionCallExpression expr:
+                Visit(expr);
                 break;
-            case TypeCastOrNamedFunctionCallExpression typeCastOrNamedFunctionCallExpression:
-                Visit(typeCastOrNamedFunctionCallExpression);
+            case TypeCastOrNamedFunctionCallExpression expr:
+                Visit(expr);
                 break;
-            case MemberAccessExpression memberAccessExpression:
-                Visit(memberAccessExpression);
+            case MemberAccessExpression expr:
+                Visit(expr);
                 break;
-            case PointerMemberAccessExpression pointerMemberAccessExpression:
-                Visit(pointerMemberAccessExpression);
+            case PointerMemberAccessExpression expr:
+                Visit(expr);
                 break;
-            case PostfixIncrementDecrementExpression postfixIncrementDecrementExpression:
-                Visit(postfixIncrementDecrementExpression);
+            case PostfixIncrementDecrementExpression expr:
+                Visit(expr);
                 break;
-            case CompoundLiteralExpression compoundLiteralExpression:
-                Visit(compoundLiteralExpression);
+            case CompoundLiteralExpression expr:
+                Visit(expr);
                 break;
-            case PrefixIncrementDecrementExpression prefixIncrementDecrementExpression:
-                Visit(prefixIncrementDecrementExpression);
+            case PrefixIncrementDecrementExpression expr:
+                Visit(expr);
                 break;
-            case UnaryOperatorExpression unaryOperatorExpression:
-                Visit(unaryOperatorExpression);
+            case UnaryOperatorExpression expr:
+                Visit(expr);
                 break;
-            case IndirectionExpression indirectionExpression:
-                Visit(indirectionExpression);
+            case IndirectionExpression expr:
+                Visit(expr);
                 break;
-            case UnaryExpressionSizeOfOperatorExpression unaryExpressionSizeOfOperatorExpression:
-                Visit(unaryExpressionSizeOfOperatorExpression);
+            case UnaryExpressionSizeOfOperatorExpression expr:
+                Visit(expr);
                 break;
-            case TypeNameSizeOfOperatorExpression typeNameSizeOfOperatorExpression:
-                Visit(typeNameSizeOfOperatorExpression);
+            case TypeNameSizeOfOperatorExpression expr:
+                Visit(expr);
                 break;
-            case CastExpression castExpression:
-                Visit(castExpression);
+            case CastExpression expr:
+                Visit(expr);
                 break;
-            case BinaryOperatorExpression binaryOperatorExpression:
-                Visit(binaryOperatorExpression);
+            case BinaryOperatorExpression expr:
+                Visit(expr);
                 break;
-            case ConditionalExpression conditionalExpression:
-                Visit(conditionalExpression);
+            case ConditionalExpression expr:
+                Visit(expr);
                 break;
-            case CommaExpression commaExpression:
-                Visit(commaExpression);
+            case CommaExpression expr:
+                Visit(expr);
                 break;
             default:
                 throw new AssertException($"Unknown expression of type {expression.GetType()}.");
@@ -685,44 +685,44 @@ internal abstract class AstVisitor
     {
         switch (statement)
         {
-            case LabelStatement labelStatement:
-                Visit(labelStatement);
+            case LabelStatement stmt:
+                Visit(stmt);
                 break;
-            case CaseStatement caseStatement:
-                Visit(caseStatement);
+            case CaseStatement stmt:
+                Visit(stmt);
                 break;
-            case CompoundStatement compoundStatement:
-                Visit(compoundStatement);
+            case CompoundStatement stmt:
+                Visit(stmt);
                 break;
-            case ExpressionStatement expressionStatement:
-                Visit(expressionStatement);
+            case ExpressionStatement stmt:
+                Visit(stmt);
                 break;
-            case IfElseStatement ifElseStatement:
-                Visit(ifElseStatement);
+            case IfElseStatement stmt:
+                Visit(stmt);
                 break;
-            case SwitchStatement switchStatement:
-                Visit(switchStatement);
+            case SwitchStatement stmt:
+                Visit(stmt);
                 break;
-            case WhileStatement whileStatement:
-                Visit(whileStatement);
+            case WhileStatement stmt:
+                Visit(stmt);
                 break;
-            case DoWhileStatement doWhileStatement:
-                Visit(doWhileStatement);
+            case DoWhileStatement stmt:
+                Visit(stmt);
                 break;
-            case ForStatement forStatement:
-                Visit(forStatement);
+            case ForStatement stmt:
+                Visit(stmt);
                 break;
-            case GoToStatement goToStatement:
-                Visit(goToStatement);
+            case GoToStatement stmt:
+                Visit(stmt);
                 break;
-            case BreakStatement breakStatement:
-                Visit(breakStatement);
+            case BreakStatement stmt:
+                Visit(stmt);
                 break;
-            case ContinueStatement continueStatement:
-                Visit(continueStatement);
+            case ContinueStatement stmt:
+                Visit(stmt);
                 break;
-            case ReturnStatement returnStatement:
-                Visit(returnStatement);
+            case ReturnStatement stmt:
+                Visit(stmt);
                 break;
             default:
                 throw new AssertException($"Unknown statement of type {statement.GetType()}.");
