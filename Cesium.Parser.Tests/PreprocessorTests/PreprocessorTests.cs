@@ -506,7 +506,7 @@ int main() { char* x = foo(int x; printf(""some string"")); }
 int main() { foo(0) return 0; }
 ");
 
-    [Fact, NoVerify]
+    [Fact]
     public Task NestedMacroDeferredExpansion() => DoPreprocess(
 @"#define EMPTY()
 #define DEFER(id) id EMPTY()
