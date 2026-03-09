@@ -1,0 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+
+SPDX-License-Identifier: MIT
+-->
+
+<Project Sdk="Cesium.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+</Project>

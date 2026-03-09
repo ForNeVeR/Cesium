@@ -12,6 +12,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
 {
     [Theory]
     [InlineData("SimpleCoreExe")]
+    [InlineData("SimpleCoreExe7")]
     public async Task CesiumCompile_Core_Exe_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
@@ -38,6 +39,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
 
     [Theory]
     [InlineData("SimpleNetfxExe")]
+    [InlineData("SimpleNetfxExe472")]
     public async Task CesiumCompile_NetFx_Exe_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
@@ -57,6 +59,33 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         Assert.True(result.ExitCode == 0);
         AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
         AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+    }
+
+    [Theory]
+    [InlineData("SimpleNetfxExe461")]
+    public async Task CesiumCompile_NetFx_Exe_NotSupported(string projectName)
+    {
+        HashSet<string> expectedObjArtifacts =
+        [
+            $"{projectName}.exe"
+        ];
+
+        HashSet<string> expectedBinArtifacts =
+        [
+            $"{projectName}.exe",
+            "Cesium.Runtime.dll",
+            $"{projectName}.runtimeconfig.json"
+        ];
+
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
+
+        Assert.Equal(1, result.ExitCode);
+
+        // TODO: We should extract the exact error messages in structured format.
+        Assert.Contains(
+            "Unsupported TargetFramework: net461. Supported frameworks are: net6.0 and up, netstandard2.0 and net462 and up.",
+            result.StdOutOutput);
+        Assert.Empty(result.OutputArtifacts);
     }
 
     [Theory]
