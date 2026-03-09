@@ -10,6 +10,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-09
+### Added
+- [#944](https://github.com/ForNeVeR/Cesium/pull/944): Implement string comparison functions from POSIX. Thanks to @kant2002!
+- [#949](https://github.com/ForNeVeR/Cesium/pull/949): Implement more cases for struct initialization. Thanks to @kant2002!
+- [#950](https://github.com/ForNeVeR/Cesium/pull/950): Allow multiple typedefs for same type. Thanks to @kant2002!
+- [#954](https://github.com/ForNeVeR/Cesium/pull/954): Add unsigned long long conversion. Thanks to @kant2002!
+- [#957](https://github.com/ForNeVeR/Cesium/pull/957): Document --ast-dump option for diagnostic purposes. Thanks to @pkazakov-dev!
+- [#962](https://github.com/ForNeVeR/Cesium/pull/962): Add support for g/G formats in printf/fprinf. Thanks to @kant2002!
+- [#956](https://github.com/ForNeVeR/Cesium/pull/956): Add `strtod`/`strtof` functions. Thanks to @kant2002!
+- [#948](https://github.com/ForNeVeR/Cesium/pull/948): Improve support for non-native TFMs in Cesium SDK. Thanks to @kant2002!
+
+### Fixed
+- [#952](https://github.com/ForNeVeR/Cesium/pull/952): Fix saving indirection for uint64 types. Thanks to @kant2002!
+- [#953](https://github.com/ForNeVeR/Cesium/pull/953): Fix using anonymous unions in the function variables. Thanks to @kant2002!
+- [#959](https://github.com/ForNeVeR/Cesium/pull/959): The project templates now define the `RollForward` option. Thanks to @pkazakov-dev!
+
+### Changed
+- [#965](https://github.com/ForNeVeR/Cesium/pull/965): New infrastructure for AST dumper. Thanks to @pkazakov-dev!
+
 ## [0.2.0] - 2026-02-14
 ### Changed
 - Cesium now runs under .NET 10. Thanks to @pkazakov-dev!
@@ -28,7 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - `fwrite`,
   - `fputc`,
   - `vprintf`,
-  - `fflush`. 
+  - `fflush`.
   Thanks to @kant2002!
 - [#355](https://github.com/ForNeVeR/Cesium/issues/355): static struct layout calculation. Thanks to @kant2002!
 - [#878](https://github.com/ForNeVeR/Cesium/pull/878): global constant `typedef` declaration. Thanks to @kant2002!
@@ -102,4 +121,5 @@ Thanks to our benefactors (in the alphabetical order):
 [0.1.1]: https://github.com/ForNeVeR/Cesium/compare/v0.1.0...v0.1.1
 [0.1.2]: https://github.com/ForNeVeR/Cesium/compare/v0.1.1...v0.1.2
 [0.2.0]: https://github.com/ForNeVeR/Cesium/compare/v0.1.2...v0.2.0
-[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/ForNeVeR/Cesium/compare/v0.2.0...v0.3.0
+[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.3.0...HEAD
