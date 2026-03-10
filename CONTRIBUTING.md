@@ -92,6 +92,12 @@ If the CI asks you to update the file licenses, follow one of these:
    ```
 
 (Feel free to attribute the changes to "Cesium contributors <https://github.com/ForNeVeR/Cesium>" instead of your name in a multi-author file, or if you don't want your name to be mentioned in the project's source: this doesn't mean you'll lose the copyright.)
+
+Community
+---------
+
+If you want just look around and ask questions, please join [our Discord channel
+](https://discord.gg/waSqResV)
 <!-- REUSE-IgnoreEnd -->
 
 [docs.readme]: README.md
