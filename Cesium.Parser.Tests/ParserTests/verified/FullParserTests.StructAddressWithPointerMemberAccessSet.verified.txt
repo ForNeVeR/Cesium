@@ -130,7 +130,7 @@
               "Left": {
                 "$type": "Cesium.Ast.PointerMemberAccessExpression, Cesium.Ast",
                 "Target": {
-                  "$type": "Cesium.Ast.ParenExpression, Cesium.Ast",
+                  "$type": "Cesium.Ast.ParenthesizedExpression, Cesium.Ast",
                   "Contents": {
                     "$type": "Cesium.Ast.UnaryOperatorExpression, Cesium.Ast",
                     "Operator": "&",

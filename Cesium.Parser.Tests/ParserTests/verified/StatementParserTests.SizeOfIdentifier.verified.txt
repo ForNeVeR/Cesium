@@ -30,7 +30,7 @@
       "Expression": {
         "$type": "Cesium.Ast.UnaryExpressionSizeOfOperatorExpression, Cesium.Ast",
         "TargetExpession": {
-          "$type": "Cesium.Ast.ParenExpression, Cesium.Ast",
+          "$type": "Cesium.Ast.ParenthesizedExpression, Cesium.Ast",
           "Contents": {
             "$type": "Cesium.Ast.IdentifierExpression, Cesium.Ast",
             "Identifier": "size"
