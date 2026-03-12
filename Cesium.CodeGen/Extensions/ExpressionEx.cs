@@ -35,7 +35,7 @@ internal static class ExpressionEx
         StringLiteralListExpression e => new Ir.Expressions.StringLiteralListExpression(e),
         ConstantLiteralExpression { Constant.Kind: CTokenType.Identifier } e => new Ir.Expressions.IdentifierExpression(e),
         ConstantLiteralExpression e => new Ir.Expressions.ConstantLiteralExpression(e),
-        ParenExpression e => ToIntermediate(e.Contents, scope),
+        ParenthesizedExpression e => ToIntermediate(e.Contents, scope),
 
         TypeCastOrNamedFunctionCallExpression e => new Ir.Expressions.TypeCastOrNamedFunctionCallExpression(e, scope),
         FunctionCallExpression e => new Ir.Expressions.FunctionCallExpression(e, scope),

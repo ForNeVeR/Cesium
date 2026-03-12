@@ -320,9 +320,9 @@ internal sealed class AstDumper : AstVisitor
         base.Visit(constantLiteralExpression);
     }
 
-    protected override void Visit(ParenExpression expression)
+    protected override void Visit(ParenthesizedExpression expression)
     {
-        Enter("ParenExpression");
+        Enter("ParenthesizedExpression");
         base.Visit(expression);
         Exit();
     }

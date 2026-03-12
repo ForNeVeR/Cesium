@@ -481,7 +481,7 @@ internal abstract class AstVisitor
             case ConstantLiteralExpression expr:
                 Visit(expr);
                 break;
-            case ParenExpression expr:
+            case ParenthesizedExpression expr:
                 Visit(expr);
                 break;
             case SubscriptingExpression expr:
@@ -549,7 +549,7 @@ internal abstract class AstVisitor
     {
     }
 
-    protected virtual void Visit(ParenExpression expression)
+    protected virtual void Visit(ParenthesizedExpression expression)
     {
         Visit(expression.Contents);
     }

@@ -94,7 +94,8 @@ public partial class CParser
         new StringLiteralListExpression(literalExpressionList);
 
     [Rule("primary_expression: '(' expression ')'")]
-    private static Expression MakeParens(IToken _, Expression expression, IToken __) => new ParenExpression(expression);
+    private static Expression MakeParenthesizedExpression(IToken _, Expression expression, IToken __) =>
+        new ParenthesizedExpression(expression);
 
     [Rule("primary_expression: constant")]
     private static Expression MakeConstantExpression(ICToken constant) => new ConstantLiteralExpression(constant);
@@ -116,7 +117,7 @@ public partial class CParser
         ArgumentExpressionList? arguments,
         IToken __)
     {
-        if (function is ParenExpression { Contents: ConstantLiteralExpression { Constant: CToken { Kind: CTokenType.Identifier, Text: var name } } } &&
+        if (function is ParenthesizedExpression { Contents: ConstantLiteralExpression { Constant: CToken { Kind: CTokenType.Identifier, Text: var name } } } &&
             arguments != null && arguments.Value.Length > 0)
         {
             return new TypeCastOrNamedFunctionCallExpression(name, arguments.Value);

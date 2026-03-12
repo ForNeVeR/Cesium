@@ -16,7 +16,7 @@ public sealed record StringLiteralListExpression(ImmutableArray<IToken<CTokenTyp
 // 6.5.1 Primary expressions
 public sealed record IdentifierExpression(string Identifier) : Expression;
 public sealed record ConstantLiteralExpression(IToken<CTokenType> Constant) : Expression;
-public sealed record ParenExpression(Expression Contents) : Expression;
+public sealed record ParenthesizedExpression(Expression Contents) : Expression;
 
 // 6.5.2 Postfix operators
 public sealed record SubscriptingExpression(Expression Base, Expression Index) : Expression;
