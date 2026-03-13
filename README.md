@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2022-2026 Cesium contributors <https://github.com/ForNeV
 SPDX-License-Identifier: MIT
 -->
 
-Cesium [![Status Enfer][status-enfer]][andivionian-status-classifier]
+Cesium [![Status Enfer][status-enfer]][andivionian-status-classifier] <img src="docs/logo.svg" width="48" height="48" align="right"/>
 ======
 
 Cesium is a fully managed C compiler for CLI platform (.NET).
