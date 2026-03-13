@@ -21,6 +21,11 @@ internal class TransactionalLexer(
     public IToken<CPreprocessorTokenType> Peek(int idx = 0) => _allTokens[_nextTokenToReturn + idx];
     public bool IsEnd => _nextTokenToReturn >= _allTokens.Count || Peek() is { Kind: CPreprocessorTokenType.End };
 
+    /// <summary>Returns true if peeking at <paramref name="offset"/> positions ahead would exceed the token stream.</summary>
+    public bool IsEndAt(int offset) =>
+        _nextTokenToReturn + offset >= _allTokens.Count
+        || _allTokens[_nextTokenToReturn + offset] is { Kind: CPreprocessorTokenType.End };
+
     /// <remarks>For error reporting purposes only.</remarks>
     public IToken<CPreprocessorTokenType>? LastToken => _allTokens.LastOrDefault();
 

@@ -141,7 +141,7 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
             do
             {
                 currentToken = lexer.Consume();
-            } while (currentToken is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
+            } while (!lexer.IsEnd && currentToken is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
 
             return currentToken;
         }
@@ -152,6 +152,12 @@ public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroCont
             var index = 0;
             do
             {
+                if (lexer.IsEndAt(index))
+                    return new Token<CPreprocessorTokenType>(
+                        new Range(),
+                        new Location(),
+                        string.Empty,
+                        CPreprocessorTokenType.End);
                 currentToken = lexer.Peek(index++);
             } while (currentToken is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
 
