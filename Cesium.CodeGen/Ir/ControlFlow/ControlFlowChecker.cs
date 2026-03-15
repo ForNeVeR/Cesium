@@ -5,6 +5,7 @@
 using Cesium.CodeGen.Contexts;
 using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Expressions;
+using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
@@ -37,11 +38,15 @@ internal sealed class ControlFlowChecker
         var lastBlock = flowGraph.BasicBlocks.Last();
         if (lastBlock.Statements.Count == 0 || lastBlock.Statements.Last() is not ReturnStatement and not GoToStatement)
         {
-            // [TODO #928]: More advanced control flow analysis to determine if all paths return a value.
-            //if (isReturnRequired)
-            //{
-            //    throw new CompilationException($"Not all control flow paths in function {scope.Method.Name} return a value.");
-            //}
+            if (isReturnRequired &&
+                flowGraph.BasicBlocks.Exists(b =>
+                    !b.Statements.Exists(t => t is ReturnStatement)
+                    && b.Targets.Count == 0
+                )
+            )
+            {
+                throw new CompilationException($"Not all control flow paths in function {scope.Method.Name} return a value.");
+            }
 
             var retn = new ReturnStatement(!isVoidFn ? new ConstantLiteralExpression(new IntegerConstant(0)) : null);
             lastBlock.Statements.Add(retn);
@@ -95,13 +100,36 @@ internal class FlowGraph
             }
             else if (blockItem is ConditionalGotoStatement conditional)
             {
-                currentBlock.Statements.Add(blockItem);
-                BasicBlocks.Add(currentBlock);
-                var conditionalBlock = Lookup(conditional.Identifier);
-                currentBlock.Targets.Add(conditionalBlock);
-                var newBlock = new BasicBlock();
-                currentBlock.Targets.Add(newBlock);
-                currentBlock = newBlock;
+                bool alwaysTaken =
+                    conditional is { Value: ConditionalValue.ConstantlyTrue, JumpType: ConditionalJumpType.True }
+                        or { Value: ConditionalValue.ConstantlyFalse, JumpType: ConditionalJumpType.False };
+                bool neverTaken =
+                    conditional is { Value: ConditionalValue.ConstantlyTrue, JumpType: ConditionalJumpType.False }
+                        or { Value: ConditionalValue.ConstantlyFalse, JumpType: ConditionalJumpType.True };
+
+                if (alwaysTaken)
+                {
+                    BasicBlocks.Add(currentBlock);
+                    var gotoStmnt = new GoToStatement(conditional.Identifier);
+                    currentBlock.Statements.Add(gotoStmnt);
+                    var gotoBlock = Lookup(gotoStmnt.Identifier);
+                    currentBlock.Targets.Add(gotoBlock);
+                    currentBlock = new BasicBlock();
+                }
+                else if (neverTaken)
+                {
+                    // Just ignore and pursue the current block
+                }
+                else // ConditionalValue.Unknown
+                {
+                    BasicBlocks.Add(currentBlock);
+                    currentBlock.Statements.Add(conditional);
+                    var conditionalBlock = Lookup(conditional.Identifier);
+                    currentBlock.Targets.Add(conditionalBlock);
+                    var nextBlock = new BasicBlock();
+                    currentBlock.Targets.Add(nextBlock);
+                    currentBlock = nextBlock;
+                }
             }
             else if (blockItem is LabeledNopStatement labeled)
             {
@@ -111,11 +139,11 @@ internal class FlowGraph
                 {
                     BasicBlocks.Add(currentBlock);
                 }
-                BasicBlock nextBlock = new();
+                BasicBlock newBlock = new();
                 //if (currentBlock.Statements.LastOrDefault()
                 //    is not GoToStatement and not ReturnStatement)
                 //{
-                //    currentBlock.Targets.Add(nextBlock);
+                //    currentBlock.Targets.Add(newBlock);
                 //}
 
                 if (currentBlock.Statements.Count == 0)
@@ -130,10 +158,10 @@ internal class FlowGraph
                         if (currentBlock.Statements.LastOrDefault()
                             is not GoToStatement and not ReturnStatement)
                         {
-                            currentBlock.Targets.Add(nextBlock);
+                            currentBlock.Targets.Add(newBlock);
                         }
 
-                        currentBlock = nextBlock;
+                        currentBlock = newBlock;
                     }
 
                     currentBlock.Statements.Add(labeled);
@@ -142,17 +170,17 @@ internal class FlowGraph
                 {
                     if (labeledBlocks.TryGetValue(labeled.Label, out var existingBlock))
                     {
-                        nextBlock = existingBlock;
-                        currentBlock.Targets.Add(nextBlock);
+                        newBlock = existingBlock;
+                        currentBlock.Targets.Add(newBlock);
                     }
                     else
                     {
-                        nextBlock = new();
-                        currentBlock.Targets.Add(nextBlock);
-                        labeledBlocks.Add(labeled.Label, nextBlock);
+                        newBlock = new();
+                        currentBlock.Targets.Add(newBlock);
+                        labeledBlocks.Add(labeled.Label, newBlock);
                     }
-                    nextBlock.Statements.Add(labeled);
-                    currentBlock = nextBlock;
+                    newBlock.Statements.Add(labeled);
+                    currentBlock = newBlock;
                 }
             }
             else
