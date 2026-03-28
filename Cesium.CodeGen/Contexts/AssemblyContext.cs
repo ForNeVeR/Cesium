@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Cesium.Ast;
 using Cesium.CodeGen.Contexts.Meta;
 using Cesium.CodeGen.Contexts.Utilities;
@@ -10,14 +14,11 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Emitting;
 using Cesium.CodeGen.Ir.Lowering;
 using Cesium.CodeGen.Ir.Types;
+using Cesium.CodeGen.Utils;
 using Cesium.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using System.Collections;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -42,7 +43,14 @@ public class AssemblyContext : IDisposable
         AssemblyNameDefinition name,
         CompilationOptions compilationOptions)
     {
-        var assembly = AssemblyDefinition.CreateAssembly(name, "Primary", compilationOptions.ModuleKind);
+        var assembly = AssemblyDefinition.CreateAssembly(
+            name,
+            moduleName: "Primary",
+            parameters: new ModuleParameters
+            {
+                Kind = compilationOptions.ModuleKind,
+                MetadataImporterProvider = new CesiumMetadataImporterProvider(compilationOptions.TargetRuntime)
+            });
         var module = assembly.MainModule;
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
