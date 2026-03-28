@@ -28,20 +28,24 @@ public class CSharpCompilationUtil : IDisposable
     public async Task<AbsolutePath> CompileCSharpAssembly(
         ITestOutputHelper output,
         TargetRuntimeDescriptor runtime,
+        IEnumerable<AbsolutePath> references,
         string cSharpSource)
     {
         if (runtime != DefaultRuntime) throw new Exception($"Runtime {runtime} not supported for test compilation.");
 
         using (await _testSemaphore.LockAsync())
         {
-            var projectDirectory = await CreateCSharpProject(output, _tempDirectory);
+            var projectDirectory = await CreateCSharpProject(output, _tempDirectory, references);
             await File.WriteAllTextAsync((projectDirectory / "Program.cs").Value, cSharpSource);
             await CompileCSharpProject(output, _tempDirectory, _projectName);
             return projectDirectory / "bin" / _configuration / _targetRuntime / (_projectName + ".dll");
         }
     }
 
-    private static async Task<AbsolutePath> CreateCSharpProject(ITestOutputHelper output, AbsolutePath directory)
+    private static async Task<AbsolutePath> CreateCSharpProject(
+        ITestOutputHelper output,
+        AbsolutePath directory,
+        IEnumerable<AbsolutePath> references)
     {
         await ExecUtil.RunToSuccess(
             output,
@@ -60,8 +64,11 @@ public class CSharpCompilationUtil : IDisposable
         project.Add(new XElement("PropertyGroup",
             new XElement(new XElement("AllowUnsafeBlocks", "true"))));
 
-        project.Add(new XElement("ItemGroup",
-            new XElement("Reference", new XAttribute("Include", CesiumRuntimeLibraryPath))));
+        project.Add(
+            new XElement("ItemGroup", [
+                new XElement("Reference", new XAttribute("Include", CesiumRuntimeLibraryPath)),
+                ..references.Select(r => new XElement("Reference", new XAttribute("Include", r.Value)))
+            ]));
 
         await using var outputStream = new FileStream(projectFilePath.Value, FileMode.Truncate, FileAccess.Write);
         await csProj.SaveAsync(outputStream, SaveOptions.None, CancellationToken.None);

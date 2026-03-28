@@ -13,7 +13,7 @@ namespace Cesium.CodeGen.Tests;
 // TODO[#488]: Make them run in parallel, as all the integration tests
 public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
 {
-    private async Task DoTest(
+    private async Task DoTestCSharpLibCApp(
         TargetArchitectureSet architecture,
         [StringSyntax("csharp")] string cSharpCode,
         [StringSyntax("cpp")] string cCode)
@@ -22,6 +22,7 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
         var cSharpAssemblyPath = await compilation.CompileCSharpAssembly(
             output,
             CSharpCompilationUtil.DefaultRuntime,
+            references: [],
             cSharpCode);
         var (cesiumAssembly, assemblyContents) = GenerateAssembly(
             runtime: null,
@@ -30,6 +31,27 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
             referencePaths: [cSharpAssemblyPath]);
         await VerifyTypes(cesiumAssembly, architecture);
         await VerifyAssemblyRuns(assemblyContents.ToArray(), cSharpAssemblyPath);
+    }
+
+    private async Task DoTestCLibCSharpApp(
+        [StringSyntax("cpp")] string cCode,
+        [StringSyntax("csharp")] string cSharpCode)
+    {
+        using CSharpCompilationUtil compilation = new();
+        var cesiumAssembly = GenerateAssembly(
+            runtime: null,
+            sources: [cCode]);
+        var cesiumAssemblyFile = Temporary.CreateTempFile().WithExtension(".dll");
+        cesiumAssembly.Write(cesiumAssemblyFile.Value);
+
+        var cSharpAssemblyPath = await compilation.CompileCSharpAssembly(
+            output,
+            CSharpCompilationUtil.DefaultRuntime,
+            references: [cesiumAssemblyFile],
+            cSharpCode);
+
+        await VerifyTypes(cesiumAssembly);
+        await VerifyAssemblyRuns(cSharpAssemblyPath);
     }
 
     private async Task VerifyAssemblyRuns(byte[] assemblyContentToRun, AbsolutePath referencePath)
@@ -60,10 +82,19 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
         }
     }
 
+    private async Task VerifyAssemblyRuns(AbsolutePath referencePath)
+    {
+        await ExecUtil.RunToSuccess(
+            output,
+            ExecUtil.DotNetHost,
+            referencePath.Parent!.Value,
+            [referencePath.Value]);
+    }
+
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task PointerInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task PointerInterop(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(
         architecture,
         @"public static unsafe class Test
 {
@@ -83,7 +114,7 @@ int main(void)
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task CPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task CPtrInterop(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
@@ -104,7 +135,7 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task VoidPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task VoidPtrInterop(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
@@ -125,7 +156,7 @@ public static class Test
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task FuncPtrInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task FuncPtrInterop(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(
         architecture,
         @"using Cesium.Runtime;
 public static class Test
@@ -150,7 +181,7 @@ int main(void)
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task FunctionPointerInterop(TargetArchitectureSet architecture) => DoTest(
+    public Task FunctionPointerInterop(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(
         architecture,
         """
 public static unsafe class Test
@@ -175,7 +206,7 @@ int main(void)
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task TestEquivalentTypeAttribute(TargetArchitectureSet architecture) => DoTest(architecture,
+    public Task TestEquivalentTypeAttribute(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(architecture,
 @"using Cesium.Runtime;
 public static unsafe class Test
 {
@@ -193,7 +224,7 @@ int main(void)
     [Theory]
     [InlineData(TargetArchitectureSet.Dynamic)]
     [InlineData(TargetArchitectureSet.Wide)]
-    public Task TestEquivalentTypeAttributeUsingInReturn(TargetArchitectureSet architecture) => DoTest(architecture,
+    public Task TestEquivalentTypeAttributeUsingInReturn(TargetArchitectureSet architecture) => DoTestCSharpLibCApp(architecture,
 @"using Cesium.Runtime;
 public static unsafe class Test
 {
