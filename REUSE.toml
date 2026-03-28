@@ -18,7 +18,7 @@ SPDX-License-Identifier = "MIT"
 [[annotations]]
 path = "**/*.DotSettings"
 precedence = "override"
-SPDX-FileCopyrightText = "2022 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-FileCopyrightText = "2022-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
@@ -30,7 +30,7 @@ path = [
     "Cesium.IntegrationTests/**/*.in"
 ]
 precedence = "override"
-SPDX-FileCopyrightText = "2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
+SPDX-FileCopyrightText = "2021-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
