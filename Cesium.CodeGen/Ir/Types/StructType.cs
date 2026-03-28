@@ -51,13 +51,15 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEqua
                 // Nothing, default layout is okay for dynamic architecture.
                 break;
             case TargetArchitectureSet.Bit32:
-                structType.PackingSize = 4;
                 structType.IsExplicitLayout = true;
+                structType.PackingSize = 4;
+                structType.ClassSize = 0;
                 break;
             case TargetArchitectureSet.Bit64:
             case TargetArchitectureSet.Wide:
-                structType.PackingSize = 8;
                 structType.IsExplicitLayout = true;
+                structType.PackingSize = 8;
+                structType.ClassSize = 0;
                 break;
             default:
                 throw new AssertException($"Unknown architecture set: {context.AssemblyContext.ArchitectureSet}.");
