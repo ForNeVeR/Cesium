@@ -41,9 +41,9 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEqua
     public TypeDefinition StartEmit(string name, TranslationUnitContext context)
     {
         var structType = new TypeDefinition(
-            "",
+            context.AssemblyContext.CompilationOptions.Namespace,
             Identifier is null ? "<typedef>" + name : Identifier,
-            TypeAttributes.Sealed,
+            TypeAttributes.Public | TypeAttributes.Sealed,
             context.Module.ImportReference(new TypeReference("System", "ValueType", context.AssemblyContext.MscorlibAssembly.MainModule, context.AssemblyContext.MscorlibAssembly.MainModule.TypeSystem.CoreLibrary)));
         switch (context.AssemblyContext.ArchitectureSet)
         {
