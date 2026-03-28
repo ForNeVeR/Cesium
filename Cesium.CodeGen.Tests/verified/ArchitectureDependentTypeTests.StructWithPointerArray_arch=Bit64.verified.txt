@@ -2,6 +2,8 @@ Module: Primary
   Type: <Module>
 
   Type: <typedef>foo
+  Pack: 8
+  Size: 0
   Nested types:
     Type: <typedef>foo/<SyntheticBuffer>x
     Pack: 0

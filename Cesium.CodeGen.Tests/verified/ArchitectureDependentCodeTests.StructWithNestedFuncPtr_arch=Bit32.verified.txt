@@ -2,6 +2,8 @@ Module: Primary
   Type: <Module>
 
   Type: <typedef>foo
+  Pack: 4
+  Size: 0
   Fields:
     Offset: 0
     method System.Int32 *(method System.Int32 *()) <typedef>foo::foo

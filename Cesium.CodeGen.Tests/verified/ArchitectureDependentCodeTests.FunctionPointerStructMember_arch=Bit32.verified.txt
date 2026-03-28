@@ -2,6 +2,8 @@ Module: Primary
   Type: <Module>
 
   Type: Foo
+  Pack: 4
+  Size: 0
   Fields:
     Offset: 0
     method System.Void *(System.Int32) Foo::x

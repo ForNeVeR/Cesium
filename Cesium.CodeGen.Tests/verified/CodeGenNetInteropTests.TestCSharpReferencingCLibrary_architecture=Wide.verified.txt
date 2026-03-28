@@ -35,6 +35,8 @@ Module: Primary
       IL_0028: ret
 
   Type: CesiumLib.Greeting
+  Pack: 8
+  Size: 0
   Fields:
     Offset: 0
     Cesium.Runtime.CPtr`1<System.Byte> CesiumLib.Greeting::message

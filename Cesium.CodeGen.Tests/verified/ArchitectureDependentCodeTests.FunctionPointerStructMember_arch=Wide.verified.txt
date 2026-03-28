@@ -2,6 +2,8 @@ Module: Primary
   Type: <Module>
 
   Type: Foo
+  Pack: 8
+  Size: 0
   Fields:
     Offset: 0
     Cesium.Runtime.FuncPtr`1<System.Action`1<System.Int32>> Foo::x
