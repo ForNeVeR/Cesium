@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Cesium.Compiler;
 using Cesium.TestFramework;
 using TruePath;
+using TruePath.SystemIo;
 using Xunit.Abstractions;
 
 namespace Cesium.CodeGen.Tests;
@@ -34,23 +35,29 @@ public class CodeGenNetInteropTests(ITestOutputHelper output) : CodeGenTestBase
     }
 
     private async Task DoTestCLibCSharpApp(
+        TargetArchitectureSet architecture,
         [StringSyntax("cpp")] string cCode,
         [StringSyntax("csharp")] string cSharpCode)
     {
         using CSharpCompilationUtil compilation = new();
-        var cesiumAssembly = GenerateAssembly(
-            runtime: null,
-            sources: [cCode]);
-        var cesiumAssemblyFile = Temporary.CreateTempFile().WithExtension(".dll");
-        cesiumAssembly.Write(cesiumAssemblyFile.Value);
+        var (cesiumAssembly, assemblyContents) = GenerateAssembly(
+            runtime: TargetRuntimeDescriptor.Net60,
+            arch: architecture,
+            sources: [cCode],
+            @namespace: "CesiumLib",
+            globalTypeFqn: "CesiumLib.Global",
+            referencePaths: []);
+        var cesiumAssemblyFile = compilation.TempDirectory / "test.dll";
+        await cesiumAssemblyFile.WriteAllBytesAsync(assemblyContents);
 
         var cSharpAssemblyPath = await compilation.CompileCSharpAssembly(
             output,
             CSharpCompilationUtil.DefaultRuntime,
             references: [cesiumAssemblyFile],
-            cSharpCode);
+            cSharpCode,
+            isApplication: true);
 
-        await VerifyTypes(cesiumAssembly);
+        await VerifyTypes(cesiumAssembly, architecture);
         await VerifyAssemblyRuns(cSharpAssemblyPath);
     }
 
@@ -238,4 +245,41 @@ int main(void)
 {
     return Func(11) != 0;
 }");
+
+    [Theory]
+    [InlineData(TargetArchitectureSet.Dynamic)]
+    [InlineData(TargetArchitectureSet.Wide)]
+    public Task TestCSharpReferencingCLibrary(TargetArchitectureSet architecture) =>
+        DoTestCLibCSharpApp(
+            architecture,
+            cCode: """
+typedef struct Greeting {
+    char* message;
+} Greeting;
+
+int len(Greeting* greeting) {
+    int count = 0;
+    char* p = greeting->message;
+    while (p[count] != '\0') {
+        ++count;
+    }
+    return count;
+}
+""",
+            cSharpCode: """
+class Program
+{
+    static unsafe int Main()
+    {
+        var message = "hello\0"U8;
+        fixed (byte* p = message) {
+            var greeting = new CesiumLib.Greeting { message = p };
+            var len = CesiumLib.Global.len(&greeting);
+            if (len != 5) return 1;
+        }
+
+        return 0;
+    }
+}
+""");
 }

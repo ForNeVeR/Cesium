@@ -23,27 +23,29 @@ public class CSharpCompilationUtil : IDisposable
 
     /// <summary>Semaphore that controls the number of simultaneously running tests.</summary>
     private static readonly AsyncNonKeyedLocker _testSemaphore = new(Environment.ProcessorCount);
-    private readonly AbsolutePath _tempDirectory = Temporary.CreateTempFolder();
+    public AbsolutePath TempDirectory { get; } = Temporary.CreateTempFolder();
 
     public async Task<AbsolutePath> CompileCSharpAssembly(
         ITestOutputHelper output,
         TargetRuntimeDescriptor runtime,
         IEnumerable<AbsolutePath> references,
-        string cSharpSource)
+        string cSharpSource,
+        bool isApplication = false)
     {
         if (runtime != DefaultRuntime) throw new Exception($"Runtime {runtime} not supported for test compilation.");
 
         using (await _testSemaphore.LockAsync())
         {
-            var projectDirectory = await CreateCSharpProject(output, _tempDirectory, references);
+            var projectDirectory = await CreateCSharpProject(output, isApplication, TempDirectory, references);
             await File.WriteAllTextAsync((projectDirectory / "Program.cs").Value, cSharpSource);
-            await CompileCSharpProject(output, _tempDirectory, _projectName);
+            await CompileCSharpProject(output, TempDirectory, _projectName);
             return projectDirectory / "bin" / _configuration / _targetRuntime / (_projectName + ".dll");
         }
     }
 
     private static async Task<AbsolutePath> CreateCSharpProject(
         ITestOutputHelper output,
+        bool isApplication,
         AbsolutePath directory,
         IEnumerable<AbsolutePath> references)
     {
@@ -51,7 +53,7 @@ public class CSharpCompilationUtil : IDisposable
             output,
             ExecUtil.DotNetHost,
             directory,
-            ["new", "classlib", "--framework", _targetRuntime, "--output", _projectName]);
+            ["new", isApplication ? "console" : "classlib", "--framework", _targetRuntime, "--output", _projectName]);
         var projectDirectory = directory / _projectName;
         var projectFilePath = projectDirectory / $"{_projectName}.csproj";
         XDocument csProj;
@@ -66,8 +68,12 @@ public class CSharpCompilationUtil : IDisposable
 
         project.Add(
             new XElement("ItemGroup", [
-                new XElement("Reference", new XAttribute("Include", CesiumRuntimeLibraryPath)),
-                ..references.Select(r => new XElement("Reference", new XAttribute("Include", r.Value)))
+                new XElement("Reference",
+                    new XAttribute("Include", CesiumRuntimeLibraryPath),
+                    new XAttribute("Private", "true")),
+                ..references.Select(r => new XElement("Reference",
+                    new XAttribute("Include", r.Value),
+                    new XAttribute("Private", "true")))
             ]));
 
         await using var outputStream = new FileStream(projectFilePath.Value, FileMode.Truncate, FileAccess.Write);
@@ -92,6 +98,6 @@ public class CSharpCompilationUtil : IDisposable
 
     public void Dispose()
     {
-        _tempDirectory.DeleteDirectoryRecursively();
+        TempDirectory.DeleteDirectoryRecursively();
     }
 }
