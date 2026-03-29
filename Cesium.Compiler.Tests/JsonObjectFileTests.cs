@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Cesium.CodeGen;
+using Cesium.Core.Warnings;
 using Cesium.TestFramework;
 using Mono.Cecil;
 using TruePath;
@@ -41,7 +42,8 @@ public class JsonObjectFileTests : VerifyTestBase
             new("/nonexistent-folder/include")
         ],
         ProducePreprocessedFile: false,
-        ProduceAstFile: true
+        ProduceAstFile: true,
+        WarningsSet.All
     );
 
     [Fact]
