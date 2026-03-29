@@ -27,6 +27,7 @@
       "/nonexistent-folder/include"
     ],
     "ProducePreprocessedFile": false,
-    "ProduceAstFile": true
+    "ProduceAstFile": true,
+    "WarningSet": "All"
   }
 }
