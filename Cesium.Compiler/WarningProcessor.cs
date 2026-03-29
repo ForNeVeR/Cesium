@@ -6,9 +6,9 @@ using Cesium.Core.Warnings;
 
 namespace Cesium.Compiler;
 
-public class WarningProcessor : IWarningProcessor
+public class WarningProcessor : IWarningProcessor<DiagnosticWarning>
 {
-    public void EmitWarning(PreprocessorWarning warning)
+    public void EmitWarning(DiagnosticWarning warning)
     {
         Console.Error.WriteLine($"{warning.Location}: warning: {warning.Message}");
     }

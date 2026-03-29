@@ -9,6 +9,7 @@ using Cesium.CodeGen.Ir.Declarations;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Types;
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
@@ -19,7 +20,9 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
 {
     public AssemblyContext AssemblyContext => Context.AssemblyContext;
     public ModuleDefinition Module => Context.Module;
+    public IWarningProcessor<CompilerWarning> WarningProcessor => Context.WarningProcessor;
     public TargetArchitectureSet ArchitectureSet => AssemblyContext.ArchitectureSet;
+
     public FunctionInfo? GetFunctionInfo(string identifier) =>
         Context.GetFunctionInfo(identifier);
 

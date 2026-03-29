@@ -20,7 +20,7 @@ public record CPreprocessor(
     ILexer<IToken<CPreprocessorTokenType>> Lexer,
     IIncludeContext IncludeContext,
     IMacroContext MacroContext,
-    IWarningProcessor WarningProcessor)
+    IWarningProcessor<PreprocessorWarning> WarningProcessor)
 {
     private readonly MacroExpansionEngine _macroExpansion = new(WarningProcessor, MacroContext);
 

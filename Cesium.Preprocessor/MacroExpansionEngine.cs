@@ -13,7 +13,7 @@ using Range = Yoakke.SynKit.Text.Range;
 
 namespace Cesium.Preprocessor;
 
-public class MacroExpansionEngine(IWarningProcessor warningProcessor, IMacroContext macroContext)
+public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warningProcessor, IMacroContext macroContext)
 {
     public IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
     {

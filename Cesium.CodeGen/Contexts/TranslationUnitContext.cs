@@ -12,6 +12,7 @@ using Mono.Cecil;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.AccessControl;
+using Cesium.Core.Warnings;
 using PointerType = Cesium.CodeGen.Ir.Types.PointerType;
 
 namespace Cesium.CodeGen.Contexts;
@@ -27,6 +28,8 @@ public class TranslationUnitContext
     public TypeDefinition ModuleType => Module.GetType("<Module>");
     public TypeDefinition GlobalType => AssemblyContext.GlobalType;
 
+    public IWarningProcessor<CompilerWarning> WarningProcessor { get; }
+
     private TypeDefinition? _translationUnitLevelType;
 
     private Dictionary<string, FunctionInfo> Functions { get; } = new();
@@ -39,6 +42,7 @@ public class TranslationUnitContext
     {
         AssemblyContext = assemblyContext;
         Name = name;
+        WarningProcessor = new CompilerWarningProcessor(assemblyContext.CompilationOptions.WarningSet);
     }
 
     /// <remarks>

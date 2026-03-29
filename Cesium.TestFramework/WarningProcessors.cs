@@ -6,12 +6,12 @@ using Cesium.Core.Warnings;
 
 namespace Cesium.TestFramework;
 
-public class LambdaWarningProcessor(Action<PreprocessorWarning> onWarning) : IWarningProcessor
+public class LambdaWarningProcessor(Action<PreprocessorWarning> onWarning) : IWarningProcessor<PreprocessorWarning>
 {
     public void EmitWarning(PreprocessorWarning warning) => onWarning(warning);
 }
 
-public sealed class ListWarningProcessor : IWarningProcessor, IDisposable
+public sealed class ListWarningProcessor : IWarningProcessor<PreprocessorWarning>, IDisposable
 {
     public readonly List<PreprocessorWarning> Warnings = new();
     public void EmitWarning(PreprocessorWarning warning)

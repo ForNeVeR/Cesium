@@ -60,7 +60,7 @@ public class Arguments
     public int OptimizationLevel { get; init; } = 0;
 
     [Option('W', HelpText = "Enable warnings set")]
-    public string WarningsSet { get; init; } = "";
+    public IEnumerable<string> WarningsSet { get; init; } = Array.Empty<string>();
 
     [Option('E', HelpText = "Produce preprocessed file")]
     public bool ProducePreprocessedFile { get; init; } = false;
