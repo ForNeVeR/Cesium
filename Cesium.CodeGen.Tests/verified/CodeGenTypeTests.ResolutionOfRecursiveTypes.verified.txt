@@ -19,5 +19,6 @@ Module: Primary
       IL_0027: ret
 
   Type: Node
+  Layout: Sequential
   Fields:
     Node* Node::parent

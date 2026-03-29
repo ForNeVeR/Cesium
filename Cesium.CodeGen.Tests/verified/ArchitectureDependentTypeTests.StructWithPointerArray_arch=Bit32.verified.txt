@@ -2,10 +2,12 @@ Module: Primary
   Type: <Module>
 
   Type: <typedef>foo
+  Layout: Explicit
   Pack: 4
   Size: 0
   Nested types:
     Type: <typedef>foo/<SyntheticBuffer>x
+    Layout: Sequential
     Pack: 0
     Size: 4
     Custom attributes:

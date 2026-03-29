@@ -57,8 +57,10 @@ Module: Primary
       IL_0010: ret
 
   Type: Foo
+  Layout: Sequential
   Nested types:
     Type: Foo/<SyntheticBuffer>b
+    Layout: Sequential
     Pack: 0
     Size: 8
     Custom attributes:

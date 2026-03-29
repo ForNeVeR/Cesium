@@ -35,5 +35,6 @@ Module: Primary
       IL_0028: ret
 
   Type: CesiumLib.Greeting
+  Layout: Sequential
   Fields:
     System.Byte* CesiumLib.Greeting::message

@@ -21,5 +21,6 @@ Module: Primary
       IL_0010: ret
 
   Type: <typedef>foo
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>foo::x

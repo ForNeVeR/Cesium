@@ -13,6 +13,7 @@ Module: Primary
       IL_0013: ret
 
   Type: <typedef>_Anon_Int_code_Pointer_name
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>_Anon_Int_code_Pointer_name::code
     System.Byte* <typedef>_Anon_Int_code_Pointer_name::name

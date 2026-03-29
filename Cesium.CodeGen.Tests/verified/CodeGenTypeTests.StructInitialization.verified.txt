@@ -33,6 +33,7 @@ Module: Primary
       IL_0010: ret
 
   Type: Foo
+  Layout: Sequential
   Fields:
     System.Int32 Foo::a
     System.Int32 Foo::b

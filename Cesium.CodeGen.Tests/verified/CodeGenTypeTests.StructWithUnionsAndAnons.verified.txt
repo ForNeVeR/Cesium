@@ -56,6 +56,7 @@ Module: Primary
       IL_0010: ret
 
   Type: <typedef>foo
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>foo::_1
     <typedef>_Anon_Int__2a <typedef>foo::_Anon_Int__2a
@@ -64,10 +65,12 @@ Module: Primary
     <typedef>_Anon_Int__7 <typedef>foo::s
 
   Type: <typedef>_Anon_Int__2a
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>_Anon_Int__2a::_2a
 
   Type: <typedef>_Union_Long__3u_Int__4u
+  Layout: Explicit
   Fields:
     Offset: 0
     System.Int64 <typedef>_Union_Long__3u_Int__4u::_3u
@@ -75,6 +78,7 @@ Module: Primary
     System.Int32 <typedef>_Union_Long__3u_Int__4u::_4u
 
   Type: <typedef>_Union_Long__5u_Int__6u
+  Layout: Explicit
   Fields:
     Offset: 0
     System.Int64 <typedef>_Union_Long__5u_Int__6u::_5u
@@ -82,5 +86,6 @@ Module: Primary
     System.Int32 <typedef>_Union_Long__5u_Int__6u::_6u
 
   Type: <typedef>_Anon_Int__7
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>_Anon_Int__7::_7

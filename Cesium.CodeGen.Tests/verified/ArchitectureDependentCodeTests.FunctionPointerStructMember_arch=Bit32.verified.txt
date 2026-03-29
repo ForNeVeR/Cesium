@@ -2,6 +2,7 @@ Module: Primary
   Type: <Module>
 
   Type: Foo
+  Layout: Explicit
   Pack: 4
   Size: 0
   Fields:

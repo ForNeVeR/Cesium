@@ -28,10 +28,12 @@ Module: Primary
   Type: <ConstantPool>
   Nested types:
     Type: <ConstantPool>/<ConstantPoolItemType7>
+    Layout: Explicit
     Pack: 1
     Size: 7
 
     Type: <ConstantPool>/<ConstantPoolItemType8>
+    Layout: Explicit
     Pack: 1
     Size: 8
   Fields:

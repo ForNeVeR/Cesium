@@ -9,5 +9,6 @@ Module: Primary
       IL_000c: ret
 
   Type: <typedef>foo
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>foo::x

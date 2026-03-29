@@ -2,11 +2,13 @@ Module: Primary
   Type: <Module>
 
   Type: <typedef>foo
+  Layout: Sequential
   Fields:
     System.Int64 <typedef>foo::l
     <typedef>_Union_Int_x_Float_f <typedef>foo::_Union_Int_x_Float_f
 
   Type: <typedef>_Union_Int_x_Float_f
+  Layout: Explicit
   Fields:
     Offset: 0
     System.Int32 <typedef>_Union_Int_x_Float_f::x

@@ -48,7 +48,7 @@ internal sealed class StructType : IGeneratedType, IEquatable<StructType>, IEqua
         switch (context.AssemblyContext.ArchitectureSet)
         {
             case TargetArchitectureSet.Dynamic:
-                // Nothing, default layout is okay for dynamic architecture.
+                structType.IsSequentialLayout = true;
                 break;
             case TargetArchitectureSet.Bit32:
                 structType.ClassSize = 0;

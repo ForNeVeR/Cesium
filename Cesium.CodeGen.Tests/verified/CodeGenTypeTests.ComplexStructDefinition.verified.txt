@@ -2,8 +2,10 @@ Module: Primary
   Type: <Module>
 
   Type: <typedef>foo
+  Layout: Sequential
   Nested types:
     Type: <typedef>foo/<SyntheticBuffer>b
+    Layout: Sequential
     Pack: 0
     Size: 20
     Custom attributes:
@@ -14,6 +16,7 @@ Module: Primary
       System.Int32 <typedef>foo/<SyntheticBuffer>b::FixedElementField
 
     Type: <typedef>foo/<SyntheticBuffer>c
+    Layout: Sequential
     Pack: 0
     Size: 64
     Custom attributes:
@@ -24,6 +27,7 @@ Module: Primary
       System.Byte <typedef>foo/<SyntheticBuffer>c::FixedElementField
 
     Type: <typedef>foo/<SyntheticBuffer>array
+    Layout: Sequential
     Pack: 0
     Size: 1600
     Custom attributes:

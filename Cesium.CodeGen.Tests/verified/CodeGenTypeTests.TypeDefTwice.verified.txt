@@ -2,5 +2,6 @@ Module: Primary
   Type: <Module>
 
   Type: Token
+  Layout: Sequential
   Fields:
     System.Int32 Token::x

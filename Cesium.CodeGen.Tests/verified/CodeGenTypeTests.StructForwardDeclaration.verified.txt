@@ -2,5 +2,6 @@ Module: Primary
   Type: <Module>
 
   Type: foo
+  Layout: Sequential
   Fields:
     System.Int32 foo::x

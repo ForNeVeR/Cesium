@@ -112,6 +112,7 @@ Module: Primary
       IL_0010: ret
 
   Type: Foo
+  Layout: Sequential
   Fields:
     System.Int32 Foo::a
     System.Int32 Foo::b
@@ -123,16 +124,19 @@ Module: Primary
     <typedef>_Anon__level_2 Foo::level_1
 
   Type: <typedef>_Anon_Long__1_Long__2
+  Layout: Sequential
   Fields:
     System.Int64 <typedef>_Anon_Long__1_Long__2::_1
     System.Int64 <typedef>_Anon_Long__1_Long__2::_2
 
   Type: <typedef>_Anon_Long_he_Long_ha
+  Layout: Sequential
   Fields:
     System.Int64 <typedef>_Anon_Long_he_Long_ha::he
     System.Int64 <typedef>_Anon_Long_he_Long_ha::ha
 
   Type: <typedef>_Union_Int_integer_Float_f
+  Layout: Explicit
   Fields:
     Offset: 0
     System.Int32 <typedef>_Union_Int_integer_Float_f::integer
@@ -140,10 +144,12 @@ Module: Primary
     System.Single <typedef>_Union_Int_integer_Float_f::f
 
   Type: <typedef>_Anon_Int_anon_int
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>_Anon_Int_anon_int::anon_int
 
   Type: <typedef>_Union_Int_not_anon_Float_its
+  Layout: Explicit
   Fields:
     Offset: 0
     System.Int32 <typedef>_Union_Int_not_anon_Float_its::not_anon
@@ -151,9 +157,11 @@ Module: Primary
     System.Single <typedef>_Union_Int_not_anon_Float_its::its
 
   Type: <typedef>_Anon__level_2
+  Layout: Sequential
   Fields:
     <typedef>_Anon_Int_level_3 <typedef>_Anon__level_2::level_2
 
   Type: <typedef>_Anon_Int_level_3
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>_Anon_Int_level_3::level_3

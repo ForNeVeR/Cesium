@@ -190,6 +190,10 @@ public abstract class CodeGenTestBase : VerifyTestBase
             first = false;
 
             result.AppendLine($"{Indent(indent)}Type: {type}");
+            if (type.IsSequentialLayout)
+                result.AppendLine($"{Indent(indent)}Layout: Sequential");
+            if (type.IsExplicitLayout)
+                result.AppendLine($"{Indent(indent)}Layout: Explicit");
             if (type.PackingSize != -1)
                 result.AppendLine($"{Indent(indent)}Pack: {type.PackingSize}");
             if (type.ClassSize != -1)

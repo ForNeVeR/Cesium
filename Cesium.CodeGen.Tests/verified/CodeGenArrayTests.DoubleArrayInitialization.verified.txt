@@ -43,6 +43,7 @@ Module: Primary
   Type: <ConstantPool>
   Nested types:
     Type: <ConstantPool>/<ConstantPoolItemType32>
+    Layout: Explicit
     Pack: 1
     Size: 32
   Fields:

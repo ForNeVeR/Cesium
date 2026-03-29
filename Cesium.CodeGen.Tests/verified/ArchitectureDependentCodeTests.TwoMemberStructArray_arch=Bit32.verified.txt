@@ -22,6 +22,7 @@ Module: Primary
       IL_0010: ret
 
   Type: <typedef>foo
+  Layout: Explicit
   Pack: 4
   Size: 0
   Fields:

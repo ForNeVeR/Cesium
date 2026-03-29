@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-03-29
+### Fixed
+- [#975: Struct layout should be sequential](https://github.com/ForNeVeR/Cesium/issues/975).
+
 ## [0.4.0] - 2026-03-28
 ### Changed
 - All the Cesium-generated struct types are now `public`.
@@ -131,4 +135,5 @@ Thanks to our benefactors (in the alphabetical order):
 [0.2.0]: https://github.com/ForNeVeR/Cesium/compare/v0.1.2...v0.2.0
 [0.3.0]: https://github.com/ForNeVeR/Cesium/compare/v0.2.0...v0.3.0
 [0.4.0]: https://github.com/ForNeVeR/Cesium/compare/v0.3.0...v0.4.0
-[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.4.0...HEAD
+[0.4.1]: https://github.com/ForNeVeR/Cesium/compare/v0.4.0...v0.4.1
+[Unreleased]: https://github.com/ForNeVeR/Cesium/compare/v0.4.1...HEAD

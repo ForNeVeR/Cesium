@@ -25,9 +25,11 @@ Module: Primary
       IL_0010: ret
 
   Type: tagFoo
+  Layout: Sequential
   Fields:
     System.Int32 tagFoo::A
 
   Type: <typedef>Foo
+  Layout: Sequential
   Fields:
     System.Int32 <typedef>Foo::B
