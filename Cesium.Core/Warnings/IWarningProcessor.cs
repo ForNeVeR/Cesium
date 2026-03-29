@@ -4,7 +4,7 @@
 
 namespace Cesium.Core.Warnings;
 
-public interface IWarningProcessor
+public interface IWarningProcessor<in T> where T : DiagnosticWarning
 {
-    public void EmitWarning(PreprocessorWarning warning);
+    public void EmitWarning(T warning);
 }

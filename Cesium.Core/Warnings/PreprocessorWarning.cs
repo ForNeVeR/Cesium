@@ -4,4 +4,5 @@
 
 namespace Cesium.Core.Warnings;
 
-public record PreprocessorWarning(SourceLocationInfo Location, string Message);
+public record PreprocessorWarning(SourceLocationInfo Location, string Message)
+    : DiagnosticWarning(Location, Message);

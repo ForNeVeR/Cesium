@@ -5,6 +5,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Cesium.CodeGen;
 using Cesium.Core;
+using Cesium.Core.Warnings;
 using Mono.Cecil;
 using TruePath;
 
@@ -36,6 +37,18 @@ public static class Program
                 ".dll" => ModuleKind.Dll,
                 var o => throw new CompilationException($"Unknown file extension: {o}. \"modulekind\" is not specified.")
             };
+
+            var warningsSet = options.WarningsSet.Aggregate(WarningsSet.None, (set, s) =>
+            {
+                var warn = s.FromKebabToCamel();
+                if (Enum.TryParse<WarningsSet>(warn, true, out var parsed))
+                {
+                    return set | parsed;
+                }
+
+                throw new CompilationException($"Unknown warning: {warn}");
+            });
+
             var compilationOptions = new CompilationOptions(
                 targetRuntime,
                 targetArchitectureSet,
@@ -48,7 +61,8 @@ public static class Program
                 options.DefineConstant.ToList(),
                 options.IncludeDirectories.Select(x => new LocalPath(x)).ToList(),
                 options.ProducePreprocessedFile,
-                options.DumpAst);
+                options.DumpAst,
+                warningsSet);
 
             if (options.ProduceObjectFileImitation)
             {

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using Cesium.Core.Warnings;
 using Mono.Cecil;
 using TruePath;
 
@@ -19,7 +20,8 @@ public record CompilationOptions(
     IList<string> DefineConstants,
     IList<LocalPath> AdditionalIncludeDirectories,
     bool ProducePreprocessedFile,
-    bool ProduceAstFile)
+    bool ProduceAstFile,
+    WarningsSet WarningSet = WarningsSet.None)
 {
     public virtual bool Equals(CompilationOptions? other)
     {
@@ -36,7 +38,8 @@ public record CompilationOptions(
                && DefineConstants.SequenceEqual(other.DefineConstants)
                && AdditionalIncludeDirectories.SequenceEqual(other.AdditionalIncludeDirectories)
                && ProducePreprocessedFile == other.ProducePreprocessedFile
-               && ProduceAstFile == other.ProduceAstFile;
+               && ProduceAstFile == other.ProduceAstFile
+               && WarningSet == other.WarningSet;
     }
 
     public override int GetHashCode()
@@ -63,6 +66,7 @@ public record CompilationOptions(
         }
         hashCode.Add(ProducePreprocessedFile);
         hashCode.Add(ProduceAstFile);
+        hashCode.Add(WarningSet);
         return hashCode.ToHashCode();
     }
 }

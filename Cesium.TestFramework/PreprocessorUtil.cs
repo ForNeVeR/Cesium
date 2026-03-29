@@ -30,7 +30,7 @@ public static class PreprocessorUtil
             }
         }
 
-        IWarningProcessor warningProcessor = onWarning == null
+        IWarningProcessor<PreprocessorWarning> warningProcessor = onWarning == null
             ? new ListWarningProcessor()
             : new LambdaWarningProcessor(onWarning);
         using (warningProcessor as IDisposable)

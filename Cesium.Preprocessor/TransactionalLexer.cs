@@ -11,7 +11,7 @@ namespace Cesium.Preprocessor;
 
 internal class TransactionalLexer(
     IEnumerable<IToken<CPreprocessorTokenType>> tokens,
-    IWarningProcessor warningProcessor) : IDisposable
+    IWarningProcessor<PreprocessorWarning> warningProcessor) : IDisposable
 {
     private readonly List<IToken<CPreprocessorTokenType>> _allTokens = ToList(tokens, warningProcessor);
     private int _nextTokenToReturn;
@@ -94,7 +94,7 @@ internal class TransactionalLexer(
 
     private static List<IToken<CPreprocessorTokenType>> ToList(
         IEnumerable<IToken<CPreprocessorTokenType>> tokens,
-        IWarningProcessor? warningProcessor)
+        IWarningProcessor<PreprocessorWarning>? warningProcessor)
     {
         var result = new List<IToken<CPreprocessorTokenType>>();
 
