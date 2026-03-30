@@ -18,13 +18,17 @@ on:
 
 jobs:
   main:
-    runs-on: ${{ matrix.environment }}
+    runs-on: ${{ matrix.environment.image }}
+    name: ${{ matrix.environment.name }}
     strategy:
       matrix:
         environment:
-          - macos-15
-          - ubuntu-24.04
-          - windows-2025
+          - image: macos-15
+            name: macos
+          - image: ubuntu-24.04
+            name: linux
+          - image: windows-2025
+            name: windows
       fail-fast: false
     env:
       DOTNET_NOLOGO: 1
