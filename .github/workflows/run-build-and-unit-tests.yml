@@ -18,7 +18,7 @@ on:
 jobs:
   main:
     runs-on: ${{ matrix.environment.image }}
-    name: ${{ matrix.environment.name }}
+    name: check.${{ matrix.environment.name }}
     strategy:
       matrix:
         environment:
