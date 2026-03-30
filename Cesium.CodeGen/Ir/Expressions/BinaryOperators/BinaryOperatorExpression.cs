@@ -94,65 +94,71 @@ internal sealed class BinaryOperatorExpression : IExpression
 
     private IExpression LowerPointerArithmetics(IDeclarationScope scope, IExpression left, IExpression right, IType leftType, IType rightType)
     {
-        // TODO[#516]: This whole business is problematic. It tries to convert pointer-based arithmetics to byte-based arithmetics while keeping the type of the resulting pointer, which is wrong. For example, `someStructPtr + 10`.Lower().Lower() would return incorrect result.
 
         leftType = DecayToPointer(leftType) ?? leftType;
         rightType = DecayToPointer(rightType) ?? rightType;
 
-        if (leftType is PointerType leftPointerType)
+        if (leftType is PointerType leftPointerType && rightType is PointerType rightPointerType)
         {
-            if (rightType is PointerType rightPointerType)
-            {
-                if (Operator != BinaryOperator.Subtract)
-                {
-                    throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
-                }
+            if (Operator != BinaryOperator.Subtract)
+                throw new CompilationException($"Operator {Operator} is not supported for pointer/pointer operands");
 
-                var leftBasePart = leftPointerType.Base.EraseConstType();
-                var rightBasePart = rightPointerType.Base.EraseConstType();
+            var leftBasePart = leftPointerType.Base.EraseConstType();
+            var rightBasePart = rightPointerType.Base.EraseConstType();
 
-                if (!leftBasePart.IsEqualTo(rightBasePart))
-                    throw new CompilationException("Invalid pointer subtraction - pointers are referencing different base types");
-
-                var baseSize = leftBasePart.GetSizeInBytesExpression(scope.ArchitectureSet);
-
-                return new BinaryOperatorExpression(
-                    new BinaryOperatorExpression(left, Operator, right),
-                    BinaryOperator.Divide,
-                    baseSize
+            if (!leftBasePart.IsEqualTo(rightBasePart))
+                throw new CompilationException(
+                    "Invalid pointer subtraction - pointers are referencing different base types"
                 );
-            }
 
-            if (Operator != BinaryOperator.Add && Operator != BinaryOperator.Subtract)
-            {
-                throw new CompilationException($"Operator {Operator} is not supported for pointer/value operands");
-            }
-
-            right = new BinaryOperatorExpression(
-                leftPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                BinaryOperator.Multiply,
-                right
+            var diff = new BinaryOperatorExpression(
+                new TypeCastExpression(CTypeSystem.NativeInt, left),
+                BinaryOperator.Subtract,
+                new TypeCastExpression(CTypeSystem.NativeInt, right)
             );
 
-            return new BinaryOperatorExpression(left, Operator, right);
+            return new BinaryOperatorExpression(
+                diff.Lower(scope),
+                BinaryOperator.Divide,
+                new SizeOfOperatorExpression(leftBasePart)
+            ).Lower(scope);
+        }
+
+        IExpression pointerExpr;
+        IExpression offsetExpr;
+        PointerType resultPointerType;
+
+        if (leftType is PointerType lp2)
+        {
+            pointerExpr = left;
+            offsetExpr = right;
+            resultPointerType = lp2;
+        }
+        else if (rightType is PointerType rp2)
+        {
+            if (Operator != BinaryOperator.Add)
+                throw new CompilationException($"Operator {Operator} is not supported for value/pointer operands");
+
+            pointerExpr = right;
+            offsetExpr = left;
+            resultPointerType = rp2;
         }
         else
         {
-            var rightPointerType = (PointerType)rightType;
-
-            if (Operator != BinaryOperator.Add)
-            {
-                throw new CompilationException($"Operator {Operator} is not supported for value/pointer operands");
-            }
-
-            left = new BinaryOperatorExpression(
-                rightPointerType.Base.GetSizeInBytesExpression(scope.ArchitectureSet),
-                BinaryOperator.Multiply,
-                left
-            );
-
-            return new BinaryOperatorExpression(left, Operator, right);
+            throw new AssertException("LowerPointerArithmetics called without a pointer operand.");
         }
+
+        var byteOffset = new BinaryOperatorExpression(
+            offsetExpr,
+            BinaryOperator.Multiply,
+            new SizeOfOperatorExpression(resultPointerType.Base)
+        );
+
+        // final expression: (original ptr type)((native int)ptr + byteOffset)
+        var pointerAsInt = new TypeCastExpression(CTypeSystem.NativeInt, pointerExpr);
+        var arithmetic = new BinaryOperatorExpression(pointerAsInt, Operator, byteOffset);
+
+        return new TypeCastExpression(resultPointerType, arithmetic).Lower(scope);
     }
 
     public IType GetExpressionType(IDeclarationScope scope)
