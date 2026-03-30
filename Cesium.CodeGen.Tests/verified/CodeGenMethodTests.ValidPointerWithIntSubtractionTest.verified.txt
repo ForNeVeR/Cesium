@@ -12,17 +12,13 @@ System.Int32 <Module>::main()
   IL_000a: ldc.i4 4
   IL_000f: mul
   IL_0010: add
-  IL_0011: conv.i
+  IL_0011: ldc.i4.4
   IL_0012: ldc.i4.1
-  IL_0013: conv.u4
-  IL_0014: sizeof System.Int32
-  IL_001a: mul
-  IL_001b: conv.i
-  IL_001c: sub
-  IL_001d: conv.i
-  IL_001e: stloc.1
-  IL_001f: ldc.i4.1
-  IL_0020: ret
+  IL_0013: mul
+  IL_0014: sub
+  IL_0015: stloc.1
+  IL_0016: ldc.i4.1
+  IL_0017: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
