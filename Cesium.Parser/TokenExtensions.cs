@@ -103,28 +103,32 @@ public static class TokenExtensions
             case 't': span[i] = '\t'; break;
             case 'v': span[i] = '\v'; break;
             // Numeric escape sequences
-            case '0': // arbitrary octal value '\nnn'
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7': // arbitrary octal value '\nnn'
                 {
-                    if (span.Length <= i + 2 || span[i + 2] == '\0') // \0 check for 2nd..n iters.
-                    {
-                        span[i] = '\0';
-                        break;
-                    }
+                    var number = span[i + 1] - '0';
+                    var octalDigitsCount = 1;
 
-                    int number = 0;
-                    var c = span[i + shift + 1]; // get next char after 0
-                    do
+                    while (octalDigitsCount < 3 && span.Length > i + 1 + octalDigitsCount)
                     {
-                        number = number * 8 + (c - '0');
-                        shift++;
-                        if (span.Length <= i + shift + 1)
+                        var c = span[i + 1 + octalDigitsCount];
+                        if (c is < '0' or > '7')
                         {
                             break;
                         }
-                        c = span[i + shift + 1];
+
+                        number = number * 8 + (c - '0');
+                        octalDigitsCount++;
                     }
-                    while (char.IsBetween(c, '0', '7'));
+
                     span[i] = (char)number;
+                    shift = octalDigitsCount;
                     break;
                 }
             case 'x':

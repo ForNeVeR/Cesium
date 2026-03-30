@@ -21,6 +21,9 @@ public class TokenExtensionsTests
     [InlineData("\"\\\\00\"", "\\00")]
     [InlineData("\"\\00\"", "\0")]
     [InlineData("\"\\0\"", "\0")]
+    [InlineData("\"\\1\"", "\x01")]
+    [InlineData("\"\\12\"", "\n")]
+    [InlineData("\"\\123\"", "S")]
     [InlineData("\"\\x\"", "\\x")]
     public void Test(string tokenText, string expected)
     {
@@ -34,7 +37,7 @@ public class TokenExtensionsTests
     [Theory]
     [InlineData("\"\\z\"")]
     [InlineData("\"\\j\"")]
-    [InlineData("\"\\1\"")]
+    [InlineData("\"\\9\"")]
     [InlineData("\"\\ \"")]
     public void InvalidEscapeSequenceThrows(string tokenText)
     {
