@@ -8,33 +8,27 @@ System.Int32 <Module>::main()
   IL_0007: ldloc.0
   IL_0008: stloc.1
   IL_0009: ldloc.0
-  IL_000a: brfalse IL_0022
+  IL_000a: brfalse IL_001a
   IL_000f: ldloc.1
-  IL_0010: conv.i
-  IL_0011: ldloc.0
-  IL_0012: conv.i
-  IL_0013: sub
-  IL_0014: sizeof System.Byte
-  IL_001a: conv.i
-  IL_001b: div
-  IL_001c: pop
-  IL_001d: br IL_0038
-  IL_0022: nop
-  IL_0023: ldloc.0
-  IL_0024: brfalse IL_0037
-  IL_0029: ldloc.1
-  IL_002a: conv.i
-  IL_002b: ldloc.0
-  IL_002c: conv.i
-  IL_002d: sub
-  IL_002e: sizeof System.Byte
-  IL_0034: conv.i
-  IL_0035: div
-  IL_0036: pop
-  IL_0037: nop
-  IL_0038: nop
-  IL_0039: ldc.i4.1
-  IL_003a: ret
+  IL_0010: ldloc.0
+  IL_0011: sub
+  IL_0012: ldc.i4.1
+  IL_0013: div
+  IL_0014: pop
+  IL_0015: br IL_0028
+  IL_001a: nop
+  IL_001b: ldloc.0
+  IL_001c: brfalse IL_0027
+  IL_0021: ldloc.1
+  IL_0022: ldloc.0
+  IL_0023: sub
+  IL_0024: ldc.i4.1
+  IL_0025: div
+  IL_0026: pop
+  IL_0027: nop
+  IL_0028: nop
+  IL_0029: ldc.i4.1
+  IL_002a: ret
 
 System.Int32 <Module>::<SyntheticEntrypoint>()
   Locals:
