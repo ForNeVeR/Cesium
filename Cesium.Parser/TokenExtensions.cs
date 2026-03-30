@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
 using Cesium.Core;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Yoakke.SynKit.C.Syntax;
@@ -13,7 +12,7 @@ namespace Cesium.Parser;
 
 public static class TokenExtensions
 {
-    public unsafe static string UnwrapStringLiteral(this IToken<CTokenType> token)
+    public static unsafe string UnwrapStringLiteral(this IToken<CTokenType> token)
     {
         if (token.Kind != CTokenType.StringLiteral)
             throw new ParseException($"Non-string literal token: {token.Kind} {token.Text}");
@@ -81,7 +80,7 @@ public static class TokenExtensions
         fixed (char* p = text)
         {
             var span = new Span<char>(p + 1, text.Length - 2); // create a span for string. Also +1 for \0
-            var shift = ParseCharacter(span, 0);
+            ParseCharacter(span, 0);
             return span[0];
         }
     }
@@ -156,7 +155,7 @@ public static class TokenExtensions
                 }
             // Universal character names
             case 'u': // \unnnn
-            case 'U': // \Unnnnnnnn 
+            case 'U': // \Unnnnnnnn
                 {
                     int counter = span[i + 1] == 'U' ? 8 : 4;
                     if (span.Length <= i + counter) // no free chars no fun
@@ -188,11 +187,11 @@ public static class TokenExtensions
                 }
             default:
                 // from orig method:
-                // TODO[#295]: maybe smarter handling of this edge case with errors/warnings
                 // builder.Append('\\');
                 // --i; // don't skip next
                 // mmm, idk when that might happen
-                break;
+
+                throw new ParseException($"Unrecognized escape sequence '\\{span[i + 1]}' in string or character literal.");
         }
 
         return shift;
