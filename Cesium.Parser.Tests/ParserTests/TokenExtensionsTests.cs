@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
+using Cesium.Core;
 using Yoakke.SynKit.C.Syntax;
 using Yoakke.SynKit.Lexer;
 using Yoakke.SynKit.Text;
@@ -28,5 +29,18 @@ public class TokenExtensionsTests
         var actual = token.UnwrapStringLiteral();
 
         Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("\"\\z\"")]
+    [InlineData("\"\\j\"")]
+    [InlineData("\"\\1\"")]
+    [InlineData("\"\\ \"")]
+    public void InvalidEscapeSequenceThrows(string tokenText)
+    {
+        var token = new Token<CTokenType>(new Range(), new Location(), tokenText, CTokenType.StringLiteral);
+
+        var ex = Assert.Throws<ParseException>(token.UnwrapStringLiteral);
+        Assert.Contains("Unrecognized escape sequence", ex.Message);
     }
 }
