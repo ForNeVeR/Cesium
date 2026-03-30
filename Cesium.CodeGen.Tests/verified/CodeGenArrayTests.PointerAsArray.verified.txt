@@ -17,20 +17,26 @@ Module: Primary
       IL_000f: add
       IL_0010: stloc.1
       IL_0011: ldloc.1
-      IL_0012: ldc.i4.4
-      IL_0013: ldc.i4.4
-      IL_0014: ldc.i4.5
-      IL_0015: mul
-      IL_0016: mul
-      IL_0017: add
-      IL_0018: ldc.i4.4
-      IL_0019: ldc.i4.0
-      IL_001a: mul
-      IL_001b: add
-      IL_001c: ldc.i4.0
-      IL_001d: stind.i4
-      IL_001e: ldc.i4.0
-      IL_001f: ret
+      IL_0012: conv.i
+      IL_0013: ldc.i4.5
+      IL_0014: conv.u4
+      IL_0015: sizeof System.Int32
+      IL_001b: mul
+      IL_001c: conv.i
+      IL_001d: add
+      IL_001e: conv.i
+      IL_001f: conv.i
+      IL_0020: ldc.i4.0
+      IL_0021: conv.u4
+      IL_0022: sizeof System.Int32
+      IL_0028: mul
+      IL_0029: conv.i
+      IL_002a: add
+      IL_002b: conv.i
+      IL_002c: ldc.i4.0
+      IL_002d: stind.i4
+      IL_002e: ldc.i4.0
+      IL_002f: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:
