@@ -2,10 +2,14 @@ System.Void <Module>::foo(System.Int32* x)
   Locals:
     System.Int32 V_0
   IL_0000: ldarg.0
-  IL_0001: ldc.i4.4
+  IL_0001: conv.i
   IL_0002: ldc.i4.1
-  IL_0003: mul
-  IL_0004: add
-  IL_0005: ldind.i4
-  IL_0006: stloc.0
-  IL_0007: ret
+  IL_0003: conv.u4
+  IL_0004: sizeof System.Int32
+  IL_000a: mul
+  IL_000b: conv.i
+  IL_000c: add
+  IL_000d: conv.i
+  IL_000e: ldind.i4
+  IL_000f: stloc.0
+  IL_0010: ret

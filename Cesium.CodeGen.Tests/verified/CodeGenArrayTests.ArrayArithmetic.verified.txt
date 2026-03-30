@@ -15,14 +15,18 @@ Module: Primary
       IL_000f: conv.u
       IL_0010: call System.Void Cesium.Runtime.RuntimeHelpers::InitializeCompound(System.Void*,System.Void*,System.UInt32)
       IL_0015: ldloc.0
-      IL_0016: ldc.i4.4
+      IL_0016: conv.i
       IL_0017: ldc.i4.1
-      IL_0018: mul
-      IL_0019: add
-      IL_001a: stloc.1
-      IL_001b: ldloc.1
-      IL_001c: ldind.i4
-      IL_001d: ret
+      IL_0018: conv.u4
+      IL_0019: sizeof System.Int32
+      IL_001f: mul
+      IL_0020: conv.i
+      IL_0021: add
+      IL_0022: conv.i
+      IL_0023: stloc.1
+      IL_0024: ldloc.1
+      IL_0025: ldind.i4
+      IL_0026: ret
 
     System.Int32 <Module>::<SyntheticEntrypoint>()
       Locals:

@@ -5,24 +5,36 @@ Module: Primary
       Locals:
         System.Byte* V_0
       IL_0000: ldarg.0
-      IL_0001: sizeof System.Byte**
-      IL_0007: ldc.i4.2
-      IL_0008: mul
-      IL_0009: add
-      IL_000a: ldind.i
-      IL_000b: sizeof System.Byte*
-      IL_0011: ldc.i4.3
-      IL_0012: mul
-      IL_0013: add
-      IL_0014: ldind.i
-      IL_0015: stloc.0
-      IL_0016: ldloc.0
-      IL_0017: ldc.i4.1
-      IL_0018: ldc.i4.1
-      IL_0019: mul
+      IL_0001: conv.i
+      IL_0002: ldc.i4.2
+      IL_0003: conv.u4
+      IL_0004: sizeof System.Byte**
+      IL_000a: mul
+      IL_000b: conv.i
+      IL_000c: add
+      IL_000d: conv.i
+      IL_000e: ldind.i
+      IL_000f: conv.i
+      IL_0010: ldc.i4.3
+      IL_0011: conv.u4
+      IL_0012: sizeof System.Byte*
+      IL_0018: mul
+      IL_0019: conv.i
       IL_001a: add
-      IL_001b: ldind.i1
-      IL_001c: ret
+      IL_001b: conv.i
+      IL_001c: ldind.i
+      IL_001d: stloc.0
+      IL_001e: ldloc.0
+      IL_001f: conv.i
+      IL_0020: ldc.i4.1
+      IL_0021: conv.u4
+      IL_0022: sizeof System.Byte
+      IL_0028: mul
+      IL_0029: conv.i
+      IL_002a: add
+      IL_002b: conv.i
+      IL_002c: ldind.i1
+      IL_002d: ret
 
     System.Int32 <Module>::main()
       IL_0000: ldc.i4.s 42
