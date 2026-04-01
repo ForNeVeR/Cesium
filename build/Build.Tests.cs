@@ -24,6 +24,9 @@ partial class Build
     Target TestRuntime => _ => _
         .Executes(() => ExecuteTests(Solution.Cesium_Runtime_Tests));
 
+    Target TestCore => _ => _
+        .Executes(() => ExecuteTests(Solution.Cesium_Core_Tests));
+
     Target TestSdk => _ => _
         .DependsOn(PackCompilerBundleNuPkg)
         .DependsOn(PackSdk)
@@ -35,6 +38,7 @@ partial class Build
         .DependsOn(TestIntegration)
         .DependsOn(TestParser)
         .DependsOn(TestRuntime)
+        .DependsOn(TestCore)
         .DependsOn(TestSdk);
 
     void ExecuteTests(Project project)
