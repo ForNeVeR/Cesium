@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
