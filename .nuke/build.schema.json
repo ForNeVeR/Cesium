@@ -38,6 +38,7 @@
         "TestAll",
         "TestCodeGen",
         "TestCompiler",
+        "TestCore",
         "TestIntegration",
         "TestParser",
         "TestRuntime",
