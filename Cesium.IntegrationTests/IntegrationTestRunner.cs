@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
@@ -16,6 +17,10 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
     private readonly ITestOutputHelper _output;
     private readonly IntegrationTestContext _context;
+    
+    /// <summary>Records timing for a test execution.</summary>
+    private record TestExecutionResult(string Output, TimeSpan CompileTime, TimeSpan ExecutionTime);
+    
     public IntegrationTestRunner(IntegrationTestContext context, ITestOutputHelper output)
     {
         _context = context;
@@ -155,6 +160,11 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     public Task CompilerAcceptsAnObjFileAsInput() =>
         _context.WrapTestBody(async () =>
         {
+            var totalStopwatch = Stopwatch.StartNew();
+            TestTimingResult? timingResult = null;
+            bool success = false;
+            string? errorMessage = null;
+            
             var outRoot = Temporary.CreateTempFolder();
             try
             {
@@ -180,16 +190,66 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                     [functionObject, programObject],
                     null);
 
-                Assert.Equal(nativeResult.ReplaceLineEndings("\n"), cesiumResult.ReplaceLineEndings("\n"));
+                Assert.Equal(nativeResult.Output.ReplaceLineEndings("\n"), cesiumResult.Output.ReplaceLineEndings("\n"));
+                
+                totalStopwatch.Stop();
+                success = true;
+                
+                // Record timing result
+                timingResult = new TestTimingResult
+                {
+                    TestName = "IntegrationTest.CompilerAcceptsAnObjFileAsInput",
+                    TargetFramework = TargetFramework.Net.ToString(),
+                    TargetArch = TargetArch.Dynamic.ToString(),
+                    SourceFiles = ["multi-file/function.c", "multi-file/program.c"],
+                    OperatingSystem = Environment.OSVersion.Platform.ToString(),
+                    NativeCompileTime = nativeResult.CompileTime,
+                    CesiumCompileTime = cesiumResult.CompileTime,
+                    NativeExecutionTime = nativeResult.ExecutionTime,
+                    CesiumExecutionTime = cesiumResult.ExecutionTime,
+                    TotalTime = totalStopwatch.Elapsed,
+                    Success = success
+                };
+            }
+            catch (Exception ex)
+            {
+                totalStopwatch.Stop();
+                success = false;
+                errorMessage = ex.Message;
+                
+                // Record failed test timing result
+                timingResult = new TestTimingResult
+                {
+                    TestName = "IntegrationTest.CompilerAcceptsAnObjFileAsInput",
+                    TargetFramework = TargetFramework.Net.ToString(),
+                    TargetArch = TargetArch.Dynamic.ToString(),
+                    SourceFiles = ["multi-file/function.c", "multi-file/program.c"],
+                    OperatingSystem = Environment.OSVersion.Platform.ToString(),
+                    TotalTime = totalStopwatch.Elapsed,
+                    Success = success,
+                    ErrorMessage = errorMessage
+                };
+                throw;
             }
             finally
             {
+                // Always record the timing result
+                if (timingResult != null)
+                {
+                    TestTimingCollector.RecordResult(timingResult);
+                }
+                
                 Directory.Delete(outRoot.Value, recursive: true);
             }
         });
 
     private async Task DoTest(TargetFramework targetFramework, TargetArch arch, params LocalPath[] relativeSourcePaths)
     {
+        var totalStopwatch = Stopwatch.StartNew();
+        TestTimingResult? timingResult = null;
+        bool success = false;
+        string? errorMessage = null;
+        
         var outRoot = Temporary.CreateTempFolder();
         try
         {
@@ -214,30 +274,85 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 .Select(x => SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / x)
                 .ToList();
 
-            await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles, inputContent);
-            await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, arch, sourceFiles, inputContent);
+            var nativeResult = await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles, inputContent);
+            var cesiumResult = await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, arch, sourceFiles, inputContent);
+            
+            Assert.Equal(nativeResult.Output.ReplaceLineEndings("\n"), cesiumResult.Output.ReplaceLineEndings("\n"));
+            
+            totalStopwatch.Stop();
+            success = true;
+            
+            // Record timing result
+            timingResult = new TestTimingResult
+            {
+                TestName = $"IntegrationTest.{targetFramework}.{arch}.{string.Join("_", relativeSourcePaths.Select(p => p.Value.Replace("/", "_").Replace(".c", "")))}",
+                TargetFramework = targetFramework.ToString(),
+                TargetArch = arch.ToString(),
+                SourceFiles = relativeSourcePaths.Select(p => p.Value).ToArray(),
+                OperatingSystem = Environment.OSVersion.Platform.ToString(),
+                NativeCompileTime = nativeResult.CompileTime,
+                CesiumCompileTime = cesiumResult.CompileTime,
+                NativeExecutionTime = nativeResult.ExecutionTime,
+                CesiumExecutionTime = cesiumResult.ExecutionTime,
+                TotalTime = totalStopwatch.Elapsed,
+                Success = success
+            };
+        }
+        catch (Exception ex)
+        {
+            totalStopwatch.Stop();
+            success = false;
+            errorMessage = ex.Message;
+            
+            // Record failed test timing result
+            timingResult = new TestTimingResult
+            {
+                TestName = $"IntegrationTest.{targetFramework}.{arch}.{string.Join("_", relativeSourcePaths.Select(p => p.Value.Replace("/", "_").Replace(".c", "")))}",
+                TargetFramework = targetFramework.ToString(),
+                TargetArch = arch.ToString(),
+                SourceFiles = relativeSourcePaths.Select(p => p.Value).ToArray(),
+                OperatingSystem = Environment.OSVersion.Platform.ToString(),
+                TotalTime = totalStopwatch.Elapsed,
+                Success = success,
+                ErrorMessage = errorMessage
+            };
+            throw;
         }
         finally
         {
+            // Always record the timing result
+            if (timingResult != null)
+            {
+                TestTimingCollector.RecordResult(timingResult);
+            }
+            
             Directory.Delete(outRoot.Value, recursive: true);
         }
     }
 
-    private async Task<string> CompileAndRunWithNative(
+    private async Task<TestExecutionResult> CompileAndRunWithNative(
         AbsolutePath binDir,
         AbsolutePath objDir,
         AbsolutePath outRoot,
         IList<AbsolutePath> sources,
         string? inputContent)
     {
+        var compileStopwatch = Stopwatch.StartNew();
         var nativeExecutable = await BuildExecutableWithNativeCompiler(binDir, objDir, sources);
+        compileStopwatch.Stop();
+        var compileTime = compileStopwatch.Elapsed;
+
+        var executionStopwatch = Stopwatch.StartNew();
         var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRoot, [], inputContent);
+        executionStopwatch.Stop();
+        var executionTime = executionStopwatch.Elapsed;
+        
         Assert.Equal(42, nativeResult.ExitCode);
         Assert.Empty(nativeResult.StandardError);
-        return nativeResult.StandardOutput;
+        return new TestExecutionResult(nativeResult.StandardOutput, compileTime, executionTime);
     }
 
-    private async Task<string> CompileAndRunWithCesium(
+    private async Task<TestExecutionResult> CompileAndRunWithCesium(
         AbsolutePath binDir,
         AbsolutePath objDir,
         AbsolutePath outRoot,
@@ -246,21 +361,29 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         IList<AbsolutePath> inputFiles,
         string? inputContent)
     {
+        var compileStopwatch = Stopwatch.StartNew();
         var managedExecutable = await BuildExecutableWithCesium(
             binDir,
             objDir,
             inputFiles,
             targetFramework,
             arch);
+        compileStopwatch.Stop();
+        var compileTime = compileStopwatch.Elapsed;
+
+        var executionStopwatch = Stopwatch.StartNew();
         var managedResult = await (targetFramework switch
         {
             TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable, inputContent),
             TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRoot, [], inputContent),
             _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
         });
+        executionStopwatch.Stop();
+        var executionTime = executionStopwatch.Elapsed;
+        
         Assert.Equal(42, managedResult.ExitCode);
         Assert.Empty(managedResult.StandardError);
-        return managedResult.StandardOutput;
+        return new TestExecutionResult(managedResult.StandardOutput, compileTime, executionTime);
     }
 
     private static readonly object _tempDirCreator = new();

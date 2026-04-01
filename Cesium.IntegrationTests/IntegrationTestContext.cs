@@ -24,6 +24,9 @@ public class IntegrationTestContext : IAsyncDisposable
     private Exception? _initializationException;
 
     public AbsolutePath? VisualStudioPath { get; private set; }
+    
+    /// <summary>Directory for timing results output.</summary>
+    public AbsolutePath TimingOutputDirectory { get; private set; }
 
     public async Task WrapTestBody(Func<Task> testBody)
     {
@@ -66,12 +69,26 @@ public class IntegrationTestContext : IAsyncDisposable
             VisualStudioPath = await WindowsEnvUtil.FindVcCompilerInstallationFolder(output);
         }
 
+        // Initialize timing output directory
+        TimingOutputDirectory = SolutionMetadata.SourceRoot / "artifacts" / "timing";
+        TestTimingCollector.Initialize(TimingOutputDirectory);
+
         await BuildRuntime(output);
         await BuildCompiler(output);
     }
 
     public async ValueTask DisposeAsync()
     {
+        // Save timing results to JSON file
+        try
+        {
+            TestTimingCollector.SaveToJson();
+        }
+        catch
+        {
+            // Ignore errors when saving timing results
+        }
+        
         await DotNetCliHelper.ShutdownBuildServer();
     }
 
