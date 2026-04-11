@@ -41,7 +41,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                 if (arguments.IsError)
                     CPreprocessor.RaisePreprocessorParseError(arguments.Error);
 
-                foreach (var replaced in ExpandMacros(SubstituteMacroArguments(token, arguments.Ok, replacement)))
+                foreach (var replaced in ExpandMacros(ExpandMacros(SubstituteMacroArguments(token, arguments.Ok, replacement))))
                 {
                     yield return replaced;
                 }
@@ -141,7 +141,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
             do
             {
                 currentToken = lexer.Consume();
-            } while (currentToken is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
+            } while (!lexer.IsEnd && currentToken is { Kind: CPreprocessorTokenType.WhiteSpace or CPreprocessorTokenType.Comment });
 
             return currentToken;
         }
