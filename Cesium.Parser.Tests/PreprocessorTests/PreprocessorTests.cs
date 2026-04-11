@@ -1072,6 +1072,17 @@ HASH_HASH
  """);
 
     [Fact]
+    public Task CalculationOrderParameterized() => DoTest("""
+ #define EMPTY() 
+ #define DEFER(id) id EMPTY()
+
+ #define FAIL() DEFER ( EMPTY ) ( )
+
+ FAIL()
+
+ """);
+
+    [Fact]
     public Task MacroNamePassed() => DoTest("""
 #define RECEIVER(FOO) Received: FOO
 #define ARGUMENT a
