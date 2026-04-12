@@ -29,6 +29,21 @@ public class PreprocessorTests : VerifyTestBase
             result = "\n";
         await Verify(result, GetSettings());
     }
+    private static async Task DoTestSingleWarning(
+        [StringSyntax("cpp")] string source,
+        Dictionary<string, string>? standardHeaders = null,
+        Dictionary<string, IList<IToken<CPreprocessorTokenType>>>? defines = null)
+    {
+        string result = "<NOTPROCESSED>";
+        var _ = await DoPreprocess(
+            source,
+            standardHeaders?.ToDictionary(kvp => new LocalPath(kvp.Key), kvp => kvp.Value),
+            defines,
+            (w) => { result = $"{w.Location}: {w.Message}"; });
+        if (result.Length == 0) // avoid passing empty string to Verify
+            result = "\n";
+        await Verify(result, GetSettings());
+    }
 
     private static async Task<string> DoPreprocess(
         [StringSyntax("cpp")] string source,
@@ -1141,4 +1156,10 @@ char *cast_table[] = {
   {NULL,  NULL,   NULL, NULL}, // i8
 };
 """);
+
+    [Fact]
+    public Task ShouldInformThatMacroSubstitutionHaveNotEnoughParameters() => DoTestSingleWarning(@"
+#define FOO(x)
+FOO()
+");
 }

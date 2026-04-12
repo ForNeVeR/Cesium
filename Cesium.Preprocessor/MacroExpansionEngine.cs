@@ -180,8 +180,16 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
     private IEnumerable<IToken<CPreprocessorTokenType>> SubstituteMacroArguments(
         IToken macroNameToken,
         MacroArguments arguments,
-        IEnumerable<IToken<CPreprocessorTokenType>> replacement)
+        IList<IToken<CPreprocessorTokenType>> replacement)
     {
+        if (replacement.Count < arguments.Named.Count + arguments.VarArg.Count)
+        {
+            // This can only happen if the macro definition is malformed, but we should not crash in that case.
+            warningProcessor.EmitWarning(new PreprocessorWarning(
+                macroNameToken.Location,
+                $"Not enough parameters passed to function-like macro invocation '{macroNameToken.Text}'."));
+        }
+
         if (_simpleSubstitutors.TryGetValue(macroNameToken.Text, out var substitutor))
         {
             yield return new Token<CPreprocessorTokenType>(
