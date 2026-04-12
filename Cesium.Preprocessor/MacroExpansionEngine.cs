@@ -30,7 +30,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                     continue;
                 }
 
-                var maybeArguments = ParseArguments(parameters, lexer);
+                var maybeArguments = ParseArguments(token, parameters, lexer);
                 if (maybeArguments is not {} arguments)
                 {
                     // Not a macro call, just emit the token.
@@ -54,7 +54,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
     }
 
     /// <returns><c>null</c> ⇒ do not expand, non-<c>null</c> ⇒ expand if ok, throw error if not ok.</returns>
-    private ParseResult<MacroArguments>? ParseArguments(MacroParameters? parameters, TransactionalLexer lexer)
+    private ParseResult<MacroArguments>? ParseArguments(IToken<CPreprocessorTokenType> macroNameToken, MacroParameters? parameters, TransactionalLexer lexer)
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -83,6 +83,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
 
         var namedArguments = new Dictionary<string, List<IToken<CPreprocessorTokenType>>>();
         var isFirstArgument = true;
+        bool? hasEmptySubstitution = null;
         foreach (var parameterToken in parameters.Parameters)
         {
             if (isFirstArgument)
@@ -99,6 +100,15 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
             var argument = ParseArgument(lexer);
             if (argument.IsError)
                 return transaction.End(argument.Error);
+
+            if (argument.Ok.Value.Count == 0 && hasEmptySubstitution == null)
+            {
+                hasEmptySubstitution = true;
+                warningProcessor.EmitWarning(
+                    new PreprocessorWarning(
+                        macroNameToken.Location,
+                        $"Not enough parameters passed to function-like macro invocation {macroNameToken.Text}."));
+            }
 
             namedArguments[name] = argument.Ok;
         }
@@ -182,14 +192,6 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
         MacroArguments arguments,
         IList<IToken<CPreprocessorTokenType>> replacement)
     {
-        if (replacement.Count < arguments.Named.Count + arguments.VarArg.Count)
-        {
-            // This can only happen if the macro definition is malformed, but we should not crash in that case.
-            warningProcessor.EmitWarning(new PreprocessorWarning(
-                macroNameToken.Location,
-                $"Not enough parameters passed to function-like macro invocation '{macroNameToken.Text}'."));
-        }
-
         if (_simpleSubstitutors.TryGetValue(macroNameToken.Text, out var substitutor))
         {
             yield return new Token<CPreprocessorTokenType>(
