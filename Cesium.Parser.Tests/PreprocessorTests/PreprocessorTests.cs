@@ -39,7 +39,7 @@ public class PreprocessorTests : VerifyTestBase
             source,
             standardHeaders?.ToDictionary(kvp => new LocalPath(kvp.Key), kvp => kvp.Value),
             defines,
-            (w) => { result = $"{w.Location}: {w.Message}"; });
+            (w) => { result = $"{w.Location.Line}:{w.Location.Column}: {w.Message}"; });
         if (result.Length == 0) // avoid passing empty string to Verify
             result = "\n";
         await Verify(result, GetSettings());
