@@ -465,7 +465,6 @@ internal abstract class AstVisitor
 
     protected virtual void Visit(IdentifierDesignator identifierDesignator)
     {
-        Visit(identifierDesignator);
     }
 
     protected virtual void Visit(Expression expression)
