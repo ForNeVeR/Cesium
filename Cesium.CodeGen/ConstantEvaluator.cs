@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using Cesium.CodeGen.Contexts;
+using Cesium.CodeGen.Ir.BlockItems;
 using Cesium.CodeGen.Ir.Expressions;
 using Cesium.CodeGen.Ir.Expressions.BinaryOperators;
 using Cesium.CodeGen.Ir.Expressions.Constants;
@@ -27,12 +28,14 @@ internal static class ConstantEvaluator
 
     public static (string? ErrorMessage, IConstant? Constant) TryGetConstantValue(IExpression expression, IDeclarationScope? scope)
     {
-        switch (expression)
+        try
         {
-            case ConstantLiteralExpression literal:
-                return (null, literal.Constant);
+            switch (expression)
+            {
+                case ConstantLiteralExpression literal:
+                    return (null, literal.Constant);
 
-            case UnaryOperatorExpression unOp:
+                case UnaryOperatorExpression unOp:
                 {
                     var constant = GetConstantValue(unOp.Target, scope);
 
@@ -44,12 +47,13 @@ internal static class ConstantEvaluator
                         UnaryOperator.Negation => (null, new IntegerConstant(-constInt.Value)),
                         UnaryOperator.BitwiseNot => (null, new IntegerConstant(~constInt.Value)),
                         UnaryOperator.LogicalNot => (null, new IntegerConstant(constInt.Value != 0 ? 0 : 1)),
-                        UnaryOperator.AddressOf or UnaryOperator.Indirection => ($"Operator {unOp.Operator} is not compile-time evaluable", null),
+                        UnaryOperator.AddressOf or UnaryOperator.Indirection => (
+                            $"Operator {unOp.Operator} is not compile-time evaluable", null),
                         _ => throw new ArgumentOutOfRangeException($"Invalid unary operator {unOp.Operator}."),
                     };
                 }
 
-            case BinaryOperatorExpression binOp:
+                case BinaryOperatorExpression binOp:
                 {
                     var leftConstant = GetConstantValue(binOp.Left, scope);
                     var rightConstant = GetConstantValue(binOp.Right, scope);
@@ -65,25 +69,33 @@ internal static class ConstantEvaluator
                         BinaryOperator.Multiply => (null, new IntegerConstant(leftInt.Value * rightInt.Value)),
                         BinaryOperator.Divide => (null, new IntegerConstant(leftInt.Value / rightInt.Value)),
                         BinaryOperator.Remainder => (null, new IntegerConstant(leftInt.Value % rightInt.Value)),
-                        BinaryOperator.BitwiseLeftShift => (null, new IntegerConstant(leftInt.Value << (int)rightInt.Value)),
-                        BinaryOperator.BitwiseRightShift => (null, new IntegerConstant(leftInt.Value >> (int)rightInt.Value)),
+                        BinaryOperator.BitwiseLeftShift => (null,
+                            new IntegerConstant(leftInt.Value << (int)rightInt.Value)),
+                        BinaryOperator.BitwiseRightShift => (null,
+                            new IntegerConstant(leftInt.Value >> (int)rightInt.Value)),
                         BinaryOperator.BitwiseOr => (null, new IntegerConstant(leftInt.Value | rightInt.Value)),
                         BinaryOperator.BitwiseAnd => (null, new IntegerConstant(leftInt.Value & rightInt.Value)),
                         BinaryOperator.BitwiseXor => (null, new IntegerConstant(leftInt.Value ^ rightInt.Value)),
                         // boolean constants are needed here
-                        BinaryOperator.GreaterThan => (null, new IntegerConstant(leftInt.Value > rightInt.Value ? 1 : 0)),
+                        BinaryOperator.GreaterThan => (null,
+                            new IntegerConstant(leftInt.Value > rightInt.Value ? 1 : 0)),
                         BinaryOperator.LessThan => (null, new IntegerConstant(leftInt.Value < rightInt.Value ? 1 : 0)),
-                        BinaryOperator.GreaterThanOrEqualTo => (null, new IntegerConstant(leftInt.Value >= rightInt.Value ? 1 : 0)),
-                        BinaryOperator.LessThanOrEqualTo => (null, new IntegerConstant(leftInt.Value <= rightInt.Value ? 1 : 0)),
+                        BinaryOperator.GreaterThanOrEqualTo => (null,
+                            new IntegerConstant(leftInt.Value >= rightInt.Value ? 1 : 0)),
+                        BinaryOperator.LessThanOrEqualTo => (null,
+                            new IntegerConstant(leftInt.Value <= rightInt.Value ? 1 : 0)),
                         BinaryOperator.EqualTo => (null, new IntegerConstant(leftInt.Value == rightInt.Value ? 1 : 0)),
-                        BinaryOperator.NotEqualTo => (null, new IntegerConstant(leftInt.Value != rightInt.Value ? 1 : 0)),
-                        BinaryOperator.LogicalAnd => (null, new IntegerConstant((leftInt.Value != 0) && (rightInt.Value != 0) ? 1 : 0)),
-                        BinaryOperator.LogicalOr => (null, new IntegerConstant((leftInt.Value != 0) || (rightInt.Value != 0) ? 1 : 0)),
+                        BinaryOperator.NotEqualTo => (null,
+                            new IntegerConstant(leftInt.Value != rightInt.Value ? 1 : 0)),
+                        BinaryOperator.LogicalAnd => (null,
+                            new IntegerConstant((leftInt.Value != 0) && (rightInt.Value != 0) ? 1 : 0)),
+                        BinaryOperator.LogicalOr => (null,
+                            new IntegerConstant((leftInt.Value != 0) || (rightInt.Value != 0) ? 1 : 0)),
                         _ => throw new ArgumentOutOfRangeException($"Invalid binary operator {binOp.Operator}"),
                     };
                 }
 
-            case IdentifierExpression identifierExpression:
+                case IdentifierExpression identifierExpression:
                 {
                     if (scope != null)
                     {
@@ -98,8 +110,34 @@ internal static class ConstantEvaluator
                     return ($"Expression {expression} cannot be evaluated as constant expression.", null);
                 }
 
-            default:
-                return ($"Expression {expression} cannot be evaluated as constant expression.", null);
+                default:
+                    return ($"Expression {expression} cannot be evaluated as constant expression.", null);
+            }
         }
+        catch (Exception e)
+        {
+            return (e.Message, null);
+        }
+    }
+
+    public static ConditionalValue EvaluateCondition(IExpression condition)
+    {
+        var (results, val) = TryGetConstantValue(condition, null);
+
+        if (results != null || val == null)
+            return ConditionalValue.Unknown;
+
+        var isEvaluated = true;
+
+        return val switch
+            {
+                IntegerConstant integer => integer.Value == 0,
+                FloatingPointConstant floatingPoint => floatingPoint.Value == 0,
+                CharConstant charVal => charVal.Value == 0,
+                StringConstant => false,
+                // TODO: Handle NULL literals
+                _ => isEvaluated = false
+            } ? ConditionalValue.ConstantlyFalse
+            : isEvaluated ? ConditionalValue.ConstantlyTrue : ConditionalValue.Unknown;
     }
 }
