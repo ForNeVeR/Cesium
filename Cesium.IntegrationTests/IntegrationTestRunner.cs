@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
@@ -25,7 +26,21 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     public Task InitializeAsync() =>
         _context.EnsureInitialized(_output);
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public Task DisposeAsync()
+    {
+        // Write timing report to file at the end of the test run
+        try
+        {
+            var filePath = TimingRecorder.Instance.WriteReportToFile();
+            _output.WriteLine($"Timing report written to: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            _output.WriteLine($"Failed to write timing report: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
 
     public static IEnumerable<object[]> TestCaseProvider()
     {
@@ -137,18 +152,18 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     {
         if (OperatingSystem.IsWindows())
         {
-            await _context.WrapTestBody(() => DoTest(TargetFramework.NetFramework, arch, [..relativeSourcePath.Select(_ => new LocalPath(_))]));
+            await _context.WrapTestBody(() => DoTestWithTiming(TargetFramework.NetFramework, arch, [..relativeSourcePath.Select(_ => new LocalPath(_))]));
         }
     }
 
     [Theory]
     [MemberData(nameof(TestCaseProvider))]
     public Task TestNet(TargetArch arch, string[] relativeSourcePath) =>
-        _context.WrapTestBody(() => DoTest(TargetFramework.Net, arch, [.. relativeSourcePath.Select(_ => new LocalPath(_))]));
+        _context.WrapTestBody(() => DoTestWithTiming(TargetFramework.Net, arch, [.. relativeSourcePath.Select(_ => new LocalPath(_))]));
 
     [Fact]
     public Task MultiFileApplicationCompiles() =>
-        _context.WrapTestBody(() => DoTest(
+        _context.WrapTestBody(() => DoTestWithTiming(
             TargetFramework.Net, TargetArch.Dynamic, new("multi-file/program.c"), new("multi-file/function.c")));
 
     [Fact]
@@ -187,6 +202,109 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
                 Directory.Delete(outRoot.Value, recursive: true);
             }
         });
+
+    /// <summary>
+    /// Executes a test with timing measurements.
+    /// </summary>
+    private async Task DoTestWithTiming(TargetFramework targetFramework, TargetArch arch, params LocalPath[] relativeSourcePaths)
+    {
+        var totalStopwatch = Stopwatch.StartNew();
+        long nativeCompileTimeMs = 0;
+        long nativeRunTimeMs = 0;
+        long cesiumCompileTimeMs = 0;
+        long cesiumRunTimeMs = 0;
+
+        var outRoot = Temporary.CreateTempFolder();
+        try
+        {
+            var paths = "[" + string.Join(", ", relativeSourcePaths.Select(x => $"\"{x.Value}\"")) + "]";
+            _output.WriteLine($"Building source files {paths} in directory \"{outRoot}\".");
+
+            string? inputContent = null;
+            if (relativeSourcePaths.Length > 0)
+            {
+                var inputPath = SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / relativeSourcePaths[0].WithExtension(".in");
+                if (File.Exists(inputPath.ToString()))
+                {
+                    inputContent = File.ReadAllText(inputPath.ToString());
+                }
+            }
+            var binDir = outRoot / "bin";
+            var objDir = outRoot / "obj";
+            Directory.CreateDirectory(binDir.Value);
+            Directory.CreateDirectory(objDir.Value);
+
+            var sourceFiles = relativeSourcePaths
+                .Select(x => SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / x)
+                .ToList();
+
+            // Measure native compile time
+            var nativeCompileStopwatch = Stopwatch.StartNew();
+            var nativeExecutable = await BuildExecutableWithNativeCompiler(binDir, objDir, sourceFiles);
+            nativeCompileStopwatch.Stop();
+            nativeCompileTimeMs = nativeCompileStopwatch.ElapsedMilliseconds;
+
+            // Measure native run time
+            var nativeRunStopwatch = Stopwatch.StartNew();
+            var nativeResult = await ExecUtil.Run(_output, nativeExecutable, outRoot, [], inputContent);
+            nativeRunStopwatch.Stop();
+            nativeRunTimeMs = nativeRunStopwatch.ElapsedMilliseconds;
+            Assert.Equal(42, nativeResult.ExitCode);
+            Assert.Empty(nativeResult.StandardError);
+            var nativeOutput = nativeResult.StandardOutput;
+
+            // Measure Cesium compile time
+            var cesiumCompileStopwatch = Stopwatch.StartNew();
+            var managedExecutable = await BuildExecutableWithCesium(
+                binDir,
+                objDir,
+                sourceFiles,
+                targetFramework,
+                arch);
+            cesiumCompileStopwatch.Stop();
+            cesiumCompileTimeMs = cesiumCompileStopwatch.ElapsedMilliseconds;
+
+            // Measure Cesium run time
+            var cesiumRunStopwatch = Stopwatch.StartNew();
+            var managedResult = await (targetFramework switch
+            {
+                TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable, inputContent),
+                TargetFramework.NetFramework => ExecUtil.Run(_output, managedExecutable, outRoot, [], inputContent),
+                _ => throw new ArgumentOutOfRangeException(nameof(targetFramework), targetFramework, null)
+            });
+            cesiumRunStopwatch.Stop();
+            cesiumRunTimeMs = cesiumRunStopwatch.ElapsedMilliseconds;
+            Assert.Equal(42, managedResult.ExitCode);
+            Assert.Empty(managedResult.StandardError);
+            var cesiumOutput = managedResult.StandardOutput;
+
+            // Verify outputs match
+            Assert.Equal(nativeOutput.ReplaceLineEndings("\n"), cesiumOutput.ReplaceLineEndings("\n"));
+
+            totalStopwatch.Stop();
+
+            // Record timing result
+            var timingResult = new TestTimingResult
+            {
+                TestName = $"{targetFramework}.{relativeSourcePaths.FirstOrDefault()?.Value ?? "unknown"}_{arch}",
+                SourceFile = relativeSourcePaths.FirstOrDefault()?.Value ?? "unknown",
+                TargetArch = arch.ToString(),
+                TargetFramework = targetFramework.ToString(),
+                NativeCompileTimeMs = nativeCompileTimeMs,
+                NativeRunTimeMs = nativeRunTimeMs,
+                CesiumCompileTimeMs = cesiumCompileTimeMs,
+                CesiumRunTimeMs = cesiumRunTimeMs,
+                TotalTimeMs = totalStopwatch.ElapsedMilliseconds
+            };
+
+            TimingRecorder.Instance.RecordTest(timingResult);
+            _output.WriteLine($"Timing: NativeCompile={nativeCompileTimeMs}ms, NativeRun={nativeRunTimeMs}ms, CesiumCompile={cesiumCompileTimeMs}ms, CesiumRun={cesiumRunTimeMs}ms, Total={totalStopwatch.ElapsedMilliseconds}ms");
+        }
+        finally
+        {
+            Directory.Delete(outRoot.Value, recursive: true);
+        }
+    }
 
     private async Task DoTest(TargetFramework targetFramework, TargetArch arch, params LocalPath[] relativeSourcePaths)
     {
@@ -252,6 +370,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
             inputFiles,
             targetFramework,
             arch);
+
         var managedResult = await (targetFramework switch
         {
             TargetFramework.Net => DotNetCliHelper.RunDotNetDll(_output, outRoot, managedExecutable, inputContent),
