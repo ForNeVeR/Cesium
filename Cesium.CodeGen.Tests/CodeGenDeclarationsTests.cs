@@ -26,6 +26,7 @@ public class CodeGenDeclarationsTests : CodeGenTestBase
 int test()
 {
     static int i = 2;
+    return 0;
 }");
 
     [Fact]
