@@ -109,6 +109,7 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         if (parent != null)
         {
             if (parent.Value.FileName == "multi-file") return false;
+            if (parent.Value.FileName == "preprocessor") return false;
             if (parent.Value.FileName.EndsWith(".c")) return false;
         }
 
@@ -150,6 +151,11 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
     public Task MultiFileApplicationCompiles() =>
         _context.WrapTestBody(() => DoTest(
             TargetFramework.Net, TargetArch.Dynamic, new("multi-file/program.c"), new("multi-file/function.c")));
+
+    [Fact]
+    public Task PreprocessorCliTest() =>
+        _context.WrapTestBody(() => DoPreprocessorTest(
+            [new("preprocessor/preprocessor1.c")]));
 
     [Fact]
     public Task CompilerAcceptsAnObjFileAsInput() =>
@@ -216,6 +222,28 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
 
             await CompileAndRunWithNative(binDir, objDir, outRoot, sourceFiles, inputContent);
             await CompileAndRunWithCesium(binDir, objDir, outRoot, targetFramework, arch, sourceFiles, inputContent);
+        }
+        finally
+        {
+            Directory.Delete(outRoot.Value, recursive: true);
+        }
+    }
+
+    private async Task DoPreprocessorTest(params LocalPath[] relativeSourcePaths)
+    {
+        var outRoot = Temporary.CreateTempFolder();
+        try
+        {
+            var paths = "[" + string.Join(", ", relativeSourcePaths.Select(x => $"\"{x.Value}\"")) + "]";
+            _output.WriteLine($"Building source files {paths} in directory \"{outRoot}\".");
+            var objDir = outRoot / "obj";
+            Directory.CreateDirectory(objDir.Value);
+
+            var sourceFiles = relativeSourcePaths
+                .Select(x => SolutionMetadata.SourceRoot / "Cesium.IntegrationTests" / x)
+                .ToList();
+
+            await PreprocessWithCesium(objDir, sourceFiles);
         }
         finally
         {
@@ -374,6 +402,28 @@ public class IntegrationTestRunner : IClassFixture<IntegrationTestContext>, IAsy
         await DotNetCliHelper.RunToSuccess(_output, new LocalPath("dotnet"), objDir, args.ToArray());
 
         return executableFilePath;
+    }
+
+    private async Task PreprocessWithCesium(
+        AbsolutePath objDir,
+        IList<AbsolutePath> inputFiles)
+    {
+        var paths = "[" + string.Join(", ", inputFiles.Select(x => $"\"{x.Value}\"")) + "]";
+        _output.WriteLine($"Preprocessing input files {paths} with Cesium.");
+
+        var args = new List<string>([
+            "run",
+            "--no-build",
+            "--configuration", IntegrationTestContext.BuildConfiguration,
+            "--project", (SolutionMetadata.SourceRoot / "Cesium.Compiler").Value,
+            "--",
+            "--nologo",
+            ..inputFiles.Select(x => x.Value),
+            "-E",
+            "-D__TEST_DEFINE"
+        ]);
+
+        await DotNetCliHelper.RunToSuccess(_output, new LocalPath("dotnet"), objDir, args.ToArray());
     }
 
     private async Task<AbsolutePath> GenerateJsonObjectFile(

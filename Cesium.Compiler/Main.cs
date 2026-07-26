@@ -64,17 +64,42 @@ public static class Program
                 options.DumpAst,
                 warningsSet);
 
+            var inputFilePaths = options.InputFilePaths.Select(x => new LocalPath(x));
             if (options.ProduceObjectFileImitation)
             {
                 await JsonObjectFile.Write(
-                    options.InputFilePaths.Select(x => new LocalPath(x)),
+                    inputFilePaths,
                     compilationOptions,
                     AbsolutePath.CurrentWorkingDirectory / options.OutputFilePath);
                 return 0;
             }
 
+            if (compilationOptions.ProducePreprocessedFile)
+            {
+                foreach (var inputFilePath in inputFilePaths)
+                {
+                    var content = await Compilation.Preprocess(inputFilePath, compilationOptions);
+                    Console.WriteLine(content);
+                }
+
+                return 0;
+            }
+
+            if (compilationOptions.ProduceAstFile)
+            {
+                foreach (var inputFilePath in inputFilePaths)
+                {
+                    var translationUnit = await Compilation.CreateAst(
+                        compilationOptions,
+                        inputFilePath.ResolveToCurrentDirectory());
+                    Compilation.DumpAst(translationUnit);
+                }
+
+                return 0;
+            }
+
             return await Compilation.Compile(
-                options.InputFilePaths.Select(x => new LocalPath(x)),
+                inputFilePaths,
                 new LocalPath(options.OutputFilePath),
                 compilationOptions);
         });

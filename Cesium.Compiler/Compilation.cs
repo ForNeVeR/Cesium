@@ -27,30 +27,6 @@ internal static class Compilation
         LocalPath outputFile,
         CompilationOptions compilationOptions)
     {
-        if (compilationOptions.ProducePreprocessedFile)
-        {
-            foreach (var inputFilePath in inputFilePaths)
-            {
-                var content = await Preprocess(inputFilePath, compilationOptions);
-                Console.WriteLine(content);
-            }
-
-            return 0;
-        }
-
-        if (compilationOptions.ProduceAstFile)
-        {
-            foreach (var inputFilePath in inputFilePaths)
-            {
-                var translationUnit = await CreateAst(
-                    compilationOptions,
-                    inputFilePath.ResolveToCurrentDirectory());
-                DumpAst(translationUnit);
-            }
-
-            return 0;
-        }
-
         Console.WriteLine($"Generating assembly \"{outputFile.Value}\".");
 
         using var assemblyContext = CreateAssembly(outputFile.ResolveToCurrentDirectory(), compilationOptions);
@@ -91,7 +67,7 @@ internal static class Compilation
         return 0;
     }
 
-    private static void DumpAst(TranslationUnit translationUnit)
+    internal static void DumpAst(TranslationUnit translationUnit)
     {
         var astDumper = new AstDumper(Console.Out);
         astDumper.Visit(translationUnit);
@@ -141,7 +117,7 @@ internal static class Compilation
         return preprocessor.ProcessSource();
     }
 
-    private static async Task<string> Preprocess(LocalPath source, CompilationOptions compilationOptions)
+    internal static async Task<string> Preprocess(LocalPath source, CompilationOptions compilationOptions)
     {
         var compilationFileDirectory = source.Parent
             ?? throw new CompilationException($"Cannot determine parent directory of file \"{source.Value}\".");
@@ -165,7 +141,7 @@ internal static class Compilation
         context.EmitTranslationUnit(translationUnitName, translationUnit);
     }
 
-    private static async Task<TranslationUnit> CreateAst(CompilationOptions compilationOptions, AbsolutePath inputFile)
+    internal static async Task<TranslationUnit> CreateAst(CompilationOptions compilationOptions, AbsolutePath inputFile)
     {
         var content = await Preprocess(inputFile, compilationOptions);
         var lexer = new CLexer(content);
