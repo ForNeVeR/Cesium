@@ -24,6 +24,7 @@ SPDX-License-Identifier: MIT
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Remove="TestProjects\**\*" CopyToOutputDirectory="Always" />
         <None Include="TestProjects\**\*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 

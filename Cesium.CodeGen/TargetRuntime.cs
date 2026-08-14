@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using Cesium.CodeGen.Contexts;
 using Cesium.Core;
 using Mono.Cecil;
 
@@ -52,7 +53,7 @@ public record TargetRuntimeDescriptor(
         };
     }
 
-    public CustomAttribute GetTargetFrameworkAttribute(ModuleDefinition module)
+    public CustomAttribute GetTargetFrameworkAttribute(AssemblyContext context)
     {
         var frameworkName = Kind switch
         {
@@ -62,13 +63,13 @@ public record TargetRuntimeDescriptor(
             _ => throw new CompilationException($"Unknown target runtime kind: {Kind}")
         } + $",Version=v{TargetFrameworkVersion}";
 
-        var targetFrameworkAttributeRef = module.ImportReference(new TypeReference("System.Runtime.Versioning", "TargetFrameworkAttribute", module, GetSystemAssemblyReference()));
-        var constructorRef = new MethodReference(".ctor", module.TypeSystem.Void, targetFrameworkAttributeRef);
-        constructorRef.Parameters.Add(new ParameterDefinition(module.TypeSystem.String));
-        constructorRef = module.ImportReference(constructorRef);
+        var targetFrameworkAttributeRef = context.Module.ImportReference(new TypeReference("System.Runtime.Versioning", "TargetFrameworkAttribute", context.MscorlibAssembly.MainModule, context.MscorlibAssembly.MainModule));
+        var constructorRef = new MethodReference(".ctor", context.Module.TypeSystem.Void, targetFrameworkAttributeRef);
+        constructorRef.Parameters.Add(new ParameterDefinition(context.Module.TypeSystem.String));
+        constructorRef = context.Module.ImportReference(constructorRef);
         return new CustomAttribute(constructorRef)
         {
-            ConstructorArguments = { new CustomAttributeArgument(module.TypeSystem.String, frameworkName) }
+            ConstructorArguments = { new CustomAttributeArgument(context.Module.TypeSystem.String, frameworkName) }
         };
     }
 }

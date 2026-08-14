@@ -13,6 +13,7 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
     [Theory]
     [InlineData("SimpleCoreExe")]
     [InlineData("SimpleCoreExe7")]
+    [InlineData("SimpleCoreExe10")]
     public async Task CesiumCompile_Core_Exe_ShouldSucceed(string projectName)
     {
         HashSet<string> expectedObjArtifacts =
@@ -128,6 +129,61 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         ];
 
         var result = await ExecuteTargets(projectName, "Restore", "Build");
+
+        Assert.True(result.ExitCode == 0);
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+    }
+
+    [Theory]
+    [InlineData("SimpleCoreExe")]
+    [InlineData("SimpleCoreExe7")]
+    [InlineData("SimpleCoreExe10")]
+    public async Task CesiumPublish_Core_Exe_ShouldSucceed(string projectName)
+    {
+        HashSet<string> expectedObjArtifacts =
+        [
+            $"{projectName}.dll"
+        ];
+
+        var hostExeFile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"{projectName}.exe" : projectName;
+        HashSet<string> expectedBinArtifacts =
+        [
+            $"{projectName}.dll",
+            hostExeFile,
+            "Cesium.Runtime.dll",
+            $"{projectName}.runtimeconfig.json",
+            $"{projectName}.deps.json",
+        ];
+
+        var result = await ExecuteTargets(projectName, "Restore", "Publish");
+
+        Assert.True(result.ExitCode == 0);
+        AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());
+        AssertCollection.Includes(expectedBinArtifacts, result.OutputArtifacts.Select(a => a.FileName).ToList());
+    }
+
+    [Fact]
+    public async Task CesiumPublish_Core_ExeWithDeps_ShouldSucceed()
+    {
+        HashSet<string> expectedObjArtifacts =
+        [
+            $"ConsoleApp_Net10.dll"
+        ];
+
+        var hostExeFile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"ConsoleApp_Net10.exe" : "ConsoleApp_Net10";
+        HashSet<string> expectedBinArtifacts =
+        [
+            $"ConsoleApp_Net10.dll",
+            hostExeFile,
+            "Cesium.Runtime.dll",
+            $"ConsoleApp_Net10.runtimeconfig.json",
+            $"ConsoleApp_Net10.deps.json",
+        ];
+
+        var result = await ExecuteTargets("App_WithCesiumLib/App_WithCesiumLib.slnx",
+            "App_WithCesiumLib/ConsoleApp_Net10/ConsoleApp_Net10.csproj",
+            "App_WithCesiumLib", "OutDir", ["Restore", "Publish"], ["/nr:false", "/p:SelfContained=true"]);
 
         Assert.True(result.ExitCode == 0);
         AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());

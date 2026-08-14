@@ -1,0 +1,4 @@
+<Solution>
+    <Project Path="CesiumLib/CesiumLib.ceproj" Type="00000000-0000-0000-0000-000000000000" />
+    <Project Path="ConsoleApp_Net10/ConsoleApp_Net10.csproj" />
+</Solution>

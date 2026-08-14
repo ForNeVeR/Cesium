@@ -55,7 +55,7 @@ public class AssemblyContext : IDisposable
         var assemblyContext = new AssemblyContext(assembly, module, compilationOptions);
 
         var targetRuntime = compilationOptions.TargetRuntime;
-        assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(module));
+        assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(assemblyContext));
 
         return assemblyContext;
     }

@@ -45,11 +45,16 @@ public abstract class SdkTestBase : IDisposable
 
     protected async Task<BuildResult> ExecuteTargets(string projectName, params string[] targets)
     {
-        var projectFile = $"{projectName}/{projectName}.ceproj";
+        return await ExecuteTargets($"{projectName}/{projectName}.ceproj", $"{projectName}/{projectName}.ceproj", projectName, "OutDir", targets, ["/restore"]);
+    }
+
+    protected async Task<BuildResult> ExecuteTargets(string buildProjectFile, string validatingProjectFile, string testName, string outputProperty, string[] targets, string[] switches)
+    {
         var joinedTargets = string.Join(";", targets);
-        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
+        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, buildProjectFile));
+        var testEntryProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, validatingProjectFile));
         var testProjectFolder = Path.GetDirectoryName(testProjectFile) ?? throw new ArgumentNullException(nameof(testProjectFile));
-        var binLogFile = Path.Combine(testProjectFolder, $"build_result_{projectName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog");
+        var binLogFile = Path.Combine(testProjectFolder, $"build_result_{testName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog");
 
         const string objFolderPropertyName = "IntermediateOutputPath";
         const string binFolderPropertyName = "OutDir";
@@ -58,14 +63,21 @@ public abstract class SdkTestBase : IDisposable
         {
             WorkingDirectory = testProjectFolder,
             FileName = "dotnet",
-            ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", "/restore", $"/bl:{binLogFile}" },
+            ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", $"/bl:{binLogFile}" },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
             UseShellExecute = false,
         };
+        foreach (var commandLineOption in switches)
+        {
+            startInfo.ArgumentList.Add(commandLineOption);
+        }
+
+        _testOutputHelper.WriteLine("Running MSBuild: " + "dotnet " +string.Join(" ", startInfo.ArgumentList));
         foreach (var (name, var) in _dotNetEnvVars)
         {
+            _testOutputHelper.WriteLine($"Environment[{name}] = {var}");
             startInfo.Environment[name] = var;
         }
 
@@ -106,7 +118,7 @@ public abstract class SdkTestBase : IDisposable
 
         var properties = await DotNetCliHelper.EvaluateMSBuildProperties(
             _testOutputHelper,
-            testProjectFile,
+            testEntryProjectFile,
             env: _dotNetEnvVars,
             objFolderPropertyName,
             binFolderPropertyName);
