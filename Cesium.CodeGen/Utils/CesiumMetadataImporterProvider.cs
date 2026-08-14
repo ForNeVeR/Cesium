@@ -36,6 +36,7 @@ public class CesiumMetadataImporter(TargetRuntimeDescriptor runtime, ModuleDefin
                 "System.Runtime.CompilerServices.CompilerGeneratedAttribute" => runtime.GetSystemAssemblyReference(),
                 "System.Runtime.CompilerServices.FixedBufferAttribute" => runtime.GetSystemAssemblyReference(),
                 "System.Runtime.CompilerServices.UnsafeValueTypeAttribute" => runtime.GetSystemAssemblyReference(),
+                "System.Runtime.Versioning.TargetFrameworkAttribute" => runtime.GetSystemAssemblyReference(),
                 "System.Type" => runtime.GetSystemAssemblyReference(),
                 "System.ValueType" => runtime.GetSystemAssemblyReference(),
                 _ => throw new AssertException(
