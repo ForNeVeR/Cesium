@@ -1,4 +1,4 @@
-﻿using CesiumLib;
+using CesiumLib;
 
 var result = new Foo();
 Console.WriteLine("Hello, " + result.x);
