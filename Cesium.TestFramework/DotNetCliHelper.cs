@@ -32,8 +32,9 @@ public static class DotNetCliHelper
     public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(
         ITestOutputHelper output,
         string projectPath,
-        IReadOnlyDictionary<string, string>? env = null,
-        params string[] propertyNames)
+        IReadOnlyDictionary<string, string>? env,
+        string[] inputProperties,
+        string[] propertyNames)
     {
         if (!propertyNames.Any())
             return new Dictionary<string, string>();
@@ -42,7 +43,7 @@ public static class DotNetCliHelper
             output,
             ExecUtil.DotNetHost,
             AbsolutePath.CurrentWorkingDirectory,
-            [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}" ],
+            [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}", ..inputProperties],
             null,
             additionalEnvironment: env);
         var resultString = result.StandardOutput;

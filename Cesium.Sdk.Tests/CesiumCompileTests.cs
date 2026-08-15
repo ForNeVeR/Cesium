@@ -168,7 +168,6 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
     {
         HashSet<string> expectedObjArtifacts =
         [
-            $"ConsoleApp_Net10.dll"
         ];
 
         var hostExeFile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $"ConsoleApp_Net10.exe" : "ConsoleApp_Net10";
@@ -177,13 +176,14 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
             $"ConsoleApp_Net10.dll",
             hostExeFile,
             "Cesium.Runtime.dll",
+            "CesiumLib.dll",
             $"ConsoleApp_Net10.runtimeconfig.json",
             $"ConsoleApp_Net10.deps.json",
         ];
 
         var result = await ExecuteTargets("App_WithCesiumLib/App_WithCesiumLib.slnx",
             "App_WithCesiumLib/ConsoleApp_Net10/ConsoleApp_Net10.csproj",
-            "App_WithCesiumLib", "OutDir", ["Restore", "Publish"], ["/nr:false", "/p:SelfContained=true"]);
+            "App_WithCesiumLib", "PublishDir", ["Restore", "Publish"], ["/nr:false", "/p:SelfContained=true"]);
 
         Assert.True(result.ExitCode == 0);
         AssertCollection.Includes(expectedObjArtifacts, result.IntermediateArtifacts.Select(a => a.FileName).ToList());

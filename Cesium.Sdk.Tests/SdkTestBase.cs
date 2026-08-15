@@ -54,10 +54,10 @@ public abstract class SdkTestBase : IDisposable
         var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, buildProjectFile));
         var testEntryProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, validatingProjectFile));
         var testProjectFolder = Path.GetDirectoryName(testProjectFile) ?? throw new ArgumentNullException(nameof(testProjectFile));
+        var validatingProjectFolder = Path.GetDirectoryName(testEntryProjectFile) ?? throw new ArgumentNullException(nameof(validatingProjectFile));
         var binLogFile = Path.Combine(testProjectFolder, $"build_result_{testName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog");
 
         const string objFolderPropertyName = "IntermediateOutputPath";
-        const string binFolderPropertyName = "OutDir";
 
         var startInfo = new ProcessStartInfo
         {
@@ -120,12 +120,12 @@ public abstract class SdkTestBase : IDisposable
             _testOutputHelper,
             testEntryProjectFile,
             env: _dotNetEnvVars,
-            objFolderPropertyName,
-            binFolderPropertyName);
+            switches,
+            [objFolderPropertyName, outputProperty]);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
-        var binFolder = NormalizePath(Path.GetFullPath(properties[binFolderPropertyName], testProjectFolder));
-        var objFolder = NormalizePath(Path.GetFullPath(properties[objFolderPropertyName], testProjectFolder));
+        var binFolder = NormalizePath(Path.GetFullPath(properties[outputProperty], validatingProjectFolder));
+        var objFolder = NormalizePath(Path.GetFullPath(properties[objFolderPropertyName], validatingProjectFolder));
 
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
