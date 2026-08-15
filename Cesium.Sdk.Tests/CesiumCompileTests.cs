@@ -175,7 +175,6 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
         [
             $"ConsoleApp_Net10.dll",
             hostExeFile,
-            "Cesium.Runtime.dll",
             "CesiumLib.dll",
             $"ConsoleApp_Net10.runtimeconfig.json",
             $"ConsoleApp_Net10.deps.json",
