@@ -57,7 +57,7 @@ internal sealed class IdentifierExpression : IExpression, IValueExpression
 
         if (var is not null)
         {
-            if (var.StorageClass == StorageClass.Auto)
+            if (var.StorageClass == StorageClass.Auto || var.StorageClass == StorageClass.Register)
                 return new LValueLocalVariable(var.Type, var.Index);
 
             if (var.StorageClass == StorageClass.Static)

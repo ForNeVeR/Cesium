@@ -176,6 +176,9 @@ internal interface IScopedDeclarationInfo
             {
                 "static" => StorageClass.Static,
                 "extern" => StorageClass.Extern,
+                "auto" => StorageClass.Auto,
+                "register" => StorageClass.Register,
+                "_Thread_local" => StorageClass.ThreadLocal,
                 _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
             };
         }
@@ -198,4 +201,6 @@ internal enum StorageClass
     Static,
     Auto,
     Extern,
+    Register,
+    ThreadLocal,
 }

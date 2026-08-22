@@ -286,6 +286,11 @@ public class TranslationUnitContext
             case StorageClass.Extern: // assembly-level
                 AssemblyContext.AddAssemblyLevelField(identifier, storageClass, type);
                 break;
+            case StorageClass.Register:
+                throw new CompilationException("'register' storage class is not allowed at file scope.");
+            case StorageClass.ThreadLocal:
+                // TODO[#343]: Requires [ThreadStatic] field emission in Mono.Cecil.
+                throw new WipException(343, "Thread-local storage duration for global variables is not yet supported.");
             default:
                 throw new CompilationException($"Global variable of storage class {storageClass} is not supported.");
         }

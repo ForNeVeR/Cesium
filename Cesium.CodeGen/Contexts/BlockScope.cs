@@ -52,11 +52,15 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         switch (storageClass)
         {
             case StorageClass.Auto:
-                _variables.Add(identifier, new(storageClass, variable, constant));
+            case StorageClass.Register: // 'register' is only a hint; treat as auto in IL
+                _variables.Add(identifier, new(StorageClass.Auto, variable, constant));
                 break;
             case StorageClass.Static:
                 ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable, constant);
                 break;
+            case StorageClass.ThreadLocal:
+                // TODO[#343]: _Thread_local requires [ThreadStatic] field support; not yet implemented.
+                throw new WipException(343, $"Thread-local storage class for local variable '{identifier}' is not yet supported.");
             default:
                 throw new ArgumentOutOfRangeException(nameof(storageClass), storageClass, null);
         }
