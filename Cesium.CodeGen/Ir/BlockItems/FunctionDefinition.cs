@@ -38,11 +38,20 @@ internal sealed class FunctionDefinition : IBlockItem
     {
         var (specifiers, declarator, declarations, astStatement) = function;
         StorageClass = StorageClass.Auto;
-        var staticMarker = specifiers.FirstOrDefault(_ => _ is StorageClassSpecifier storageClass && storageClass.Name == "static");
-        if (staticMarker is not null)
+        var scsMarker = specifiers.OfType<StorageClassSpecifier>()
+            .FirstOrDefault(s => s.Name is "static" or "extern" or "auto" or "register" or "_Thread_local");
+        if (scsMarker is not null)
         {
-            StorageClass = StorageClass.Static;
-            specifiers = specifiers.Remove(staticMarker);
+            StorageClass = scsMarker.Name switch
+            {
+                "static"        => StorageClass.Static,
+                "extern"        => StorageClass.Extern,
+                "auto"          => StorageClass.Auto,
+                "register"      => StorageClass.Auto,      // register has no IL equivalent; treat as auto
+                "_Thread_local" => StorageClass.ThreadLocal,
+                _               => StorageClass.Auto
+            };
+            specifiers = specifiers.Remove(scsMarker);
         }
 
         var functionSpecifiers = specifiers.OfType<FunctionSpecifier>().ToList();
