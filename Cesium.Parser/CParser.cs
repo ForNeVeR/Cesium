@@ -519,6 +519,7 @@ public partial class CParser
     [Rule("type_specifier: 'signed'")]
     [Rule("type_specifier: 'unsigned'")]
     [Rule("type_specifier: '_Bool'")]
+    [Rule("type_specifier: 'bool'")] 
     [Rule("type_specifier: '_Complex'")]
     [Rule("type_specifier: '__nint'")]
     [Rule("type_specifier: '__nuint'")]

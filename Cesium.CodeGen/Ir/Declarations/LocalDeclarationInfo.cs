@@ -456,6 +456,7 @@ internal sealed record LocalDeclarationInfo(
                 ["__nint"] => PrimitiveTypeKind.NativeInt,
                 ["__nuint"] => PrimitiveTypeKind.NativeUInt,
                 ["_Bool"] => PrimitiveTypeKind.Bool,
+                ["bool"]  => PrimitiveTypeKind.Bool,
                 _ => throw new WipException(
                     224,
                     $"Simple type specifiers are not supported: {string.Join(" ", typeNames)}"),
