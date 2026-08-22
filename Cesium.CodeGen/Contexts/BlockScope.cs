@@ -52,18 +52,23 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
         switch (storageClass)
         {
             case StorageClass.Auto:
-            case StorageClass.Register: // 'register' is only a hint; treat as auto in IL
-                _variables.Add(identifier, new(StorageClass.Auto, variable, constant));
+                _variables.Add(identifier, new(storageClass, variable, constant));
+                break;
+            case StorageClass.Register:
+                // 'register' is like auto but forbids address-of — keep the class so the constraint can be checked.
+                _variables.Add(identifier, new(StorageClass.Register, variable, constant));
                 break;
             case StorageClass.Static:
                 ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable, constant);
                 break;
             case StorageClass.ThreadLocal:
-                // TODO[#343]: _Thread_local requires [ThreadStatic] field support; not yet implemented.
-                throw new WipException(343, $"Thread-local storage class for local variable '{identifier}' is not yet supported.");
+                // C11 §6.7.1p3: _Thread_local at block scope must be combined with static or extern.
+                throw new CompilationException(
+                    $"'_Thread_local' on block-scope variable '{identifier}' must be combined with 'static' or 'extern' (C11 §6.7.1).");
             default:
                 throw new ArgumentOutOfRangeException(nameof(storageClass), storageClass, null);
         }
+
     }
 
     public VariableDefinition ResolveVariable(int varIndex)

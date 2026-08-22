@@ -42,6 +42,12 @@ internal sealed class UnaryOperatorExpression : IExpression
             if (value is not IAddressableValue aValue)
                 throw new CompilationException($"Required an addressable value to get address, got {value} instead.");
 
+            // C11 §6.7.1p3 — the address-of operator shall not be applied to an object
+            // declared with register storage-class specifier.
+            if (aValue is LValueLocalVariable { IsRegister: true })
+                throw new CompilationException(
+                    "Cannot take the address of a variable declared with 'register' storage class (C11 §6.7.1).");
+
             return new GetAddressValueExpression(aValue);
         }
 

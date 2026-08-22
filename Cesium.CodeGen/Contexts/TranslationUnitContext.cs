@@ -275,6 +275,8 @@ public class TranslationUnitContext
     internal TypeReference? GetTypeReference(IGeneratedType type) => AssemblyContext.GetTypeReference(type);
 
     private readonly Dictionary<string, IType> _translationUnitLevelFieldTypes = new();
+    private readonly Dictionary<string, IType> _threadLocalFieldTypes = new();
+
     internal void AddTranslationUnitLevelField(StorageClass storageClass, string identifier, IType type)
     {
         switch (storageClass)
@@ -286,11 +288,11 @@ public class TranslationUnitContext
             case StorageClass.Extern: // assembly-level
                 AssemblyContext.AddAssemblyLevelField(identifier, storageClass, type);
                 break;
+            case StorageClass.ThreadLocal: // file-level, thread-local duration
+                _threadLocalFieldTypes[identifier] = type;
+                break;
             case StorageClass.Register:
                 throw new CompilationException("'register' storage class is not allowed at file scope.");
-            case StorageClass.ThreadLocal:
-                // TODO[#343]: Requires [ThreadStatic] field emission in Mono.Cecil.
-                throw new WipException(343, "Thread-local storage duration for global variables is not yet supported.");
             default:
                 throw new CompilationException($"Global variable of storage class {storageClass} is not supported.");
         }
@@ -298,13 +300,32 @@ public class TranslationUnitContext
 
     internal FieldReference? ResolveTranslationUnitField(string name)
     {
-        var type = _translationUnitLevelFieldTypes.GetValueOrDefault(name);
-        if (type == null) return null;
+        // Ordinary (non-thread-local) file-scoped field
+        if (_translationUnitLevelFieldTypes.TryGetValue(name, out var type))
+        {
+            EnsureAnonymousTypeGenerated(type);
+            var containingType = GetOrCreateTranslationUnitType();
+            return containingType.GetOrAddField(this, type, name);
+        }
 
-        EnsureAnonymousTypeGenerated(type);
+        // Thread-local file-scoped field — backed by a [ThreadStatic] static field
+        if (_threadLocalFieldTypes.TryGetValue(name, out var tlType))
+        {
+            EnsureAnonymousTypeGenerated(tlType);
+            var containingType = GetOrCreateTranslationUnitType();
+            var field = containingType.GetOrAddField(this, tlType, name);
+            // Apply [ThreadStatic] once, on the FieldDefinition.
+            if (field is FieldDefinition fieldDef
+                && !fieldDef.CustomAttributes.Any(a => a.AttributeType.FullName == "System.ThreadStaticAttribute"))
+            {
+                var threadStaticCtor = Module.ImportReference(
+                    typeof(ThreadStaticAttribute).GetConstructor(Type.EmptyTypes));
+                fieldDef.CustomAttributes.Add(new CustomAttribute(threadStaticCtor));
+            }
+            return field;
+        }
 
-        var containingType = GetOrCreateTranslationUnitType();
-        return containingType.GetOrAddField(this, type, name);
+        return null;
     }
 
     internal void EnsureAnonymousTypeGenerated(IType? type)
