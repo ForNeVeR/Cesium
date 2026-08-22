@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -60,6 +60,14 @@ partial class Build : NukeBuild
                 .SetProjectFile(Solution.FileName)
                 .EnableNoRestore());
         });
+
+    Target PackAll => _ => _
+        .Description("Produces the complete set of packages: the compiler bundles, the compiler tool, the runtime, the SDK, and the templates.")
+        .DependsOn(PackAllCompilerRuntimeSpecificBundles)
+        .DependsOn(PackCompilerBundleNuPkg)
+        .DependsOn(PackCompilerTool)
+        .DependsOn(PackSdk)
+        .DependsOn(PackTemplates);
 
     Target ForceClear => _ => _
         .OnlyWhenDynamic(() => SkipCaches)

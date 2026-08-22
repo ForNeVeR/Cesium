@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 
 SPDX-License-Identifier: MIT
 -->
@@ -83,14 +83,14 @@ SDK tests check correctness of integration with MSBuild. They are focused on bui
 SDK tests (and Cesium Project SDK itself) require compiler bundle to be built and packed. A compiler bundle is a special platform-specific NuGet package containing a published compiler executable with dependencies. It is not intended to be used as a runtime dependency and only used while building project.
 
 Compiler packing is done by 2 NUKE targets:
-- `PublishCompilerBundle`: a target that make platform-specific `dotnet publish` of compiler bundle to corresponding artifacts' folder.
-- `PackCompilerBundle`: a target that wraps a published compiler bundle into a NuGet package which is then used by SDK to deliver compiler to user's project
+- `PublishCompilerFrameworkDependentBundle`: a target that make platform-specific `dotnet publish` of compiler bundle to corresponding artifacts' folder.
+- `PackCompilerBundleNuPkg`: a target that wraps a published compiler bundle into a NuGet package which is then used by SDK to deliver compiler to user's project
 
 If you want to run these tests without Nuke (e.g. from the IDE), run the targets using a shell command:
 ```console
-$ dotnet nuke PackCompilerBundle
+$ dotnet nuke PackCompilerBundleNuPkg
 ```
-After that, run the tests in your preferred way.
+After that, run the tests in your preferred way. Alternately, run `dotnet nuke PackAll` to produce the complete set of Cesium packages at once.
 
 Both targets are called automatically when `TestSdk` target is invoked.
 

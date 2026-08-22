@@ -27,6 +27,7 @@
         "Clean",
         "CompileAll",
         "ForceClear",
+        "PackAll",
         "PackAllCompilerRuntimeSpecificBundles",
         "PackCompilerBundleNuPkg",
         "PackCompilerTool",

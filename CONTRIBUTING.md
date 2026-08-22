@@ -56,15 +56,26 @@ $ dotnet new install Cesium.Templates
 ```
 This [installs the templates locally][install_templates] and lets you use template changes without going through the NuGet cache.
 
-Publishing
-----------
-To produce a standalone compiler executable, run the following shell command:
+Packaging
+---------
+To prepare the complete set of packages (e.g. for local testing) run the following shell command:
 
 ```console
-$ dotnet nuke PackAllCompilerRuntimeSpecificBundles --configuration release
+$ dotnet nuke PackAll --configuration release
 ```
 
-This will prepare runtime-specific ZIP archives in the `artifacts/package/release` folder.
+This will put the runtime-specific compiler ZIP archives together with the `Cesium.Compiler.Bundle`, `Cesium.Compiler`, `Cesium.Runtime`, `Cesium.Sdk`, and `Cesium.Templates` NuGet packages into the `artifacts/package/release` folder, which may then be used as a local NuGet feed to test the SDK and the templates.
+
+Pass `--skip-caches true` to re-pack, cleaning the `artifacts/package/release` folder beforehand (the existing ZIP archives are never overwritten).
+
+You can then use the packages in your .NET projects if you put the following `nuget.config` into an external solution folder:
+```xml
+<configuration>
+    <packageSources>
+        <add key="cesium-local" value="/path/to/Cesium/artifacts/package/release/" />
+    </packageSources>
+</configuration>
+```
 
 File Encoding Changes
 ---------------------
