@@ -168,11 +168,7 @@ internal interface IScopedDeclarationInfo
                 continue;
             }
 
-            if (storageClass != null)
-                throw new CompilationException(
-                    $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
-
-            storageClass = scs.Name switch
+            var currentScs = scs.Name switch
             {
                 "static" => StorageClass.Static,
                 "extern" => StorageClass.Extern,
@@ -181,6 +177,24 @@ internal interface IScopedDeclarationInfo
                 "_Thread_local" => StorageClass.ThreadLocal,
                 _ => throw new WipException(343, $"Storage class not known, yet: {scs.Name}")
             };
+
+            if (storageClass != null)
+            {
+                if ((storageClass == StorageClass.ThreadLocal && currentScs is StorageClass.Static or StorageClass.Extern) ||
+                    (currentScs == StorageClass.ThreadLocal && storageClass is StorageClass.Static or StorageClass.Extern))
+                {
+                    storageClass = StorageClass.ThreadLocal;
+                }
+                else
+                {
+                    throw new CompilationException(
+                        $"Storage class specified twice: already processed {storageClass}, but got {specifier}.");
+                }
+            }
+            else
+            {
+                storageClass = currentScs;
+            }
         }
 
         return (storageClass ?? StorageClass.Auto, declarationSpecifiers);
