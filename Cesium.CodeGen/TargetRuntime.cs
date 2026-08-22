@@ -65,6 +65,7 @@ public record TargetRuntimeDescriptor(
 
         var targetFrameworkAttributeRef = context.Module.ImportReference(new TypeReference("System.Runtime.Versioning", "TargetFrameworkAttribute", context.MscorlibAssembly.MainModule, context.MscorlibAssembly.MainModule));
         var constructorRef = new MethodReference(".ctor", context.Module.TypeSystem.Void, targetFrameworkAttributeRef);
+        constructorRef.HasThis = true;
         constructorRef.Parameters.Add(new ParameterDefinition(context.Module.TypeSystem.String));
         constructorRef = context.Module.ImportReference(constructorRef);
         return new CustomAttribute(constructorRef)
