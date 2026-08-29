@@ -41,7 +41,8 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                 if (arguments.IsError)
                     CPreprocessor.RaisePreprocessorParseError(arguments.Error);
 
-                foreach (var replaced in ExpandMacros(ExpandMacros(SubstituteMacroArguments(token, arguments.Ok, replacement))))
+                foreach (var replaced in ExpandMacros(ExpandMacros(
+                    parameters == null ? replacement : SubstituteMacroArguments(token, arguments.Ok, replacement))))
                 {
                     yield return replaced;
                 }
