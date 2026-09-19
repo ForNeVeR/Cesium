@@ -25,7 +25,7 @@ jobs:
         environment:
           - image: macos-26
             name: macos
-          - image: ubuntu-24.04
+          - image: ubuntu-26.04
             name: linux
           - image: windows-2025
             name: windows
