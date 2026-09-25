@@ -102,9 +102,12 @@ internal static class BlockItemEmitting
             }
             case ConditionalGotoStatement s:
             {
+                var jumpType = s.EffectiveJumpType;
+                if (jumpType is null) return;
+
                 s.Condition.EmitTo(scope);
                 var instruction = scope.ResolveLabel(s.Identifier);
-                var opcode = s.JumpType == ConditionalJumpType.True ? OpCodes.Brtrue : OpCodes.Brfalse;
+                var opcode = jumpType == ConditionalJumpType.True ? OpCodes.Brtrue : OpCodes.Brfalse;
                 scope.Method.Body.Instructions.Add(Instruction.Create(opcode, instruction));
                 return;
             }
