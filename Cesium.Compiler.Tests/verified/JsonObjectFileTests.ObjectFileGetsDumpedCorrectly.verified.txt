@@ -28,6 +28,7 @@
     ],
     "ProducePreprocessedFile": false,
     "ProduceAstFile": true,
-    "WarningSet": "All"
+    "WarningSet": "All",
+    "OptimizationLevel": "NoOp"
   }
 }
