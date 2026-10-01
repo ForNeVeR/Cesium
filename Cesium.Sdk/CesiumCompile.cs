@@ -15,6 +15,7 @@ namespace Cesium.Sdk;
   --arch           (Default: Dynamic)  Valid values: Dynamic, Bit32, Bit64
   --modulekind     Valid values: Dll, Console, Windows, NetModule
   --nologo         Suppress compiler banner message
+  --no-runtimeconfig  Do not generate the .runtimeconfig.json file
   --namespace      Sets default namespace instead of "global"
   --globalclass    Sets default global class instead of "<Module>"
   --import         Provides path to assemblies which would be added as references automatically into resulting executable.
@@ -209,7 +210,9 @@ public class CesiumCompile : Microsoft.Build.Utilities.Task
     {
         var args = new List<string>
         {
-            "--nologo"
+            "--nologo",
+            // The .NET SDK generates runtimeconfig.json itself (see #946).
+            "--no-runtimeconfig"
         };
 
         if (options.Framework is { } framework)

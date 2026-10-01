@@ -41,6 +41,9 @@ public class Arguments
     [Option("nologo", HelpText = "Suppress compiler banner message")]
     public bool NoLogo { get; set; }
 
+    [Option("no-runtimeconfig", HelpText = "Do not generate the .runtimeconfig.json file next to the output executable")]
+    public bool NoRuntimeConfig { get; init; } = false;
+
     [Option("namespace", HelpText = "Sets default namespace instead of \"global\"")]
     public string Namespace { get; init; } = "";
 

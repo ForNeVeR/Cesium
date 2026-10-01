@@ -125,6 +125,36 @@ namespace Cesium.Compiler.Tests
             Assert.Equal(0, errorCode);
         }
 
+        [Fact]
+        public async Task NoRuntimeConfigIsOffByDefault()
+        {
+            var args = new[] { "C:\\a.c", "-o", "C:\\a.exe" };
+            var reporter = new MockCompilerReporter();
+
+            var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
+            {
+                Assert.False(args.NoRuntimeConfig);
+                return Task.FromResult(0);
+            });
+            Assert.Empty(reporter.Errors);
+            Assert.Equal(0, errorCode);
+        }
+
+        [Fact]
+        public async Task NoRuntimeConfigIsParsed()
+        {
+            var args = new[] { "C:\\a.c", "-o", "C:\\a.exe", "--no-runtimeconfig" };
+            var reporter = new MockCompilerReporter();
+
+            var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
+            {
+                Assert.True(args.NoRuntimeConfig);
+                return Task.FromResult(0);
+            });
+            Assert.Empty(reporter.Errors);
+            Assert.Equal(0, errorCode);
+        }
+
         private static void NoInformationalMessages(MockCompilerReporter reporter)
         {
             Assert.NotNull(reporter.InformationMessages.Single(_ => _.StartsWith("Cesium v")));

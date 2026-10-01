@@ -39,6 +39,20 @@ public class CesiumCompileTests(ITestOutputHelper testOutputHelper) : SdkTestBas
     }
 
     [Theory]
+    [InlineData("SimpleCoreExe")]
+    public async Task CesiumCompile_Exe_CompilerDoesNotGenerateRuntimeConfig(string projectName)
+    {
+        var result = await ExecuteTargets(projectName, "Restore", "Build");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.DoesNotContain($"{projectName}.runtimeconfig.json",
+            result.IntermediateArtifacts.Select(a => a.FileName));
+        Assert.Contains($"{projectName}.runtimeconfig.json",
+            result.OutputArtifacts.Select(a => a.FileName));
+        Assert.DoesNotContain("Generating a .NET 6 runtime config", result.StdOutOutput);
+    }
+
+    [Theory]
     [InlineData("SimpleNetfxExe")]
     [InlineData("SimpleNetfxExe472")]
     public async Task CesiumCompile_NetFx_Exe_ShouldSucceed(string projectName)

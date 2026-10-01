@@ -101,7 +101,8 @@ public static class Program
             return await Compilation.Compile(
                 inputFilePaths,
                 new LocalPath(options.OutputFilePath),
-                compilationOptions);
+                compilationOptions,
+                generateRuntimeConfig: !options.NoRuntimeConfig);
         });
     }
 }
