@@ -1162,4 +1162,47 @@ char *cast_table[] = {
 #define FOO(x)
 FOO()
 ");
+
+    [Fact]
+    public Task SelfReferentialMacro() => DoTest("""
+#define foo foo + 1
+foo
+""");
+
+    [Fact]
+    public Task IndirectlySelfReferentialMacros() => DoTest("""
+#define a b
+#define b a
+a | b
+""");
+
+    [Fact]
+    public Task SelfReferenceInMacroArgument() => DoTest("""
+#define id(x) x
+#define self id(self)
+self
+""");
+
+    [Fact]
+    public Task RecursiveFunctionLikeMacro() => DoTest("""
+#define EVAL0(...) __VA_ARGS__
+#define MAP1_UD_I(f, x, peek, ...) f(x, 1) MAP1_UD_I ( f, peek, __VA_ARGS__ )
+#define MAP_UD_I(f, ...) EVAL0(MAP1_UD_I(f, 0, __VA_ARGS__, ()()(), ()()(), ()()(), 0))
+#define PRINT_STREAM_I(x, stream) fprintf (stream, "1\n");
+MAP_UD_I(PRINT_STREAM_I, 1, 2, 3, 4, 5)
+""");
+
+    [Fact]
+    public Task MutuallyRecursiveDeferredMacros() => DoTest("""
+#define EVAL0(...) __VA_ARGS__
+#define MAP_OUT
+#define EMPTY()
+#define DEFER(id) id EMPTY()
+#define MAP_NEXT(test, next) next MAP_OUT
+#define MAP0_UD_I(f, x, peek, ...) f(x) DEFER ( MAP_NEXT(peek, MAP1_UD_I) ) ( f, peek, __VA_ARGS__ )
+#define MAP1_UD_I(f, x, peek, ...) f(x) DEFER ( MAP_NEXT(peek, MAP0_UD_I) ) ( f, peek, __VA_ARGS__ )
+#define MAP_UD_I(f, ...) EVAL0(MAP1_UD_I(f, 0, __VA_ARGS__, ()()(), ()()(), ()()(), 0))
+#define PRINT_STREAM_I(x) printf ("d: d\n");
+MAP_UD_I(PRINT_STREAM_I, 1, 2, 3, 4, 5)
+""");
 }

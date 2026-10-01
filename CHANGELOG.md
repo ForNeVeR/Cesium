@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- [#990: Infinite loop in macro expansion](https://github.com/ForNeVeR/Cesium/issues/990): self-referential macros are no longer re-expanded, per ISO C 6.10.3.4. Thanks to @Atharvatonape!
+
 ### Added
 - [#960: SDK should not trigger generation of .runtimeconfig by compiler](https://github.com/ForNeVeR/Cesium/issues/960): new `--no-runtimeconfig` compiler option, used by the Cesium SDK. Thanks to @Atharvatonape!
 
