@@ -25,7 +25,8 @@ internal static class Compilation
     public static async Task<int> Compile(
         IEnumerable<LocalPath> inputFilePaths,
         LocalPath outputFile,
-        CompilationOptions compilationOptions)
+        CompilationOptions compilationOptions,
+        bool generateRuntimeConfig)
     {
         Console.WriteLine($"Generating assembly \"{outputFile.Value}\".");
 
@@ -62,7 +63,8 @@ internal static class Compilation
             assemblyContext,
             compilationOptions.TargetRuntime.Kind,
             outputFile.ResolveToCurrentDirectory(),
-            compilationOptions.CesiumRuntime.ResolveToCurrentDirectory());
+            compilationOptions.CesiumRuntime.ResolveToCurrentDirectory(),
+            generateRuntimeConfig);
 
         return 0;
     }
@@ -169,7 +171,8 @@ internal static class Compilation
         AssemblyContext context,
         SystemAssemblyKind targetFrameworkKind,
         AbsolutePath outputFilePath,
-        AbsolutePath compilerRuntimeDll)
+        AbsolutePath compilerRuntimeDll,
+        bool generateRuntimeConfig)
     {
         context.VerifyAndGetAssembly().Write(outputFilePath.Value);
 
@@ -184,7 +187,9 @@ internal static class Compilation
             File.Copy(compilerRuntimeDll.Value, applicationRuntime.Value, overwrite: true);
         }
 
-        if (context.Module.Kind == ModuleKind.Console && targetFrameworkKind == SystemAssemblyKind.SystemRuntime)
+        if (generateRuntimeConfig
+            && context.Module.Kind == ModuleKind.Console
+            && targetFrameworkKind == SystemAssemblyKind.SystemRuntime)
         {
             var runtimeConfigFilePath = Path.ChangeExtension(outputFilePath.Value, "runtimeconfig.json");
             Console.WriteLine($"Generating a .NET 6 runtime config at {runtimeConfigFilePath}.");
