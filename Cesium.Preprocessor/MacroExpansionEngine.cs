@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using Cesium.Core;
@@ -15,13 +16,23 @@ namespace Cesium.Preprocessor;
 
 public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warningProcessor, IMacroContext macroContext)
 {
-    public IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(IEnumerable<IToken<CPreprocessorTokenType>> tokens)
+    public IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(IEnumerable<IToken<CPreprocessorTokenType>> tokens) =>
+        ExpandMacros(tokens, ImmutableHashSet<string>.Empty);
+
+    /// <param name="tokens">Tokens to expand.</param>
+    /// <param name="disabledMacros">
+    /// Names of the macros currently being replaced. Per ISO C Standard, section 6.10.3.4 Rescanning and further
+    /// replacement, these are not replaced again.
+    /// </param>
+    private IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(
+        IEnumerable<IToken<CPreprocessorTokenType>> tokens,
+        ImmutableHashSet<string> disabledMacros)
     {
         using var lexer = new TransactionalLexer(tokens, warningProcessor);
         while (!lexer.IsEnd)
         {
             var token = lexer.Consume();
-            if (token.Kind == CPreprocessorTokenType.PreprocessingToken)
+            if (token is { Kind: CPreprocessorTokenType.PreprocessingToken } and not NonReplaceableToken)
             {
                 var macroName = token.Text;
                 if (!macroContext.TryResolveMacro(macroName, out var parameters, out var replacement))
@@ -30,7 +41,14 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                     continue;
                 }
 
-                var maybeArguments = ParseArguments(token, parameters, lexer);
+                if (disabledMacros.Contains(macroName))
+                {
+                    // The macro refers to itself (directly or not): leave its name as is, and never replace it later.
+                    yield return new NonReplaceableToken(token);
+                    continue;
+                }
+
+                var maybeArguments = ParseArguments(token, parameters, lexer, disabledMacros);
                 if (maybeArguments is not {} arguments)
                 {
                     // Not a macro call, just emit the token.
@@ -41,7 +59,9 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                 if (arguments.IsError)
                     CPreprocessor.RaisePreprocessorParseError(arguments.Error);
 
-                foreach (var replaced in ExpandMacros(ExpandMacros(SubstituteMacroArguments(token, arguments.Ok, replacement))))
+                var nestedDisabledMacros = disabledMacros.Add(macroName);
+                var substituted = SubstituteMacroArguments(token, arguments.Ok, replacement, nestedDisabledMacros);
+                foreach (var replaced in ExpandMacros(ExpandMacros(substituted, nestedDisabledMacros), nestedDisabledMacros))
                 {
                     yield return replaced;
                 }
@@ -54,7 +74,11 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
     }
 
     /// <returns><c>null</c> ⇒ do not expand, non-<c>null</c> ⇒ expand if ok, throw error if not ok.</returns>
-    private ParseResult<MacroArguments>? ParseArguments(IToken<CPreprocessorTokenType> macroNameToken, MacroParameters? parameters, TransactionalLexer lexer)
+    private ParseResult<MacroArguments>? ParseArguments(
+        IToken<CPreprocessorTokenType> macroNameToken,
+        MacroParameters? parameters,
+        TransactionalLexer lexer,
+        ImmutableHashSet<string> disabledMacros)
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -97,7 +121,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
             }
 
             var name = parameterToken.Text;
-            var argument = ParseArgument(lexer);
+            var argument = ParseArgument(lexer, disabledMacros);
             if (argument.IsError)
                 return transaction.End(argument.Error);
 
@@ -128,7 +152,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                     return transaction.End(ParseResult.Error(",", comma, location, "macro arguments"));
                 }
 
-                var varArg = ParseArgument(lexer);
+                var varArg = ParseArgument(lexer, disabledMacros);
                 if (varArg.IsError)
                     return transaction.End(varArg.Error);
 
@@ -190,7 +214,8 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
     private IEnumerable<IToken<CPreprocessorTokenType>> SubstituteMacroArguments(
         IToken macroNameToken,
         MacroArguments arguments,
-        IList<IToken<CPreprocessorTokenType>> replacement)
+        IList<IToken<CPreprocessorTokenType>> replacement,
+        ImmutableHashSet<string> disabledMacros)
     {
         if (_simpleSubstitutors.TryGetValue(macroNameToken.Text, out var substitutor))
         {
@@ -225,7 +250,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                 case { Text: "#" } when PeekSignificant() is { Kind: CPreprocessorTokenType.PreprocessingToken }:
                 {
                     var next = ConsumeSignificant();
-                    var sequence = ExpandMacros(ProcessTokenNoHash(next));
+                    var sequence = ExpandMacros(ProcessTokenNoHash(next), disabledMacros);
 
                     foreach (var space in ClearSpaceBuffer())
                     {
@@ -252,7 +277,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                     }
 
                     var next = ConsumeSignificant();
-                    var sequence = ExpandMacros(ProcessTokenNoHash(next));
+                    var sequence = ExpandMacros(ProcessTokenNoHash(next), disabledMacros);
 
                     // TODO[#542]: Figure out what to do if the sequence is more than one item.
                     yield return new Token<CPreprocessorTokenType>(
@@ -269,7 +294,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
                         yield return space;
                     }
 
-                    var sequence = ExpandMacros(ProcessTokenNoHash(token));
+                    var sequence = ExpandMacros(ProcessTokenNoHash(token), disabledMacros);
                     foreach (var item in sequence)
                     {
                         yield return item;
@@ -412,7 +437,9 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
         }
     }
 
-    private ParseResult<List<IToken<CPreprocessorTokenType>>> ParseArgument(TransactionalLexer lexer)
+    private ParseResult<List<IToken<CPreprocessorTokenType>>> ParseArgument(
+        TransactionalLexer lexer,
+        ImmutableHashSet<string> disabledMacros)
     {
         using var transaction = lexer.BeginTransaction();
 
@@ -436,7 +463,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
         if (lexer.IsEnd)
             return transaction.End(ParseResult.Error(") or ,", null, argumentStartLocation, "macro argument"));
 
-        var processedArgument = TrimStartingWhitespace(ExpandMacros(argument)).ToList();
+        var processedArgument = TrimStartingWhitespace(ExpandMacros(argument, disabledMacros)).ToList();
         return transaction.End<List<IToken<CPreprocessorTokenType>>>(ParseResult.Ok(processedArgument, 0));
 
         ParseResult<object?> ParseNestedParenthesesBlock(SourceLocationInfo start)
