@@ -17,7 +17,12 @@ namespace Cesium.Sdk.Tests;
 public abstract class SdkTestBase : IDisposable
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly string _temporaryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    // Canonicalize to resolve symlinks (e.g. /var -> /private/var on macOS): otherwise NuGet may see the same
+    // project under two different paths and restore it twice in parallel, see #1010.
+    private readonly string _temporaryPath = Path.Combine(
+        new AbsolutePath(Path.GetTempPath()).Canonicalize().Value,
+        Path.GetRandomFileName());
+
     private readonly Dictionary<string, string> _dotNetEnvVars;
 
     private string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
