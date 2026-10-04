@@ -120,6 +120,12 @@ internal sealed record LocalDeclarationInfo(
                 case StorageClassSpecifier { Name: "static" }:
                     throw new CompilationException($"static not expected: {string.Join(", ", specifiers)}.");
 
+                case StorageClassSpecifier { Name: "auto" }:
+                case StorageClassSpecifier { Name: "register" }:
+                case StorageClassSpecifier { Name: "_Thread_local" }:
+                    // Stripped upstream by ExtractStorageClass; silently skip here.
+                    break;
+
                 case StructOrUnionSpecifier typeSpecifier:
                 {
                     if (type != null)

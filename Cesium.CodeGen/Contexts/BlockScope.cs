@@ -54,12 +54,21 @@ internal record BlockScope(IEmitScope Parent, string? BreakLabel, string? Contin
             case StorageClass.Auto:
                 _variables.Add(identifier, new(storageClass, variable, constant));
                 break;
+            case StorageClass.Register:
+                // 'register' is like auto but forbids address-of — keep the class so the constraint can be checked.
+                _variables.Add(identifier, new(StorageClass.Register, variable, constant));
+                break;
             case StorageClass.Static:
                 ((IDeclarationScope) Parent).AddVariable(storageClass, identifier, variable, constant);
                 break;
+            case StorageClass.ThreadLocal:
+                // C11 §6.7.1p3: _Thread_local at block scope must be combined with static or extern.
+                throw new CompilationException(
+                    $"'_Thread_local' on block-scope variable '{identifier}' must be combined with 'static' or 'extern' (C11 §6.7.1).");
             default:
                 throw new ArgumentOutOfRangeException(nameof(storageClass), storageClass, null);
         }
+
     }
 
     public VariableDefinition ResolveVariable(int varIndex)

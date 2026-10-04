@@ -41,6 +41,12 @@ internal record FunctionScope(TranslationUnitContext Context, FunctionInfo Funct
         {
             Context.AddTranslationUnitLevelField(storageClass, emitName, variableType);
         }
+        else if (storageClass == StorageClass.ThreadLocal)
+        {
+            // C11 §6.7.1p3: _Thread_local at block scope implies static storage duration.
+            // Route to the thread-local field store so [ThreadStatic] is applied.
+            Context.AddTranslationUnitLevelField(StorageClass.ThreadLocal, emitName, variableType);
+        }
     }
 
     public VariableInfo? GetVariable(string identifier)
