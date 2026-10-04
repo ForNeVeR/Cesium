@@ -2,35 +2,36 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Task = Microsoft.Build.Utilities.Task;
 
 namespace Cesium.Sdk;
 
 /*
-  -o, --out        Sets path for the output assembly file
-  --framework      (Default: Net)  Valid values: Net, NetFramework, NetStandard
-  --arch           (Default: Dynamic)  Valid values: Dynamic, Bit32, Bit64
-  --modulekind     Valid values: Dll, Console, Windows, NetModule
-  --nologo         Suppress compiler banner message
+  -o, --out           Sets path for the output assembly file
+  --framework         (Default: Net)  Valid values: Net, NetFramework, NetStandard
+  --arch              (Default: Dynamic)  Valid values: Dynamic, Bit32, Bit64
+  --modulekind        Valid values: Dll, Console, Windows, NetModule
+  --nologo            Suppress compiler banner message
   --no-runtimeconfig  Do not generate the .runtimeconfig.json file
-  --namespace      Sets default namespace instead of "global"
-  --globalclass    Sets default global class instead of "<Module>"
-  --import         Provides path to assemblies which would be added as references automatically into resulting executable.
-  --corelib        Sets path to CoreLib assembly
-  --runtime        Sets path to Cesium C Runtime assembly
-  -O               Set the optimization level
-  -W               Enable warnings set
-  -D               Define constants for preprocessor
-  --help           Display this help screen.
-  --version        Display version information.
+  --namespace         Sets default namespace instead of "global"
+  --globalclass       Sets default global class instead of "<Module>"
+  --import            Provides path to assemblies which would be added as references automatically into resulting executable.
+  --corelib           Sets path to CoreLib assembly
+  --runtime           Sets path to Cesium C Runtime assembly
+  -O                  Set the optimization level
+  -W                  Enable warnings set
+  -D                  Define constants for preprocessor
+  --help              Display this help screen.
+  --version           Display version information.
   value pos. 0
  */
 
 // ReSharper disable once UnusedType.Global
-public class CesiumCompile : Microsoft.Build.Utilities.Task
+public class CesiumCompile : Task
 {
     [Required] public string CompilerRuntime { get; set; } = null!;
     [Required] public string CompilerExe { get; set; } = null!;
