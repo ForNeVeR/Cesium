@@ -21,7 +21,7 @@ public class MacroExpansionEngine(IWarningProcessor<PreprocessorWarning> warning
 
     /// <param name="tokens">Tokens to expand.</param>
     /// <param name="disabledMacros">
-    /// Names of the macros currently being replaced. Per ISO C Standard, section 6.10.3.4 Rescanning and further
+    /// Names of the macros currently being replaced. Per the C23 Standard, section 6.10.4.4 Rescanning and further
     /// replacement, these are not replaced again.
     /// </param>
     private IEnumerable<IToken<CPreprocessorTokenType>> ExpandMacros(

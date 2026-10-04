@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 ### Fixed
-- [#990: Infinite loop in macro expansion](https://github.com/ForNeVeR/Cesium/issues/990): self-referential macros are no longer re-expanded, per ISO C 6.10.3.4. Thanks to @Atharvatonape!
+- [#990: Infinite loop in macro expansion](https://github.com/ForNeVeR/Cesium/issues/990): self-referential macros are no longer re-expanded, per the C23 Standard, section 6.10.4.4. Thanks to @Atharvatonape!
 
 ### Added
 - [#960: SDK should not trigger generation of .runtimeconfig by compiler](https://github.com/ForNeVeR/Cesium/issues/960): new `--no-runtimeconfig` compiler option, used by the Cesium SDK. Thanks to @Atharvatonape!
