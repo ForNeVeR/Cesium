@@ -1,14 +1,8 @@
 System.Void <Module>::test()
   Locals:
     System.Int32 V_0
-    System.Int32 V_1
   IL_0000: ldc.i4.1
-  IL_0001: brfalse IL_000d
-  IL_0006: ldc.i4.1
-  IL_0007: stloc.0
-  IL_0008: br IL_0010
-  IL_000d: nop
-  IL_000e: ldc.i4.2
-  IL_000f: stloc.1
-  IL_0010: nop
-  IL_0011: ret
+  IL_0001: stloc.0
+  IL_0002: br IL_0007
+  IL_0007: nop
+  IL_0008: ret
