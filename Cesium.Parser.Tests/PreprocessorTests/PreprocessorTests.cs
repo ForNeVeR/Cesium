@@ -1162,4 +1162,20 @@ char *cast_table[] = {
 #define FOO(x)
 FOO()
 ");
+
+    // 6.10 Preprocessing directives. Line 11.
+    [Fact]
+    public Task NonExpandedPreprocessorTokens() => DoTest(@"
+#define NON_EXPANDED #cool
+#define NON_EXPANDED2 # cool
+NON_EXPANDED
+NON_EXPANDED2
+");
+
+    // 6.10 Preprocessing directives. Line 12.
+    [Fact]
+    public Task NonPreprocessorDirective() => DoTest(@"
+#define EMPTY
+EMPTY # include <file.h>
+");
 }
