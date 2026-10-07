@@ -48,14 +48,16 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetArchitectureSet arch = TargetArchitectureSet.Dynamic,
         string @namespace = "",
         string globalTypeFqn = "",
-        AbsolutePath[]? referencePaths = null)
+        AbsolutePath[]? referencePaths = null,
+        OptimizationLevel optimizationLevel = OptimizationLevel.NoOp)
     {
         using var context = CreateAssembly(
             runtime,
             arch,
             @namespace: @namespace,
             globalTypeFqn: globalTypeFqn,
-            referencePaths?.Select(x => new LocalPath(x)).ToArray());
+            referencePaths?.Select(x => new LocalPath(x)).ToArray(),
+            optimizationLevel: optimizationLevel);
         GenerateCode(context, sources);
         return EmitAssembly(context);
     }
@@ -88,7 +90,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
         TargetArchitectureSet targetArchitectureSet = TargetArchitectureSet.Dynamic,
         string @namespace = "",
         string globalTypeFqn = "",
-        LocalPath[]? referencePaths = null)
+        LocalPath[]? referencePaths = null,
+        OptimizationLevel optimizationLevel = OptimizationLevel.NoOp)
     {
         var allReferences = (referencePaths ?? []).ToList();
         allReferences.Insert(0, new LocalPath(typeof(Console).Assembly.Location));
@@ -105,7 +108,8 @@ public abstract class CodeGenTestBase : VerifyTestBase
             [],
             [],
             ProducePreprocessedFile: false,
-            ProduceAstFile: false);
+            ProduceAstFile: false,
+            OptimizationLevel: optimizationLevel);
         return AssemblyContext.Create(
             new AssemblyNameDefinition("test", new Version()),
             compilationOptions);
