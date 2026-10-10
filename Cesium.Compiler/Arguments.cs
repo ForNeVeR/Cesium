@@ -60,7 +60,7 @@ public class Arguments
     public string? CesiumCRuntime { get; init; }
 
     [Option('O', HelpText = "Set the optimization level")]
-    public int OptimizationLevel { get; init; } = 0;
+    public int OptimizationLevel { get; init; }
 
     [Option('W', HelpText = "Enable warnings set")]
     public IEnumerable<string> WarningsSet { get; init; } = Array.Empty<string>();

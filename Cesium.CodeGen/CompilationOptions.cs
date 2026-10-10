@@ -21,7 +21,8 @@ public record CompilationOptions(
     IList<LocalPath> AdditionalIncludeDirectories,
     bool ProducePreprocessedFile,
     bool ProduceAstFile,
-    WarningsSet WarningSet = WarningsSet.None)
+    WarningsSet WarningSet = WarningsSet.None,
+    OptimizationLevel OptimizationLevel = OptimizationLevel.NoOp)
 {
     public virtual bool Equals(CompilationOptions? other)
     {
@@ -39,7 +40,8 @@ public record CompilationOptions(
                && AdditionalIncludeDirectories.SequenceEqual(other.AdditionalIncludeDirectories)
                && ProducePreprocessedFile == other.ProducePreprocessedFile
                && ProduceAstFile == other.ProduceAstFile
-               && WarningSet == other.WarningSet;
+               && WarningSet == other.WarningSet
+               && OptimizationLevel == other.OptimizationLevel;
     }
 
     public override int GetHashCode()
@@ -67,6 +69,7 @@ public record CompilationOptions(
         hashCode.Add(ProducePreprocessedFile);
         hashCode.Add(ProduceAstFile);
         hashCode.Add(WarningSet);
+        hashCode.Add(OptimizationLevel);
         return hashCode.ToHashCode();
     }
 }
