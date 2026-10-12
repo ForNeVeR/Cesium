@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -12,14 +12,6 @@ namespace Cesium.TestFramework;
 /// <summary>Utils to properly run commands like <c>dotnet build</c> and such.</summary>
 public static class DotNetCliHelper
 {
-    public static async Task ShutdownBuildServer()
-    {
-        await RunToSuccess(null, ExecUtil.DotNetHost, AbsolutePath.CurrentWorkingDirectory, [
-            "build-server",
-            "shutdown"
-        ]);
-    }
-
     public static async Task BuildDotNetProject(ITestOutputHelper output, string configuration, AbsolutePath projectFile)
     {
         await RunToSuccess(output, ExecUtil.DotNetHost, projectFile.Parent!.Value, [
