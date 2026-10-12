@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -27,6 +27,9 @@ partial class Build
     Target TestCore => _ => _
         .Executes(() => ExecuteTests(Solution.Cesium_Core_Tests));
 
+    Target TestTestFramework => _ => _
+        .Executes(() => ExecuteTests(Solution.Cesium_TestFramework_Tests));
+
     Target TestSdk => _ => _
         .DependsOn(PackCompilerBundleNuPkg)
         .DependsOn(PackSdk)
@@ -39,6 +42,7 @@ partial class Build
         .DependsOn(TestParser)
         .DependsOn(TestRuntime)
         .DependsOn(TestCore)
+        .DependsOn(TestTestFramework)
         .DependsOn(TestSdk);
 
     void ExecuteTests(Project project)
