@@ -17,12 +17,19 @@ internal sealed class LValueLocalVariable : ILValue
 
     public int VarIndex => _varIndex;
 
+    /// <summary>
+    /// True when this local was declared with the <c>register</c> storage class.
+    /// C11 §6.7.1 makes taking the address of a register variable a constraint violation.
+    /// </summary>
+    public bool IsRegister { get; }
+
     public VariableDefinition? Definition { get => _definition; set => _definition = value; }
 
-    public LValueLocalVariable(IType variableType, int varIndex)
+    public LValueLocalVariable(IType variableType, int varIndex, bool isRegister = false)
     {
         _variableType = variableType;
         _varIndex = varIndex;
+        IsRegister = isRegister;
     }
 
     public void EmitGetValue(IEmitScope scope)
