@@ -12,14 +12,6 @@ namespace Cesium.TestFramework;
 /// <summary>Utils to properly run commands like <c>dotnet build</c> and such.</summary>
 public static class DotNetCliHelper
 {
-    public static async Task ShutdownBuildServer()
-    {
-        await RunToSuccess(null, ExecUtil.DotNetHost, AbsolutePath.CurrentWorkingDirectory, [
-            "build-server",
-            "shutdown"
-        ]);
-    }
-
     public static async Task BuildDotNetProject(ITestOutputHelper output, string configuration, AbsolutePath projectFile)
     {
         await RunToSuccess(output, ExecUtil.DotNetHost, projectFile.Parent!.Value, [
