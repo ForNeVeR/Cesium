@@ -26,7 +26,7 @@ Type Extensions
 ---------------
 `__nint` is a synonym for `System.IntPtr` in .NET or `nint` in C#.
 
-`__nint` is a synonym for `System.UIntPtr` in .NET or `nint` in C#.
+`__nuint` is a synonym for `System.UIntPtr` in .NET or `nuint` in C#.
 
 Macro Extensions
 ----------------
