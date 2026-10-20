@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Cesium.IntegrationTests;
 
 [UsedImplicitly]
-public class IntegrationTestContext : IAsyncDisposable
+public class IntegrationTestContext
 {
     public const string BuildConfiguration = "Release";
 
@@ -68,11 +68,6 @@ public class IntegrationTestContext : IAsyncDisposable
 
         await BuildRuntime(output);
         await BuildCompiler(output);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await DotNetCliHelper.ShutdownBuildServer();
     }
 
     private static async Task BuildRuntime(ITestOutputHelper output)

@@ -1,8 +1,7 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -59,62 +58,21 @@ public abstract class SdkTestBase : IDisposable
 
         const string objFolderPropertyName = "IntermediateOutputPath";
 
-        var startInfo = new ProcessStartInfo
-        {
-            WorkingDirectory = testProjectFolder,
-            FileName = "dotnet",
-            ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", $"/bl:{binLogFile}" },
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            UseShellExecute = false,
-        };
-        foreach (var commandLineOption in switches)
-        {
-            startInfo.ArgumentList.Add(commandLineOption);
-        }
-
-        _testOutputHelper.WriteLine("Running MSBuild: " + "dotnet " +string.Join(" ", startInfo.ArgumentList));
         foreach (var (name, var) in _dotNetEnvVars)
         {
             _testOutputHelper.WriteLine($"Environment[{name}] = {var}");
-            startInfo.Environment[name] = var;
         }
 
-        using var process = new Process();
-        process.StartInfo = startInfo;
-        var stdOutOutput = "";
-        var stdErrOutput = "";
-        process.OutputDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                stdOutOutput += e.Data + Environment.NewLine;
-                _testOutputHelper.WriteLine($"[stdout]: {e.Data}");
-            }
-        };
+        var processResult = await ExecUtil.Run(
+            _testOutputHelper,
+            ExecUtil.DotNetHost,
+            new AbsolutePath(testProjectFolder),
+            ["msbuild", testProjectFile, $"/t:{joinedTargets}", $"/bl:{binLogFile}", ..switches],
+            additionalEnvironment: _dotNetEnvVars);
 
-        process.ErrorDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                stdErrOutput += e.Data + Environment.NewLine;
-                _testOutputHelper.WriteLine($"[stderr]: {e.Data}");
-            }
-        };
-
-        process.Start();
-
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        await process.WaitForExitAsync();
-
-        var success = process.ExitCode == 0;
-
-        _testOutputHelper.WriteLine(success
+        _testOutputHelper.WriteLine(processResult.Success
             ? "Build succeeded"
-            : $"Build failed with exit code {process.ExitCode}");
+            : $"Build failed with exit code {processResult.ExitCode}");
 
         var properties = await DotNetCliHelper.EvaluateMSBuildProperties(
             _testOutputHelper,
@@ -130,7 +88,12 @@ public abstract class SdkTestBase : IDisposable
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
 
-        var result = new BuildResult(process.ExitCode, stdOutOutput, stdErrOutput, binArtifacts, objArtifacts);
+        var result = new BuildResult(
+            processResult.ExitCode,
+            processResult.StandardOutput,
+            processResult.StandardError,
+            binArtifacts,
+            objArtifacts);
         _testOutputHelper.WriteLine($"Build result: {JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true })}");
         return result;
 
