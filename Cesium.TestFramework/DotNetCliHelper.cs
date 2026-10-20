@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -31,7 +31,7 @@ public static class DotNetCliHelper
 
     public static async Task<IReadOnlyDictionary<string, string>> EvaluateMSBuildProperties(
         ITestOutputHelper output,
-        string projectPath,
+        AbsolutePath projectPath,
         IReadOnlyDictionary<string, string>? env,
         string[] inputProperties,
         string[] propertyNames)
@@ -43,7 +43,7 @@ public static class DotNetCliHelper
             output,
             ExecUtil.DotNetHost,
             AbsolutePath.CurrentWorkingDirectory,
-            [ "msbuild", $"\"{projectPath}\"", $"-getProperty:{string.Join(",", propertyNames)}", ..inputProperties],
+            [ "msbuild", $"\"{projectPath.Value}\"", $"-getProperty:{string.Join(",", propertyNames)}", ..inputProperties],
             null,
             additionalEnvironment: env);
         var resultString = result.StandardOutput;
@@ -59,7 +59,7 @@ public static class DotNetCliHelper
 
     public static async Task<IEnumerable<(string identity, string? fullPath)>> EvaluateMSBuildItem(
         ITestOutputHelper output,
-        string projectPath,
+        AbsolutePath projectPath,
         string itemName,
         IReadOnlyDictionary<string, string>? env = null)
     {
@@ -67,7 +67,7 @@ public static class DotNetCliHelper
             output,
             ExecUtil.DotNetHost,
             AbsolutePath.CurrentWorkingDirectory,
-            [ "msbuild", $"\"{projectPath}\"", $"-getItem:{itemName}" ],
+            [ "msbuild", $"\"{projectPath.Value}\"", $"-getItem:{itemName}" ],
             null,
             additionalEnvironment: env);
         var resultString = result.StandardOutput;
