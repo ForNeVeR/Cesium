@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using Cesium.Solution.Metadata;
 using Cesium.TestFramework;
 using TruePath;
+using TruePath.SystemIo;
 using Xunit.Abstractions;
 
 namespace Cesium.Sdk.Tests;
@@ -17,29 +18,25 @@ namespace Cesium.Sdk.Tests;
 public abstract class SdkTestBase : IDisposable
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    // Canonicalize to resolve symlinks (e.g. /var -> /private/var on macOS): otherwise NuGet may see the same
-    // project under two different paths and restore it twice in parallel, see #1010.
-    private readonly string _temporaryPath = Path.Combine(
-        new AbsolutePath(Path.GetTempPath()).Canonicalize().Value,
-        Path.GetRandomFileName());
+    // Important to canonicalize — /tmp is typically a symlink on macOS, and if we call MSBuild on a non-canonical
+    // path, this creates chaos, see #1010 for details.
+    private readonly AbsolutePath _temporaryPath = Temporary.CreateTempFolder().Canonicalize();
 
     private readonly Dictionary<string, string> _dotNetEnvVars;
 
-    private string NuGetConfigPath => Path.Combine(_temporaryPath, "NuGet.config");
-    private string GlobalJsonPath => Path.Combine(_temporaryPath, "global.json");
+    private AbsolutePath NuGetConfigPath => _temporaryPath / "NuGet.config";
+    private AbsolutePath GlobalJsonPath => _temporaryPath / "global.json";
 
     protected SdkTestBase(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-        _dotNetEnvVars = new() { ["NUGET_PACKAGES"] = Path.Combine(_temporaryPath, "package-cache") };
+        _dotNetEnvVars = new() { ["NUGET_PACKAGES"] = (_temporaryPath / "package-cache").Value };
 
-        File.Delete(_temporaryPath);
+        _testOutputHelper.WriteLine($"Test projects folder: {_temporaryPath.Value}");
 
-        _testOutputHelper.WriteLine($"Test projects folder: {_temporaryPath}");
-
-        var assemblyPath = Assembly.GetExecutingAssembly().Location;
-        var testDataPath = Path.Combine(Path.GetDirectoryName(assemblyPath)!, "TestProjects");
-        _testOutputHelper.WriteLine($"Copying TestProjects to {_temporaryPath}...");
+        var assemblyPath = new AbsolutePath(Assembly.GetExecutingAssembly().Location);
+        var testDataPath = (assemblyPath.Parent ?? throw new Exception($"Cannot find parent directory of assembly {assemblyPath}")) / "TestProjects";
+        _testOutputHelper.WriteLine($"Copying TestProjects to {_temporaryPath.Value}...");
         CopyDirectoryRecursive(testDataPath, _temporaryPath);
 
         var nupkgPath = (SolutionMetadata.SourceRoot / "artifacts/package/debug").Canonicalize();
@@ -56,19 +53,19 @@ public abstract class SdkTestBase : IDisposable
     protected async Task<BuildResult> ExecuteTargets(string buildProjectFile, string validatingProjectFile, string testName, string outputProperty, string[] targets, string[] switches)
     {
         var joinedTargets = string.Join(";", targets);
-        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, buildProjectFile));
-        var testEntryProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, validatingProjectFile));
-        var testProjectFolder = Path.GetDirectoryName(testProjectFile) ?? throw new ArgumentNullException(nameof(testProjectFile));
-        var validatingProjectFolder = Path.GetDirectoryName(testEntryProjectFile) ?? throw new ArgumentNullException(nameof(validatingProjectFile));
-        var binLogFile = Path.Combine(testProjectFolder, $"build_result_{testName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog");
+        var testProjectFile = _temporaryPath / buildProjectFile;
+        var testEntryProjectFile = _temporaryPath / validatingProjectFile;
+        var testProjectFolder = testProjectFile.Parent ?? throw new ArgumentNullException(nameof(testProjectFile));
+        var validatingProjectFolder = testEntryProjectFile.Parent ?? throw new ArgumentNullException(nameof(validatingProjectFile));
+        var binLogFile = testProjectFolder / $"build_result_{testName}_{DateTime.UtcNow:yyyy-dd-M_HH-mm-s}.binlog";
 
         const string objFolderPropertyName = "IntermediateOutputPath";
 
         var startInfo = new ProcessStartInfo
         {
-            WorkingDirectory = testProjectFolder,
+            WorkingDirectory = testProjectFolder.Value,
             FileName = "dotnet",
-            ArgumentList = { "msbuild", testProjectFile, $"/t:{joinedTargets}", $"/bl:{binLogFile}" },
+            ArgumentList = { "msbuild", testProjectFile.Value, $"/t:{joinedTargets}", $"/bl:{binLogFile}" },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
@@ -129,8 +126,8 @@ public abstract class SdkTestBase : IDisposable
             [objFolderPropertyName, outputProperty]);
         _testOutputHelper.WriteLine($"Properties request result: {JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = false })}");
 
-        var binFolder = NormalizePath(Path.GetFullPath(properties[outputProperty], validatingProjectFolder));
-        var objFolder = NormalizePath(Path.GetFullPath(properties[objFolderPropertyName], validatingProjectFolder));
+        var binFolder = NormalizePath(Path.GetFullPath(properties[outputProperty], validatingProjectFolder.Value));
+        var objFolder = NormalizePath(Path.GetFullPath(properties[objFolderPropertyName], validatingProjectFolder.Value));
 
         var binArtifacts = CollectArtifacts(binFolder);
         var objArtifacts = CollectArtifacts(objFolder);
@@ -153,15 +150,15 @@ public abstract class SdkTestBase : IDisposable
     protected async Task<IEnumerable<string>> ListItems(string projectName, string itemName)
     {
         var projectFile = $"{projectName}/{projectName}.ceproj";
-        var testProjectFile = Path.GetFullPath(Path.Combine(_temporaryPath, projectFile));
+        var testProjectFile = _temporaryPath / projectFile;
         var items = await DotNetCliHelper.EvaluateMSBuildItem(_testOutputHelper, testProjectFile, itemName, env: _dotNetEnvVars);
 
         return items.Select(i => i.identity);
     }
 
-    private static void EmitNuGetConfig(string configFilePath, AbsolutePath packageSourcePath)
+    private static void EmitNuGetConfig(AbsolutePath configFilePath, AbsolutePath packageSourcePath)
     {
-        File.WriteAllText(configFilePath, $"""
+        configFilePath.WriteAllText($"""
             <configuration>
                 <packageSources>
                     <add key="local" value="{packageSourcePath.Value}" />
@@ -170,32 +167,32 @@ public abstract class SdkTestBase : IDisposable
             """);
     }
 
-    private static void EmitGlobalJson(string globalJsonPath, string packageVersion)
+    private static void EmitGlobalJson(AbsolutePath globalJsonPath, string packageVersion)
     {
         var actualGlobalJson = SolutionMetadata.SourceRoot / "global.json";
-        var globalConfig = JsonNode.Parse(File.ReadAllText(actualGlobalJson.Value))!;
+        var globalConfig = JsonNode.Parse(actualGlobalJson.ReadAllText())!;
         globalConfig["msbuild-sdks"] = new JsonObject([new KeyValuePair<string, JsonNode?>("Cesium.Sdk", packageVersion)]);
         var content = globalConfig.ToJsonString(new JsonSerializerOptions
         {
             WriteIndented = true
         });
-        File.WriteAllText(globalJsonPath, content);
+        globalJsonPath.WriteAllText(content);
     }
 
-    private static void CopyDirectoryRecursive(string source, string target)
+    private static void CopyDirectoryRecursive(AbsolutePath source, AbsolutePath target)
     {
-        Directory.CreateDirectory(target);
+        target.CreateDirectory();
 
-        foreach (var subDirPath in Directory.GetDirectories(source))
+        foreach (var subDirPath in source.GetDirectories().Select(x => new AbsolutePath(x)))
         {
-            var dirName = Path.GetFileName(subDirPath);
-            CopyDirectoryRecursive(subDirPath, Path.Combine(target, dirName));
+            var dirName = subDirPath.FileName;
+            CopyDirectoryRecursive(subDirPath, target / dirName);
         }
 
-        foreach (var filePath in Directory.GetFiles(source))
+        foreach (var filePath in source.GetFiles().Select(x => new AbsolutePath(x)))
         {
-            var fileName = Path.GetFileName(filePath);
-            File.Copy(filePath, Path.Combine(target, fileName));
+            var fileName = filePath.FileName;
+            filePath.Copy(target / fileName);
         }
     }
 
@@ -220,7 +217,7 @@ public abstract class SdkTestBase : IDisposable
 
     private void ClearOutput()
     {
-        Directory.Delete(_temporaryPath, true);
+        _temporaryPath.DeleteDirectoryRecursively();
     }
 
     public void Dispose()
