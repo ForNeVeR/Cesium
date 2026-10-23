@@ -155,6 +155,39 @@ namespace Cesium.Compiler.Tests
             Assert.Equal(0, errorCode);
         }
 
+        [Fact]
+        public async Task OptimizationLevelIsZeroByDefault()
+        {
+            var args = new[] { "C:\\a.c", "-o", "C:\\a.exe" };
+            var reporter = new MockCompilerReporter();
+
+            var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
+            {
+                Assert.Equal(0, args.OptimizationLevel);
+                return Task.FromResult(0);
+            });
+            Assert.Empty(reporter.Errors);
+            Assert.Equal(0, errorCode);
+        }
+
+        [Theory]
+        [InlineData("-O2", 2)]
+        [InlineData("-O 2", 2)]
+        [InlineData("-O3", 3)]
+        public async Task OptimizationLevelIsParsed(string option, int expected)
+        {
+            var args = new[] { "C:\\a.c", "-o", "C:\\a.exe" }.Concat(option.Split(' ')).ToArray();
+            var reporter = new MockCompilerReporter();
+
+            var errorCode = await CommandLineParser.ParseCommandLineArgs(args, reporter, args =>
+            {
+                Assert.Equal(expected, args.OptimizationLevel);
+                return Task.FromResult(0);
+            });
+            Assert.Empty(reporter.Errors);
+            Assert.Equal(0, errorCode);
+        }
+
         private static void NoInformationalMessages(MockCompilerReporter reporter)
         {
             Assert.NotNull(reporter.InformationMessages.Single(_ => _.StartsWith("Cesium v")));

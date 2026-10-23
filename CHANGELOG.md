@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - [#960: SDK should not trigger generation of .runtimeconfig by compiler](https://github.com/ForNeVeR/Cesium/issues/960): new `--no-runtimeconfig` compiler option, used by the Cesium SDK. Thanks to @Atharvatonape!
+- [#361: Support optimization levels O > 1](https://github.com/ForNeVeR/Cesium/issues/361): the `-O` compiler option is no longer ignored; `-O1` to `-O3` mark the output assembly as optimized for the .NET JIT. Thanks to @Dread63!
 
 ## [0.5.0] - 2026-08-23
 ### Fixed
