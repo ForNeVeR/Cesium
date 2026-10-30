@@ -47,11 +47,6 @@ void forward_declaration_void_2()
     // Do nothing here.
 }
 
-int missing_return()
-{
-    // Do nothing here.
-}
-
 int main(void)
 {
     return foo();
