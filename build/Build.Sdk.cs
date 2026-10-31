@@ -57,13 +57,6 @@ public partial class Build
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var project = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
-            if (!SkipCaches && !NeedPackageSdk(project))
-            {
-                Log.Information($"Skipping the compiler packing because it was already packed. Use '--skip-caches true' to re-pack.");
-                return;
-            }
-
             Log.Information("Packing the compiler…");
             DotNetPack(o => o
                 .SetConfiguration(Configuration)
@@ -91,13 +84,6 @@ public partial class Build
         .DependsOn(CompileAll)
         .Executes(() =>
         {
-            var sdkProject = Solution.Cesium_Sdk.GetMSBuildProject(configuration: Configuration);
-            if (!SkipCaches && !NeedPackageSdk(sdkProject))
-            {
-                Log.Information($"Skipping SDK packing because it was already packed. Use '--skip-caches true' to re-publish.");
-                return;
-            }
-
             Log.Information("Packing SDK...");
             DotNetPack(o => o
                 .SetConfiguration(Configuration)
@@ -109,7 +95,9 @@ public partial class Build
         var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
         var runtimeIdDisplayName = runtimeId ?? "<no runtime>";
 
-        if (!SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
+        // The framework-dependent bundle takes a few seconds to publish, so it is always published to never get stale.
+        // Runtime-specific bundles are expensive (self-contained, possibly AOT), so they are only published when absent.
+        if (runtimeId != null && !SkipCaches && !NeedPublishCompilerBundle(compilerProject, runtimeId))
         {
             Log.Information($"Skipping {runtimeIdDisplayName} because it was already published. Use '--skip-caches true' to re-publish.");
             return;
@@ -133,7 +121,7 @@ public partial class Build
 
         if (!SkipCaches && !NeedPackageCompilerRuntimeSpecificBundle(compilerProject, runtimeId))
         {
-            Log.Information($"Skipping {runtimeId} because it was already packed. Use '--skip-caches true' to re-pack.");
+            Log.Information($"Skipping {runtimeId} because it is up to date with the published compiler. Use '--skip-caches true' to re-pack.");
             return;
         }
 
@@ -153,7 +141,10 @@ public partial class Build
 
         var packageFileName = Path.Combine(packageOutputPath, packageFile);
         Log.Information($"Package is ready, saving to {packageFileName}...");
+
         Directory.CreateDirectory(packageOutputPath);
+        File.Delete(packageFileName);
+
         publishDirectory.ZipTo(
             packageFileName,
             fileMode: FileMode.CreateNew
@@ -166,7 +157,7 @@ public partial class Build
 
         if (!SkipCaches && !NeedPackageCompilerNuPkg(compilerProject))
         {
-            Log.Information("Skipping .nupkg because it was already packed. Use '--skip-caches true' to re-pack.");
+            Log.Information("Skipping .nupkg because it is up to date with the published compiler. Use '--skip-caches true' to re-pack.");
             return;
         }
 
@@ -368,10 +359,10 @@ public partial class Build
             compilerProject.GetProperty("ArtifactsPath").EvaluatedValue,
             compilerProject.GetProperty("ArtifactsPublishOutputName").EvaluatedValue,
             Solution.Cesium_Compiler.Name,
-            GetRuntimeArtifactFolder(compilerProject.GetVersion(), runtimeId));
+            GetRuntimeArtifactFolder(Configuration, compilerProject.GetVersion(), runtimeId));
 
-    static string GetRuntimeArtifactFolder(string version, string? runtimeId) =>
-        $"pack_{version}" + (runtimeId == null ? "" : $"_{runtimeId}");
+    static string GetRuntimeArtifactFolder(Configuration configuration, string version, string? runtimeId) =>
+        $"pack_{((string)configuration).ToLowerInvariant()}_{version}" + (runtimeId == null ? "" : $"_{runtimeId}");
 
     static string GetRuntimeBundleId(string runtimeId) =>
         $"{_compilerBundlePackageName}.{runtimeId}";
@@ -396,7 +387,9 @@ public partial class Build
         var packageDirectory = compiler.GetPackageOutputPath();
         var packageFileName = GetCompilerRuntimeSpecificBundleFileName(version, runtimeId);
 
-        return !File.Exists(Path.Combine(packageDirectory, packageFileName));
+        return IsOutputStale(
+            Path.Combine(packageDirectory, packageFileName),
+            GetCompilerRuntimePublishFolder(compiler, runtimeId));
     }
 
     bool NeedPackageCompilerNuPkg(Project compiler)
@@ -405,16 +398,26 @@ public partial class Build
         var packageDirectory = compiler.GetPackageOutputPath();
         var packageFileName = GetCompilerNuGetPackageFileName(version);
 
-        return !File.Exists(Path.Combine(packageDirectory, packageFileName));
+        return IsOutputStale(
+            Path.Combine(packageDirectory, packageFileName),
+            GetCompilerRuntimePublishFolder(compiler, null));
     }
 
-    bool NeedPackageSdk(Project sdk)
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="output"/> doesn't exist, or if any file in the
+    /// <paramref name="inputDirectory"/> was modified after it.
+    /// </summary>
+    /// <remarks>
+    /// The package version is constant during local development, so a mere existence check of the output would keep
+    /// reusing an outdated package forever.
+    /// </remarks>
+    static bool IsOutputStale(string output, string inputDirectory)
     {
-        var packageId = sdk.GetProperty("PackageVersion").EvaluatedValue;
-        var version = sdk.GetProperty("PackageId").EvaluatedValue;
-        var packageDirectory = sdk.GetPackageOutputPath();
-        var packageFileName = $"{packageId}.{version}";
+        if (!File.Exists(output) || !Directory.Exists(inputDirectory))
+            return true;
 
-        return !File.Exists(Path.Combine(packageDirectory, packageFileName));
+        var outputTime = File.GetLastWriteTimeUtc(output);
+        return Directory.EnumerateFiles(inputDirectory, "*", SearchOption.AllDirectories)
+            .Any(file => File.GetLastWriteTimeUtc(file) > outputTime);
     }
 }

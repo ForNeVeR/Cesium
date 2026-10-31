@@ -96,7 +96,12 @@ Both targets are called automatically when `TestSdk` target is invoked.
 
 SDK itself should also be built to be used in test projects. This is done by dependent target `PackSdk` which produces `Cesium.Sdk` NuGet package, suitable as Project SDK.
 
-Having all necessary dependencies, SDK tests are invoking `dotnet build` CLI with test projects, representing different layouts and configurations. Test result is determined by MSBuild output and artifacts presence.
+The package version doesn't change during development, so the build decides whether to update the packages by looking at the files instead:
+- the framework-dependent compiler bundle is always re-published (this takes a few seconds);
+- the compiler bundle NuGet package is re-packed whenever any published file is newer than the package;
+- the SDK package is always re-packed.
+
+Pass `--skip-caches true` to `dotnet nuke` if you want to force rebuilding everything regardless.
 
 #### Adding new tests
 Adding new tests is quite straightforward.

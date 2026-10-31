@@ -25,7 +25,16 @@ SPDX-License-Identifier: MIT
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
-        <PublishTrimmed>true</PublishTrimmed>
+        <!--
+            Usually, the outside build system (NUKE) sets the PublishTrimmed flag.
+
+            For the purpose of tests or publication, we build the compiler several times, with different values of
+            PublishTrimmed (cross-platform and platform-specific compiler distributions).
+
+            To keep the build inputs consistent and enable cache reuse between these cases, let's set EnableTrimAnalyzer
+            to a constant value here (no harm if we enable the analyzer for all builds).
+        -->
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
         <RollForward>Major</RollForward>
         <PackAsTool>true</PackAsTool>
     </PropertyGroup>

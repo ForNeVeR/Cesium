@@ -66,7 +66,7 @@ $ dotnet nuke PackAll --configuration release
 
 This will put the runtime-specific compiler ZIP archives together with the `Cesium.Compiler.Bundle`, `Cesium.Compiler`, `Cesium.Runtime`, `Cesium.Sdk`, and `Cesium.Templates` NuGet packages into the `artifacts/package/release` folder, which may then be used as a local NuGet feed to test the SDK and the templates.
 
-Pass `--skip-caches true` to re-pack, cleaning the `artifacts/package/release` folder beforehand (the existing ZIP archives are never overwritten).
+The compiler bundle NuGet package and the runtime-specific ZIP archives are re-packed automatically when their published compiler files have changed. The runtime-specific compilers are only published if their publish folder is missing, though, because that is expensive. Pass `--skip-caches true` to re-publish and re-pack everything.
 
 You can then use the packages in your .NET projects if you put the following `nuget.config` into an external solution folder:
 ```xml
@@ -76,6 +76,8 @@ You can then use the packages in your .NET projects if you put the following `nu
     </packageSources>
 </configuration>
 ```
+
+Note that the locally built packages always have the same version (the one set in `Directory.Build.props`), so after NuGet has restored them once, it keeps using the copy in the global package cache (e.g. `~/.nuget/packages/cesium.sdk/<version>`) even if you re-pack them. To pick up the new packages, either delete the `cesium.*/<version>` directories from the global package cache (or clear it completely using `dotnet nuget locals global-packages --clear`), or set the `NUGET_PACKAGES` environment variable to a project-specific directory and delete that directory before restoring (this is what the SDK tests do).
 
 File Encoding Changes
 ---------------------
