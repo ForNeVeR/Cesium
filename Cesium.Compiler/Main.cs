@@ -49,6 +49,13 @@ public static class Program
                 throw new CompilationException($"Unknown warning: {warn}");
             });
 
+            var optimizationLevel = options.OptimizationLevel switch
+            {
+                0 => OptimizationLevel.NoOp,
+                1 or 2 or 3 => OptimizationLevel.BasicOp, // Basic optimization includes -O1, -O2, and -O3 currently
+                var o => throw new CompilationException($"Unknown optimization level: {o}"),
+            };
+
             var compilationOptions = new CompilationOptions(
                 targetRuntime,
                 targetArchitectureSet,
@@ -62,7 +69,8 @@ public static class Program
                 options.IncludeDirectories.Select(x => new LocalPath(x)).ToList(),
                 options.ProducePreprocessedFile,
                 options.DumpAst,
-                warningsSet);
+                warningsSet,
+                optimizationLevel);
 
             var inputFilePaths = options.InputFilePaths.Select(x => new LocalPath(x));
             if (options.ProduceObjectFileImitation)

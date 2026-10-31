@@ -57,6 +57,8 @@ public class AssemblyContext : IDisposable
         var targetRuntime = compilationOptions.TargetRuntime;
         assembly.CustomAttributes.Add(targetRuntime.GetTargetFrameworkAttribute(assemblyContext));
 
+        assembly.CustomAttributes.Add(compilationOptions.OptimizationLevel.GetDebuggableAttribute(assemblyContext));
+
         return assemblyContext;
     }
 
