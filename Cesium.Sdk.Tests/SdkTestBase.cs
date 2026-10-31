@@ -30,6 +30,16 @@ public abstract class SdkTestBase : IDisposable
     protected SdkTestBase(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
+        try
+        {
+            AssertPackagesAreUpToDate();
+        }
+        catch
+        {
+            ClearOutput();
+            throw;
+        }
+
         _dotNetEnvVars = new() { ["NUGET_PACKAGES"] = (_temporaryPath / "package-cache").Value };
 
         _testOutputHelper.WriteLine($"Test projects folder: {_temporaryPath.Value}");
@@ -154,6 +164,53 @@ public abstract class SdkTestBase : IDisposable
         var items = await DotNetCliHelper.EvaluateMSBuildItem(_testOutputHelper, testProjectFile, itemName, env: _dotNetEnvVars);
 
         return items.Select(i => i.identity);
+    }
+
+    /// <summary>
+    /// The tests consume the compiler bundle and the SDK from the local NuGet feed. The package version doesn't change
+    /// during development, so nothing else would detect a package that was built from older sources than the rest of
+    /// the solution; such a package typically fails the tests in confusing ways (e.g. the SDK passing a command-line
+    /// option the outdated compiler doesn't know yet).
+    /// </summary>
+    private static void AssertPackagesAreUpToDate()
+    {
+        var artifacts = SolutionMetadata.ArtifactsRoot;
+        var version = SolutionMetadata.VersionPrefix;
+        var feed = artifacts / "package/debug";
+        (AbsolutePath Package, AbsolutePath BuildOutput)[] checks =
+        [
+            (feed / $"Cesium.Compiler.Bundle.{version}.nupkg", artifacts / "bin/Cesium.Compiler/debug/Cesium.Compiler.dll"),
+            (feed / $"Cesium.Sdk.{version}.nupkg", artifacts / "bin/Cesium.Sdk/debug/Cesium.Sdk.dll"),
+        ];
+
+        var problems = new List<string>();
+        foreach (var (package, buildOutput) in checks)
+        {
+            if (!package.ExistsFile())
+            {
+                problems.Add($"Package \"{package.Value}\" does not exist.");
+                continue;
+            }
+
+            if (!buildOutput.ExistsFile()) continue;
+
+            var packageTime = package.GetLastWriteTimeUtc();
+            var buildOutputTime = buildOutput.GetLastWriteTimeUtc();
+            if (packageTime < buildOutputTime)
+            {
+                problems.Add(
+                    $"Package \"{package.Value}\" (written at {packageTime:O}) is older than the build output" +
+                    $" \"{buildOutput.Value}\" (written at {buildOutputTime:O}).");
+            }
+        }
+
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "Packages required by the SDK tests are missing or outdated:\n" +
+                string.Join("\n", problems) +
+                "\nRun \"dotnet nuke PackCompilerBundleNuPkg PackSdk\" (or \"dotnet nuke TestSdk\") to rebuild them.");
+        }
     }
 
     private static void EmitNuGetConfig(AbsolutePath configFilePath, AbsolutePath packageSourcePath)
