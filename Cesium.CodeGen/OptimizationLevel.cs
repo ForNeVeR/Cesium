@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
@@ -16,17 +16,20 @@ public enum OptimizationLevel
 
 public static class OptimizationLevelExtensions
 {
-    // Returns the DebuggableAttribute required in AssemblyContext Create() using an extension method since optimizationLevel is an Enum (already existing type)
     public static CustomAttribute GetDebuggableAttribute(this OptimizationLevel optimizationLevel, AssemblyContext context)
     {
-
         var debuggableAttributeRef = context.Module.ImportReference(new TypeReference("System.Diagnostics", "DebuggableAttribute", context.MscorlibAssembly.MainModule, context.MscorlibAssembly.MainModule));
-        var constructorRef = new MethodReference(".ctor", context.Module.TypeSystem.Void, debuggableAttributeRef);
-        constructorRef.HasThis = true;
-
-        // Debuggable attribute requires two booleans for specified tracking and optimization
-        constructorRef.Parameters.Add(new ParameterDefinition(context.Module.TypeSystem.Boolean));
-        constructorRef.Parameters.Add(new ParameterDefinition(context.Module.TypeSystem.Boolean));
+        var constructorRef = new MethodReference(".ctor", context.Module.TypeSystem.Void, debuggableAttributeRef)
+        {
+            HasThis = true,
+            Parameters =
+            {
+                // isJITTrackingEnabled:
+                new ParameterDefinition(context.Module.TypeSystem.Boolean),
+                // isJITOptimizerDisabled:
+                new ParameterDefinition(context.Module.TypeSystem.Boolean)
+            }
+        };
 
         constructorRef = context.Module.ImportReference(constructorRef);
 
@@ -47,5 +50,3 @@ public static class OptimizationLevelExtensions
         };
     }
 }
-
-
