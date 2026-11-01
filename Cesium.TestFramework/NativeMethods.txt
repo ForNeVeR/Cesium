@@ -1,0 +1,11 @@
+// SPDX-FileCopyrightText: 2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+//
+// SPDX-License-Identifier: MIT
+
+AssignProcessToJobObject
+CreateJobObject
+JOBOBJECT_BASIC_ACCOUNTING_INFORMATION
+JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+QueryInformationJobObject
+SetInformationJobObject
+TerminateJobObject

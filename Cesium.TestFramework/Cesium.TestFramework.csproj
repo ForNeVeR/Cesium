@@ -8,11 +8,17 @@ SPDX-License-Identifier: MIT
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cesium.TestFramework.Tests" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="AsyncKeyedLock" />
         <PackageReference Include="MedallionShell" />
+        <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="TruePath.SystemIo" />
         <PackageReference Include="Verify.Xunit" />

@@ -2,122 +2,136 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
+using Windows.Win32.System.JobObjects;
+using Xunit.Abstractions;
 
 namespace Cesium.TestFramework;
 
 /// <summary>
-/// Windows job object that terminates every process assigned to it (together with all their descendants) when
-/// disposed. Used to make sure no stale processes (such as <c>vctip.exe</c>) outlive the test that started them.
+/// Windows job object that terminates a process and its descendants (such as <c>vctip.exe</c>) on disposal, to make
+/// sure they don't outlive the test that started them.
 /// </summary>
 /// <remarks>
-/// A process spawned by an assigned process <b>before</b> the assignment won't belong to the job, so assign processes
-/// as soon as possible after start.
+/// <para>
+/// This is a best-effort guard: the main protection against stale processes is the environment set up by
+/// <see cref="ExecUtil"/>. Any failure here gets logged to the test output and never affects the test.
+/// </para>
+/// <para>
+/// The process gets assigned to the job after it has started, so the following processes may stay out of the job:
+/// descendants spawned before the assignment, and children of a process that has exited before the assignment.
+/// </para>
 /// </remarks>
-[SupportedOSPlatform("windows")]
-internal sealed class WindowsJobObject : IDisposable
+[SupportedOSPlatform("windows5.1.2600")]
+internal sealed class WindowsJobObject : IAsyncDisposable
 {
-    private const int JobObjectExtendedLimitInformation = 9;
-    private const uint JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x2000;
+    private const uint TerminatedProcessExitCode = 1;
+    private static readonly TimeSpan TerminationPollInterval = TimeSpan.FromMilliseconds(10);
+    private static readonly TimeSpan TerminationTimeout = TimeSpan.FromSeconds(10);
 
-    private readonly SafeJobHandle _handle;
+    private readonly SafeFileHandle _handle;
+    private readonly ITestOutputHelper? _output;
 
-    public WindowsJobObject()
+    private WindowsJobObject(SafeFileHandle handle, ITestOutputHelper? output)
     {
-        _handle = CreateJobObjectW(IntPtr.Zero, null);
-        if (_handle.IsInvalid)
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "Cannot create a job object.");
+        _handle = handle;
+        _output = output;
+    }
+
+    /// <summary>Puts the process into a new job object.</summary>
+    /// <returns>The job object, or <c>null</c> if the process could not be put into a job.</returns>
+    public static WindowsJobObject? TryCreateFor(Process process, ITestOutputHelper? output)
+    {
+        var handle = PInvoke.CreateJobObject(null, null);
+        if (handle.IsInvalid)
+        {
+            LogLastError(output, "Cannot create a job object");
+            handle.Dispose();
+            return null;
+        }
 
         var info = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
         {
             BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION
             {
-                LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
             }
         };
-        if (!SetInformationJobObject(
-                _handle,
-                JobObjectExtendedLimitInformation,
-                ref info,
-                (uint)Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()))
+        if (!PInvoke.SetInformationJobObject(
+                handle,
+                JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation,
+                MemoryMarshal.AsBytes(new ReadOnlySpan<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>(in info))))
         {
-            var error = Marshal.GetLastWin32Error();
+            LogLastError(output, "Cannot set the job object limits");
+            handle.Dispose();
+            return null;
+        }
+
+        if (!PInvoke.AssignProcessToJobObject(handle, process.SafeHandle))
+        {
+            LogLastError(output, "Cannot assign the process to a job object");
+            handle.Dispose();
+            return null;
+        }
+
+        return new WindowsJobObject(handle, output);
+    }
+
+    /// <summary>
+    /// Terminates all the processes still running in the job, and waits for them to exit, up to a time limit.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle.IsClosed) return;
+
+        try
+        {
+            if (PInvoke.TerminateJobObject(_handle, TerminatedProcessExitCode))
+                await WaitForTermination();
+            else
+                LogLastError(_output, "Cannot terminate the job object");
+        }
+        finally
+        {
             _handle.Dispose();
-            throw new Win32Exception(error, "Cannot set the job object limits.");
         }
     }
 
-    public void Assign(Process process)
+    private async Task WaitForTermination()
     {
-        if (AssignProcessToJobObject(_handle, process.SafeHandle)) return;
+        var stopwatch = Stopwatch.StartNew();
+        while (TryGetActiveProcessCount(out var activeProcesses) && activeProcesses > 0)
+        {
+            if (stopwatch.Elapsed >= TerminationTimeout)
+            {
+                _output?.WriteLine(
+                    $"[JOB] {activeProcesses} process(es) still running {TerminationTimeout} after the job termination.");
+                return;
+            }
 
-        var error = Marshal.GetLastWin32Error();
-        // Nothing to clean up if the process has already finished.
-        if (process.HasExited) return;
-        throw new Win32Exception(error, $"Cannot assign process {process.Id} to a job object.");
+            await Task.Delay(TerminationPollInterval);
+        }
     }
 
-    /// <summary>Terminates all the processes still running in the job.</summary>
-    public void Dispose() => _handle.Dispose();
-
-    private sealed class SafeJobHandle() : SafeHandleZeroOrMinusOneIsInvalid(ownsHandle: true)
+    private bool TryGetActiveProcessCount(out uint activeProcesses)
     {
-        protected override bool ReleaseHandle() => CloseHandle(handle);
+        var info = new JOBOBJECT_BASIC_ACCOUNTING_INFORMATION();
+        var success = PInvoke.QueryInformationJobObject(
+            _handle,
+            JOBOBJECTINFOCLASS.JobObjectBasicAccountingInformation,
+            MemoryMarshal.AsBytes(new Span<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION>(ref info)));
+        if (!success)
+            LogLastError(_output, "Cannot query the job object");
+
+        activeProcesses = info.ActiveProcesses;
+        return success;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct JOBOBJECT_BASIC_LIMIT_INFORMATION
-    {
-        public long PerProcessUserTimeLimit;
-        public long PerJobUserTimeLimit;
-        public uint LimitFlags;
-        public UIntPtr MinimumWorkingSetSize;
-        public UIntPtr MaximumWorkingSetSize;
-        public uint ActiveProcessLimit;
-        public UIntPtr Affinity;
-        public uint PriorityClass;
-        public uint SchedulingClass;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct IO_COUNTERS
-    {
-        public ulong ReadOperationCount;
-        public ulong WriteOperationCount;
-        public ulong OtherOperationCount;
-        public ulong ReadTransferCount;
-        public ulong WriteTransferCount;
-        public ulong OtherTransferCount;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-    {
-        public JOBOBJECT_BASIC_LIMIT_INFORMATION BasicLimitInformation;
-        public IO_COUNTERS IoInfo;
-        public UIntPtr ProcessMemoryLimit;
-        public UIntPtr JobMemoryLimit;
-        public UIntPtr PeakProcessMemoryUsed;
-        public UIntPtr PeakJobMemoryUsed;
-    }
-
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern SafeJobHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool SetInformationJobObject(
-        SafeJobHandle hJob,
-        int jobObjectInformationClass,
-        ref JOBOBJECT_EXTENDED_LIMIT_INFORMATION lpJobObjectInformation,
-        uint cbJobObjectInformationLength);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool AssignProcessToJobObject(SafeJobHandle hJob, SafeProcessHandle hProcess);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
+    private static void LogLastError(ITestOutputHelper? output, string message) =>
+        output?.WriteLine(
+            $"[JOB] {message}: error {Marshal.GetLastPInvokeError()} ({Marshal.GetLastPInvokeErrorMessage()}).");
 }
