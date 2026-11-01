@@ -63,18 +63,20 @@ public static class ExecUtil
             }
         });
 
-        using var job = CreateJobFor(command.Process);
-
-        if (inputContent is { })
+        // This is to guarantee the whole process subtree termination: no stale / worker MSBuild nodes, etc.
+        await using (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600)
+                         ? WindowsJobObject.TryCreateFor(command.Process, output)
+                         : null)
         {
-            command.StandardInput.Write(inputContent);
-            command.StandardInput.Close();
-        }
 
-        await command.Process.WaitForExitAsync();
-        // Terminate whatever the process left behind. This also closes the output pipes possibly inherited by these
-        // processes, which would otherwise keep the command from completing.
-        job?.Dispose();
+            if (inputContent is { })
+            {
+                command.StandardInput.Write(inputContent);
+                command.StandardInput.Close();
+            }
+
+            await command.Process.WaitForExitAsync();
+        }
 
         var result = await command.Task;
         foreach (var s in result.StandardOutput.Split("\n"))
@@ -87,27 +89,5 @@ public static class ExecUtil
 
         output?.WriteLine($"Command exit code: {result.ExitCode}");
         return result;
-    }
-
-    /// <summary>
-    /// On Windows, puts the process into a job object, so that its whole process tree gets terminated on the job
-    /// disposal. On other platforms, does nothing and returns <c>null</c>.
-    /// </summary>
-    private static IDisposable? CreateJobFor(Process process)
-    {
-        if (!OperatingSystem.IsWindows()) return null;
-
-        var job = new WindowsJobObject();
-        try
-        {
-            job.Assign(process);
-        }
-        catch
-        {
-            job.Dispose();
-            throw;
-        }
-
-        return job;
     }
 }
