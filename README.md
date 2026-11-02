@@ -210,7 +210,7 @@ The license indication in the project's sources is compliant with the [REUSE spe
 [badge.cesium.runtime]: https://img.shields.io/nuget/v/Cesium.Runtime
 [badge.cesium.sdk]: https://img.shields.io/nuget/v/Cesium.Sdk
 [badge.cesium.templates]: https://img.shields.io/nuget/v/Cesium.Templates
-[c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
+[c23-draft]: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf
 [discussions]: https://github.com/ForNeVeR/Cesium/discussions
 [docs.architecture-sets]: docs/architecture-sets.md
 [docs.builtins]: docs/builtins.md
