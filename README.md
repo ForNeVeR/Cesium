@@ -153,7 +153,7 @@ As inputs, Cesium accepts its own internal `.obj` file format produced by the `-
 Implementation Dashboard
 ------------------------
 
-- [ ] [C23 standard compatibility][issue.c23-standard]: poor
+- [ ] [C23 standard compatibility][issue.c23-standard]: poor (based on [C23 standard draft N3220, 22 February 2024][c23-draft])
     - [ ] [Preprocessor][issue.preprocessor]: about **30%** ready
     - [ ] [Lexer][issue.lexer]: mostly works, but needs more tests and validation on its compliance
     - [ ] [Parser][issue.parser]: supports about **25%** of the language syntax
