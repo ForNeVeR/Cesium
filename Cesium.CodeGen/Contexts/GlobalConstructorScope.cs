@@ -40,7 +40,7 @@ internal sealed record GlobalConstructorScope(TranslationUnitContext Context) : 
             return;
         }
 
-        if (storageClass == StorageClass.Static)
+        if (storageClass == StorageClass.Static || storageClass == StorageClass.ThreadLocal)
         {
             _variables.Add(identifier, new(storageClass, variableType, constant));
         }
