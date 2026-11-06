@@ -346,11 +346,24 @@ int main()
     int unused = 0;
 }");
 
-    [Fact]
-    public void ImplicitReturnAllowedNonMain() => DoTest(@"int foo()
+    [Fact, NoVerify]
+    public void ImplicitReturnNotAllowedNonMain() => DoesNotCompile(@"int foo()
 {
     int unused;
-}");
+}", "Not all control flow paths in function foo return a value.");
+
+    [Fact, NoVerify]
+    public void ReturnIsNecessaryOnEntirePathsForNonMain() => DoesNotCompile(@"int foo()
+{
+    if(1)
+    {
+        // missed return
+    }
+    else
+    {
+        return 1;
+    }
+}", "Not all control flow paths in function foo return a value.");
 
     [Fact, NoVerify]
     public void ExpressionReturnDisallowedInVoidFunction() => DoesNotCompile(@"void foo()
