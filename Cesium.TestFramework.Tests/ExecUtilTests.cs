@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using TruePath;
 using Xunit.Abstractions;
 
@@ -10,6 +13,52 @@ namespace Cesium.TestFramework.Tests;
 
 public class ExecUtilTests(ITestOutputHelper output)
 {
+    [WindowsFact]
+    public async Task ProcessHasTerminatedWhenExitWaitCompletes()
+    {
+        using var compilation = new CSharpCompilationUtil();
+        var assembly = await compilation.CompileCSharpAssembly(
+            output, CSharpCompilationUtil.DefaultRuntime, [],
+            "System.Environment.Exit(42);",
+            isApplication: true);
+
+        for (var attempt = 0; attempt < 10; ++attempt)
+        {
+            using var process = Process.Start(new ProcessStartInfo("dotnet")
+            {
+                ArgumentList = { assembly.Value },
+                UseShellExecute = false,
+                CreateNoWindow = true
+            })!;
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+                uint exitCode;
+                do
+                {
+                    if (!GetExitCodeProcess(process.SafeHandle, out exitCode))
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(30), "The child did not exit in time.");
+                    Thread.SpinWait(100);
+                } while (exitCode == 259); // STILL_ACTIVE
+
+                // Do not call HasExited here: it can raise Exited before the native handle is signaled.
+                await ExecUtil.WaitForProcessExit(process);
+                Assert.True(process.WaitForExit(0), "The exit wait completed before native process termination.");
+                Assert.Equal(42, process.ExitCode);
+            }
+            finally
+            {
+                if (!process.WaitForExit(0)) process.Kill();
+                process.WaitForExit();
+            }
+        }
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetExitCodeProcess(SafeProcessHandle process, out uint exitCode);
+
     [WindowsFact]
     public async Task ProcessTreeIsTerminatedAfterCommandExit()
     {

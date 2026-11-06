@@ -75,7 +75,7 @@ public static class ExecUtil
                 command.StandardInput.Close();
             }
 
-            await command.Process.WaitForExitAsync();
+            await WaitForProcessExit(command.Process);
         }
 
         var result = await command.Task;
@@ -89,5 +89,16 @@ public static class ExecUtil
 
         output?.WriteLine($"Command exit code: {result.ExitCode}");
         return result;
+    }
+
+    internal static async Task WaitForProcessExit(Process process)
+    {
+        await process.WaitForExitAsync();
+        if (OperatingSystem.IsWindows())
+        {
+            // HasExited can observe an exit code before the native process handle is signaled (#1031).
+            // Wait for kernel teardown before terminating the job or allowing callers to delete test files.
+            process.WaitForExit();
+        }
     }
 }
