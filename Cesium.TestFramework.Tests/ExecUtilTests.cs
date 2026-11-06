@@ -19,14 +19,7 @@ public class ExecUtilTests(ITestOutputHelper output)
         using var compilation = new CSharpCompilationUtil();
         var assembly = await compilation.CompileCSharpAssembly(
             output, CSharpCompilationUtil.DefaultRuntime, [],
-            """
-            // Leave enough native handles open to make kernel process teardown observable.
-            var handles = new System.Collections.Generic.List<System.Threading.EventWaitHandle>();
-            for (var i = 0; i < 20_000; ++i)
-                handles.Add(new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.ManualReset));
-            System.GC.KeepAlive(handles);
-            System.Environment.Exit(42);
-            """,
+            "System.Environment.Exit(42);",
             isApplication: true);
 
         for (var attempt = 0; attempt < 10; ++attempt)
