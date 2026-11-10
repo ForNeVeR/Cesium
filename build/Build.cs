@@ -27,6 +27,10 @@ partial class Build : NukeBuild
     [Parameter("If set, only executes targets for a specified runtime identifier. Provided RID must be included in <RuntimeIdentifiers> property of Cesium.Compiler project.")]
     readonly string RuntimeId = string.Empty;
 
+    string EffectiveRuntimeId => !string.IsNullOrEmpty(RuntimeId)
+        ? RuntimeId
+        : Solution.Cesium_Compiler.GetProperty("DefaultAppHostRuntimeIdentifier") ?? string.Empty;
+
     [Parameter("If set to true, publishes compiler packs in AOT mode.")]
     readonly bool PublishAot = false;
 
