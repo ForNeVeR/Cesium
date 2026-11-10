@@ -49,6 +49,6 @@ partial class Build
     {
         DotNetTest(_ => _
             .SetConfiguration(Configuration)
-            .SetProjectFile(project.GetMSBuildProject().ProjectFileLocation.File));
+            .SetProjectFile(project.Path));
     }
 }
