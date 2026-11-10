@@ -11,6 +11,8 @@ runs:
       uses: actions/setup-dotnet@v6
       with:
         global-json-file: global.json
+        # Exercise SDK roll-forward even when the runner only has the pinned SDK installed.
+        dotnet-version: 10.0.x
 
     - name: ♻ NuGet Cache ♻
       uses: actions/cache@v6
@@ -20,7 +22,9 @@ runs:
 
     - name: 🛠️ Restore local .NET tools 🛠️
       shell: bash
-      run: dotnet tool restore
+      run: |
+        dotnet --version
+        dotnet tool restore
 
     - name: 🔄 Restore Nuget Packages 🔄
       shell: bash

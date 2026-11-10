@@ -1,34 +1,34 @@
-// SPDX-FileCopyrightText: 2025 Cesium contributors <https://github.com/ForNeVeR/Cesium>
+// SPDX-FileCopyrightText: 2025-2026 Cesium contributors <https://github.com/ForNeVeR/Cesium>
 //
 // SPDX-License-Identifier: MIT
 
 using System.Collections.Generic;
-using Microsoft.Build.Evaluation;
+using System.Linq;
+using System.Text.Json;
+using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
+using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 public static class ProjectExtensions
 {
-    public static IReadOnlyCollection<string> GetRuntimeIds(this Project project)
+    public static IReadOnlyDictionary<string, string> GetEvaluatedProperties(
+        this Project project, string configuration, params string[] propertyNames)
     {
-        return project.GetEvaluatedProperty("RuntimeIdentifiers").Split(";");
-    }
+        if (propertyNames.Length == 0)
+            return new Dictionary<string, string>();
 
-    public static string GetVersion(this Project project)
-    {
-        return project.GetEvaluatedProperty("VersionPrefix");
-    }
+        // Evaluate with the selected SDK's MSBuild and NuGet assemblies, rather than loading them into NUKE.
+        var output = DotNet(
+                $"msbuild \"{project.Path}\" -nologo -property:Configuration={configuration} " +
+                $"-getProperty:{string.Join(",", propertyNames)}",
+                logOutput: false)
+            .StdToText();
 
-    public static string GetPackageOutputPath(this Project project)
-    {
-        return project.GetEvaluatedProperty("PackageOutputPath");
-    }
+        if (propertyNames.Length == 1)
+            return new Dictionary<string, string> { [propertyNames[0]] = output.Trim() };
 
-    public static string GetPublishDirectory(this Project project)
-    {
-        return project.GetEvaluatedProperty("PublishDir");
-    }
-
-    public static string GetEvaluatedProperty(this Project project, string name)
-    {
-        return project.GetProperty(name).EvaluatedValue;
+        using var document = JsonDocument.Parse(output);
+        return document.RootElement.GetProperty("Properties").EnumerateObject()
+            .ToDictionary(property => property.Name, property => property.Value.GetString()!);
     }
 }

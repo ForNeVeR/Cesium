@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 ### Fixed
+- [#1033: Unblock updating to newer version of .NET SDK](https://github.com/ForNeVeR/Cesium/issues/1033): evaluate build properties with the selected SDK and allow roll-forward to newer .NET 10 SDK feature bands.
 - [#990: Infinite loop in macro expansion](https://github.com/ForNeVeR/Cesium/issues/990): self-referential macros are no longer re-expanded, per the C23 Standard, section 6.10.4.4. Thanks to @Atharvatonape!
 
 ### Added

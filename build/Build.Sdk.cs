@@ -18,7 +18,7 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using Project = Microsoft.Build.Evaluation.Project;
+using ProjectProperties = System.Collections.Generic.IReadOnlyDictionary<string, string>;
 
 public partial class Build
 {
@@ -92,7 +92,7 @@ public partial class Build
 
     void PublishCompiler(string? runtimeId)
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+        var compilerProject = GetCompilerProperties();
         var runtimeIdDisplayName = runtimeId ?? "<no runtime>";
 
         // The framework-dependent bundle takes a few seconds to publish, so it is always published to never get stale.
@@ -106,7 +106,7 @@ public partial class Build
         Log.Information($"Publishing for {runtimeIdDisplayName}, AOT {(PublishAot ? "enabled" : "disabled")}...");
         DotNetPublish(o => o
             .SetConfiguration(Configuration)
-            .SetProject(compilerProject.ProjectFileLocation.File)
+            .SetProject(Solution.Cesium_Compiler.Path)
             .SetRuntime(runtimeId)
             .SetSelfContained(runtimeId != null) // self-contained for runtime-specific only
             .SetPublishTrimmed(PublishAot)
@@ -117,7 +117,7 @@ public partial class Build
 
     void GenerateCompilerRuntimeSpecificBundle(string runtimeId)
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+        var compilerProject = GetCompilerProperties();
 
         if (!SkipCaches && !NeedPackageCompilerRuntimeSpecificBundle(compilerProject, runtimeId))
         {
@@ -127,13 +127,13 @@ public partial class Build
 
         Log.Information($"Generating compiler runtime specific bundle {runtimeId}...");
 
-        var version = compilerProject.GetVersion();
+        var version = compilerProject["VersionPrefix"];
         var runtimePackageId = GetRuntimeBundleId(runtimeId);
         var packageFile = GetCompilerRuntimeSpecificBundleFileName(version, runtimeId);
         var publishDirectory = GetCompilerRuntimePublishFolder(compilerProject, runtimeId);
         Directory.CreateDirectory(publishDirectory);
 
-        var packageOutputPath = compilerProject.GetPackageOutputPath();
+        var packageOutputPath = compilerProject["PackageOutputPath"];
 
         Log.Debug($"Source publish directory: {publishDirectory}");
         Log.Debug($"Target package ID: {runtimePackageId}");
@@ -153,7 +153,7 @@ public partial class Build
 
     void GenerateCompilerNuPkg()
     {
-        var compilerProject = Solution.Cesium_Compiler.GetMSBuildProject(configuration: Configuration);
+        var compilerProject = GetCompilerProperties();
 
         if (!SkipCaches && !NeedPackageCompilerNuPkg(compilerProject))
         {
@@ -162,11 +162,11 @@ public partial class Build
         }
 
         var packageId = _compilerBundlePackageName;
-        var version = compilerProject.GetVersion();
+        var version = compilerProject["VersionPrefix"];
         var packageFile = GetCompilerNuGetPackageFileName(version);
         var publishDirectory = GetCompilerRuntimePublishFolder(compilerProject, null);
         var publishedFiles = Directory.GetFiles(publishDirectory, "*.*", SearchOption.AllDirectories);
-        var packageOutputPath = compilerProject.GetPackageOutputPath();
+        var packageOutputPath = compilerProject["PackageOutputPath"];
 
         Log.Debug($"Source publish directory: {publishDirectory}");
         Log.Debug($"Target package ID: {packageId}");
@@ -175,16 +175,16 @@ public partial class Build
         var builder = new PackageBuilder
         {
             Id = packageId,
-            Version = NuGetVersion.Parse(compilerProject.GetVersion()),
+            Version = NuGetVersion.Parse(version),
             Description = "Cesium compiler executable bundle. Used by the Cesium SDK.",
             LicenseMetadata = new LicenseMetadata(
                 LicenseType.Expression,
-                GetCompilerBundleLicenseExpression(compilerProject),
+                GetCompilerBundleLicenseExpression(Solution.Cesium_Compiler),
                 null,
                 null,
                 LicenseMetadata.CurrentVersion),
             Authors = { "Cesium contributors" },
-            Copyright = string.Join(";\n", GetCompilerBundleCopyrightStatements(compilerProject).Distinct())
+            Copyright = string.Join(";\n", GetCompilerBundleCopyrightStatements(Solution.Cesium_Compiler).Distinct())
         };
         builder.Files.AddRange(GetPhysicalFiles(publishDirectory, publishedFiles));
 
@@ -274,7 +274,7 @@ public partial class Build
 
     private IEnumerable<(string Id, string Version)> GetCompilerBundlePackages(Project project)
     {
-        var json = DotNet($"list \"{project.FullPath}\" package --include-transitive --format json", logOutput: false)
+        var json = DotNet($"list \"{project.Path}\" package --include-transitive --format json", logOutput: false)
             .StdToText();
 
         using var doc = JsonDocument.Parse(json);
@@ -354,12 +354,16 @@ public partial class Build
         }
     }
 
-    AbsolutePath GetCompilerRuntimePublishFolder(Project compilerProject, string? runtimeId) =>
+    ProjectProperties GetCompilerProperties() =>
+        Solution.Cesium_Compiler.GetEvaluatedProperties(Configuration,
+            "VersionPrefix", "PackageOutputPath", "ArtifactsPath", "ArtifactsPublishOutputName");
+
+    AbsolutePath GetCompilerRuntimePublishFolder(ProjectProperties compilerProject, string? runtimeId) =>
         Path.Combine(
-            compilerProject.GetProperty("ArtifactsPath").EvaluatedValue,
-            compilerProject.GetProperty("ArtifactsPublishOutputName").EvaluatedValue,
+            compilerProject["ArtifactsPath"],
+            compilerProject["ArtifactsPublishOutputName"],
             Solution.Cesium_Compiler.Name,
-            GetRuntimeArtifactFolder(Configuration, compilerProject.GetVersion(), runtimeId));
+            GetRuntimeArtifactFolder(Configuration, compilerProject["VersionPrefix"], runtimeId));
 
     static string GetRuntimeArtifactFolder(Configuration configuration, string version, string? runtimeId) =>
         $"pack_{((string)configuration).ToLowerInvariant()}_{version}" + (runtimeId == null ? "" : $"_{runtimeId}");
@@ -373,7 +377,7 @@ public partial class Build
     static string GetCompilerRuntimeSpecificBundleFileName(string version, string runtimeId) =>
         $"{_compilerBundlePackageName}.{runtimeId}.{version}.zip";
 
-    bool NeedPublishCompilerBundle(Project compiler, string? runtimeId)
+    bool NeedPublishCompilerBundle(ProjectProperties compiler, string? runtimeId)
     {
         var folder = GetCompilerRuntimePublishFolder(compiler, runtimeId);
 
@@ -381,10 +385,10 @@ public partial class Build
                || Directory.GetFiles(folder, "Cesium.Compiler*").Length == 0;
     }
 
-    bool NeedPackageCompilerRuntimeSpecificBundle(Project compiler, string runtimeId)
+    bool NeedPackageCompilerRuntimeSpecificBundle(ProjectProperties compiler, string runtimeId)
     {
-        var version = compiler.GetVersion();
-        var packageDirectory = compiler.GetPackageOutputPath();
+        var version = compiler["VersionPrefix"];
+        var packageDirectory = compiler["PackageOutputPath"];
         var packageFileName = GetCompilerRuntimeSpecificBundleFileName(version, runtimeId);
 
         return IsOutputStale(
@@ -392,10 +396,10 @@ public partial class Build
             GetCompilerRuntimePublishFolder(compiler, runtimeId));
     }
 
-    bool NeedPackageCompilerNuPkg(Project compiler)
+    bool NeedPackageCompilerNuPkg(ProjectProperties compiler)
     {
-        var version = compiler.GetVersion();
-        var packageDirectory = compiler.GetPackageOutputPath();
+        var version = compiler["VersionPrefix"];
+        var packageDirectory = compiler["PackageOutputPath"];
         var packageFileName = GetCompilerNuGetPackageFileName(version);
 
         return IsOutputStale(
