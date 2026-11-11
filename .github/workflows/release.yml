@@ -16,6 +16,11 @@ on:
   schedule:
     - cron: '0 0 * * 0'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Let tagged releases finish publishing even if another run is triggered.
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   main:
     runs-on: ${{ matrix.environment.image }}
