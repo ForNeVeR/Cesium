@@ -8,6 +8,8 @@
 
 int main(int argc, char *argv[])
 {
+    /* Since C23, bool, true, and false are keywords rather than macros. */
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ <= 201710L
 #ifndef bool
     return 1;
 #endif
@@ -18,6 +20,7 @@ int main(int argc, char *argv[])
 
 #ifndef false
     return 3;
+#endif
 #endif
 
 #ifndef __bool_true_false_are_defined
